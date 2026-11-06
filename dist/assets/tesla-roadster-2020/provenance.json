@@ -1,0 +1,71 @@
+{
+  "source": "https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8",
+  "redistributor": "https://github.com/AbduSalam08/3dModel-Tesla-Roadster",
+  "tree_sha": "ea6d8f94b22d0194e16810401e1d73d2c67c9be1",
+  "license": "CC-BY-4.0",
+  "author": "metarex.4d",
+  "model_year_designation": "2020 concept",
+  "official_CAD": false,
+  "files": [
+    {
+      "file": "tesla_roadster_2020/license.txt",
+      "bytes": 704,
+      "sha256": "733f645a7e59e8110e3be2e2cc13535fbcc7208713a57a2668d99c7b8ca22037"
+    },
+    {
+      "file": "tesla_roadster_2020/scene.bin",
+      "bytes": 22263040,
+      "sha256": "8c72db1b2d4cc35af59a5987b0233a80697224b4739d15e9498d044860177518"
+    },
+    {
+      "file": "tesla_roadster_2020/scene.gltf",
+      "bytes": 220679,
+      "sha256": "35a30bcf928e00f61f9034c3e496c1fcc83843e89167a1e8e7735f349c2a54d5"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/Sidewall_baseColor.png",
+      "bytes": 708649,
+      "sha256": "34eb956339cd1ac2dbfce4b495bcb5211a252adcc72bd96479164302d827ed70"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/Sidewall_normal.png",
+      "bytes": 1427806,
+      "sha256": "3f0fca95f1954c506cfcb982d77fb1ee691b2c2159e6d5835a1cde51d1b0b06c"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/Thread_baseColor.png",
+      "bytes": 248850,
+      "sha256": "f8ef968c190eb61c976fbf8089b19ccdde08dd4211cc2e2f60857c51083a7c2b"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/Thread_normal.png",
+      "bytes": 391298,
+      "sha256": "8c60a74a3cad026c08168b5871d286e2eaad55c125c9801f96aa137031eb9561"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/carbon_fibre_baseColor.jpeg",
+      "bytes": 501298,
+      "sha256": "ffc27a7a6b7d8bca59cf5b16933943b54cca084a0d3871b0fbf0612f949b4cda"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/carbon_fibre_metallicRoughness.png",
+      "bytes": 2294363,
+      "sha256": "06cb977694419e63e0e97ce7111db51823289dbc37d9638a56ca0a62e81f3dcc"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/carbon_fibre_normal.jpeg",
+      "bytes": 2194837,
+      "sha256": "7e681c6fa5e1502cec664187972f610f84e3696e23c8c09c72aec7773bfd3558"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/grill_baseColor.png",
+      "bytes": 1360,
+      "sha256": "981489f883cdc0964cf36d4288887e182040de85cfb2ae23dfb18fe931300f6e"
+    },
+    {
+      "file": "tesla_roadster_2020/textures/grill_normal.png",
+      "bytes": 2369,
+      "sha256": "561753aaa3766e0f7abd50e53112fac139c42e82c402b0923789a705aa6f31da"
+    }
+  ]
+}
