@@ -1,0 +1,11 @@
+Tesla Roadster 2020 visual model by metarex.4d.
+Original: https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8
+License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Author: https://sketchfab.com/metarex.4d
+Retrieved from licensed public redistribution https://github.com/AbduSalam08/3dModel-Tesla-Roadster
+Original license matches live Sketchfab public API metadata.
+Model year designation is the artist title, a 2017-announced Roadster concept commonly called 2020.
+NOT the 2026 Rocket design. NOT Tesla official CAD or verified engineering geometry.
+Geometry and materials copied without modification. Runtime transforms, wheel animation, paint changes, and educational added thrusters are adaptations by Roadster Flight Lab.
+Original physical dimensions, mass, inertia, and aerodynamic data are NOT validated by this visual asset.
+Largest payload is scene.bin (22,263,040 bytes), under 25 MiB. All 9 texture dependencies are included.
