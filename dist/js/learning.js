@@ -1,7 +1,8 @@
 /**
  * Educational copy for Roadster Flight Lab.
- * Equations use SI units. All performance figures refer to this model unless
- * an entry explicitly identifies a manufacturer announcement as its source.
+ * Equations use SI units. The artist's 2020 concept exterior is not an OEM BOM.
+ * Simulation parameters and added flight hardware are educational assumptions;
+ * historical announcements describe concepts, not verified production hardware.
  */
 export const PARTS = {
   body: {
@@ -10,7 +11,7 @@ export const PARTS = {
     description: '차체에 작용하는 모든 힘의 합이 가속도를 정합니다. 같은 힘이라도 무게중심에서 떨어진 곳에 작용하면 차체를 회전시킵니다. 설정에서 무게중심을 앞으로 옮기면 앞바퀴 하중이 커지고, 관성모멘트를 키우면 같은 토크에 덜 회전합니다. 외형이 같아도 내부의 질량 배치가 다르면 운동은 달라집니다.',
     formula: 'm a = ΣF  ·  τ = r × F',
     variables: 'm 질량 [kg] · a 가속도 [m/s²] · F 힘 [N] · r 무게중심에서 작용점까지의 벡터 [m] · τ 토크 [N·m]',
-    assumption: '외형은 metarex.4d의 Tesla Roadster 2020 모델(CC BY 4.0)입니다. 기본 기체 제외 질량 1,900 kg과 조절 가능한 무게중심·관성은 가정이며 실차 측정값이 아닙니다. 외형의 세부 메시가 물리 사양을 자동으로 정하지 않습니다.',
+    assumption: '외형은 metarex.4d의 Tesla Roadster 2020 모델(CC BY 4.0)입니다. 원본 메시의 구분은 아티스트의 표현이며 Tesla의 실제 부품명세나 설계도가 아닙니다. 기본 기체 제외 질량 1,900 kg과 조절 가능한 무게중심·관성은 가정이며 실차 측정값이 아닙니다.',
   },
   cabin: {
     title: '캐빈 · 자세',
@@ -18,7 +19,7 @@ export const PARTS = {
     description: '차량에는 앞으로 가는 방향과 지붕 방향이 있습니다. 차체가 기울면 차체에 붙은 추진기의 힘도 함께 기울어집니다. 화면의 피치·롤·요는 복잡한 3차원 자세를 읽기 쉽게 표시한 값입니다.',
     formula: 'F_world = R(q) F_body  ·  F_vertical = F cos θ',
     variables: 'R(q) 차체에서 지면 좌표계로의 회전 · q 쿼터니언 · θ 추력과 수직선 사이의 각도 [rad]',
-    assumption: '내부 적분은 쿼터니언을 사용합니다. 2020 콘셉트 외형·좌석·유리는 아티스트가 제작한 시각 모델입니다. 추가 추진계는 가정이며 실차 설계도가 아닙니다.',
+    assumption: '내부 적분은 쿼터니언을 사용합니다. 2020 콘셉트 외형·좌석·유리는 아티스트가 제작한 시각 모델입니다. 추가 추진계는 교육용 가정이며 이 콘셉트의 실제 내부 구조를 재현한 설계도가 아닙니다.',
   },
   wheels: {
     title: '타이어 · 접지력',
@@ -34,7 +35,7 @@ export const PARTS = {
     description: '기체를 내보내면 기체 질량과 차량 질량이 줄어듭니다. 빠른 분사에서는 탱크 안의 기체가 냉각되므로 압력도 함께 떨어집니다. 탱크가 완전히 비기 전에도 추력이 부족해질 수 있습니다.',
     formula: 'PV = m_gas RT  ·  dU/dt = Q̇ − ṁ_out cpT',
     variables: 'P 절대압력 [Pa] · V 체적 [m³] · T 온도 [K] · R 비기체상수 [J/(kg·K)] · U 내부에너지 [J]',
-    assumption: '600 L는 공개행사 발표를 참고한 용량입니다. 250 kg의 이상 공기와 300 K를 결합해 얻은 35.875 MPa는 계산용 초기 절대압력이며 실측 압력이 아닙니다. 고압 실기체 효과와 벽 열전달은 생략합니다.',
+    assumption: '600 L는 이 앱의 교육용 탱크 설정이며 2020 콘셉트의 확정 사양이 아닙니다. 250 kg의 이상 공기와 300 K를 결합해 얻은 35.875 MPa는 계산용 초기 절대압력이며 실측 압력이 아닙니다. 고압 실기체 효과와 벽 열전달은 생략합니다.',
   },
   thrusters: {
     title: '추진기 · 힘과 토크',
@@ -42,7 +43,7 @@ export const PARTS = {
     description: '기체가 빠져나가는 반대 방향으로 차량이 밀립니다. 좌우 추진기를 같은 세기로 켜면 회전 효과가 상쇄될 수 있고, 한쪽만 켜면 차체가 회전합니다. 분사량은 잔여 압력과 밸브 개도에 제한됩니다.',
     formula: 'F = ṁve + (pe − pa)Ae  ·  τ = r × F',
     variables: 'ṁ 배출 유량 [kg/s] · ve 상대 배출 속도 [m/s] · pe 출구 절대압력 [Pa] · pa 대기압 [Pa] · Ae 출구 면적 [m²]',
-    assumption: '개별 노즐의 위치·방향·면적은 기능을 탐구하기 위한 가정입니다. 단순 수축 노즐과 유한 밸브 응답을 사용하며, 제조사의 후방 추력을 수직 추력으로 간주하지 않습니다.',
+    assumption: '개별 노즐의 수·위치·방향·면적은 힘과 토크를 탐구하기 위한 교육용 가정입니다. 단순 수축 노즐과 유한 밸브 응답을 사용합니다. 이 배치와 비행 성능은 2020 콘셉트의 공개 확정 사양이 아닙니다.',
   },
   suspension: {
     title: '서스펜션 · 감쇠 진동',
@@ -58,7 +59,7 @@ export const PARTS = {
     description: '차량과 공기의 상대 속도가 커질수록 공기력은 대체로 속도의 제곱에 비례해 커집니다. 윙의 다운포스는 바퀴를 더 누르지만 공기 저항도 늘릴 수 있습니다. 힘의 작용점이 치우치면 토크도 생깁니다.',
     formula: 'D = ½ρCdA v_rel²  ·  L = ½ρClA v_rel²',
     variables: 'ρ 공기 밀도 [kg/m³] · Cd 항력계수 · Cl 양력계수 · A 기준 면적 [m²] · v_rel 공기에 대한 속력 [m/s]',
-    assumption: '계수와 공력 작용점은 단순화한 가정입니다. 실제 차량의 풍동 데이터나 전체 유동 해석을 사용한 모델은 아닙니다.',
+    assumption: '추가 윙과 계수·공력 작용점은 교육용 가정입니다. 2020 콘셉트의 실제 윙 설계나 풍동 데이터, 전체 유동 해석을 사용한 모델은 아닙니다.',
   },
   battery: {
     title: '모터 · 배터리 · 팬',
@@ -66,7 +67,7 @@ export const PARTS = {
     description: '모터는 낮은 회전수에서는 토크, 높은 회전수에서는 출력에 제한됩니다. 팬은 차체 밑의 압력을 낮춰 접지력을 높이며 전력을 사용합니다. 팬의 지면 흡착력을 공중 양력으로 바꾸어 계산하지 않습니다.',
     formula: 'P = τω  ·  F_fan ≈ Δp A  ·  P_fan ≈ Δp Q/η',
     variables: 'P 출력 [W] · τ 토크 [N·m] · ω 각속도 [rad/s] · Δp 압력차 [Pa] · Q 체적 유량 [m³/s] · η 효율',
-    assumption: '배터리 용량·효율·모터 한계·팬 성능은 교육용 설정입니다. 팬 흡착은 차고에 따라 감소하며, 기체 탱크의 에너지와 별도로 기록합니다.',
+    assumption: '배터리 용량·효율·모터 한계·팬 성능은 교육용 설정입니다. 추가 흡착 팬은 2020 콘셉트의 확인된 부품이 아닙니다. 팬 흡착은 차고에 따라 감소하며, 기체 탱크의 에너지와 별도로 기록합니다.',
   },
 };
 
@@ -139,7 +140,7 @@ export const SOURCES = [
     label: 'Exterior model · metarex.4d',
     url: 'https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8',
     kind: '외형 자산 · 2020 콘셉트',
-    note: '기본 3D 외형의 원작자 metarex.4d. CC BY 4.0. 좌표 변환·도색·바퀴 애니메이션과 교육용 부품을 추가했습니다. 2026 Rocket/OEM CAD 또는 실측 물리 데이터가 아닙니다.',
+    note: '기본 3D 외형의 원작자 metarex.4d. CC BY 4.0. 좌표 변환·도색·바퀴 애니메이션과 교육용 부품을 추가했습니다. 원본 메시 전체를 탐색해도 Tesla의 전체 실제 부품명세·OEM CAD·실측 물리 데이터가 되는 것은 아닙니다.',
   },
   {
     title: '외형 재사용 라이선스 · Creative Commons BY 4.0',
@@ -149,18 +150,18 @@ export const SOURCES = [
     note: '원본 출처와 저작자, 변경 사실을 표시합니다. 파일 안의 license.txt와 provenance.json에도 출처를 보존했습니다.',
   },
   {
-    title: 'Tesla · Roadster 공식 제품 설명',
-    label: 'Tesla Roadster',
-    url: 'https://www.tesla.com/roadster',
-    kind: '공식 발표',
-    note: '팬·냉가스 추진·트림의 공개 설명. 발표된 기능과 독립적으로 검증된 성능을 구분합니다.',
+    title: 'Tesla · 2017 Semi & Roadster 공개 행사',
+    label: 'Tesla 2017 Unveil',
+    url: 'https://www.youtube.com/watch?v=5RRmepp7i5g',
+    kind: '당시 콘셉트 발표',
+    note: '2020 출시를 예고했던 원래 콘셉트의 공식 발표 영상입니다. 앞 1개·뒤 2개의 모터, AWD, 2+2 좌석, 탈착 루프, 200 kWh 배터리는 당시 발표 구성입니다. 실제 내부 부품의 치수·배치나 이 앱의 비행 성능을 검증하는 자료는 아닙니다.',
   },
   {
-    title: 'Tesla · 2026 Q3 공식 업데이트',
-    label: 'Tesla Q3 2026',
-    url: 'https://assets-ir.tesla.com/tesla-contents/IR/TSLA-Q3-2026-Update.pdf',
-    kind: '공식 발표',
-    note: '신형 공개와 개발 상태의 참고 자료. 이 앱의 자체 제작 외형·물리 파라미터를 인증하는 자료는 아닙니다.',
+    title: 'Tesla · 1세대 Roadster 공개 기술 자료',
+    label: 'Roadster 2008–2012 Archive',
+    url: 'https://github.com/teslamotors/roadster',
+    kind: '다른 세대의 자료 · 구분 참고',
+    note: 'Tesla가 공개한 2008–2012 Roadster 개발·진단 자료입니다. 연결된 정비·부품 자료의 2.0·2.5 표기는 1세대의 개정형을 뜻합니다. 이 자료를 2020 콘셉트의 실제 부품명세나 내부 설계로 사용하지 않습니다.',
   },
   {
     title: 'NASA · 로켓 추력 방정식',

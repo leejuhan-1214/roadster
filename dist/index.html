@@ -35,7 +35,24 @@
     <div class="height-setting" id="height-setting"><label for="target-height">목표 높이 <output id="target-height-value">0.8 m</output></label><input type="range" id="target-height" min="0.2" max="10" step="0.1" value="0.8"></div>
     <button id="params-open" class="text-btn">물리 파라미터 조정 <span>↗</span></button>
   </div>
-  <div id="inspect-panel" hidden><div class="section-label">차체 구조 <span>EXPLODED VIEW</span></div><p class="muted">드래그로 회전 · 스크롤 ↑ / 트랙패드 핀치 확대로 부품별 분해 · 반대로 조립합니다. 부품을 클릭하면 원리를 볼 수 있습니다.</p><label class="range-label" for="explode">분해 정도 <output id="explode-value">0%</output></label><input type="range" id="explode" min="0" max="1" step="0.01" value="0"><div id="part-buttons" class="part-buttons"></div><label class="import-btn" for="model-file">＋ 내 GLB 모델 불러오기<input type="file" id="model-file" accept=".glb" hidden></label><p class="micro">외형만 교체합니다. 라이선스가 있는 모델을 사용하세요.</p></div>
+  <div id="inspect-panel" hidden>
+    <div class="section-label">세부 부품 탐색 <span>2020 CONCEPT</span></div>
+    <p id="catalog-summary" class="catalog-summary">원본 외형을 불러오는 중…</p>
+    <p class="micro catalog-note">공개 3D 모델의 모든 표면을 탐색합니다. 메시 수는 실차 부품 수와 다르며, 공식 부품 명세가 아닙니다.</p>
+    <label class="range-label" for="explode">분해 정도 <output id="explode-value">0%</output></label>
+    <input type="range" id="explode" min="0" max="1" step="0.01" value="0">
+    <p class="micro inspect-gesture">드래그 회전 · 위로 스크롤 분해 · 아래로 조립</p>
+    <div class="inspector-tools">
+      <label class="sr-only" for="part-search">부품 검색</label><input type="search" id="part-search" placeholder="부품 이름·재질 검색" autocomplete="off">
+      <label class="sr-only" for="part-category">부품 분류</label><select id="part-category"><option value="">모든 부위</option></select>
+      <label class="hypothesis-toggle"><input type="checkbox" id="show-hypotheses">교육용 실험 장치도 표시</label>
+      <div class="catalog-status"><span id="part-count" role="status">0개 항목</span><button id="parts-restore" type="button">전체 다시 보기</button></div>
+    </div>
+    <div id="part-buttons" class="part-buttons" aria-label="선택 가능한 세부 부품"></div>
+    <p id="part-empty" class="micro" hidden></p>
+    <div class="inspector-footer"><span id="inspector-state">전체 구성 표시</span><button id="parts-assemble" type="button">조립 초기화 ↺</button></div>
+    <details class="custom-import"><summary>사용자 외형 파일</summary><label class="import-btn" for="model-file">＋ 내 GLB 모델 불러오기<input type="file" id="model-file" accept=".glb" hidden></label><p class="micro">GLB는 주행 외형만 교체합니다. 구조 탐색은 원본 Roadster입니다.</p></details>
+  </div>
   <div id="lab-panel" hidden><div class="section-label">검증 워크벤치 <span>PHYSICS FIRST</span></div><p class="muted">같은 계산 모듈을 해석해와 비교합니다. 계산 검증과 실차 검증은 다릅니다.</p><button id="run-validation" class="primary-btn">물리 검증 실행 <span>→</span></button><div id="validation-results" class="validation-results"><span class="micro">검증을 실행하면 결과가 표시됩니다.</span></div><button id="lab-drop" class="text-btn">자유낙하 직접 관찰 <span>↓</span></button><button id="export" class="text-btn">현재 실험 CSV 저장 <span>↓</span></button></div>
   <div class="model-footnote"><i></i>2020 콘셉트 외형 · 추진계는 가정<button id="about-link" aria-label="모델 가정과 출처 보기">↗</button></div><p class="asset-credit"><a href="https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8" target="_blank" rel="noopener noreferrer">3D: metarex.4d</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · 수정 적용</p>
 </aside>
@@ -52,7 +69,13 @@
   <div class="small-data"><span>차축 하중 · 앞 / 뒤</span><b id="axle-loads">10.5 / 10.5 kN</b></div><div class="chart-heading"><span>고도 이력</span><span>LAST 12 s</span></div><canvas id="trace" width="440" height="130" aria-label="최근 12초 고도 그래프"></canvas>
   <div class="time-row"><span id="sim-time">T + 00:00.00</span><span id="physics-rate">500 Hz</span></div>
 </aside>
-<aside id="part-card" class="part-card glass" hidden><div class="panel-heading"><span class="eyebrow" id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 설명 닫기">×</button></div><h2 id="part-title"></h2><p id="part-description"></p><div id="part-formula" class="formula"></div><p id="part-assumption" class="micro"></p></aside>
+<aside id="part-card" class="part-card glass" hidden>
+  <div class="panel-heading"><span class="eyebrow" id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 설명 닫기">×</button></div>
+  <h2 id="part-title"></h2><p id="part-description"></p>
+  <div class="part-actions"><button id="part-zoom" type="button">가까이 보기 ⊕</button><button id="part-isolate" type="button" aria-pressed="false">이것만 보기</button><button id="part-hide" type="button">선택 숨기기</button></div>
+  <div class="part-provenance"><p id="part-origin"></p><span>원본 재질</span><p id="part-material"></p><p id="part-geometry-note"></p><a id="part-source" target="_blank" rel="noopener noreferrer">원본 3D 모델 ↗</a></div>
+  <details id="part-lesson"><summary>관련 물리 원리 · 교육용 가정</summary><div id="part-formula" class="formula"></div><p id="part-assumption" class="micro"></p></details>
+</aside>
 <aside id="stage-hud" class="stage-hud glass" hidden><div class="panel-heading"><span class="eyebrow">STAGE 01 / FLIGHT COURSE</span><b id="stage-counter">0 / 3</b></div><h2 id="stage-objective"></h2><p id="stage-hint"></p><div id="stage-steps" class="stage-steps"></div><small id="stage-time"></small></aside>
 <div id="flight-alert" class="flight-alert" role="status" hidden></div>
 <div class="view-tools glass"><button id="camera" title="카메라 전환 (C)">◉ <span id="camera-label">추적 카메라</span></button><span></span><button id="vectors" aria-pressed="false" title="힘 벡터 표시 (V)">↗ <span>힘 벡터</span></button><span></span><button id="reset" title="차량 및 탱크 초기화 (R)">↺ <span>초기화</span></button></div>

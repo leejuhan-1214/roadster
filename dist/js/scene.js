@@ -23,6 +23,20 @@ export function partExplodeProgress(id,progress) {
   const t=clamp((progress-start)/(end-start),0,1);return t*t*(3-2*t);
 }
 
+export function isObjectVisible(object) {
+  for(let node=object;node;node=node.parent)if(!node.visible)return false;
+  return true;
+}
+export function updateDetailExplosion(vehicle,progress) {
+  for(const [id,part] of vehicle.detailParts||[]) {
+    if(vehicle.parts.get(id)===part)continue; // Hypotheses are existing assembly groups.
+    const {basePosition,explodeOffset,explodeStage=[0,1]}=part.userData;
+    if(!basePosition||!explodeOffset)continue;
+    const [start,end]=explodeStage,t=clamp((progress-start)/(end-start),0,1);
+    part.position.copy(basePosition).addScaledVector(explodeOffset,t*t*(3-2*t));
+  }
+}
+
 function canvasTexture(draw, width=1024, height=1024) {
   const canvas=document.createElement('canvas'); canvas.width=width; canvas.height=height;
   draw(canvas.getContext('2d'),width,height);
@@ -50,7 +64,7 @@ export class FlightScene {
   constructor(canvas,onPartSelect=()=>{},onInspectExplode=()=>{},onCameraChange=()=>{}) {
     this.canvas=canvas;this.onPartSelect=onPartSelect;this.mode='drive';this.cameraName='chase';this.elapsed=0;this.lastPaint='';
     this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;
-    this.explodeTarget=0;this.explodeProgress=0;this.touchPointers=new Map();this.pinchDistance=0;
+    this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=false;this.touchPointers=new Map();this.pinchDistance=0;
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -93,7 +107,7 @@ export class FlightScene {
       if(this.mode!=='inspect'||!this.clickStart||Math.hypot(e.clientX-this.clickStart[0],e.clientY-this.clickStart[1])>6)return;
       const r=canvas.getBoundingClientRect();this.pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
       this.raycaster.setFromCamera(this.pointer,this.camera);
-      const hit=this.raycaster.intersectObject(this.vehicle.root,true).find(v=>v.object.visible);
+      const hit=this.raycaster.intersectObject(this.vehicle.root,true).find(v=>isObjectVisible(v.object));
       if(hit){let o=hit.object;while(o&&!o.userData.partId)o=o.parent;if(o){this.focusPart(o.userData.partId);this.onPartSelect(o.userData.partId);}}
     };
     canvas.addEventListener('pointerdown',this._onDown,true);canvas.addEventListener('pointerup',this._onUp,true);
@@ -214,9 +228,10 @@ export class FlightScene {
     this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
   }
   setMode(mode) {
-    this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';
+    this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
-    if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;}
+    if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
+    this.applyInspectorVisibility?.();
   }
   setCamera(camera) {this.cameraName=camera;this.controls.enabled=true;this.controls.enableZoom=this.mode!=='inspect';}
   frameStageStart(sim) {
@@ -236,11 +251,60 @@ export class FlightScene {
     this.stageVisual=stageData?createStageVisual(stageData):null;
     if(this.stageVisual)this.scene.add(this.stageVisual);
   }
+  getPartCatalog() {
+    return this.vehicle.catalog||[];
+  }
+  applyInspectorVisibility() {
+    if(!this.vehicle?.detailParts)return;
+    const inspecting=this.mode==='inspect';
+    for(const entry of this.getPartCatalog()) {
+      const part=this.vehicle.detailParts.get(entry.id);
+      if(part)part.visible=!inspecting||((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId));
+    }
+    if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
+  }
+  setHypothesesVisible(show) {
+    this.showHypotheses=!!show;
+    if(!show&&this.getPartCatalog().some(p=>p.id===this.isolatedPartId&&p.kind==='hypothesis'))this.isolatedPartId=null;
+    this.applyInspectorVisibility();
+  }
+  togglePartVisibility(id) {
+    if(!this.vehicle.detailParts?.has(id))return;
+    if(this.hiddenParts.has(id))this.hiddenParts.delete(id);else this.hiddenParts.add(id);
+    this.applyInspectorVisibility();
+  }
+  isolatePart(id) {
+    if(!this.vehicle.detailParts?.has(id))return;
+    this.isolatedPartId=this.isolatedPartId===id?null:id;
+    this.hiddenParts.delete(id);this.applyInspectorVisibility();
+  }
+  restoreParts() {
+    this.hiddenParts.clear();this.isolatedPartId=null;this.applyInspectorVisibility();
+  }
   focusPart(id) {
-    if(id===null||id===undefined){this.selectedPart=null;this.selectedBox.visible=false;return;}
-    const part=this.vehicle.parts.get(id);if(!part)return;
-    this.selectedPart=part;this.selectedBox.setFromObject(part);this.selectedBox.visible=this.mode==='inspect';
-    if(this.mode==='inspect'){const box=new THREE.Box3().setFromObject(part);box.getCenter(this.controls.target);}
+    if(id===null||id===undefined){this.selectedPart=null;this.selectedPartId=null;this.selectedBox.visible=false;return;}
+    const part=this.vehicle.detailParts?.get(id)||this.vehicle.parts.get(id);if(!part)return;
+    this.selectedPart=part;this.selectedPartId=id;
+    if(this.isolatedPartId)this.isolatedPartId=id;
+    this.hiddenParts.delete(id);this.applyInspectorVisibility();
+    this.vehicle.root.updateMatrixWorld(true);this.selectedBox.setFromObject(part);
+    this.selectedBox.visible=this.mode==='inspect'&&isObjectVisible(part);
+  }
+  frameSelectedPart() {
+    if(!this.selectedPart||this.mode!=='inspect')return;
+    this.vehicle.root.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(this.selectedPart);
+    if(box.isEmpty())return;
+    const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+    const direction=this.camera.position.clone().sub(this.controls.target).normalize();
+    const distance=clamp(size.length()/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2)))*1.35,.5,12);
+    this.camera.position.copy(center).addScaledVector(direction,distance);
+    this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
+  }
+  frameWholeVehicle() {
+    const center=this.vehicle.root.position.clone();center.y+=.15;
+    this.camera.position.copy(center).add(new THREE.Vector3(7.2,3.4,7.4));
+    this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
   }
   async loadRoadsterModel(onStatus=()=>{}) {
     if(this.roadsterPromise)return this.roadsterPromise;
@@ -250,7 +314,7 @@ export class FlightScene {
         const previous=this.vehicle,vehicle=await loadRoadsterVehicle(previous);
         vehicle.root.position.copy(previous.root.position);vehicle.root.quaternion.copy(previous.root.quaternion);
         this.scene.remove(previous.root);this.vehicle=vehicle;this.scene.add(vehicle.root);
-        this.focusPart(null);this.lastPaint='';this.hasCustomModel=false;
+        this.focusPart(null);this.lastPaint='';this.hasCustomModel=false;this.restoreParts();
         if(this.customModel)this.customModel.visible=false;
         this.modelStatus={ok:true,loading:false,fallback:false,...vehicle.assetInfo,meshCount:vehicle.sourceMeshCount};
       }catch(error){
@@ -293,6 +357,7 @@ export class FlightScene {
       const base=part.userData.basePosition,offset=part.userData.explodeOffset;
       if(base&&offset)part.position.copy(base).addScaledVector(offset,partExplodeProgress(id,explode));
     }
+    updateDetailExplosion(this.vehicle,explode);
     for(let i=0;i<this.vehicle.wheels.length;i++){
       const w=this.vehicle.wheels[i],physicsWheel=sim.wheels?.[i];if(!physicsWheel)continue;
       const offset=w.userData.explodeOffset||tmpV.set(0,0,0);
@@ -303,8 +368,8 @@ export class FlightScene {
     }
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
     for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
-    this.vehicle.root.visible=!this.hasCustomModel;
-    if(this.customModel){this.customModel.visible=!!this.hasCustomModel;this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
+    this.vehicle.root.visible=!this.hasCustomModel||this.mode==='inspect';
+    if(this.customModel){this.customModel.visible=!!this.hasCustomModel&&this.mode!=='inspect';this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
     this.updateJets(sim,dt,!!options.vectors);
     this.gravityArrow.visible=!!options.vectors;
     this.gravityArrow.position.copy(position);this.gravityArrow.setLength(Math.max(.4,(this.telemetry.totalMass||2150)*9.80665/16000),.18,.1);

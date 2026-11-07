@@ -10,7 +10,7 @@ const $$ = selector => [...document.querySelectorAll(selector)];
 const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
 const escape = text => String(text ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sim = new PhysicsSim();
-let scene;
+let scene,selectedPartId=null;
 let mode='drive',camera='chase',paused=false,paint='#b51627',showVectors=false;
 let previousPause=false,scenario='ground',demo=null,stage=null,lastStamp=0,accumulator=0,lastUI=0,lastSample=0,frames=0,frameTimer=0;
 const keys=new Set(),samples=[],trace=[];
@@ -29,7 +29,10 @@ function setMode(next){
   document.body.classList.toggle('inspect',mode==='inspect');
   $$('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
   $('drive-panel').hidden=mode!=='drive';$('inspect-panel').hidden=mode!=='inspect';$('lab-panel').hidden=mode!=='lab';
-  $('part-card').hidden=true;
+  $('part-card').hidden=true;selectedPartId=null;scene.focusPart(null);renderPartCatalog();
+  $('panel-toggle').textContent=mode==='inspect'?'☷ 부품 목록':'☷ 실험 설정';
+  $('panel-toggle').setAttribute('aria-label',mode==='inspect'?'부품 목록 열기':'실험 패널 열기');
+  if(mode==='inspect'&&matchMedia('(max-width:700px)').matches)$('left-panel').classList.add('open');
   $('scene-subtitle').textContent=mode==='inspect'?'분해하고, 원리를 발견하세요.':mode==='lab'?'보이는 움직임을 검증하는 방법.':'지면에서, 그 너머로.';
   $('camera-label').textContent=camera==='orbit'?'자유 카메라':'추적 카메라';
   if(mode==='inspect')toast('드래그로 회전 · 위로 스크롤/핀치 확대하면 단계별 분해 · 반대로 조립');
@@ -86,11 +89,47 @@ function getInput(){
   }
   return input;
 }
+function updatePartActions(){
+  $('part-hide').textContent=scene.hiddenParts.has(selectedPartId)?'다시 표시':'선택 숨기기';
+  $('part-isolate').textContent=selectedPartId&&scene.isolatedPartId===selectedPartId?'단독 보기 해제':'이것만 보기';
+  $('part-isolate').setAttribute('aria-pressed',!!selectedPartId&&scene.isolatedPartId===selectedPartId);
+}
+function renderPartCatalog(){
+  const focusedPart=document.activeElement?.dataset.part;
+  const catalog=scene.getPartCatalog(),query=$('part-search').value.trim().toLocaleLowerCase(),category=$('part-category').value;
+  const available=catalog.filter(p=>p.kind==='model'||$('show-hypotheses').checked);
+  const filtered=available.filter(p=>(!category||p.category===category)&&(!query||[p.title,p.sourceName,p.sourceObjectName,...(p.materialNames||[])].join(' ').toLocaleLowerCase().includes(query)));
+  $('catalog-summary').textContent=catalog.length?'원본 외형 '+catalog.filter(p=>p.kind==='model').length+'개 메시 · 교육용 장치 '+catalog.filter(p=>p.kind==='hypothesis').length+'개':'원본 외형을 불러오는 중…';
+  $('part-count').textContent=filtered.length+' / '+available.length+'개 항목';
+  $('part-buttons').innerHTML=filtered.map(p=>'<button type="button" data-part="'+escape(p.id)+'" class="'+(p.id===selectedPartId?'active ':'')+(scene.hiddenParts.has(p.id)?'part-hidden':'')+'" aria-pressed="'+(p.id===selectedPartId)+'"><span>'+escape(p.title)+'</span><small>'+escape(p.categoryLabel)+' · '+escape(p.kind==='hypothesis'?'교육용 가정':p.id.replace('model-','#'))+(scene.hiddenParts.has(p.id)?' · 숨김':'')+'</small></button>').join('');
+  if(focusedPart)$$('[data-part]').find(b=>b.dataset.part===focusedPart)?.focus({preventScroll:true});
+  $('part-empty').hidden=filtered.length>0;
+  $('part-empty').textContent=catalog.length?'검색 결과가 없습니다. 검색어나 분류를 바꿔보세요.':'모델이 준비되면 세부 항목이 표시됩니다.';
+  $('inspector-state').textContent=scene.isolatedPartId?'선택 항목만 표시 중':scene.hiddenParts.size?scene.hiddenParts.size+'개 항목 숨김':'전체 구성 표시';
+  updatePartActions();
+}
+function refreshPartCatalog(){
+  const categories=new Map(scene.getPartCatalog().map(p=>[p.category,p.categoryLabel]));
+  $('part-category').innerHTML='<option value="">모든 부위</option>'+[...categories].filter(([id])=>id!=='hypothesis'||$('show-hypotheses').checked).map(([id,title])=>'<option value="'+escape(id)+'">'+escape(title)+'</option>').join('');
+  renderPartCatalog();
+}
 function selectPart(id){
-  const key=id.startsWith('wheel')?'wheels':id;
-  const p=PARTS[key]||PARTS.body;
-  $('part-title').textContent=p.title;$('part-subtitle').textContent=p.subtitle;$('part-description').textContent=p.description;$('part-formula').textContent=p.formula;$('part-assumption').textContent=p.assumption;$('part-card').hidden=false;
-  $$('[data-part]').forEach(b=>b.classList.toggle('active',b.dataset.part===key));
+  const entry=scene.getPartCatalog().find(p=>p.id===id);
+  if(!entry)return;
+  selectedPartId=id;
+  const p=PARTS[entry.lessonId]||PARTS.body;
+  $('part-title').textContent=entry.title;
+  $('part-subtitle').textContent=entry.kind==='model'?'2020 CONCEPT / '+entry.categoryLabel:'교육용 가정 / '+entry.categoryLabel;
+  $('part-description').textContent=entry.description;
+  $('part-origin').textContent=entry.kind==='model'?'원본 요소: '+(entry.sourceObjectName||entry.sourceName)+' · '+id:'실차 구조가 확인되지 않은 실험용 형상';
+  $('part-material').textContent=(entry.materialNames||[]).join(' · ')||'교육용 추가 모델';
+  $('part-geometry-note').textContent=entry.geometryNote||'';
+  $('part-source').href=entry.sourceUrl||'https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8';
+  $('part-source').textContent=entry.kind==='model'?'원본 3D 모델 · CC BY 4.0 ↗':'참고 자료 ↗';
+  $('part-formula').textContent=p.formula;$('part-assumption').textContent=p.assumption;
+  $('part-lesson').open=entry.kind==='hypothesis';$('part-card').hidden=false;
+  renderPartCatalog();
+  if(matchMedia('(max-width:700px)').matches){$('left-panel').classList.remove('open');$('panel-toggle').textContent='☷ 부품 목록';}
 }
 function updateUI(realDt){
   updateStageUI();
@@ -142,7 +181,7 @@ function setupUI(){
   $('stage-start').addEventListener('click',startStage);$('stage-exit').addEventListener('click',()=>{reset();setPaused(false);});
   $('demo').addEventListener('click',startDemo);$('pause').addEventListener('click',()=>setPaused(!paused));$('reset').addEventListener('click',()=>{if(stage)startStage();else{reset();if(mode!=='inspect')setPaused(false);}});
   $('help').addEventListener('click',()=>openGuide());$('all-controls').addEventListener('click',()=>openGuide());$('about-link').addEventListener('click',()=>openGuide('sources'));
-  $('panel-toggle').addEventListener('click',()=>{$('left-panel').classList.toggle('open');$('panel-toggle').textContent=$('left-panel').classList.contains('open')?'× 닫기':'☷ 실험 설정';});
+  $('panel-toggle').addEventListener('click',()=>{$('left-panel').classList.toggle('open');$('panel-toggle').textContent=$('left-panel').classList.contains('open')?'× 닫기':mode==='inspect'?'☷ 부품 목록':'☷ 실험 설정';});
   $$('[data-guide]').forEach(b=>b.addEventListener('click',()=>renderGuide(b.dataset.guide)));
   $$('.close-dialog').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
   $$('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
@@ -152,10 +191,18 @@ function setupUI(){
   $('altHold').addEventListener('change',()=>{$('height-setting').classList.toggle('show',$('altHold').checked);if($('altHold').checked&&sim.state.pos.y-sim.restHeight>.2){$('target-height').value=clamp(sim.state.pos.y-sim.restHeight,.2,10).toFixed(1);$('target-height-value').textContent=$('target-height').value+' m';}});
   $('target-height').addEventListener('input',()=>{$('target-height-value').textContent=$('target-height').value+' m';});
   $('explode').addEventListener('input',()=>{const value=Number($('explode').value);scene.setExplode(value);$('explode-value').textContent=Math.round(value*100)+'%';});
-  $('part-buttons').innerHTML=Object.entries(PARTS).map(([id,p])=>`<button data-part="${id}">${escape(p.title)}</button>`).join('');
-  $$('[data-part]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.part;scene.focusPart(id==='wheels'?'wheel-fl':id);selectPart(id);}));
-  $('part-close').addEventListener('click',()=>{$('part-card').hidden=true;scene.focusPart(null);} );
-  $('model-file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;if(file.size>70*1024*1024){toast('GLB는 70 MB 이하로 준비해주세요.');return;}toast('외형 모델을 읽고 있습니다…');try{await scene.setModelGLB(file);$('vehicle-title').innerHTML='Custom <em>Vehicle</em>';$('model-status').textContent='사용자 GLB · 물리 사양 유지';toast('외형을 불러왔습니다. 주행 모드에서 확인하세요. 물리 사양은 유지됩니다.');}catch(err){toast('모델을 불러오지 못했습니다. 단일 GLB 파일을 확인해주세요.');console.error(err);}e.target.value='';});
+  refreshPartCatalog();
+  $('part-search').addEventListener('input',renderPartCatalog);
+  $('part-category').addEventListener('change',renderPartCatalog);
+  $('show-hypotheses').addEventListener('change',()=>{scene.setHypothesesVisible($('show-hypotheses').checked);if(scene.getPartCatalog().some(p=>p.id===selectedPartId&&p.kind==='hypothesis')){$('part-card').hidden=true;selectedPartId=null;scene.focusPart(null);}refreshPartCatalog();});
+  $('part-buttons').addEventListener('click',e=>{const button=e.target.closest('[data-part]');if(!button)return;scene.focusPart(button.dataset.part);selectPart(button.dataset.part);});
+  $('part-zoom').addEventListener('click',()=>scene.frameSelectedPart());
+  $('part-hide').addEventListener('click',()=>{scene.togglePartVisibility(selectedPartId);renderPartCatalog();});
+  $('part-isolate').addEventListener('click',()=>{scene.isolatePart(selectedPartId);renderPartCatalog();});
+  $('parts-restore').addEventListener('click',()=>{scene.restoreParts();$('part-search').value='';$('part-category').value='';renderPartCatalog();});
+  $('parts-assemble').addEventListener('click',()=>{scene.setExplode(0,true);scene.restoreParts();scene.focusPart(null);scene.frameWholeVehicle();selectedPartId=null;$('part-card').hidden=true;renderPartCatalog();});
+  $('part-close').addEventListener('click',()=>{$('part-card').hidden=true;selectedPartId=null;scene.focusPart(null);renderPartCatalog();});
+  $('model-file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;if(file.size>70*1024*1024){toast('GLB는 70 MB 이하로 준비해주세요.');return;}toast('외형 모델을 읽고 있습니다…');try{await scene.setModelGLB(file);$('vehicle-title').innerHTML='Custom <em>Vehicle</em>';$('model-status').textContent='사용자 GLB · 물리 사양 유지';toast('GLB는 주행 화면에 적용됩니다. 구조 탐색은 원본 Roadster의 부품을 표시합니다.');}catch(err){toast('모델을 불러오지 못했습니다. 단일 GLB 파일을 확인해주세요.');console.error(err);}e.target.value='';});
   $('params-open').addEventListener('click',()=>{keys.clear();setupParams();$('params-modal').showModal();});
   $('params-default').addEventListener('click',()=>{$$('#params-form input').forEach(e=>{e.value=DEFAULTS[e.name]??0;e.dispatchEvent(new Event('input'));});});
   $('params-form').addEventListener('submit',e=>{e.preventDefault();$$('#params-form input').forEach(el=>{sim.params[el.name]=Number(el.value);});$('params-modal').close();reset();setPaused(false);});
@@ -190,7 +237,7 @@ function animate(stamp){
 }
 try{
   scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent={chase:'추적 카메라',orbit:'자유 카메라',top:'상부 카메라'}[value];});setupUI();updateUI(0);requestAnimationFrame(animate);
-  scene.loadRoadsterModel().then(status=>{if(!status.ok)throw status.error||new Error('Roadster model load failed');$('vehicle-title').innerHTML='Tesla <em>Roadster</em>';$('model-status').textContent='2020 CONCEPT · CC BY 4.0';toast('Tesla Roadster 2020 외형을 불러왔습니다. 추진계와 물리 사양은 교육용 가정입니다.');}).catch(err=>{$('model-status').textContent='외형 로드 실패 · 대체 차체';toast('Roadster 외형을 불러오지 못해 대체 차체를 표시합니다. 새로고침하면 다시 시도합니다.');console.error(err);});
+  scene.loadRoadsterModel().then(status=>{if(!status.ok)throw status.error||new Error('Roadster model load failed');$('vehicle-title').innerHTML='Tesla <em>Roadster</em>';$('model-status').textContent='2020 CONCEPT · CC BY 4.0';refreshPartCatalog();toast('Tesla Roadster 2020 외형을 불러왔습니다. 추진계와 물리 사양은 교육용 가정입니다.');}).catch(err=>{$('model-status').textContent='외형 로드 실패 · 대체 차체';$('catalog-summary').textContent='원본 로드 실패 · 새로고침해 주세요';toast('Roadster 외형을 불러오지 못해 대체 차체를 표시합니다. 새로고침하면 다시 시도합니다.');console.error(err);});
   $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
   // Read-only convenience for local diagnostics; UI remains the supported interaction.
   window.flightLab={sim,scene,getSnapshot:()=>sim.telemetry(),runValidation};
