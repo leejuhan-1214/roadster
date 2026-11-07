@@ -17,17 +17,17 @@ function inspector() {
   Object.assign(view, {
     vehicle: { root, parts: new Map([['body', exterior], ['wheel-fl', wheel], ['tank', tank]]), detailParts,
       catalog: [{id:'model-000',kind:'model'}, {id:'model-001',kind:'model'}, {id:'tank',kind:'hypothesis'}] },
-    hiddenParts: new Set(), isolatedPartId: null, showHypotheses: false,
+    hiddenParts: new Set(), isolatedPartId: null, showHypotheses: true,
     mode: 'inspect', controls: {}, selectedBox: new THREE.BoxHelper(), selectedPart: null,
   });
   view.applyInspectorVisibility();
   return {view, body, rim, tank, exterior, wheel};
 }
 
-test('inspector hides unverified apparatus by default and restores all geometry for driving', () => {
+test('inspector shows experiment apparatus by default and restores all geometry for driving', () => {
   const {view, body, rim, tank} = inspector();
   assert.ok(body.visible && rim.visible);
-  assert.equal(tank.visible, false);
+  assert.equal(tank.visible, true);
   view.togglePartVisibility('model-000');
   assert.equal(body.visible, false);
   view.isolatePart('model-001');

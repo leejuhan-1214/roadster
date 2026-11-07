@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { manualInput, canSelectDirection } from '../dist/js/controls.js';
+import { manualInput } from '../dist/js/controls.js';
 
 test('WASD uses tire controls on ground and attitude requests in air', () => {
   const keys = new Set(['KeyW','KeyA']);
@@ -26,22 +26,7 @@ test('opposite direction keys cancel and released input has no movement request'
   for(const key of ['airMoveForward','airMoveRight','lift','pitch','roll','yaw'])assert.equal(released[key],0);
 });
 
-test('electric pedals separate braking from reverse and disable flight controls even airborne',()=>{
-  for(const airborne of [false,true]){
-    const drive=manualInput(new Set(['KeyW','KeyA','ShiftLeft','ArrowUp','KeyQ']),airborne,{driveMode:'electric',gear:'D'});
-    assert.equal(drive.throttle,1);assert.equal(drive.steer,1);assert.equal(drive.regen,true);
-    for(const key of ['lift','pitch','roll','yaw','airMoveForward','airMoveRight'])assert.equal(drive[key],0);
-    for(const key of ['boost','fan','wing','altHold','stabilize'])assert.equal(drive[key],false);
-    const reverse=manualInput(new Set(['KeyW']),airborne,{driveMode:'electric',gear:'R'});assert.equal(reverse.throttle,-1);
-    for(const brakeKey of ['KeyS','KeyB','Space']){
-      const braking=manualInput(new Set(['KeyW',brakeKey]),airborne,{driveMode:'electric',gear:'R'});
-      assert.equal(braking.throttle,0);assert.equal(braking.brake,1);
-    }
-  }
-  const released=manualInput(new Set(),false,{driveMode:'electric',regen:false});assert.equal(released.throttle,0);assert.equal(released.brake,0);assert.equal(released.regen,false);
-});
-test('direction interlock rejects moving, airborne and invalid speed states',()=>{
-  assert.equal(canSelectDirection(0,4),true);assert.equal(canSelectDirection(.49,4),true);
-  for(const speed of [.5,15,-2,Infinity,NaN])assert.equal(canSelectDirection(speed,4),false);
-  assert.equal(canSelectDirection(0,0),false);
+test('ground brake overrides motor drive without suppressing flight controls',()=>{
+ const input=manualInput(new Set(['KeyW','KeyB','Space']),false);assert.equal(input.throttle,0);assert.equal(input.brake,1);assert.equal(input.lift,1);
+ const air=manualInput(new Set(['KeyW','KeyB','Space']),true);assert.equal(air.airMoveForward,1);assert.equal(air.brake,1);assert.equal(air.lift,1);
 });
