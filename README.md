@@ -1,5 +1,7 @@
 # Roadster Flight Lab
 
+화면은 조작·계측 중심으로 간소화했습니다. 긴 물리 설명과 학습 자료는 `docs/learning-reference.js`에 보존합니다.
+
 실행: https://leejuhan-1214.github.io/roadster/
 
 GitHub Pages는 `.github/workflows/pages.yml`을 통해 `main` 브랜치의 `dist/`를 자동 배포합니다. 원본 소스도 `main`에 있으며, 기존 `gh-pages` 브랜치는 이전 배포 파일의 스냅샷으로 보존합니다.
