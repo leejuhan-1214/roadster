@@ -1,0 +1,739 @@
+{
+  "status": "10 assets downloaded and original author/license verified; wheel maps and source evidence complete.",
+  "verifiedAt": "2026-11-07",
+  "profiles": [
+    {
+      "id": "audi-r8",
+      "name": "Audi R8",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelPattern": "^(Circle00[34]_rim|Cylinder00[36]_tire|rear_wheels00[789]_wheel|rear_wheels0(08|10)_calipers)",
+        "tireNames": [
+          "Cylinder003_tire_0",
+          "Cylinder006_tire_0"
+        ],
+        "brakePattern": "calipers",
+        "splitX": -1.7,
+        "splitZ": 0.125
+      },
+      "asset": "./assets/vehicles/audi-r8.glb",
+      "license": "CC BY 4.0",
+      "author": "wallon",
+      "authorUrl": "https://sketchfab.com/realwallon",
+      "sourceUrl": "https://sketchfab.com/3d-models/e17e438f076f4427a58d93aa779edaed",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/e17e438f076f4427a58d93aa779edaed",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-r8.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "627004f3b68fe3ab2917159d7798c22d125f32f1c6d5eb064c0f68947a02f20e",
+      "bytes": 4776028,
+      "sourceTitle": "Audi R8",
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.; front parked steering measured from actual tire geometry (~33 degrees) and neutralized together with rims/calipers",
+      "physicsEvidence": {
+        "assetTitle": "Audi R8",
+        "assetUid": "e17e438f076f4427a58d93aa779edaed",
+        "referenceVariant": "2017 Audi R8 Coupe V10 5.2 FSI quattro, 7-speed S tronic, UK",
+        "variantAssumption": "The asset thumbnail shows the second-generation Type 4S with artist-customized bodywork, splitter and wheels. Exact year, trim and modified dimensions are not specified; these are stock V10 reference values, not measurements of the modified asset.",
+        "values": {
+          "length": 4426,
+          "widthExcludingMirrors": 1940,
+          "height": 1240,
+          "wheelbase": 2650,
+          "frontTrack": 1638,
+          "rearTrack": 1599,
+          "referenceMass": 1640,
+          "massBasis": "Unladen weight without driver, UK manufacturer brochure"
+        },
+        "sources": [
+          {
+            "publisher": "Audi UK",
+            "title": "R8 2017 UK brochure, R8 Coupe technical data and dimensions",
+            "url": "https://www.onlymanuals.com/audi/r8/audi_r8_coup_brochure_2017_2017",
+            "documentUrl": "https://xr793.com/wp-content/uploads/2022/10/2017-Audi-R8-UK.pdf",
+            "sourceType": "Manufacturer brochure reproduced by third-party archives",
+            "pages": "112-113",
+            "supports": [
+              "length",
+              "widthExcludingMirrors",
+              "height",
+              "wheelbase",
+              "frontTrack",
+              "rearTrack",
+              "referenceMass",
+              "massBasis"
+            ]
+          }
+        ],
+        "otherVariantValues": [
+          {
+            "variant": "R8 V10 plus, same UK brochure",
+            "referenceMass": 1580,
+            "massBasis": "Unladen without driver"
+          }
+        ]
+      },
+      "assumptionKo": "2세대 V10 영국형 기준. 화면은 제작자가 튜닝한 외관이며 순정 치수와 다를 수 있음."
+    },
+    {
+      "id": "ford-mustang",
+      "name": "Ford Mustang Shelby GT500",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelPattern": "^GT500Wheel",
+        "tirePattern": "_tire_0",
+        "brakePattern": "WheelBrake",
+        "splitX": 2.33,
+        "splitZ": 0
+      },
+      "asset": "./assets/vehicles/ford-mustang.glb",
+      "license": "CC BY 4.0",
+      "author": "Jiaxing",
+      "authorUrl": "https://sketchfab.com/saitoyang",
+      "sourceUrl": "https://sketchfab.com/3d-models/0eaa7a16796540f29461ddae05ecdeb3",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/0eaa7a16796540f29461ddae05ecdeb3",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-mustang.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "0a0632a2da8429c416d0500a96a790a6efdced04da48713e5489c9305640ac28",
+      "bytes": 2004500,
+      "sourceTitle": "Ford Mustang Shelby GT500",
+      "paint": {
+        "materials": [
+          "carpaint"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "id": "ford-mustang",
+        "referenceVariant": "2020 Ford Mustang Shelby GT500, base US reference",
+        "values": {
+          "length": 4813.3,
+          "widthExcludingMirrors": 1945.64,
+          "height": 1379.22,
+          "wheelbase": 2720.34,
+          "referenceMass": 1916.43,
+          "massBasis": "Approximate base curb weight in preliminary Ford dealer sourcebook (4225 lb); not an as-tested weight"
+        },
+        "assumptionKo": "2020 기본형 치수. 질량은 초기 딜러 자료의 근삿값이며 트랙 패키지·개별 차량 측정값이 아님.",
+        "sources": [
+          {
+            "publisher": "Ford Motor Company",
+            "title": "2020 Mustang Technical Specifications",
+            "url": "https://media.ford.com/content/dam/fordmedia/North%20America/US/product/2020/mustang/2020-Mustang-Tech_Specs.pdf",
+            "archiveUrl": "https://www.mustang6g.com/forums/attachments/2020-mustang-tech_specs-pdf.633479/",
+            "note": "Original URL now redirects; indexed manufacturer PDF and mirrored original show final dimensions 189.5×76.6×54.3 in, wheelbase107.1in."
+          },
+          {
+            "publisher": "Ford Motor Company",
+            "title": "2020 Shelby GT500 eSourceBook (archived original)",
+            "url": "https://svtperformance.com/forums/images/svtperformance/SVTPerformance2020ShelbyGT500eSourceBook.pdf",
+            "note": "4225lb approximate base curb weight. Preliminary sourcebook dimensions superseded by final tech sheet."
+          }
+        ]
+      },
+      "assumptionKo": "2020 기본형 치수. 질량은 초기 딜러 자료의 근삿값이며 트랙 패키지·개별 차량 측정값이 아님."
+    },
+    {
+      "id": "lamborghini-aventador-lp700-4",
+      "name": "Lamborghini Aventador LP700-4 Roadster (2013)",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelNames": [
+          "Object_16",
+          "Object_17",
+          "Object_18"
+        ],
+        "tireNames": [
+          "Object_17"
+        ],
+        "brakeNames": [
+          "Object_18"
+        ],
+        "excludeNames": [
+          "Object_20",
+          "Object_22"
+        ],
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "geometryNotes": "Exclude artist detached roof panels for open-roof variant. Exhaust Object_8 at negative Z validates front positive Z.",
+      "asset": "./assets/vehicles/lamborghini-aventador-lp700-4.glb",
+      "license": "CC BY 4.0",
+      "author": "_shobh19",
+      "authorUrl": "https://sketchfab.com/s0h1o9b",
+      "sourceUrl": "https://sketchfab.com/3d-models/dbd3e2ccdc2748af957c34310163d848",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/dbd3e2ccdc2748af957c34310163d848",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-aventador-lp700-4.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "34e4781ed143bfb2c3b349f8be66252f6a949de4f93262d75d94cc1c4986698b",
+      "bytes": 1713884,
+      "sourceTitle": "2013 Lamborghini Aventador lp700-4 Roadster",
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "id": "lamborghini-aventador-lp700-4",
+        "referenceVariant": "2013 Lamborghini Aventador LP700-4 Roadster",
+        "values": {
+          "length": 4780,
+          "widthExcludingMirrors": 2030,
+          "height": 1136,
+          "wheelbase": 2700,
+          "frontTrack": 1720,
+          "rearTrack": 1700,
+          "referenceMass": 1625,
+          "massBasis": "Manufacturer dry weight; fluids/fuel omitted, not curb weight"
+        },
+        "assumptionKo": "공식 건조 질량 기준. 다른 차의 공차 질량과 측정 조건이 달라 순수 차체 성능 순위로 해석하지 않음.",
+        "sources": [
+          {
+            "publisher": "Automobili Lamborghini",
+            "title": "LP700-4 Roadster technical specifications, 2012-11-18 archived manufacturer page",
+            "url": "https://www.allcarcentral.com/Lamborghini_pdf/Lamborghini_AventadorLP_700-4_Roadster_2013_spec.pdf",
+            "pages": "2-3"
+          }
+        ]
+      },
+      "assumptionKo": "공식 건조 질량 기준. 다른 차의 공차 질량과 측정 조건이 달라 순수 차체 성능 순위로 해석하지 않음."
+    },
+    {
+      "id": "mercedes-benz-amg-gt",
+      "name": "Mercedes-AMG GT S (C190)",
+      "yaw": 2.913834682167769,
+      "adapter": {
+        "wheelNames": [
+          "Object_13",
+          "Object_14",
+          "Object_15",
+          "Object_28"
+        ],
+        "tireNames": [
+          "Object_28"
+        ],
+        "brakeNames": [
+          "Object_13"
+        ],
+        "excludeNames": [
+          "Object_4"
+        ],
+        "splitX": 2.18,
+        "splitZ": -1.11
+      },
+      "geometryNotes": "White front lights at negative X and red rear lights at positive X. Source display floor Object_4 excluded; Object13 red calipers,14 discs,15 rims,28 tires. Artist model precision only.",
+      "asset": "./assets/vehicles/mercedes-benz-amg-gt.glb",
+      "license": "CC BY 4.0",
+      "author": "Yan Carvalho",
+      "authorUrl": "https://sketchfab.com/carvalhoyan",
+      "sourceUrl": "https://sketchfab.com/3d-models/661dcab94455463784651a3ebc63cfb9",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/661dcab94455463784651a3ebc63cfb9",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mercedes-benz-amg-gt.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "fe15897ad73d7c87b4e864a4724ae90b8377f382be5b462b40a0d3fb0a787422",
+      "bytes": 2873184,
+      "sourceTitle": "Mercedes Benz AMG GT",
+      "paint": null,
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "id": "mercedes-benz-amg-gt",
+        "referenceVariant": "Mercedes-AMG GT S C190; 2015 body dimensions and 2017 DIN mass reference",
+        "values": {
+          "length": 4546,
+          "widthExcludingMirrors": 1939,
+          "height": 1288,
+          "wheelbase": 2630,
+          "referenceMass": 1570,
+          "massBasis": "DIN ready-to-drive unladen weight excluding driver; manufacturer 2017 GT S reference"
+        },
+        "assumptionKo": "C190 GT S 대표 제원. 원본 모델의 정확한 연식은 미기재이며 2017 DIN 질량을 기준으로 사용.",
+        "sources": [
+          {
+            "publisher": "Mercedes-Benz",
+            "title": "AMG GT C190 2015 owner manual, vehicle data",
+            "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/ar-du/pdf/mercedes-amg-gt-%D9%83%D9%88%D8%A8%D9%8A%D9%87-2015-%D8%B3%D8%A8%D8%AA%D9%85%D8%A8%D8%B1-c190-comand-%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%AA%D8%B4%D8%BA%D9%8A%D9%84-1.pdf"
+          },
+          {
+            "publisher": "Mercedes-Benz",
+            "title": "AMG GT family update, 2017-01-09",
+            "url": "https://media.mercedes-benz.com/article/eb8672e7-c690-4615-84fc-37b82474fb32",
+            "note": "GT S mass 1570kg DIN,1645kg EC including75kg driver."
+          }
+        ]
+      },
+      "assumptionKo": "C190 GT S 대표 제원. 원본 모델의 정확한 연식은 미기재이며 2017 DIN 질량을 기준으로 사용."
+    },
+    {
+      "id": "nissan-gt-r",
+      "name": "Nissan Skyline GT-R R34",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelNames": [
+          "Object_13",
+          "Object_14"
+        ],
+        "tireNames": [
+          "Object_13"
+        ],
+        "splitX": 0.78,
+        "splitZ": -1.77
+      },
+      "asset": "./assets/vehicles/nissan-gt-r.glb",
+      "license": "CC BY 4.0",
+      "author": "Lexyc16",
+      "authorUrl": "https://sketchfab.com/Lexyc16",
+      "sourceUrl": "https://sketchfab.com/3d-models/ff8fb2251dfa4bb9979e7022c5a6666c",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/ff8fb2251dfa4bb9979e7022c5a6666c",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-gt-r.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "11834e98083557d4cdba7aba7b7bcb5d2d09dae683f91852c7b5f01b111f6d49",
+      "bytes": 3093060,
+      "sourceTitle": "Nissan Skyline R34 GT-R",
+      "paint": {
+        "materials": [
+          "Material.001"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "assetTitle": "Nissan Skyline R34 GT-R",
+        "assetUid": "ff8fb2251dfa4bb9979e7022c5a6666c",
+        "referenceVariant": "2000 Nissan Skyline GT-R V-spec II, BNR34, Japan",
+        "variantAssumption": "The asset title identifies R34 GT-R but not year or trim. Nissan's V-spec II heritage road car is the representative reference; the separate 2000 JGTC racing car is excluded.",
+        "values": {
+          "length": 4600,
+          "widthExcludingMirrors": 1785,
+          "height": 1360,
+          "wheelbase": 2665,
+          "frontTrack": 1480,
+          "rearTrack": 1490,
+          "referenceMass": 1560,
+          "massBasis": "Manufacturer vehicle mass (車両重量)"
+        },
+        "sources": [
+          {
+            "publisher": "Nissan Motor Co., Ltd.",
+            "title": "Nissan Heritage Collection: Skyline GT-R V-spec II",
+            "url": "https://www.nissan.co.jp/HERITAGE/DETAIL/280.html?yj_r=98",
+            "sourceType": "Manufacturer heritage specification page",
+            "supports": [
+              "length",
+              "widthExcludingMirrors",
+              "height",
+              "wheelbase",
+              "frontTrack",
+              "rearTrack",
+              "referenceMass",
+              "massBasis"
+            ]
+          }
+        ]
+      },
+      "assumptionKo": "R34 V-spec II 공도형 대표 제원. 원본 모델의 정확한 트림은 미기재."
+    },
+    {
+      "id": "porsche-911",
+      "name": "Porsche 911 (930) Turbo (1975)",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelNames": [
+          "Object_28",
+          "Object_29",
+          "Object_30",
+          "Object_32",
+          "Object_33",
+          "Object_34",
+          "Object_36",
+          "Object_37",
+          "Object_38",
+          "Object_42",
+          "Object_43",
+          "Object_44"
+        ],
+        "tireNames": [
+          "Object_30",
+          "Object_34",
+          "Object_38",
+          "Object_44"
+        ],
+        "splitX": 0.18,
+        "splitZ": 1.09
+      },
+      "asset": "./assets/vehicles/porsche-911.glb",
+      "license": "CC BY 4.0",
+      "author": "Lexyc16",
+      "authorUrl": "https://sketchfab.com/Lexyc16",
+      "sourceUrl": "https://sketchfab.com/3d-models/de1ffd344c41481892511f7fd332c136",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/de1ffd344c41481892511f7fd332c136",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/porsche-911.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "e740fcaa7b63b372dea8c7c404d2b6093da0e2ca0bf004bf9bc34ca8717ae156",
+      "bytes": 2383144,
+      "sourceTitle": "Porsche 911 (930) Turbo 1975",
+      "paint": {
+        "materials": [
+          "Material.001"
+        ],
+        "textured": false,
+        "confidence": "verified body Object_8; Material.002 is trim and rims"
+      },
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "assetTitle": "Porsche 911 (930) Turbo 1975",
+        "assetUid": "de1ffd344c41481892511f7fd332c136",
+        "referenceVariant": "1975 Porsche 911 Turbo 3.0 Coupe",
+        "variantAssumption": "Manufacturer museum weight concerns an early French-market car. Dimensions below come from a reproduced US-market period brochure; exact market and equipment of the artist model are unspecified. Do not describe the 1140 kg figure as a verified kerb or dry mass.",
+        "values": {
+          "length": 4291,
+          "widthExcludingMirrors": 1775,
+          "height": 1320,
+          "wheelbase": 2272,
+          "frontTrack": 1431,
+          "rearTrack": 1501,
+          "referenceMass": 1140,
+          "massBasis": "Manufacturer museum fact sheet says Weight; kerb/dry basis unspecified"
+        },
+        "sources": [
+          {
+            "publisher": "Porsche AG",
+            "title": "Porsche 911 Turbo 3.0 Coupe museum fact sheet",
+            "url": "https://newsroom.porsche.com/dam/jcr:3c07547c-36bc-4e00-825c-5ac2bbe10805/Datenblatt%20911%20Turbo%203.0%20Coup%C3%A9.pdf.PDF",
+            "sourceType": "Manufacturer museum PDF",
+            "pages": "1",
+            "supports": [
+              "referenceMass",
+              "massBasis"
+            ]
+          },
+          {
+            "publisher": "Porsche Audi, Volkswagen of America, Inc.",
+            "title": "1975 Porsche 911 turbo brochure, print code 36-75-66010",
+            "url": "https://www.turbosition.com/download.php?file=%2Fmedia%2Fbrochures%2F1975_-_Porsche_911_turbo_EN.pdf",
+            "sourceType": "Period manufacturer brochure text reproduced by archive",
+            "pages": "1",
+            "supports": [
+              "length",
+              "widthExcludingMirrors",
+              "height",
+              "wheelbase",
+              "frontTrack",
+              "rearTrack",
+              "otherVariantValues"
+            ]
+          }
+        ],
+        "otherVariantValues": [
+          {
+            "variant": "US-market Turbo Carrera, reproduced 1975 brochure",
+            "referenceMass": 1195,
+            "massBasis": "Dry weight; different market and basis from museum figure"
+          }
+        ]
+      },
+      "assumptionKo": "1975 박물관 개체의 질량. 공개 자료의 질량 측정 기준이 상세히 명시되지 않음."
+    },
+    {
+      "id": "toyota-supra-mk",
+      "name": "Toyota Supra Mk IV (1994)",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelNames": [
+          "Object_16",
+          "Object_17",
+          "Object_18",
+          "Object_19",
+          "Object_20",
+          "Object_21"
+        ],
+        "tireNames": [
+          "Object_17"
+        ],
+        "brakeNames": [
+          "Object_16"
+        ],
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "asset": "./assets/vehicles/toyota-supra-mk.glb",
+      "license": "CC BY 4.0",
+      "author": "Martin Trafas",
+      "authorUrl": "https://sketchfab.com/TinoD2",
+      "sourceUrl": "https://sketchfab.com/3d-models/eb9bb1eb41db431cb078088ae1ce45f8",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/eb9bb1eb41db431cb078088ae1ce45f8",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-supra-mk.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "976d994f3e2755218f6d91381000fb1b980fb166380c44bf12d3d3dbdb759a39",
+      "bytes": 10697472,
+      "sourceTitle": "Toyota Supra MK IV (1994)",
+      "paint": null,
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "assetTitle": "Toyota Supra MK IV (1994)",
+        "assetUid": "eb9bb1eb41db431cb078088ae1ce45f8",
+        "referenceVariant": "1993-1994 Toyota Supra RZ 6MT, E-JZA80-ALFQZ, Japan",
+        "variantAssumption": "The asset title supplies 1994 but no grade or market. The Japanese RZ six-speed manual is the representative reference; UK/US export specifications and automatic variants differ.",
+        "values": {
+          "length": 4520,
+          "widthExcludingMirrors": 1810,
+          "height": 1275,
+          "wheelbase": 2550,
+          "referenceMass": 1490,
+          "massBasis": "Manufacturer curb mass"
+        },
+        "sources": [
+          {
+            "publisher": "Toyota Motor Corporation",
+            "title": "75 Years of Toyota: Supra, released 1993-05-24, representative RZ grade",
+            "url": "https://www.toyota-global.com/company/history_of_toyota/75years/vehicle_lineage/car/id60006850/index.html",
+            "sourceType": "Manufacturer historical specification page",
+            "supports": [
+              "length",
+              "widthExcludingMirrors",
+              "height",
+              "wheelbase",
+              "referenceMass",
+              "massBasis",
+              "otherVariantValues"
+            ]
+          },
+          {
+            "publisher": "Toyota Motor Corporation",
+            "title": "Supra RZ catalogue, May 1993 to August 1994",
+            "url": "https://toyota.jp/ucar/catalog/brand-TOYOTA/car-SUPRA/199305/1000910/",
+            "sourceType": "Manufacturer historical used-car catalogue",
+            "supports": [
+              "referenceVariant"
+            ]
+          }
+        ],
+        "otherVariantValues": [
+          {
+            "variant": "GZ E-JZA80-ALPZZ, same Japanese launch table",
+            "referenceMass": 1540,
+            "massBasis": "Curb mass"
+          },
+          {
+            "variant": "SZ E-JZA80-ALMVF, same Japanese launch table",
+            "referenceMass": 1410,
+            "massBasis": "Curb mass"
+          }
+        ]
+      },
+      "assumptionKo": "1993–94 일본형 RZ 수동 대표 제원. 원본 모델의 정확한 시장·변속기는 미기재."
+    },
+    {
+      "id": "tesla-model",
+      "name": "Tesla Model 3 (2018)",
+      "yaw": -1.5707963267948966,
+      "adapter": {
+        "wheelPattern": "^(wheels|hub_)",
+        "tireNames": [
+          "wheels_wheels3_0",
+          "wheels001_wheels3_0"
+        ],
+        "brakePattern": "wheels0_0|^hub_",
+        "splitX": 15.48,
+        "splitZ": 0
+      },
+      "asset": "./assets/vehicles/tesla-model.glb",
+      "license": "CC BY 4.0",
+      "author": "Ameer Studio",
+      "authorUrl": "https://sketchfab.com/uchiha.321abc",
+      "sourceUrl": "https://sketchfab.com/3d-models/5ef9b845aaf44203b6d04e2c677e444f",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/5ef9b845aaf44203b6d04e2c677e444f",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/tesla-model.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "d07e30564c62689ab8969189e307cc3ddc9c0454dac9e1a2bf33474904a81db0",
+      "bytes": 3953724,
+      "sourceTitle": "Tesla 2018 Model 3",
+      "paint": {
+        "materials": [
+          "primary"
+        ],
+        "textured": false,
+        "confidence": "verified body_primary_0, bonnet and bumper materials; textured door inserts retained"
+      },
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "assetTitle": "Tesla 2018 Model3",
+        "assetUid": "5ef9b845aaf44203b6d04e2c677e444f",
+        "referenceVariant": "2018 Tesla Model 3, Long Range battery, North America",
+        "variantAssumption": "The asset title supplies 2018 but no battery or drive configuration. The 2018 North American manual's Long Range entry is used; later 2019 and current manuals list different variant masses.",
+        "values": {
+          "length": 4694,
+          "widthExcludingMirrors": 1849,
+          "height": 1443,
+          "wheelbase": 2875,
+          "frontTrack": 1580,
+          "rearTrack": 1580,
+          "referenceMass": 1741,
+          "massBasis": "Curb weight with normal fluid levels and no occupants or cargo"
+        },
+        "sources": [
+          {
+            "publisher": "Tesla, Inc.",
+            "title": "Model 3 Owner's Manual, North America, copyright 2012-2018",
+            "url": "https://manualzz.com/doc/56496904/tesla-model-3---2018-owner-manual",
+            "sourceType": "Period manufacturer manual reproduced by third-party archive",
+            "pages": "134-135",
+            "supports": [
+              "length",
+              "widthExcludingMirrors",
+              "height",
+              "wheelbase",
+              "frontTrack",
+              "rearTrack",
+              "referenceMass",
+              "massBasis"
+            ]
+          }
+        ]
+      },
+      "assumptionKo": "2018 Long Range 대표 제원. 원본 모델의 세부 배터리·구동 사양은 미기재."
+    },
+    {
+      "id": "mazda-miata-mx-5",
+      "name": "Mazda MX-5 Miata NA",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelPattern": "^(RLA_miata_wheel|Object_400[1234]_Scene_-_Root002|amdb11_brakedisc)",
+        "tirePattern": "^Object_400[1234]_Scene_-_Root002",
+        "brakePattern": "amdb11_(caliper|badging)",
+        "splitX": 0.11,
+        "splitZ": 0
+      },
+      "geometryNotes": "Artist customized NA model; reused brake mesh names are not OEM component evidence.",
+      "asset": "./assets/vehicles/mazda-miata-mx-5.glb",
+      "license": "CC BY 4.0",
+      "author": "Black Snow",
+      "authorUrl": "https://sketchfab.com/BlackSnow02",
+      "sourceUrl": "https://sketchfab.com/3d-models/e074e29ccc3847dca74ed5e9cb92d3e7",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/e074e29ccc3847dca74ed5e9cb92d3e7",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mazda-miata-mx-5.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "8faaa344af0fe12ac650e042a3d481e67c98ba87ca0008007bbf42e28d83bdc9",
+      "bytes": 7474348,
+      "sourceTitle": "Mazda Miata mx-5",
+      "paint": null,
+      "physicsStatus": "representative manufacturer reference; variant caveats recorded",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "id": "mazda-miata-mx-5",
+        "referenceVariant": "1989 Japanese Eunos Roadster E-NA6CE 1.6L 5MT reference",
+        "values": {
+          "length": 3970,
+          "widthExcludingMirrors": 1675,
+          "height": 1235,
+          "wheelbase": 2265,
+          "frontTrack": 1405,
+          "rearTrack": 1420,
+          "referenceMass": 940,
+          "massBasis": "Manufacturer Japanese vehicle weight, early 1.6L manual reference"
+        },
+        "assumptionKo": "초기 NA 일본형 5단 수동 기준. 화면 모델은 개조 외관이며 원제작자의 세부 부품이 순정 부품을 보증하지 않음.",
+        "sources": [
+          {
+            "publisher": "Mazda Motor Corporation",
+            "title": "MX-5 30th Anniversary Press Kit, February 2019",
+            "url": "https://manuals.plus/m/e0b480e10f91c13e9407baf83228d24932a9d7ea7f1e9ac4f9e46976ad5df37d",
+            "pages": "45,49",
+            "note": "Manufacturer document mirrored at Manuals+/Miata.net; identifies Eunos E-NA6CE, 3970×1675×1235mm,WB2265mm,manual940kg/automatic1000kg."
+          }
+        ]
+      },
+      "assumptionKo": "초기 NA 일본형 5단 수동 기준. 화면 모델은 개조 외관이며 원제작자의 세부 부품이 순정 부품을 보증하지 않음."
+    },
+    {
+      "id": "tesla-cybertruck",
+      "name": "Tesla Cybertruck (2019 concept)",
+      "yaw": 1.5707963267948966,
+      "adapter": {
+        "wheelNames": [
+          "tires_rubber_0"
+        ],
+        "tireNames": [
+          "tires_rubber_0"
+        ],
+        "excludeNames": [
+          "body_LOD1_body_LOD1_0",
+          "0"
+        ],
+        "splitX": 0.11,
+        "splitZ": 0
+      },
+      "geometryNotes": "2019 concept shape, not production 2024 body. Exclude low-LOD duplicate and broken-window crack. Tires are combined in one mesh; rims encoded in source materials.",
+      "asset": "./assets/vehicles/tesla-cybertruck.glb",
+      "license": "CC BY 4.0",
+      "author": "hashikemu",
+      "authorUrl": "https://sketchfab.com/hashikemu",
+      "sourceUrl": "https://sketchfab.com/3d-models/657e71b3e2ad468196668e9c9df708fb",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseApi": "https://api.sketchfab.com/v3/models/657e71b3e2ad468196668e9c9df708fb",
+      "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/tesla-cybertruck.glb",
+      "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+      "sha256": "681fce82eb819ea92ae5bbe6efeba7b3fa9f3716b91abf071ae1e9455dfc77a2",
+      "bytes": 1415604,
+      "sourceTitle": "Tesla Cybertruck",
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "physicsStatus": "explicit experimental assumptions",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "physicsEvidence": {
+        "id": "tesla-cybertruck",
+        "referenceVariant": "2019 Tesla Cybertruck concept artist model; experimental mass/dimensions",
+        "values": {
+          "length": 5723,
+          "widthExcludingMirrors": 2133,
+          "height": 1850,
+          "wheelbase": 3740,
+          "referenceMass": 3000,
+          "massBasis": "Explicit experimental assumption, not a published 2019 concept mass"
+        },
+        "assumptionKo": "2019 콘셉트 외관. 질량 3000kg 및 치수는 실험용 가정·모델 측정값이며 양산 Cybertruck 공식 제원이 아님.",
+        "sources": [
+          {
+            "publisher": "hashikemu",
+            "title": "Tesla Cybertruck original artist model, description dates 2019 announcement",
+            "url": "https://sketchfab.com/3d-models/657e71b3e2ad468196668e9c9df708fb",
+            "note": "Model geometry only. Raw decoded length5.723m, tirecenter wheelbase~3.74m. No manufacturer concept mass verified."
+          }
+        ]
+      },
+      "assumptionKo": "2019 콘셉트 외관. 질량 3000kg 및 치수는 실험용 가정·모델 측정값이며 양산 Cybertruck 공식 제원이 아님."
+    }
+  ]
+}

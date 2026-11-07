@@ -30,3 +30,127 @@ https://api.sketchfab.com/v3/models/ac3c7013434e403e8faff87948caf422
 Changes in this project (both models): coordinate rotation and recentering, uniform wheelbase scaling, articulated wheels, material/paint adjustments, and attachment of separate virtual propulsion/suspension hardware. BMW's parked steering pose is straightened. Source GLB binaries are retained unchanged; transformations occur at runtime. The BMW distributor has already optimized the source for the web.
 
 All original creators retain copyright in their respective models. Model licenses do not imply endorsement by their authors or the vehicle manufacturers. Existing Roadster attribution remains in assets/tesla-roadster-2020 and the application source panel.
+
+Additional ten vehicle models — verified 2026-11-07
+
+Audi R8
+Original title: Audi R8
+Creator: wallon (https://sketchfab.com/realwallon)
+Original work: https://sketchfab.com/3d-models/e17e438f076f4427a58d93aa779edaed
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/e17e438f076f4427a58d93aa779edaed
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-r8.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 627004f3b68fe3ab2917159d7798c22d125f32f1c6d5eb064c0f68947a02f20e
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+
+
+Ford Mustang Shelby GT500
+Original title: Ford Mustang Shelby GT500
+Creator: Jiaxing (https://sketchfab.com/saitoyang)
+Original work: https://sketchfab.com/3d-models/0eaa7a16796540f29461ddae05ecdeb3
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/0eaa7a16796540f29461ddae05ecdeb3
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-mustang.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 0a0632a2da8429c416d0500a96a790a6efdced04da48713e5489c9305640ac28
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+
+
+Lamborghini Aventador LP700-4 Roadster (2013)
+Original title: 2013 Lamborghini Aventador lp700-4 Roadster
+Creator: _shobh19 (https://sketchfab.com/s0h1o9b)
+Original work: https://sketchfab.com/3d-models/dbd3e2ccdc2748af957c34310163d848
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/dbd3e2ccdc2748af957c34310163d848
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-aventador-lp700-4.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 34e4781ed143bfb2c3b349f8be66252f6a949de4f93262d75d94cc1c4986698b
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+Exclude artist detached roof panels for open-roof variant. Exhaust Object_8 at negative Z validates front positive Z.
+
+Mercedes-AMG GT S (C190)
+Original title: Mercedes Benz AMG GT
+Creator: Yan Carvalho (https://sketchfab.com/carvalhoyan)
+Original work: https://sketchfab.com/3d-models/661dcab94455463784651a3ebc63cfb9
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/661dcab94455463784651a3ebc63cfb9
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mercedes-benz-amg-gt.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: fe15897ad73d7c87b4e864a4724ae90b8377f382be5b462b40a0d3fb0a787422
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+White front lights at negative X and red rear lights at positive X. Source display floor Object_4 excluded; Object13 red calipers,14 discs,15 rims,28 tires. Artist model precision only.
+
+Nissan Skyline GT-R R34
+Original title: Nissan Skyline R34 GT-R
+Creator: Lexyc16 (https://sketchfab.com/Lexyc16)
+Original work: https://sketchfab.com/3d-models/ff8fb2251dfa4bb9979e7022c5a6666c
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/ff8fb2251dfa4bb9979e7022c5a6666c
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-gt-r.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 11834e98083557d4cdba7aba7b7bcb5d2d09dae683f91852c7b5f01b111f6d49
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+
+
+Porsche 911 (930) Turbo (1975)
+Original title: Porsche 911 (930) Turbo 1975
+Creator: Lexyc16 (https://sketchfab.com/Lexyc16)
+Original work: https://sketchfab.com/3d-models/de1ffd344c41481892511f7fd332c136
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/de1ffd344c41481892511f7fd332c136
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/porsche-911.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: e740fcaa7b63b372dea8c7c404d2b6093da0e2ca0bf004bf9bc34ca8717ae156
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+
+
+Toyota Supra Mk IV (1994)
+Original title: Toyota Supra MK IV (1994)
+Creator: Martin Trafas (https://sketchfab.com/TinoD2)
+Original work: https://sketchfab.com/3d-models/eb9bb1eb41db431cb078088ae1ce45f8
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/eb9bb1eb41db431cb078088ae1ce45f8
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-supra-mk.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 976d994f3e2755218f6d91381000fb1b980fb166380c44bf12d3d3dbdb759a39
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+
+
+Tesla Model 3 (2018)
+Original title: Tesla 2018 Model 3
+Creator: Ameer Studio (https://sketchfab.com/uchiha.321abc)
+Original work: https://sketchfab.com/3d-models/5ef9b845aaf44203b6d04e2c677e444f
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/5ef9b845aaf44203b6d04e2c677e444f
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/tesla-model.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: d07e30564c62689ab8969189e307cc3ddc9c0454dac9e1a2bf33474904a81db0
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+
+
+Mazda MX-5 Miata NA
+Original title: Mazda Miata mx-5
+Creator: Black Snow (https://sketchfab.com/BlackSnow02)
+Original work: https://sketchfab.com/3d-models/e074e29ccc3847dca74ed5e9cb92d3e7
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/e074e29ccc3847dca74ed5e9cb92d3e7
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mazda-miata-mx-5.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 8faaa344af0fe12ac650e042a3d481e67c98ba87ca0008007bbf42e28d83bdc9
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+Artist customized NA model; reused brake mesh names are not OEM component evidence.
+
+Tesla Cybertruck (2019 concept)
+Original title: Tesla Cybertruck
+Creator: hashikemu (https://sketchfab.com/hashikemu)
+Original work: https://sketchfab.com/3d-models/657e71b3e2ad468196668e9c9df708fb
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original public license metadata: https://api.sketchfab.com/v3/models/657e71b3e2ad468196668e9c9df708fb
+Downloaded GLB: https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/tesla-cybertruck.glb
+Pinned distributor commit: 2d18dfd9db96bbf0d9cffa949deaf7f571388cbf
+SHA256: 681fce82eb819ea92ae5bbe6efeba7b3fa9f3716b91abf071ae1e9455dfc77a2
+Changes: web optimization by distributor; runtime axis rotation, recentering, uniform wheelbase scaling, wheel triangle separation, paint adjustments and separate experimental propulsion/suspension hardware. Source GLB retained unchanged.
+2019 concept shape, not production 2024 body. Exclude low-LOD duplicate and broken-window crack. Tires are combined in one mesh; rims encoded in source materials.
+
+The additional models are artist interpretations, sometimes customized, not manufacturer CAD or an assertion that every internal part matches the production car. Reference physics and assumptions: vehicle-specifications.md.

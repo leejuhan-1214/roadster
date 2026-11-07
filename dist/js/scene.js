@@ -4,12 +4,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261107-drive2';
-import {loadRealVehicle} from './real-vehicle-model.js?v=20261107-cars1';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261107-fleet1';
+import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261107-fleet1';
 import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
 import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive2';
 import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive2';
+import {createEnvironmentMaterials,surfaceUV} from './environment-materials.js?v=20261107-fleet1';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
 // This renderer only reads simulation state. Plumes and marks never exert forces.
@@ -50,6 +52,7 @@ function canvasTexture(draw, width=1024, height=1024) {
   return texture;
 }
 function mesh(geo,mat,x=0,y=0,z=0,parent) {
+  if(mat.userData.tileMetres)surfaceUV(geo,mat.userData.tileMetres);
   const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.castShadow=true;m.receiveShadow=true;
   if(parent)parent.add(m); return m;
 }
@@ -74,9 +77,9 @@ export class FlightScene {
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
-    this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.08;
+    this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.0;
     this.renderBudget=new RenderBudget();this.quality='smooth';this.renderer.shadowMap.enabled=false;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.shadowElapsed=1;
-    this.scene=new THREE.Scene();this.scene.fog=new THREE.FogExp2(0x899da8,0.0028);
+    this.scene=new THREE.Scene();this.scene.fog=new THREE.FogExp2(0xb6c4c9,0.0025);
     this.camera=new THREE.PerspectiveCamera(43,1,.08,1500);this.camera.position.set(7.7,3.8,7.5);
     this.controls=new OrbitControls(this.camera,canvas);this.controls.enableDamping=true;this.controls.dampingFactor=.08;
     this.controls.minDistance=3;this.controls.maxDistance=55;this.controls.maxPolarAngle=Math.PI*.485;
@@ -120,6 +123,7 @@ export class FlightScene {
     canvas.addEventListener('pointermove',this._onMove,{capture:true,passive:false});canvas.addEventListener('pointercancel',this._onCancel,true);
     canvas.addEventListener('wheel',this._onWheel,{capture:true,passive:false});
     this.createEnvironment();this.roadRelief.userData.dynamicGeometry=true;this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
+    this.inspectionOccluders=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.groundSurface&&o!==this.roadRelief&&o!==this.contactShadow);
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
@@ -147,23 +151,18 @@ export class FlightScene {
   }
 
   createEnvironment() {
+    this.environmentMaterials=createEnvironmentMaterials(this.renderer);
     const pmrem=new THREE.PMREMGenerator(this.renderer);const environment=new RoomEnvironment();
     this.environmentTarget=pmrem.fromScene(environment,.04);this.scene.environment=this.environmentTarget.texture;pmrem.dispose();environment.dispose();
-    const sky=new THREE.Mesh(new THREE.SphereGeometry(950,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x233d53)},bottom:{value:new THREE.Color(0xb3bab9)}},vertexShader:'varying vec3 vPos; void main(){vPos=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 vPos; uniform vec3 top; uniform vec3 bottom;void main(){float h=normalize(vPos).y; vec3 c=mix(bottom,top,smoothstep(-.08,.65,h)); float glow=pow(max(0.,dot(normalize(vPos),normalize(vec3(-.7,.15,.6)))),25.);c+=vec3(.25,.19,.12)*glow; gl_FragColor=vec4(c,1.); }'}));
+    this.scene.environmentIntensity=.8;
+    const sky=new THREE.Mesh(new THREE.SphereGeometry(950,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x5683a6)},bottom:{value:new THREE.Color(0xc3cdcf)}},vertexShader:'varying vec3 vPos; void main(){vPos=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 vPos; uniform vec3 top; uniform vec3 bottom;void main(){float h=normalize(vPos).y; vec3 c=mix(bottom,top,smoothstep(-.08,.65,h)); float glow=pow(max(0.,dot(normalize(vPos),normalize(vec3(-.7,.15,.6)))),25.);c+=vec3(.25,.19,.12)*glow; gl_FragColor=vec4(c,1.); }'}));
     this.scene.add(sky);this.sky=sky;
-    this.scene.add(new THREE.HemisphereLight(0xd4e8f5,0x283133,2.05));
-    this.sun=new THREE.DirectionalLight(0xfff2df,3.5);this.sun.position.set(-20,34,26);this.sun.castShadow=true;
+    this.scene.add(new THREE.HemisphereLight(0xd9e6f2,0x45413b,1.45));
+    this.sun=new THREE.DirectionalLight(0xfff0d8,3.1);this.sun.position.set(-20,34,26);this.sun.castShadow=true;
     this.sun.shadow.mapSize.set(1024,1024);Object.assign(this.sun.shadow.camera,{near:1,far:150,left:-24,right:24,top:24,bottom:-24});
     this.sun.shadow.bias=-.00025;this.sun.shadow.normalBias=.025;this.scene.add(this.sun,this.sun.target);
-    const rim=new THREE.DirectionalLight(0x9ee4ff,1.4);rim.position.set(20,8,-25);this.scene.add(rim);
-    const groundTx=canvasTexture((ctx,w,h)=>{
-      ctx.fillStyle='#596264';ctx.fillRect(0,0,w,h);
-      let seed=17;for(let i=0;i<42000;i++){seed=(seed*1664525+1013904223)>>>0;let x=seed%w;seed=(seed*1664525+1013904223)>>>0;let y=seed%h;ctx.fillStyle=`rgba(${seed%2?255:0},${seed%2?255:0},${seed%2?255:0},.035)`;ctx.fillRect(x,y,1+(seed%2),1);}
-    });groundTx.wrapS=groundTx.wrapT=THREE.RepeatWrapping;groundTx.repeat.set(100,100);
-    const groundMat=new THREE.MeshStandardMaterial({map:groundTx,color:0x768080,roughness:.88,metalness:.06});
-    const ground=mesh(new THREE.PlaneGeometry(1800,1800),groundMat,0,-.026,0,this.scene);ground.rotation.x=-Math.PI/2;ground.castShadow=false;
-    const runway=mesh(new THREE.PlaneGeometry(250,20),new THREE.MeshStandardMaterial({color:0x303c40,roughness:.76,metalness:.07}),65,-.018,0,this.scene);runway.rotation.x=-Math.PI/2;runway.castShadow=false;
-    const pad=mesh(new THREE.CircleGeometry(28,128),new THREE.MeshStandardMaterial({color:0x46565a,roughness:.72,metalness:.1}),0,-.012,0,this.scene);pad.rotation.x=-Math.PI/2;pad.castShadow=false;
+    const rim=new THREE.DirectionalLight(0xd0e3f0,.45);rim.position.set(20,8,-25);this.scene.add(rim);
+    const ground=mesh(new THREE.PlaneGeometry(1800,1800),this.environmentMaterials.pavement,0,-.026,0,this.scene);ground.rotation.x=-Math.PI/2;ground.castShadow=false;this.groundSurface=ground;
     const grid=new THREE.GridHelper(56,28,0x728589,0x5b7075);grid.position.y=.001;grid.material.transparent=true;grid.material.opacity=.24;grid.material.depthWrite=false;this.scene.add(grid);
     const padRing=ring(25,.11,0x9babaa,.7);padRing.position.y=.006;this.scene.add(padRing);
     const inner=ring(7.5,.045,0xb6d2d0,.38);inner.position.y=.009;this.scene.add(inner);
@@ -172,7 +171,7 @@ export class FlightScene {
     const padLabel=label('01  /  FLIGHT DECK',{width:8,height:1,color:'#d1ddd9',size:77});padLabel.rotation.x=-Math.PI/2;padLabel.rotation.z=Math.PI/2;padLabel.position.set(-5,.018,0);this.scene.add(padLabel);
     const axisLabel=label('COLD GAS  ·  TEST SECTOR',{width:13,height:1,color:'#a2b6b5',size:64});axisLabel.rotation.x=-Math.PI/2;axisLabel.position.set(0,.018,-12);this.scene.add(axisLabel);
     // Lane paint is visual; the tire ground uses the shared continuous relief function.
-    const paint=new THREE.MeshBasicMaterial({color:0xd0d6ce,transparent:true,opacity:.62});
+    const paint=this.environmentMaterials.lanePaint;
     for(const z of [-8.7,8.7]){let m=mesh(new THREE.PlaneGeometry(235,.085),paint,65,.008,z,this.scene);m.rotation.x=-Math.PI/2;m.castShadow=false;}
     for(let x=27;x<185;x+=8){let m=mesh(new THREE.PlaneGeometry(3.7,.1),paint,x,.012,0,this.scene);m.rotation.x=-Math.PI/2;m.castShadow=false;}
     for(let x=34;x<180;x+=25){const mark=label(String(x).padStart(3,'0'),{width:2.5,height:1,color:'#d7dedb',size:80});mark.rotation.x=-Math.PI/2;mark.rotation.z=-Math.PI/2;mark.position.set(x,.02,6.8);this.scene.add(mark);}
@@ -180,16 +179,22 @@ export class FlightScene {
     for(const radius of [18,22]){const r=ring(radius,.08,0xbac6bc,.45);r.position.set(65,.018,50);this.scene.add(r);}
     const sk=label('DYNAMICS / 02',{width:12,height:1.4,color:'#bdc9c4',size:80});sk.rotation.x=-Math.PI/2;sk.position.set(65,.02,50);this.scene.add(sk);
     const relief=new THREE.PlaneGeometry(160,100,160,100);relief.rotateX(-Math.PI/2);relief.translate(50,0,0);
-    this.roadRelief=new THREE.Mesh(relief,new THREE.MeshStandardMaterial({map:groundTx,color:0x536064,roughness:.96,metalness:.02}));this.roadRelief.receiveShadow=true;this.scene.add(this.roadRelief);
+    this.roadRelief=new THREE.Mesh(relief,this.environmentMaterials.pavement);this.roadRelief.receiveShadow=true;this.scene.add(this.roadRelief);
     this.createArchitecture();
     const shadowTx=canvasTexture((ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(.45,'rgba(0,0,0,.24)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);},128,128);
     this.contactShadow=new THREE.Mesh(new THREE.PlaneGeometry(6.5,4),new THREE.MeshBasicMaterial({map:shadowTx,transparent:true,depthWrite:false,opacity:.85}));this.contactShadow.rotation.x=-Math.PI/2;this.scene.add(this.contactShadow);
+    // Shared contact occlusion keeps fixed structures seated even in smooth mode,
+    // where full dynamic shadow rendering is deliberately disabled.
+    const grounded=FACILITY_SOLIDS.filter(d=>d.center[1]-d.size[1]/2<.05);
+    const fixedShadow=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:shadowTx,transparent:true,depthWrite:false,opacity:.6}),grounded.length);
+    for(let i=0;i<grounded.length;i++){const d=grounded[i];tempObj.position.set(d.center[0]-.2,.008,d.center[2]+.2);tempObj.rotation.set(-Math.PI/2,0,0);tempObj.scale.set(d.size[0]+1.4,d.size[2]+1.4,1);tempObj.updateMatrix();fixedShadow.setMatrixAt(i,tempObj.matrix);}
+    tempObj.scale.set(1,1,1);tempObj.rotation.set(0,0,0);this.scene.add(fixedShadow);
   }
 
   createArchitecture() {
-    const dark=new THREE.MeshStandardMaterial({color:0x263b47,roughness:.7,metalness:.35});
-    const concrete=new THREE.MeshStandardMaterial({color:0x788486,roughness:.9});
-    const aluminum=new THREE.MeshStandardMaterial({color:0x95aaa9,roughness:.4,metalness:.7});
+    const dark=this.environmentMaterials.painted;
+    const concrete=this.environmentMaterials.concrete;
+    const aluminum=this.environmentMaterials.aluminum;
     const glow=new THREE.MeshBasicMaterial({color:0xa2e4de});
     const building=new THREE.Group();building.position.set(-30,0,-38);this.scene.add(building);
     const facilityMesh=(id,mat,parent)=>{const d=FACILITY_SOLIDS.find(o=>o.id===id);return mesh(new THREE.BoxGeometry(...d.size),mat,d.center[0]-parent.position.x,d.center[1]-parent.position.y,d.center[2]-parent.position.z,parent);};
@@ -210,10 +215,10 @@ export class FlightScene {
     mesh(new THREE.CylinderGeometry(.06,.06,8,8),aluminum,0,18.5,0,tower);
     mesh(new THREE.SphereGeometry(.16,8,8),new THREE.MeshBasicMaterial({color:0xff785d}),0,22.6,0,tower);
     const boundary=FACILITY_SOLIDS.filter(o=>o.id.startsWith('boundary-'));
-    const barrier=new THREE.InstancedMesh(new THREE.BoxGeometry(...boundary[0].size),concrete,boundary.length);
+    const barrier=new THREE.InstancedMesh(surfaceUV(new THREE.BoxGeometry(...boundary[0].size),concrete.userData.tileMetres),concrete,boundary.length);
     for(let i=0;i<boundary.length;i++){tempObj.position.fromArray(boundary[i].center);tempObj.rotation.set(0,0,0);tempObj.updateMatrix();barrier.setMatrixAt(i,tempObj.matrix);}barrier.castShadow=true;barrier.receiveShadow=true;this.scene.add(barrier);
     const lamps=FACILITY_SOLIDS.filter(o=>o.id.startsWith('lamp-'));
-    const mast=new THREE.InstancedMesh(new THREE.BoxGeometry(...lamps[0].size),dark,lamps.length);
+    const mast=new THREE.InstancedMesh(surfaceUV(new THREE.BoxGeometry(...lamps[0].size),dark.userData.tileMetres),dark,lamps.length);
     for(let i=0;i<lamps.length;i++){tempObj.position.fromArray(lamps[i].center);tempObj.rotation.set(0,0,0);tempObj.updateMatrix();mast.setMatrixAt(i,tempObj.matrix);mesh(new THREE.BoxGeometry(1.4,.12,.35),glow,-40+i*20,6.1,21,this.scene);}this.scene.add(mast);
     // Deterministic distant ridges, intentionally outside the flat test area's collision domain.
     for(let band=0;band<3;band++){
@@ -258,6 +263,8 @@ export class FlightScene {
   setMode(mode) {
     this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
+    for(const object of this.inspectionOccluders||[])object.visible=mode!=='inspect';
+    if(this.stageVisual)this.stageVisual.visible=mode!=='inspect';
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
     this.applyInspectorVisibility?.();
   }
@@ -277,14 +284,15 @@ export class FlightScene {
     this.camera.lookAt(this.cameraTarget);this.chaseBlend=1;this.lastCameraHeading=0;
   }
   setExplode(value,notify=false) {
-    this.explodeTarget=clamp(Number(value)||0,0,1);
+    const old=this.explodeTarget;this.explodeTarget=clamp(Number(value)||0,0,1);
+    if(this.mode==='inspect'&&old!==this.explodeTarget&&this.vehicle.fitLayout&&!this.selectedPart)this.frameWholeVehicle();
     if(notify)this.onInspectExplode(this.explodeTarget);
     return this.explodeTarget;
   }
   setStage(stageData) {
     if(this.stageVisual){this.scene.remove(this.stageVisual);disposeStageVisual(this.stageVisual);}
     this.stageVisual=stageData?createStageVisual(stageData):null;
-    if(this.stageVisual)this.scene.add(this.stageVisual);
+    if(this.stageVisual){this.stageVisual.visible=this.mode!=='inspect';this.scene.add(this.stageVisual);}
   }
   getPartCatalog() {
     return this.vehicle.catalog||[];
@@ -297,7 +305,7 @@ export class FlightScene {
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
-      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId&&this.vehicle.profileId!=='roadster'?['wing','tank','battery','suspension']:[])].includes(entry.id));
+      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId?['wing','tank','battery','suspension']:[])].includes(entry.id));
     }
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
   }
@@ -340,6 +348,21 @@ export class FlightScene {
     this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
   }
   frameWholeVehicle() {
+    if(this.mode==='inspect'&&this.vehicle.fitLayout){
+      const packed=this.vehicle.explosionBounds,amount=this.explodeTarget;
+      const assembled=new THREE.Box3(new THREE.Vector3(-2.8,-.6,-1.3),new THREE.Vector3(2.8,1.6,1.3));
+      const box=assembled.clone();box.min.lerp(packed.min,amount);box.max.lerp(packed.max,amount);
+      this.vehicle.root.updateMatrixWorld(true);
+      const center=box.getCenter(new THREE.Vector3()).applyMatrix4(this.vehicle.root.matrixWorld),size=box.getSize(new THREE.Vector3());
+      const vfov=THREE.MathUtils.degToRad(this.camera.fov),hfov=2*Math.atan(Math.tan(vfov/2)*this.camera.aspect);
+      const distance=Math.max(size.y/(2*Math.tan(vfov/2)),size.x/(2*Math.tan(hfov/2)))*1.65+size.z;
+      this.controls.maxDistance=Math.max(55,distance*1.4);
+      // The XY shelf layout is best read from its front; assembled vehicles keep
+      // the three-quarter angle. The user can still orbit any view freely.
+      const direction=new THREE.Vector3(1-amount,.36*(1-amount),1).normalize();
+      this.camera.position.copy(center).addScaledVector(direction,distance);
+      this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();return;
+    }
     const center=this.vehicle.root.position.clone();center.y+=.15;
     this.camera.position.copy(center).add(new THREE.Vector3(7.2,3.4,7.4));
     this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
@@ -349,12 +372,17 @@ export class FlightScene {
     let vehicle=this.vehicleCache.get(profile.id);
     if(!vehicle){
       vehicle=profile.id==='roadster'?await loadRoadsterVehicle(createVehicle()):await loadRealVehicle(profile);
+      configureVehicleFit(vehicle,profile);
       vehicle.profileId=profile.id;this.vehicleCache.set(profile.id,vehicle);
     }
+    this.vehicleCache.delete(profile.id);this.vehicleCache.set(profile.id,vehicle);
     const previous=this.vehicle;
     vehicle.root.position.copy(previous.root.position);vehicle.root.quaternion.copy(previous.root.quaternion);
     this.scene.remove(previous.root);this.vehicle=vehicle;this.scene.add(vehicle.root);
-    this.focusPart(null);this.lastPaint='';this.lastExplosion=undefined;this.hasCustomModel=false;
+    if(![...this.vehicleCache.values()].includes(previous))disposeVehicle(previous);
+    this.focusPart(null);this.lastPaint='';this.lastExplosion=undefined;this.lastFitExplosion=undefined;this.hasCustomModel=false;
+    // Keep only three decoded assemblies resident when comparing a large fleet.
+    while(this.vehicleCache.size>3){const id=this.vehicleCache.keys().next().value;const evicted=this.vehicleCache.get(id);this.vehicleCache.delete(id);disposeVehicle(evicted);}
     this.setExplode(0,true);this.restoreParts();this.setQuality(this.quality);
     if(this.customModel)this.customModel.visible=false;
     this.modelStatus={ok:true,loading:false,...vehicle.assetInfo,meshCount:vehicle.sourceMeshCount};
@@ -386,14 +414,15 @@ export class FlightScene {
     const thrusters=options.renderState?.thrusters||sim.thrusters;
     const view={state,bodyPosition,wheels,thrusters};
     this.telemetry=sim.telemetry?.()||{};
-    this.vehicle.root.position.copy(bodyPosition);this.vehicle.root.quaternion.copy(q);
+    this.vehicle.root.position.copy(bodyPosition);
+    if(this.mode==='inspect')this.vehicle.root.quaternion.identity();else this.vehicle.root.quaternion.copy(q);
     if(Number.isFinite(options.explode))this.setExplode(options.explode);
     const targetExplode=this.mode==='inspect'?this.explodeTarget:0;
     this.explodeProgress=THREE.MathUtils.lerp(this.explodeProgress,targetExplode,1-Math.exp(-9*dt));
     if(Math.abs(this.explodeProgress-targetExplode)<.0001)this.explodeProgress=targetExplode;
     const explode=this.explodeProgress;
     if(options.paint&&options.paint!==this.lastPaint){for(const m of this.vehicle.paintMaterials)m.color.set(options.paint);this.lastPaint=options.paint;}
-    if(this.lastExplosion!==explode){
+    if(!this.vehicle.fitLayout&&this.lastExplosion!==explode){
     for(const [id,part] of this.vehicle.parts){
       const base=part.userData.basePosition,offset=part.userData.explodeOffset;
       if(base&&offset)part.position.copy(base).addScaledVector(offset,partExplodeProgress(id,explode));
@@ -401,6 +430,7 @@ export class FlightScene {
     updateDetailExplosion(this.vehicle,explode);this.lastExplosion=explode;
     }
     for(let i=0;i<this.vehicle.wheels.length;i++){
+      if(this.mode==='inspect'&&this.vehicle.fitLayout)continue;
       const w=this.vehicle.wheels[i],physicsWheel=wheels?.[i];if(!physicsWheel)continue;
       const offset=w.userData.explodeOffset||tmpV.set(0,0,0);
       const base=w.userData.basePosition;
@@ -417,6 +447,10 @@ export class FlightScene {
     this.vehicle.root.visible=!this.hasCustomModel||this.mode==='inspect';
     if(this.customModel){this.customModel.visible=!!this.hasCustomModel&&this.mode!=='inspect';this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
     for(let i=0;i<(this.vehicle.gimbalNozzles?.length||0);i++){const nozzle=this.vehicle.gimbalNozzles[i];if(thrusters[i])nozzle.quaternion.setFromUnitVectors(UP,thrusters[i].dir);}
+    updateNozzleCovers(this.vehicle,thrusters,this.mode==='inspect');
+    if(this.vehicle.fitLayout&&(this.lastFitExplosion!==explode||this.lastFitMode!==this.mode)){
+      updateVehicleExplosion(this.vehicle,explode,{inspect:this.mode==='inspect'});this.lastFitExplosion=explode;this.lastFitMode=this.mode;
+    }
     this.updateJets(view,dt,!!options.vectors);
     this.gravityArrow.visible=!!options.vectors;
     if(options.vectors){
@@ -452,7 +486,9 @@ export class FlightScene {
     const p=sim.bodyPosition||sim.state.pos;const v=sim.state.vel;const speed=v.length();
     if(this.mode==='inspect'||this.cameraName==='orbit'){
       if(this.selectedPart&&this.mode==='inspect')new THREE.Box3().setFromObject(this.selectedPart).getCenter(this.cameraTarget);
-      else{this.cameraTarget.copy(p);this.cameraTarget.y+=.15;}
+      else if(this.mode==='inspect'&&this.vehicle.fitLayout){
+        this.cameraTarget.set(0,.5,0).lerp(this.vehicle.explosionBounds.getCenter(tmpV2),this.explodeTarget).applyMatrix4(this.vehicle.root.matrixWorld);
+      }else{this.cameraTarget.copy(p);this.cameraTarget.y+=.15;}
       // Translate eye and pivot equally: driving follows without resetting the user's orbit.
       this.camera.position.add(tmpV.copy(this.cameraTarget).sub(this.controls.target));
       this.controls.target.copy(this.cameraTarget);this.camera.fov=43;this.camera.updateProjectionMatrix();
@@ -487,7 +523,7 @@ export class FlightScene {
       const worldPosition=t.pos.clone().applyQuaternion(state.q).add(state.pos),forceDir=t.dir.clone().applyQuaternion(state.q);
       const nozzle=this.vehicle.gimbalNozzles?.[i];
       if(nozzle&&!this.hasCustomModel){nozzle.updateWorldMatrix(true,false);worldPosition.copy(nozzle.userData.exitOffset).applyMatrix4(nozzle.matrixWorld);}
-      else if(!this.hasCustomModel&&i>=4&&i<6&&this.vehicle.jetMounts?.[i])worldPosition.copy(this.vehicle.jetMounts[i].pos).applyQuaternion(state.q).add(sim.bodyPosition);
+      else if(!this.hasCustomModel&&i>=4&&this.vehicle.jetMounts?.[i])worldPosition.copy(this.vehicle.jetMounts[i].pos).applyQuaternion(state.q).add(sim.bodyPosition);
       const plume=this.jets[i];plume.visible=power>.005&&this.mode!=='inspect';
       plume.position.copy(worldPosition);
       // Cone extends along -Y, so local +Y is the reaction-force direction.
@@ -533,6 +569,9 @@ export class FlightScene {
     this.canvas.removeEventListener('wheel',this._onWheel,true);this.touchPointers.clear();this.controls.dispose();
     if(this.stageVisual){disposeStageVisual(this.stageVisual);this.stageVisual=null;}
     this.scene.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});
+    for(const vehicle of this.vehicleCache?.values()||[])disposeVehicle(vehicle);this.vehicleCache?.clear();
+    const environmentTextures=new Set();for(const material of Object.values(this.environmentMaterials||{})){for(const value of Object.values(material))if(value?.isTexture)environmentTextures.add(value);material.dispose();}
+    for(const texture of environmentTextures)texture.dispose();
     this.environmentTarget?.dispose();this.renderer.dispose();
   }
 }

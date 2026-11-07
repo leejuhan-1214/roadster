@@ -1,3 +1,4 @@
+import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261107-fleet1';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.
 export const VEHICLES = Object.freeze([
@@ -17,11 +18,12 @@ export const VEHICLES = Object.freeze([
     url:'../assets/vehicles/bmw.glb', yaw:Math.PI/2, paint:'BMW_E30_M3_PAINT',
     reference:'4.345 m · 축간 2.562 m', length:4.345,width:1.680,height:1.370,wheelbase:2.562,
     dryMass:1350, referenceMass:1200, rigMass:150},
+  ...EXTRA_VEHICLES,
 ]);
 export function vehicleProfile(id){const profile=VEHICLES.find(v=>v.id===id);if(!profile)throw new Error('알 수 없는 차종');return profile;}
 
 export function vehiclePhysics(profile, geometry, defaults){
-  if(profile.id==='roadster')return {...defaults};
+  if(profile.id==='roadster')return {...defaults,...geometry};
   const m=profile.dryMass, l=profile.length,w=profile.width,h=profile.height;
   return {...defaults,...geometry,dryMass:m,
     // Box-inertia estimate, not measured OEM inertia. Same spring/damper/rig.

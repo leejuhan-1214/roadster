@@ -20,6 +20,9 @@ export const DEFAULTS = Object.freeze({
   wheelbase: 2.8, trackWidth: 1.88,
   bodyLength: BODY_ENVELOPE.half[0] * 2, bodyWidth: BODY_ENVELOPE.half[2] * 2,
   bodyHeight: BODY_ENVELOPE.half[1] * 2, bodyCenterY: BODY_ENVELOPE.center[1],
+  liftX:LIFT_LAYOUT.x,liftY:LIFT_LAYOUT.y,liftZ:LIFT_LAYOUT.z,
+  boostX:BOOST_LAYOUT.x,boostY:BOOST_LAYOUT.y,boostZ:BOOST_LAYOUT.z,
+  yawX:1.35,yawY:0,yawZ:.87,
 });
 export const PARAMETER_INFO = {
   cgX: ['무게중심 전후 오프셋', 'm', '가정 · 차체 기준점에서 +전방 / −후방, 비행 중 고정'],
@@ -52,8 +55,8 @@ const FORWARD = new Vector3(1, 0, 0);
 export const GIMBAL_LIMIT=25*Math.PI/180,GIMBAL_RATE=120*Math.PI/180;
 
 // Fy is the body-Y component. Account for the moment of lateral thrust below CG.
-export function allocateLift(vertical,tx,tz,direction,cg,maxima){
- const gx=direction.x/direction.y,gz=direction.z/direction.y,h=LIFT_LAYOUT.y-cg.y,a=LIFT_LAYOUT.x,b=LIFT_LAYOUT.z;
+export function allocateLift(vertical,tx,tz,direction,cg,maxima,layout=LIFT_LAYOUT){
+ const gx=direction.x/direction.y,gz=direction.z/direction.y,h=layout.y-cg.y,a=layout.x,b=layout.z;
  const x=[a,a,-a,-a],z=[-b,b,-b,b],sign=[-1,1,1,-1];
  const support=x.map((xi,i)=>.25+z[i]*(cg.z+h*gz)/(4*b*b)+xi*(cg.x+h*gx)/(4*a*a));
  const moment=x.map((xi,i)=>-z[i]*tx/(4*b*b)+xi*tz/(4*a*a));
@@ -192,7 +195,16 @@ export class PhysicsSim {
       w.isFront = i < 2;
     });
     this.gimbalX=0;this.gimbalZ=0;this.gimbalDirection.set(0,1,0);
-    for (const t of this.thrusters){t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);}
+    for(const key of ['liftX','liftY','liftZ','boostX','boostY','boostZ','yawX','yawY','yawZ']){
+      const value=Number(p[key]);p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],key.endsWith('Y')?-1.5:key==='boostX'?-4:.15,key.endsWith('Y')?1.5:key==='boostX'?-.15:3);
+    }
+    this.liftLayout={x:p.liftX,y:p.liftY,z:p.liftZ};
+    this.thrusters.forEach((t,i)=>{
+      if(i<4)t.mountPosition.set(i<2?p.liftX:-p.liftX,p.liftY,i%2?p.liftZ:-p.liftZ);
+      else if(i<6)t.mountPosition.set(p.boostX,p.boostY,i%2?p.boostZ:-p.boostZ);
+      else t.mountPosition.set(i%2?-p.yawX:p.yawX,p.yawY,(i===6||i===9)?p.yawZ:-p.yawZ);
+      t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);
+    });
     const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
     this.initialGas = gas;
     this.initialEnergy = gas * CV * p.initialTemperature;
@@ -322,14 +334,14 @@ export class PhysicsSim {
     }
     // Anticipate the first-order valve lag while the swivel changes direction.
     // Only force distribution changes; body attitude remains a result of r × F.
-    const lead=Math.max(.001,Number(p.valveTau)||.03)*(LIFT_LAYOUT.y-this.cg.y)*vertical/dt;
+    const lead=Math.max(.001,Number(p.valveTau)||.03)*(p.liftY-this.cg.y)*vertical/dt;
     tx-=lead*(this.gimbalDirection.z/this.gimbalDirection.y-oldGz);
     tz+=lead*(this.gimbalDirection.x/this.gimbalDirection.y-oldGx);
-    const allocation=allocateLift(vertical,tx,tz,this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force));
+    const allocation=allocateLift(vertical,tx,tz,this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force),this.liftLayout);
     // Parallel lift vectors couple yaw to roll/pitch. Side RCS counters that moment.
     const yawRequest=ty-allocation.yawTorque;
     const desiredForces = [...allocation.thrust, input.boost ? layoutMaximum[4].force : 0, input.boost ? layoutMaximum[5].force : 0,
-      Math.max(0, yawRequest) / 2.7, Math.max(0, yawRequest) / 2.7, Math.max(0, -yawRequest) / 2.7, Math.max(0, -yawRequest) / 2.7];
+      Math.max(0, yawRequest) / (2*p.yawX), Math.max(0, yawRequest) / (2*p.yawX), Math.max(0, -yawRequest) / (2*p.yawX), Math.max(0, -yawRequest) / (2*p.yawX)];
     // Educational per-nozzle override, still constrained by valve lag and tank state.
     if (Array.isArray(input.thrusterCommands)) for (let i = 0; i < desiredForces.length; ++i)
       desiredForces[i] = clamp(input.thrusterCommands[i] || 0, 0, 1) * layoutMaximum[i].force;

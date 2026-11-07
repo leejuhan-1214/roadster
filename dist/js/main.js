@@ -1,10 +1,10 @@
-import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261107-cars1';
+import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261107-fleet1';
 import {createLandingRun,landingRunInput,updateLandingRun,landingClearance} from './landing-experiment.js?v=20261107-land1';
-import {LandingUI} from './landing-ui.js?v=20261107-land1';
+import {LandingUI} from './landing-ui.js?v=20261107-fleet1';
 import { RenderStateBuffer } from './render-state.js?v=20261107-drive2';
 import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-drive2';
-import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-land1';
-import { FlightScene } from './scene.js?v=20261107-cars1';
+import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-fleet1';
+import { FlightScene } from './scene.js?v=20261107-fleet1';
 import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-drive2';
 import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-drive2';
 import { manualInput } from './controls.js?v=20261107-drive2';
@@ -30,7 +30,7 @@ function restoreLandingParams(session){
   const restored={...session.originalParams};
   if(session.originalVehicle!==activeVehicle.id){
     const chassis=vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS);
-    for(const key of ['dryMass','wheelRadius','wheelbase','trackWidth','bodyLength','bodyWidth','bodyHeight','bodyCenterY','inertiaRoll','inertiaYaw','inertiaPitch'])restored[key]=chassis[key];
+    for(const key of ['dryMass','wheelRadius','wheelbase','trackWidth','bodyLength','bodyWidth','bodyHeight','bodyCenterY','inertiaRoll','inertiaYaw','inertiaPitch','liftX','liftY','liftZ','boostX','boostY','boostZ','yawX','yawY','yawZ'])restored[key]=chassis[key];
   }
   Object.assign(sim.params,restored);
   for(const [id,value] of Object.entries(session.originalControls))$(id).checked=value;
@@ -47,7 +47,7 @@ async function startLanding(kind){
   if(mode!=='lab')setMode('lab');
   reset('ground',false);setPaused(true);
   const settings=landingUI.readOptions(),groupId='landing-'+(++landingSerial);
-  const jobs=kind==='vehicles'?VEHICLES.map(v=>({vehicleId:v.id,method:settings.method})):kind==='methods'?['free','brake','gentle'].map(method=>({vehicleId:activeVehicle.id,method})):[{vehicleId:activeVehicle.id,method:settings.method}];
+  const jobs=kind==='vehicles'?VEHICLES.filter(v=>settings.vehicleIds.includes(v.id)).map(v=>({vehicleId:v.id,method:settings.method})):kind==='methods'?['free','brake','gentle'].map(method=>({vehicleId:activeVehicle.id,method})):[{vehicleId:activeVehicle.id,method:settings.method}];
   const originalControls=Object.fromEntries(['obstacles-enabled','fan','wing','stabilize','altHold'].map(id=>[id,$(id).checked]));
   landingSession={groupId,kind,settings,jobs,index:0,originalParams:{...sim.params},originalVehicle:activeVehicle.id,originalControls};
   landingUI.setBusy(true,'차체 준비 중…');$('vehicle-select').disabled=true;
@@ -313,7 +313,7 @@ function drawTrace(){const canvas=$('trace'),ctx=canvas.getContext('2d'),w=canva
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
   const controls=[['지상 전진 / 후진','W','S'],['지상 조향','A','D'],['공중 전후 / 좌우 이동','W','A','S','D'],['마우스 드래그','시점 회전'],['구조 탐색 스크롤·핀치','분해 / 조립'],['후방 가속 추진기','SHIFT'],['수직 추진기','SPACE'],['공중 피치','↑','↓'],['공중 롤','←','→'],['공중 요','Q','E'],['회생·마찰 제동','B'],['자세 안정화','T'],['고도 유지','H'],['팬 다운포스','F'],['힘 벡터','V'],['카메라 전환','C'],['일시정지 / 재생','P'],['차량·기체 초기화','R']];
-  $('guide-content').innerHTML=tab==='controls'?'<div class="control-grid">'+controls.map(([title,...keys])=>'<div><span>'+title+'</span><span>'+keys.map(k=>'<kbd>'+k+'</kbd>').join('')+'</span></div>').join('')+'</div>':'<p>실차 외형 · 공통 가상 추진계</p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join('');
+  $('guide-content').innerHTML=tab==='controls'?'<div class="control-grid">'+controls.map(([title,...keys])=>'<div><span>'+title+'</span><span>'+keys.map(k=>'<kbd>'+k+'</kbd>').join('')+'</span></div>').join('')+'</div>':'<p>실차 외형 · 공통 가상 추진계 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join('');
 }
 function openGuide(tab='controls'){renderGuide(tab);keys.clear();$('guide-modal').showModal();}
 function setupParams(){
@@ -324,7 +324,8 @@ function setupParams(){
 function exportCSV(){if(!samples.length){toast('실험 기록이 아직 없습니다. 잠시 실행한 뒤 저장하세요.');return;}const headers=Object.keys(samples[0]);const text='# '+activeVehicle.title+' — hypothetical shared conversion; SI units; absolute pressure; dry_mass_kg='+sim.params.dryMass+'\n'+headers.join(',')+'\n'+samples.map(s=>headers.map(k=>typeof s[k]==='number'?s[k].toFixed(6):s[k]).join(',')).join('\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='roadster-experiment.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(`${samples.length}개 시점의 실험 기록을 저장했습니다.`);}
 
 function setupUI(){
-  landingUI=new LandingUI({onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onStop:stopLanding});
+  $('vehicle-select').innerHTML=VEHICLES.map(v=>'<option value="'+escape(v.id)+'">'+escape(v.title)+'</option>').join('');
+  landingUI=new LandingUI({vehicles:VEHICLES,onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onStop:stopLanding});
   // End the controlled trial before external settings mutate simulation state.
   const externalSettings=['tank-capacity','road-roughness','grip-control','coast-regen','obstacles-enabled','rolling-resistance','road-surface','air-resistance','fan','wing','stabilize','altHold','target-height'];
   const beforeExternalEdit=e=>{if(!landingSession||!externalSettings.includes(e.target.id))return;const checked=e.target.checked;cancelLanding();reset('ground',false);e.target.checked=checked;setPaused(true);};

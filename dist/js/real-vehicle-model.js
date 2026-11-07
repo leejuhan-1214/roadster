@@ -4,6 +4,7 @@ import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {createVehicle} from './vehicle.js?v=20261107-drive2';
 import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js';
+import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261107-fleet1';
 
 const ids=['wheel-fl','wheel-fr','wheel-rl','wheel-rr'];
 const labels=['앞 왼쪽','앞 오른쪽','뒤 왼쪽','뒤 오른쪽'];
@@ -20,6 +21,27 @@ function group(root,parts,id,position,offset){
   root.add(g);parts.set(id,g);return g;
 }
 
+// The R8 artist mesh bakes about 33 degrees of parked steering into the two
+// front wheel assemblies. Measure each tire's X/Z principal diameter after
+// splitting, then rotate its rim and brake geometry around the same hub.
+export function straightenParkedFrontWheels(records,boxes){
+  const angles=[0,0];
+  for(let wheel=0;wheel<2;wheel++){
+    const tires=records.filter(r=>r.wheel===wheel&&r.tire),mean=new THREE.Vector3();let count=0;
+    for(const r of tires){const p=r.geometry.attributes.position;for(let i=0;i<p.count;i++){mean.x+=p.getX(i);mean.z+=p.getZ(i);count++;}}
+    if(!count)continue;mean.multiplyScalar(1/count);let xx=0,zz=0,xz=0;
+    for(const r of tires){const p=r.geometry.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i)-mean.x,z=p.getZ(i)-mean.z;xx+=x*x;zz+=z*z;xz+=x*z;}}
+    const angle=.5*Math.atan2(2*xz,xx-zz);
+    if(Math.abs(angle)<.035||Math.abs(angle)>.96)continue;
+    const hub=boxes[wheel].getCenter(new THREE.Vector3());
+    const correction=new THREE.Matrix4().makeTranslation(hub.x,hub.y,hub.z).multiply(new THREE.Matrix4().makeRotationY(angle)).multiply(new THREE.Matrix4().makeTranslation(-hub.x,-hub.y,-hub.z));
+    boxes[wheel].makeEmpty();
+    for(const r of records)if(r.wheel===wheel){r.geometry.applyMatrix4(correction);r.geometry.computeBoundingBox();if(r.tire)boxes[wheel].union(r.geometry.boundingBox);}
+    angles[wheel]=angle;
+  }
+  return angles;
+}
+
 export function adaptRealVehicle(source,profile){
   // Undo the artist's parked steering pose, preserving the body proportions.
   if(profile.id==='bmw')source.traverse(o=>{if(wheelRoot(o,profile)===o)o.quaternion.identity();});
@@ -27,23 +49,23 @@ export function adaptRealVehicle(source,profile){
   const orient=new THREE.Matrix4().makeRotationY(profile.yaw), records=[],boxes=ids.map(()=>new THREE.Box3());
   source.traverse(o=>{
     if(!o.isMesh)return;
-    const geometry=o.geometry.clone();
-    // Quantized glTF attributes must be promoted before world-space transforms.
-    // Writing metre coordinates back into normalized integers corrupts the shape.
-    for(const key of ['position','normal','tangent']){
-      const a=geometry.getAttribute(key);if(!a)continue;
-      const values=[];for(let i=0;i<a.count;i++)for(let c=0;c<a.itemSize;c++)values.push(a.getComponent(i,c));
-      geometry.setAttribute(key,new THREE.Float32BufferAttribute(values,a.itemSize));
-    }
-    geometry.applyMatrix4(new THREE.Matrix4().multiplyMatrices(orient,o.matrixWorld));geometry.computeBoundingBox();
+    if(matchesSource(o,profile.adapter,'exclude'))return;
+    const geometry=transformedGeometry(o.geometry,new THREE.Matrix4().multiplyMatrices(orient,o.matrixWorld));
     const wr=wheelRoot(o,profile),point=wr?wr.getWorldPosition(new THREE.Vector3()).applyMatrix4(orient):null;
     const wheel=point?(point.x>0?0:2)+(point.z>0?1:0):-1;
     const names=(Array.isArray(o.material)?o.material:[o.material]).map(m=>m.name);
+    if(profile.adapter){
+      const isWheel=matchesSource(o,profile.adapter,'wheel'),tire=matchesSource(o,profile.adapter,'tire'),brake=matchesSource(o,profile.adapter,'brake');
+      const pieces=isWheel?splitWheelGeometry(geometry,profile.adapter.splitX||0,profile.adapter.splitZ||0):[{geometry,wheel:-1}];
+      for(const piece of pieces){if(piece.wheel>=0&&tire)boxes[piece.wheel].union(piece.geometry.boundingBox);records.push({...piece,original:o,materialNames:names,tire,brake});}
+      if(isWheel)geometry.dispose();return;
+    }
     const tire=names.some(n=>/tire/i.test(n));
     if(wheel>=0&&tire)boxes[wheel].union(geometry.boundingBox);
     records.push({geometry,original:o,materialNames:names,wheel,tire,brake:/caliper/i.test(wr?.name||'')});
   });
   if(boxes.some(b=>b.isEmpty()))throw new Error('네 바퀴의 형상을 확인하지 못했습니다.');
+  const neutralSteering=profile.id==='audi-r8'?straightenParkedFrontWheels(records,boxes):[0,0];
   const centers=boxes.map(b=>b.getCenter(new THREE.Vector3()));
   const axleFront=(centers[0].x+centers[1].x)/2,axleRear=(centers[2].x+centers[3].x)/2;
   const scale=profile.wheelbase/(axleFront-axleRear);
@@ -51,15 +73,16 @@ export function adaptRealVehicle(source,profile){
   const center=new THREE.Vector3((axleFront+axleRear)/2,centers.reduce((s,c)=>s+c.y,0)/4,centers.reduce((s,c)=>s+c.z,0)/4);
   const alignment=new THREE.Matrix4().makeTranslation(0,-.24,0).multiply(new THREE.Matrix4().makeScale(scale,scale,scale)).multiply(new THREE.Matrix4().makeTranslation(-center.x,-center.y,-center.z));
   const anchors=centers.map(c=>c.clone().applyMatrix4(alignment));
-  const root=new THREE.Group(),parts=new Map(),detailParts=new Map(),catalog=[],paintMaterials=[],materials=new Map();
+  const root=new THREE.Group(),parts=new Map(),detailParts=new Map(),catalog=[],paintMaterials=[],materials=new Map(),tireMaterials=new Map();
   root.name=profile.title;root.userData.visualOnly=true;
   const body=group(root,parts,'body',new THREE.Vector3(),[0,.7,0]);
   const cabin=group(root,parts,'cabin',new THREE.Vector3(),[0,1.5,0]);
   const wheels=anchors.map((a,i)=>{const g=group(root,parts,ids[i],a,[a.x*.3,0,Math.sign(a.z)*.9]);g.userData.spinGroup=new THREE.Group();g.add(g.userData.spinGroup);return g;});
-  function material(original){
-    if(materials.has(original))return materials.get(original);
+  function material(original,isTire=false){
+    const rubber=isTire&&profile.id!=='tesla-cybertruck',cache=rubber?tireMaterials:materials;
+    if(cache.has(original))return cache.get(original);
     const m=original.clone();
-    if(original.name===profile.paint){m.metalness=.65;m.roughness=.27;paintMaterials.push(m);}
+    if(!rubber&&(profile.paintMaterials||[profile.paint]).includes(original.name)){m.metalness=.65;m.roughness=.27;paintMaterials.push(m);}
     if(profile.id==='ferrari'){
       if(/Leather|Interior|Carpet|Carbon_Fiber|plastic_gray/.test(original.name)){m.color.set(original.name==='Leather_red'?0x552027:0x171c22);m.metalness=.12;m.roughness=.7;}
       if(original.name==='metal_chrome'||original.name==='metal_gray'){m.color.set(0x8d969c);m.metalness=.85;m.roughness=.25;}
@@ -68,7 +91,13 @@ export function adaptRealVehicle(source,profile){
     if(profile.id==='ferrari'&&original.name==='Glass_Gray'){m.color.set(0x25404b);m.metalness=.1;m.transparent=true;m.opacity=.4;m.roughness=.15;m.depthWrite=false;}
     // Keep the model's glass appearance without costly transmission render passes.
     if(m.transmission>0){m.transmission=0;m.transparent=true;m.opacity=.38;m.depthWrite=false;}
-    materials.set(original,m);return m;
+    // The C190 source uses the uninformative name Material for its windows
+    // (Object_36, alpha blend); it otherwise reflects as a white painted panel.
+    const windowGlass=/glass|windscreen|windshield/i.test(original.name)||(profile.id==='mercedes-benz-amg-gt'&&original.name==='Material');
+    if(windowGlass){m.color.set(0x567884);m.metalness=0;m.roughness=.12;m.transparent=true;m.opacity=.42;m.depthWrite=false;m.envMapIntensity=.6;}
+    if(profile.id==='mercedes-benz-amg-gt'&&original.name==='Material'){m.color.set(0x14242d);m.opacity=.84;m.envMapIntensity=.25;}
+    if(rubber){m.metalness=0;m.roughness=.88;}
+    cache.set(original,m);return m;
   }
   const hullBounds=new THREE.Box3();
   records.forEach((r,index)=>{
@@ -79,7 +108,7 @@ export function adaptRealVehicle(source,profile){
     const category=r.wheel>=0?'wheels':interior?'interior':glazing?'glazing':'exterior';
     const id='model-'+String(index).padStart(3,'0');
     const title=r.wheel>=0?labels[r.wheel]+' '+(r.tire?'타이어':r.brake?'캘리퍼':'휠·브레이크'):(r.materialNames[0]===profile.paint?'차체 도장':interior?'실내':glazing?'유리·렌즈':'외장')+' '+String(index+1).padStart(2,'0');
-    const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(material):material(r.original.material));
+    const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(m=>material(m,r.tire)):material(r.original.material,r.tire));
     obj.name=r.original.name;obj.castShadow=true;obj.receiveShadow=true;
     obj.userData={partId:id,kind:'model',basePosition:new THREE.Vector3(),explodeOffset:new THREE.Vector3(center.x*.15,glazing?.45:.15,Math.sign(center.z)*.3),explodeStage:[.35,.9]};
     if(r.wheel>=0){r.geometry.translate(-anchors[r.wheel].x,-anchors[r.wheel].y,-anchors[r.wheel].z);(r.brake?wheels[r.wheel]:wheels[r.wheel].userData.spinGroup).add(obj);}
@@ -97,7 +126,7 @@ export function adaptRealVehicle(source,profile){
   const geometryParams={wheelbase:profile.wheelbase,trackWidth:width,wheelRadius:radius,bodyLength:2*Math.max(Math.abs(hullBounds.min.x),Math.abs(hullBounds.max.x)),bodyWidth:size.z,bodyHeight:size.y,bodyCenterY:(hullBounds.min.y+hullBounds.max.y)/2};
   return {root,parts,detailParts,catalog,wheels,paintMaterials,geometryParams,profileId:profile.id,sourceMeshCount:records.length,
     wing:parts.get('wing'),tank:parts.get('tank'),battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,valveIndicators:fallback.valveIndicators,
-    assetInfo:{title:profile.title,author:profile.author,license:profile.license}};
+    assetInfo:{title:profile.title,author:profile.author,license:profile.license,neutralSteering}};
 }
 
 export function disposeVehicle(vehicle,retainedRoot=null){

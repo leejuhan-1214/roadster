@@ -127,7 +127,7 @@ test('quantized glTF attributes preserve dimensions when world transforms exceed
 
 test('published reference mass plus assumed rig and box inertia feed actual simulation parameters',()=>{
   for(const profile of VEHICLES.filter(v=>v.id!=='roadster')){
-    const vehicle=adaptRealVehicle(sourceFor(profile),profile);
+    const vehicle=profile.adapter?{geometryParams:{wheelbase:profile.wheelbase,trackWidth:profile.width*.82,bodyLength:profile.length,bodyWidth:profile.width,bodyHeight:profile.height}}:adaptRealVehicle(sourceFor(profile),profile);
     const params=vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS);
     assert.equal(params.dryMass,profile.referenceMass+profile.rigMass);
     near(params.inertiaRoll,params.dryMass*(profile.width**2+profile.height**2)/12);

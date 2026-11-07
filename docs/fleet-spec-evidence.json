@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-07",
+  "units": { "dimensions": "mm", "mass": "kg" },
+  "vehicles": [
+    {
+      "assetTitle": "Audi R8",
+      "assetUid": "e17e438f076f4427a58d93aa779edaed",
+      "referenceVariant": "2017 Audi R8 Coupe V10 5.2 FSI quattro, 7-speed S tronic, UK",
+      "variantAssumption": "The asset thumbnail shows the second-generation Type 4S with artist-customized bodywork, splitter and wheels. Exact year, trim and modified dimensions are not specified; these are stock V10 reference values, not measurements of the modified asset.",
+      "values": {
+        "length": 4426,
+        "widthExcludingMirrors": 1940,
+        "height": 1240,
+        "wheelbase": 2650,
+        "frontTrack": 1638,
+        "rearTrack": 1599,
+        "referenceMass": 1640,
+        "massBasis": "Unladen weight without driver, UK manufacturer brochure"
+      },
+      "sources": [
+        {
+          "publisher": "Audi UK",
+          "title": "R8 2017 UK brochure, R8 Coupe technical data and dimensions",
+          "url": "https://www.onlymanuals.com/audi/r8/audi_r8_coup_brochure_2017_2017",
+          "documentUrl": "https://xr793.com/wp-content/uploads/2022/10/2017-Audi-R8-UK.pdf",
+          "sourceType": "Manufacturer brochure reproduced by third-party archives",
+          "pages": "112-113",
+          "supports": ["length", "widthExcludingMirrors", "height", "wheelbase", "frontTrack", "rearTrack", "referenceMass", "massBasis"]
+        }
+      ],
+      "otherVariantValues": [
+        { "variant": "R8 V10 plus, same UK brochure", "referenceMass": 1580, "massBasis": "Unladen without driver" }
+      ]
+    },
+    {
+      "assetTitle": "Nissan Skyline R34 GT-R",
+      "assetUid": "ff8fb2251dfa4bb9979e7022c5a6666c",
+      "referenceVariant": "2000 Nissan Skyline GT-R V-spec II, BNR34, Japan",
+      "variantAssumption": "The asset title identifies R34 GT-R but not year or trim. Nissan's V-spec II heritage road car is the representative reference; the separate 2000 JGTC racing car is excluded.",
+      "values": {
+        "length": 4600,
+        "widthExcludingMirrors": 1785,
+        "height": 1360,
+        "wheelbase": 2665,
+        "frontTrack": 1480,
+        "rearTrack": 1490,
+        "referenceMass": 1560,
+        "massBasis": "Manufacturer vehicle mass (車両重量)"
+      },
+      "sources": [
+        {
+          "publisher": "Nissan Motor Co., Ltd.",
+          "title": "Nissan Heritage Collection: Skyline GT-R V-spec II",
+          "url": "https://www.nissan.co.jp/HERITAGE/DETAIL/280.html?yj_r=98",
+          "sourceType": "Manufacturer heritage specification page",
+          "supports": ["length", "widthExcludingMirrors", "height", "wheelbase", "frontTrack", "rearTrack", "referenceMass", "massBasis"]
+        }
+      ]
+    },
+    {
+      "assetTitle": "Porsche 911 (930) Turbo 1975",
+      "assetUid": "de1ffd344c41481892511f7fd332c136",
+      "referenceVariant": "1975 Porsche 911 Turbo 3.0 Coupe",
+      "variantAssumption": "Manufacturer museum weight concerns an early French-market car. Dimensions below come from a reproduced US-market period brochure; exact market and equipment of the artist model are unspecified. Do not describe the 1140 kg figure as a verified kerb or dry mass.",
+      "values": {
+        "length": 4291,
+        "widthExcludingMirrors": 1775,
+        "height": 1320,
+        "wheelbase": 2272,
+        "frontTrack": 1431,
+        "rearTrack": 1501,
+        "referenceMass": 1140,
+        "massBasis": "Manufacturer museum fact sheet says Weight; kerb/dry basis unspecified"
+      },
+      "sources": [
+        {
+          "publisher": "Porsche AG",
+          "title": "Porsche 911 Turbo 3.0 Coupe museum fact sheet",
+          "url": "https://newsroom.porsche.com/dam/jcr:3c07547c-36bc-4e00-825c-5ac2bbe10805/Datenblatt%20911%20Turbo%203.0%20Coup%C3%A9.pdf.PDF",
+          "sourceType": "Manufacturer museum PDF",
+          "pages": "1",
+          "supports": ["referenceMass", "massBasis"]
+        },
+        {
+          "publisher": "Porsche Audi, Volkswagen of America, Inc.",
+          "title": "1975 Porsche 911 turbo brochure, print code 36-75-66010",
+          "url": "https://www.turbosition.com/download.php?file=%2Fmedia%2Fbrochures%2F1975_-_Porsche_911_turbo_EN.pdf",
+          "sourceType": "Period manufacturer brochure text reproduced by archive",
+          "pages": "1",
+          "supports": ["length", "widthExcludingMirrors", "height", "wheelbase", "frontTrack", "rearTrack", "otherVariantValues"]
+        }
+      ],
+      "otherVariantValues": [
+        { "variant": "US-market Turbo Carrera, reproduced 1975 brochure", "referenceMass": 1195, "massBasis": "Dry weight; different market and basis from museum figure" }
+      ]
+    },
+    {
+      "assetTitle": "Toyota Supra MK IV (1994)",
+      "assetUid": "eb9bb1eb41db431cb078088ae1ce45f8",
+      "referenceVariant": "1993-1994 Toyota Supra RZ 6MT, E-JZA80-ALFQZ, Japan",
+      "variantAssumption": "The asset title supplies 1994 but no grade or market. The Japanese RZ six-speed manual is the representative reference; UK/US export specifications and automatic variants differ.",
+      "values": {
+        "length": 4520,
+        "widthExcludingMirrors": 1810,
+        "height": 1275,
+        "wheelbase": 2550,
+        "referenceMass": 1490,
+        "massBasis": "Manufacturer curb mass"
+      },
+      "sources": [
+        {
+          "publisher": "Toyota Motor Corporation",
+          "title": "75 Years of Toyota: Supra, released 1993-05-24, representative RZ grade",
+          "url": "https://www.toyota-global.com/company/history_of_toyota/75years/vehicle_lineage/car/id60006850/index.html",
+          "sourceType": "Manufacturer historical specification page",
+          "supports": ["length", "widthExcludingMirrors", "height", "wheelbase", "referenceMass", "massBasis", "otherVariantValues"]
+        },
+        {
+          "publisher": "Toyota Motor Corporation",
+          "title": "Supra RZ catalogue, May 1993 to August 1994",
+          "url": "https://toyota.jp/ucar/catalog/brand-TOYOTA/car-SUPRA/199305/1000910/",
+          "sourceType": "Manufacturer historical used-car catalogue",
+          "supports": ["referenceVariant"]
+        }
+      ],
+      "otherVariantValues": [
+        { "variant": "GZ E-JZA80-ALPZZ, same Japanese launch table", "referenceMass": 1540, "massBasis": "Curb mass" },
+        { "variant": "SZ E-JZA80-ALMVF, same Japanese launch table", "referenceMass": 1410, "massBasis": "Curb mass" }
+      ]
+    },
+    {
+      "assetTitle": "Tesla 2018 Model3",
+      "assetUid": "5ef9b845aaf44203b6d04e2c677e444f",
+      "referenceVariant": "2018 Tesla Model 3, Long Range battery, North America",
+      "variantAssumption": "The asset title supplies 2018 but no battery or drive configuration. The 2018 North American manual's Long Range entry is used; later 2019 and current manuals list different variant masses.",
+      "values": {
+        "length": 4694,
+        "widthExcludingMirrors": 1849,
+        "height": 1443,
+        "wheelbase": 2875,
+        "frontTrack": 1580,
+        "rearTrack": 1580,
+        "referenceMass": 1741,
+        "massBasis": "Curb weight with normal fluid levels and no occupants or cargo"
+      },
+      "sources": [
+        {
+          "publisher": "Tesla, Inc.",
+          "title": "Model 3 Owner's Manual, North America, copyright 2012-2018",
+          "url": "https://manualzz.com/doc/56496904/tesla-model-3---2018-owner-manual",
+          "sourceType": "Period manufacturer manual reproduced by third-party archive",
+          "pages": "134-135",
+          "supports": ["length", "widthExcludingMirrors", "height", "wheelbase", "frontTrack", "rearTrack", "referenceMass", "massBasis"]
+        }
+      ]
+    }
+  ]
+}

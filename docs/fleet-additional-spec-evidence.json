@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-07",
+  "units": {
+    "dimensions": "mm",
+    "mass": "kg"
+  },
+  "vehicles": [
+    {
+      "id": "ford-mustang",
+      "referenceVariant": "2020 Ford Mustang Shelby GT500, base US reference",
+      "values": {
+        "length": 4813.3,
+        "widthExcludingMirrors": 1945.64,
+        "height": 1379.22,
+        "wheelbase": 2720.34,
+        "referenceMass": 1916.43,
+        "massBasis": "Approximate base curb weight in preliminary Ford dealer sourcebook (4225 lb); not an as-tested weight"
+      },
+      "assumptionKo": "2020 기본형 치수. 질량은 초기 딜러 자료의 근삿값이며 트랙 패키지·개별 차량 측정값이 아님.",
+      "sources": [
+        {
+          "publisher": "Ford Motor Company",
+          "title": "2020 Mustang Technical Specifications",
+          "url": "https://media.ford.com/content/dam/fordmedia/North%20America/US/product/2020/mustang/2020-Mustang-Tech_Specs.pdf",
+          "archiveUrl": "https://www.mustang6g.com/forums/attachments/2020-mustang-tech_specs-pdf.633479/",
+          "note": "Original URL now redirects; indexed manufacturer PDF and mirrored original show final dimensions 189.5×76.6×54.3 in, wheelbase107.1in."
+        },
+        {
+          "publisher": "Ford Motor Company",
+          "title": "2020 Shelby GT500 eSourceBook (archived original)",
+          "url": "https://svtperformance.com/forums/images/svtperformance/SVTPerformance2020ShelbyGT500eSourceBook.pdf",
+          "note": "4225lb approximate base curb weight. Preliminary sourcebook dimensions superseded by final tech sheet."
+        }
+      ]
+    },
+    {
+      "id": "lamborghini-aventador-lp700-4",
+      "referenceVariant": "2013 Lamborghini Aventador LP700-4 Roadster",
+      "values": {
+        "length": 4780,
+        "widthExcludingMirrors": 2030,
+        "height": 1136,
+        "wheelbase": 2700,
+        "frontTrack": 1720,
+        "rearTrack": 1700,
+        "referenceMass": 1625,
+        "massBasis": "Manufacturer dry weight; fluids/fuel omitted, not curb weight"
+      },
+      "assumptionKo": "공식 건조 질량 기준. 다른 차의 공차 질량과 측정 조건이 달라 순수 차체 성능 순위로 해석하지 않음.",
+      "sources": [
+        {
+          "publisher": "Automobili Lamborghini",
+          "title": "LP700-4 Roadster technical specifications, 2012-11-18 archived manufacturer page",
+          "url": "https://www.allcarcentral.com/Lamborghini_pdf/Lamborghini_AventadorLP_700-4_Roadster_2013_spec.pdf",
+          "pages": "2-3"
+        }
+      ]
+    },
+    {
+      "id": "mercedes-benz-amg-gt",
+      "referenceVariant": "Mercedes-AMG GT S C190; 2015 body dimensions and 2017 DIN mass reference",
+      "values": {
+        "length": 4546,
+        "widthExcludingMirrors": 1939,
+        "height": 1288,
+        "wheelbase": 2630,
+        "referenceMass": 1570,
+        "massBasis": "DIN ready-to-drive unladen weight excluding driver; manufacturer 2017 GT S reference"
+      },
+      "assumptionKo": "C190 GT S 대표 제원. 원본 모델의 정확한 연식은 미기재이며 2017 DIN 질량을 기준으로 사용.",
+      "sources": [
+        {
+          "publisher": "Mercedes-Benz",
+          "title": "AMG GT C190 2015 owner manual, vehicle data",
+          "url": "https://static.oneweb.mercedes-benz.com/css-oom-assets/ar-du/pdf/mercedes-amg-gt-%D9%83%D9%88%D8%A8%D9%8A%D9%87-2015-%D8%B3%D8%A8%D8%AA%D9%85%D8%A8%D8%B1-c190-comand-%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%AA%D8%B4%D8%BA%D9%8A%D9%84-1.pdf"
+        },
+        {
+          "publisher": "Mercedes-Benz",
+          "title": "AMG GT family update, 2017-01-09",
+          "url": "https://media.mercedes-benz.com/article/eb8672e7-c690-4615-84fc-37b82474fb32",
+          "note": "GT S mass 1570kg DIN,1645kg EC including75kg driver."
+        }
+      ]
+    },
+    {
+      "id": "mazda-miata-mx-5",
+      "referenceVariant": "1989 Japanese Eunos Roadster E-NA6CE 1.6L 5MT reference",
+      "values": {
+        "length": 3970,
+        "widthExcludingMirrors": 1675,
+        "height": 1235,
+        "wheelbase": 2265,
+        "frontTrack": 1405,
+        "rearTrack": 1420,
+        "referenceMass": 940,
+        "massBasis": "Manufacturer Japanese vehicle weight, early 1.6L manual reference"
+      },
+      "assumptionKo": "초기 NA 일본형 5단 수동 기준. 화면 모델은 개조 외관이며 원제작자의 세부 부품이 순정 부품을 보증하지 않음.",
+      "sources": [
+        {
+          "publisher": "Mazda Motor Corporation",
+          "title": "MX-5 30th Anniversary Press Kit, February 2019",
+          "url": "https://manuals.plus/m/e0b480e10f91c13e9407baf83228d24932a9d7ea7f1e9ac4f9e46976ad5df37d",
+          "pages": "45,49",
+          "note": "Manufacturer document mirrored at Manuals+/Miata.net; identifies Eunos E-NA6CE, 3970×1675×1235mm,WB2265mm,manual940kg/automatic1000kg."
+        }
+      ]
+    },
+    {
+      "id": "tesla-cybertruck",
+      "referenceVariant": "2019 Tesla Cybertruck concept artist model; experimental mass/dimensions",
+      "values": {
+        "length": 5723,
+        "widthExcludingMirrors": 2133,
+        "height": 1850,
+        "wheelbase": 3740,
+        "referenceMass": 3000,
+        "massBasis": "Explicit experimental assumption, not a published 2019 concept mass"
+      },
+      "assumptionKo": "2019 콘셉트 외관. 질량 3000kg 및 치수는 실험용 가정·모델 측정값이며 양산 Cybertruck 공식 제원이 아님.",
+      "sources": [
+        {
+          "publisher": "hashikemu",
+          "title": "Tesla Cybertruck original artist model, description dates 2019 announcement",
+          "url": "https://sketchfab.com/3d-models/657e71b3e2ad468196668e9c9df708fb",
+          "note": "Model geometry only. Raw decoded length5.723m, tirecenter wheelbase~3.74m. No manufacturer concept mass verified."
+        }
+      ]
+    }
+  ]
+}

@@ -14,7 +14,7 @@ function download(name,rows){
 }
 
 export class LandingUI {
-  constructor({onStart,onCompareVehicles,onCompareMethods,onStop}){
+  constructor({onStart,onCompareVehicles,onCompareMethods,onStop,vehicles=[]}){
     this.root=document.getElementById('landing-lab');
     this.results=[];this.busy=false;this.selectedGroup=null;this.nextId=1;
     this.root.innerHTML=`<div class="section-label">착지 충격 실험</div>
@@ -31,14 +31,15 @@ export class LandingUI {
         </div></details>
         <p class="landing-note">평탄면·무풍·초속도 0·공기저항 OFF<br>공통 가상 서스펜션·추진계</p>
         <button id="landing-start" class="primary-btn" type="submit">현재 차체 실험 <span>↓</span></button>
-        <div class="landing-batch-buttons"><button id="landing-vehicles" type="button">차체 3종 비교</button><button id="landing-methods" type="button">착지 3방식 비교</button></div>
+        <details class="landing-fleet"><summary>비교할 차체 선택</summary><div class="landing-fleet-list">${vehicles.map((v,i)=>'<label><input type="checkbox" name="vehicleId" value="'+html(v.id)+'" '+(i<3?'checked':'')+'>'+html(v.title)+'</label>').join('')}</div></details>
+        <div class="landing-batch-buttons"><button id="landing-vehicles" type="button">선택 차체 비교</button><button id="landing-methods" type="button">착지 3방식 비교</button></div>
       </form>
       <div class="landing-run-footer"><p id="landing-status" role="status" aria-live="polite">높이와 착지 방식을 선택하세요.</p><button id="landing-stop" type="button" hidden>중단</button></div>
       <button id="landing-results" class="text-btn" type="button" disabled>비교 결과 <span id="landing-result-count">0회</span></button>
       <p class="landing-note">비교마다 초기 탱크 조건을 통일합니다.</p>`;
     this.form=this.root.querySelector('form');this.status=this.root.querySelector('#landing-status');
     this.form.addEventListener('submit',event=>{event.preventDefault();if(!this.busy&&this.form.reportValidity())onStart(this.readOptions());});
-    this.root.querySelector('#landing-vehicles').addEventListener('click',()=>{if(!this.busy&&this.form.reportValidity())onCompareVehicles(this.readOptions());});
+    this.root.querySelector('#landing-vehicles').addEventListener('click',()=>{if(!this.busy&&this.form.reportValidity()){if(this.readOptions().vehicleIds.length<2){this.setProgress('비교할 차체를 2개 이상 선택하세요.');return;}onCompareVehicles(this.readOptions());}});
     this.root.querySelector('#landing-methods').addEventListener('click',()=>{if(!this.busy&&this.form.reportValidity())onCompareMethods(this.readOptions());});
     this.root.querySelector('#landing-stop').addEventListener('click',()=>onStop());
     this.root.querySelector('#landing-results').addEventListener('click',()=>this.showResults());
@@ -61,7 +62,7 @@ export class LandingUI {
 
   readOptions(){
     const data=new FormData(this.form);
-    return {height:Number(data.get('height')),method:data.get('method'),brakeHeight:Number(data.get('brakeHeight')),targetSpeed:Number(data.get('targetSpeed')),springK:Number(data.get('springK'))*1000,damperC:Number(data.get('damperC'))*1000};
+    return {height:Number(data.get('height')),method:data.get('method'),brakeHeight:Number(data.get('brakeHeight')),targetSpeed:Number(data.get('targetSpeed')),springK:Number(data.get('springK'))*1000,damperC:Number(data.get('damperC'))*1000,vehicleIds:data.getAll('vehicleId')};
   }
   setBusy(busy,message){
     this.busy=busy;
