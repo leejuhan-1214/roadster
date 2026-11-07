@@ -8,7 +8,7 @@ import { Vector3, Quaternion, Euler } from 'three';
  */
 export const DEFAULTS = Object.freeze({
   dryMass: 1900, tankVolume: .6, tankPressureMPa: 35.875, initialTemperature: 300,
-  friction: 1.15, springK: 75000, damperC: 6000, fanMaxForce: 18000,
+  friction: 1.15, rollingResistance: .012, springK: 75000, damperC: 6000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
   gravity: 9.80665, dragScale: 1, valveTau: .03,
   wheelRadius: .36, wheelInertia: 2.6, gearRatio: 9, driveEfficiency: .94,
@@ -29,7 +29,8 @@ export const PARAMETER_INFO = {
   tankVolume: ['탱크 체적', 'm³', '가정 · 비행 실험용 저장 용량, 실차 확정 사양 아님'],
   tankPressureMPa: ['초기 절대압력', 'MPa', '이상 공기 250 kg / 600 L / 300 K로 역산한 가정'],
   initialTemperature: ['초기 기체 온도', 'K', '실측값이 아닌 상온 가정'],
-  friction: ['마찰 계수', '—', '하중·온도 의존성을 생략한 마찰 원 근사'],
+  friction: ['접지력 한도 μ', '—', '타이어가 전달할 수 있는 힘의 한도. 타력 감속 계수와 다름'],
+  rollingResistance: ['구름저항 계수 Crr', '—', '가정 · 접지 하중에 비례하는 타력 주행 저항, μN 한도 안에서 적용'],
   springK: ['바퀴별 스프링 상수', 'N/m', '타이어와 서스펜션을 합친 가정값'],
   damperC: ['바퀴별 감쇠 계수', 'N·s/m', '선형 댐퍼 가정'],
   fanMaxForce: ['팬 최대 다운포스', 'N', '가정 · 차고·기울기에 따라 감소'],
@@ -157,17 +158,18 @@ export class PhysicsSim {
     if (preset === 'drop') this.state.pos.y += 3;
     if (preset === 'flight') { this.state.pos.y += 1.8; this.state.vel.x = 8; }
     if (preset === 'corner') this.state.vel.x = 12;
+    if (preset === 'rolling') this.state.vel.x = 20;
     this.contactCount = preset === 'drop' || preset === 'flight' ? 0 : 4;
     this.fanForce = 0; this.totalThrust = 0; this.maxThrust = 0;
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
     this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
-    this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0;
+    this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
     this.history = [];
     this.obstacleContacts = []; this.lastObstacleImpact = null;
     for (const w of this.wheels) { w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
-      w.omega = preset === 'corner' ? 12 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
-      w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
+      w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
+      w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
     return this.state;
   }
@@ -325,7 +327,7 @@ export class PhysicsSim {
     const brakeAmount = clamp(input.brake || 0, 0, 1);
     const throttle = brakeAmount > 0 ? 0 : clamp(input.throttle || 0, -1, 1);
     const tireResultant = new Vector3();
-    this.brakeForceN = 0;
+    this.brakeForceN = 0; this.rollingResistanceN = 0;
     let maxSlip = 0;
     for (const wheel of this.wheels) {
       const rCenter = wheel.pos.clone().applyQuaternion(s.q);
@@ -359,11 +361,12 @@ export class PhysicsSim {
       let fx = wheel.grounded ? 11000 * slip : 0;
       let fy = wheel.grounded ? -55000 * Math.atan2(uy, Math.max(3, Math.abs(ux))) : 0;
       // Tire slip and rolling resistance share one contact-friction budget.
-      let rolling = -.012 * normal * Math.tanh(ux / .6);
+      let rolling = -Math.max(0,p.rollingResistance) * normal * Math.tanh(ux / .6);
       const combined = Math.hypot(fx + rolling, fy), limit = Math.max(0, p.friction) * normal;
       if (combined > limit && combined > 0) {
         const scale = limit / combined; fx *= scale; fy *= scale; rolling *= scale;
       }
+      wheel.rollingResistanceN=Math.abs(rolling);this.rollingResistanceN+=wheel.rollingResistanceN;
       wheel.tireForceN = Math.hypot(fx + rolling, fy);
       if (normal > 0) {
         const horizontalForce = fwd.clone().multiplyScalar(fx + rolling).addScaledVector(right, fy);
@@ -381,13 +384,14 @@ export class PhysicsSim {
         electricPower += mechanicalPower >= 0 ? mechanicalPower / p.driveEfficiency : mechanicalPower * .65;
       }
       const brakeTorque = brakeAmount * 3100;
-      this.brakeForceN += brakeTorque / p.wheelRadius;
+      // Report the tire force actually opposing travel, not commanded brake torque / radius.
+      if(brakeAmount>0&&normal>0)this.brakeForceN+=Math.max(0,-fx*Math.sign(ux));
       wheel.driveTorque = driveTorque; wheel.brakeTorque = brakeTorque;
       const accelerationTorque = driveTorque - fx * p.wheelRadius - .025 * wheel.omega;
       let nextOmega = wheel.omega + accelerationTorque / p.wheelInertia * dt;
       // Brake complementarity: dissipative torque may stop a wheel, never reverse it.
       if (brakeTorque > 0) nextOmega = Math.sign(nextOmega) * Math.max(0, Math.abs(nextOmega) - brakeTorque / p.wheelInertia * dt);
-      wheel.omega = nextOmega;
+      wheel.omega = nextOmega;wheel.spinAngle += nextOmega * dt;
     }
     this.frictionForceN = tireResultant.length();
     this.maxSlip = maxSlip;
@@ -509,7 +513,7 @@ export class PhysicsSim {
     let status = contact >= 3 ? 'GROUND' : contact > 0 ? 'CONTACT' : s.vel.y > .12 ? 'ASCENDING' : s.vel.y < -.12 ? 'DESCENDING' : 'AIRBORNE';
     if (s.pressure <= ATMOSPHERE * 1.01) status = 'GAS DEPLETED';
     return { horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
-      frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
+      rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
       verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,
       temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
