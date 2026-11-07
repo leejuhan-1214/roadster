@@ -20,7 +20,7 @@ GitHub Pages는 `.github/workflows/pages.yml`을 통해 `main` 브랜치의 `dis
 - 구조 탐색에서 탱크·배관·추진기 등 5개 실험 장치를 기본 표시합니다. **압축 기체 탱크 바로 보기**를 누르면 탱크를 단독 확대하며, 반복 클릭해도 해제되지 않습니다. 105개 외형 메시와 합쳐 110개 탐색 항목입니다.
 - 탱크 600 L·초기 기체 250 kg·압력 35.875 MPa·총질량 2,150 kg은 가정한 실험 조건입니다. 탱크 형상은 Tesla의 공개 실차 부품이 아닌 가상 장치로 표시합니다.
 
-검증: 자동 테스트 65개 통과. 유한 탱크 도약, μ0에서 잔여 저항 제거, 노면별 제동, 마찰 원, 공중 타이어 힘 0, 공중 공기저항, 수평·수직 속도 분리, 탱크 기본 표시 및 기존 스테이지 회귀를 포함합니다. 로컬 브라우저에서 탱크 확대, 가속 후 마찰 계측, B 제동, Space 분사와 기체 소모를 확인했습니다.
+검증: 자동 테스트 65개 통과. 유한 탱크 도약, μ0에서 잔여 저항 제거, 노면별 제동, 마찰 원, 공중 타이어 힘 0, 공중 공기저항, 수평·수직 속도 분리, 탱크 기본 표시 및 기존 스테이지 회귀를 포함합니다. 로컬 및 공개 브라우저에서 탱크 확대, 가속 후 마찰 계측, B 제동, Space 분사와 기체 소모를 확인했습니다. [v1.5 배포 실행](https://github.com/leejuhan-1214/roadster/actions/runs/42329439490)의 build/deploy 성공, 공개 런타임 35개 파일의 HTTP 200 및 로컬 SHA-256 일치를 확인했습니다. 공개 콘솔 오류·경고는 없었습니다.
 
 ## 세부 부품 탐색 (v1.3)
 
@@ -159,7 +159,7 @@ git push origin main
 
 저장소 Settings → Pages의 Source는 **GitHub Actions**(`build_type: workflow`)를 유지합니다. `github-pages` 환경은 `main` 배포를 허용하도록 설정되어 있습니다. Actions에서 build와 deploy가 모두 성공한 다음 공개 URL을 확인합니다. 배포 주소는 https://leejuhan-1214.github.io/roadster/ 입니다.
 
-2026-11-07 [배포 실행 42323860851](https://github.com/leejuhan-1214/roadster/actions/runs/42323860851)에서 build와 deploy 성공 및 공개 사이트 응답을 확인했습니다.
+2026-11-07 [최신 배포 실행 42329439490](https://github.com/leejuhan-1214/roadster/actions/runs/42329439490)에서 build와 deploy 성공 및 공개 사이트 응답을 확인했습니다.
 
 기존 `gh-pages` 브랜치는 보존된 스냅샷이며 현재 배포 소스가 아닙니다. `scripts/publish_pages.py`와 `scripts/deploy_github.py`는 이전 브랜치 배포 방식을 위한 도구이므로 현재 workflow 운영에서는 실행하지 마세요. 특히 `deploy_github.py`는 Pages 소스를 `gh-pages`로 다시 설정하므로 현재 자동 배포 설정을 되돌릴 수 있습니다.
 
