@@ -4,7 +4,8 @@ Roadster v1.13 — 차체 13종 / 차종별 분해·매립 노즐 / 표면 재�
 아스팔트/콘크리트/금속 PBR질감, 환경조명보정. 모델선택시로드/최근3종캐시, 덮개테두리40개1draw묶음. 착지비교차종2개이상선택 UI.
 로컬화면10신규모델로드·형상확인, Audi100%와Cybertruck100%분해확인. 3m완만한하강 MX5(초기1465kg)16.39kN/1.75g/첫접촉.39m/s, Cybertruck가정모델(3525kg)52.01kN/1.95g/1.31m/s, 둘다안정착지. 목표속도는유한추력/밸브로항상달성보장안됨. 화면60FPS관찰하였으나로드·CPU부하따라변동, 보장값아님.
 검증: 전체 자동검사172/172PASS, JS문법검사PASS, git diff --check PASS. 실제13모델 부품AABB무겹침·정확복원·지면위배치·25도짐벌/8방향노즐샘플면내매립 확인.
-배포 검증은 아래최신기록참조.
+공개 배포 성공: 6a7374faaffdc860b8f630b6cf2404a22b4342b6
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42373622690 build/deploy success. 공개파일70개 HTTP200·SHA256일치(신규10GLB 포함). 공개13종목록·Porsche도장수정확인. 공개AudiR8 수평이동시연 완료: 첫접촉0.58m/s, 기체259.2kg, GROUND·4/4접지·자세0도. 공개100%분해111항목 모두표시, 콘솔오류/경고없음. 공개탭2 Audi100%구조탐색으로유지, 임시서버종료. 증거 outputs/Roadster-fleet-live.png, outputs/fleet-public-verification.json.
 
 --- 이전 기록 ---
 Roadster v1.12 — 같은 높이 착지 비교 / 착지 제어 실험
