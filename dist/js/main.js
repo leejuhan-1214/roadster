@@ -1,7 +1,8 @@
+import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261107-cars1';
 import { RenderStateBuffer } from './render-state.js?v=20261107-drive2';
 import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-drive2';
-import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-drive2';
-import { FlightScene } from './scene.js?v=20261107-drive2';
+import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-cars1';
+import { FlightScene } from './scene.js?v=20261107-cars1';
 import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-drive2';
 import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-drive2';
 import { manualInput } from './controls.js?v=20261107-drive2';
@@ -14,7 +15,7 @@ const escape = text => String(text ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<
 const sim = new PhysicsSim({roadRoughness:1});
 const renderStates=new RenderStateBuffer(sim);
 let frictionRun=null,collisionRun=null,lastInput={};const frictionResults=[];
-let scene,selectedPartId=null;
+let scene,selectedPartId=null,activeVehicle=vehicleProfile('roadster'),vehicleLoading=false;
 let mode='drive',camera='chase',paused=false,paint='#b51627',showVectors=false;
 let previousPause=false,scenario='ground',demo=null,stage=null,lastStamp=0,accumulator=0,lastUI=0,lastSample=0,frames=0,frameTimer=0;
 const keys=new Set(),samples=[],trace=[];
@@ -26,6 +27,29 @@ function toast(message){$('toast').textContent=message;$('toast').classList.add(
 function setPaused(value){paused=value;accumulator=0;renderStates.reset(sim);$('pause').textContent=paused?'▶':'Ⅱ';$('pause').setAttribute('aria-label',paused?'재생':'일시정지');$('live-label').textContent=paused?'PHYSICS PAUSED':'PHYSICS LIVE';}
 function applySandbox(enabled=$('obstacles-enabled').checked){$('obstacles-enabled').checked=enabled;$('obstacles-enabled').disabled=false;sim.setObstacles(experimentObstacles(enabled?'sandbox':'clear'));scene?.setStage(enabled?SANDBOX:null);$('obstacle-status').textContent=enabled?'장애물 6개 · 접촉과 충돌 적용':'시험 장애물 없음 · 외곽 시설 충돌 유지';}
 function reset(preset='ground',message=true){stage=null;collisionRun=null;applySandbox();sim.reset(preset);lastInput={};renderStates.reset(sim);frictionRun=null;$('friction-run-status').textContent='72 km/h · 5초 비교';demo=null;$('altHold').checked=false;$('height-setting').classList.remove('show');keys.clear();samples.length=0;trace.length=0;lastSample=0;accumulator=0;scenario=preset;$$('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===preset));if(message)toast(preset==='drop'?'3 m 낙하 실험':'차량과 탱크를 초기화했습니다.');}
+function vehicleCredit(p){return '<a href="'+escape(p.source)+'" target="_blank" rel="noopener noreferrer">3D: '+escape(p.author)+'</a> · <a href="'+escape(p.licenseUrl)+'" target="_blank" rel="noopener noreferrer">'+escape(p.license)+'</a> · 수정 적용';}
+async function selectVehicle(id){
+  if(vehicleLoading)return;
+  const profile=vehicleProfile(id),wasPaused=paused;
+  vehicleLoading=true;keys.clear();setPaused(true);$('vehicle-select').disabled=true;
+  $('model-status').textContent=profile.short+' 불러오는 중…';
+  try{
+    const vehicle=await scene.loadVehicle(profile);
+    activeVehicle=profile;
+    // Preserve environment controls; each body starts with its own chassis preset.
+    const shared={};for(const key of ['friction','rollingResistance','roadRoughness','aeroEnabled','tankVolume','tractionControl','absEnabled'])shared[key]=sim.params[key];
+    Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),shared);
+    reset('ground',false);frictionResults.length=0;$('friction-results').innerHTML='';
+    selectedPartId=null;$('part-card').hidden=true;$('part-search').value='';
+    $('vehicle-title').innerHTML=escape(profile.brand)+' <em>'+escape(profile.model)+'</em>';
+    $('model-status').textContent=profile.reference;
+    $('vehicle-credit').innerHTML=vehicleCredit(profile);
+    $('explode').value='0';$('explode-value').textContent='0%';
+    refreshPartCatalog();scene.frameWholeVehicle();setPaused(mode==='inspect'||wasPaused);
+    toast(profile.title+' · 차체 변경 완료');
+  }catch(error){$('vehicle-select').value=activeVehicle.id;$('model-status').textContent='차체 로드 실패 · 이전 차체 유지';setPaused(wasPaused);toast('차체 로드 실패 · 다시 선택해 주세요');console.error(error);}
+  finally{vehicleLoading=false;$('vehicle-select').disabled=false;}
+}
 function setMode(next){
   if(next===mode)return;
   const wasInspect=mode==='inspect';mode=next;keys.clear();demo=null;cancelFrictionRun();
@@ -214,7 +238,7 @@ function drawTrace(){const canvas=$('trace'),ctx=canvas.getContext('2d'),w=canva
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
   const controls=[['지상 전진 / 후진','W','S'],['지상 조향','A','D'],['공중 전후 / 좌우 이동','W','A','S','D'],['마우스 드래그','시점 회전'],['구조 탐색 스크롤·핀치','분해 / 조립'],['후방 가속 추진기','SHIFT'],['수직 추진기','SPACE'],['공중 피치','↑','↓'],['공중 롤','←','→'],['공중 요','Q','E'],['회생·마찰 제동','B'],['자세 안정화','T'],['고도 유지','H'],['팬 다운포스','F'],['힘 벡터','V'],['카메라 전환','C'],['일시정지 / 재생','P'],['차량·기체 초기화','R']];
-  $('guide-content').innerHTML=tab==='controls'?'<div class="control-grid">'+controls.map(([title,...keys])=>'<div><span>'+title+'</span><span>'+keys.map(k=>'<kbd>'+k+'</kbd>').join('')+'</span></div>').join('')+'</div>':'<p>교육용 가정 모델</p><p>3D: <a href="https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8" target="_blank" rel="noopener noreferrer">metarex.4d</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · 수정 적용</p>';
+  $('guide-content').innerHTML=tab==='controls'?'<div class="control-grid">'+controls.map(([title,...keys])=>'<div><span>'+title+'</span><span>'+keys.map(k=>'<kbd>'+k+'</kbd>').join('')+'</span></div>').join('')+'</div>':'<p>실차 외형 · 공통 가상 추진계</p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join('');
 }
 function openGuide(tab='controls'){renderGuide(tab);keys.clear();$('guide-modal').showModal();}
 function setupParams(){
@@ -222,9 +246,10 @@ function setupParams(){
   $('param-fields').innerHTML=config.map(([key,min,max,step])=>{const info=PARAMETER_INFO[key]||['측풍 속도','m/s','가정 · 지면 +Z 방향의 일정한 바람'];return `<label class="param-field"><div><span>${escape(info[0])}</span><output id="param-out-${key}">${sim.params[key]} ${escape(info[1])}</output></div><input type="range" name="${key}" min="${min}" max="${max}" step="${step}" value="${sim.params[key]}" data-unit="${escape(info[1])}">${key.startsWith('cg')?'<small>+ '+({cgX:'앞',cgY:'위',cgZ:'오른쪽'}[key])+'</small>':''}</label>`;}).join('');
   $$('[name]').filter(e=>e.closest('#params-form')).forEach(input=>input.addEventListener('input',()=>{$(`param-out-${input.name}`).textContent=`${input.value} ${input.dataset.unit}`;}));
 }
-function exportCSV(){if(!samples.length){toast('실험 기록이 아직 없습니다. 잠시 실행한 뒤 저장하세요.');return;}const headers=Object.keys(samples[0]);const text='# Roadster Flight Lab — hypothetical educational model; SI units; absolute pressure\n'+headers.join(',')+'\n'+samples.map(s=>headers.map(k=>typeof s[k]==='number'?s[k].toFixed(6):s[k]).join(',')).join('\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='roadster-experiment.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(`${samples.length}개 시점의 실험 기록을 저장했습니다.`);}
+function exportCSV(){if(!samples.length){toast('실험 기록이 아직 없습니다. 잠시 실행한 뒤 저장하세요.');return;}const headers=Object.keys(samples[0]);const text='# '+activeVehicle.title+' — hypothetical shared conversion; SI units; absolute pressure; dry_mass_kg='+sim.params.dryMass+'\n'+headers.join(',')+'\n'+samples.map(s=>headers.map(k=>typeof s[k]==='number'?s[k].toFixed(6):s[k]).join(',')).join('\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='roadster-experiment.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(`${samples.length}개 시점의 실험 기록을 저장했습니다.`);}
 
 function setupUI(){
+  $('vehicle-select').addEventListener('change',e=>selectVehicle(e.target.value));
   $('tank-capacity').addEventListener('change',()=>{sim.params.tankVolume=Number($('tank-capacity').value);reset('ground',false);setPaused(false);toast('탱크 변경 · 초기화');});
   $('road-roughness').addEventListener('change',()=>{cancelFrictionRun();sim.params.roadRoughness=Number($('road-roughness').value);});
   $('grip-control').addEventListener('change',()=>{cancelFrictionRun();sim.params.tractionControl=sim.params.absEnabled=$('grip-control').checked;});
@@ -271,7 +296,7 @@ function setupUI(){
   $('part-close').addEventListener('click',()=>{$('part-card').hidden=true;selectedPartId=null;scene.focusPart(null);renderPartCatalog();});
   $('model-file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;if(file.size>70*1024*1024){toast('GLB는 70 MB 이하로 준비해주세요.');return;}toast('외형 모델을 읽고 있습니다…');try{await scene.setModelGLB(file);$('vehicle-title').innerHTML='Custom <em>Vehicle</em>';$('model-status').textContent='사용자 GLB · 물리 사양 유지';toast('외형 변경 완료');}catch(err){toast('모델을 불러오지 못했습니다. 단일 GLB 파일을 확인해주세요.');console.error(err);}e.target.value='';});
   $('params-open').addEventListener('click',()=>{keys.clear();setupParams();$('params-modal').showModal();});
-  $('params-default').addEventListener('click',()=>{$$('#params-form input').forEach(e=>{e.value=DEFAULTS[e.name]??0;e.dispatchEvent(new Event('input'));});});
+  $('params-default').addEventListener('click',()=>{$$('#params-form input').forEach(e=>{e.value=vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS)[e.name]??0;e.dispatchEvent(new Event('input'));});});
   $('params-form').addEventListener('submit',e=>{e.preventDefault();$$('#params-form input').forEach(el=>{sim.params[el.name]=Number(el.value);});$('params-modal').close();$('tank-capacity').value=String(sim.params.tankVolume);$('road-surface').value=['1.15','0.65','0.15','0'].includes(String(sim.params.friction))?String(sim.params.friction):'custom';$('rolling-resistance').value=sim.params.rollingResistance;$('rolling-value').textContent=sim.params.rollingResistance.toFixed(3);reset();setPaused(false);});
   $('run-validation').addEventListener('click',()=>{const button=$('run-validation');button.disabled=true;button.textContent='계산 검증 중…';setTimeout(()=>{try{const result=runValidation();$('validation-results').innerHTML=result.map(r=>`<div class="validation-row"><b>${escape(r.name)}</b><span class="${r.pass?'':'fail'}">${r.pass?'PASS':'CHECK'}</span><small>${escape(r.actual)}<br>기준: ${escape(r.expected)}</small></div>`).join('');toast(`${result.filter(r=>r.pass).length} / ${result.length} 검증 통과`);}catch(err){toast('검증 실행 오류: '+err.message);console.error(err);}finally{button.disabled=false;button.innerHTML='물리 검증 다시 실행 <span>↻</span>';}},50);});
   $('lab-drop').addEventListener('click',()=>{$('altHold').checked=false;$('fan').checked=false;$('stabilize').checked=false;reset('drop');setPaused(false);showVectors=true;$('vectors').setAttribute('aria-pressed','true');});
@@ -296,7 +321,7 @@ function animate(stamp){
   const frameMs=lastStamp?stamp-lastStamp:16.67;const physicsStart=performance.now();
   const elapsed=lastStamp?Math.min((stamp-lastStamp)/1000,.1):1/60;lastStamp=stamp;
   const uiBlocked=!!document.querySelector('dialog[open]');
-  if(!paused&&mode!=='inspect'&&!uiBlocked&&!document.hidden){accumulator+=elapsed;let iterations=0;while(accumulator>=STEP&&iterations<50&&!paused){stepSimulation(STEP);accumulator=Math.max(0,accumulator-STEP);iterations++;}}
+  if(!vehicleLoading&&!paused&&mode!=='inspect'&&!uiBlocked&&!document.hidden){accumulator+=elapsed;let iterations=0;while(accumulator>=STEP&&iterations<50&&!paused){stepSimulation(STEP);accumulator=Math.max(0,accumulator-STEP);iterations++;}}
   else accumulator=0;
   const physicsEnd=performance.now();
   if(!document.hidden&&lastStamp)scene.observeFrame(frameMs);
@@ -308,7 +333,7 @@ function animate(stamp){
 }
 try{
   scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent={chase:'추적 카메라',orbit:'자유 카메라',top:'상부 카메라'}[value];});setupUI();applySandbox();updateUI(0);requestAnimationFrame(animate);
-  scene.loadRoadsterModel().then(status=>{if(!status.ok)throw status.error||new Error('Roadster model load failed');$('vehicle-title').innerHTML='Tesla <em>Roadster</em>';$('model-status').textContent='2020 CONCEPT · CC BY 4.0';refreshPartCatalog();toast('모델 로드 완료');}).catch(err=>{$('model-status').textContent='외형 로드 실패 · 대체 차체';$('catalog-summary').textContent='원본 로드 실패 · 새로고침해 주세요';toast('Roadster 외형을 불러오지 못해 대체 차체를 표시합니다. 새로고침하면 다시 시도합니다.');console.error(err);});
+  selectVehicle('roadster');
   $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
   // Read-only convenience for local diagnostics; UI remains the supported interaction.
   window.flightLab={sim,scene,getSnapshot:()=>sim.telemetry(),runValidation};

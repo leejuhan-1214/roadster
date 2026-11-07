@@ -18,6 +18,8 @@ export const DEFAULTS = Object.freeze({
   batteryKWh: 200, roadRoughness:0, tractionControl:true, absEnabled:true, feedLossCoefficient:1000, contactEnabled: true, aeroEnabled: true,
   cgX: 0, cgY: 0, cgZ: 0, inertiaRoll: 900, inertiaYaw: 3400, inertiaPitch: 3500,
   wheelbase: 2.8, trackWidth: 1.88,
+  bodyLength: BODY_ENVELOPE.half[0] * 2, bodyWidth: BODY_ENVELOPE.half[2] * 2,
+  bodyHeight: BODY_ENVELOPE.half[1] * 2, bodyCenterY: BODY_ENVELOPE.center[1],
 });
 export const PARAMETER_INFO = {
   cgX: ['무게중심 전후 오프셋', 'm', '가정 · 차체 기준점에서 +전방 / −후방, 비행 중 고정'],
@@ -79,13 +81,12 @@ export function allocateLift(vertical,tx,tz,direction,cg,maxima){
  return {thrust,yawTorque,saturated};
 }
 const BOX_AXES = [new Vector3(1,0,0), new Vector3(0,1,0), new Vector3(0,0,1)];
-const BODY_HALF = BODY_ENVELOPE.half;
-const BODY_BOX_CENTER = new Vector3(...BODY_ENVELOPE.center);
 
 // Oriented chassis box versus a static axis-aligned obstacle. This is a contact
 // envelope, not the render mesh, tire deformation, or structural damage model.
 function boxContact(sim, obstacle) {
   const {pos,q}=sim.state;
+  const BODY_HALF=sim.bodyHalf, BODY_BOX_CENTER=sim.bodyBoxCenter;
   const center=BODY_BOX_CENTER.clone().sub(sim.cg).applyQuaternion(q).add(pos);
   const radius=Math.hypot(...BODY_HALF);
   if(center.x+radius<obstacle.min.x||center.x-radius>obstacle.max.x||
@@ -153,6 +154,8 @@ export class PhysicsSim {
     this.params = { ...DEFAULTS, ...params };
     this.thrusters = makeThrusters();
     this.cg = new Vector3();
+    this.bodyHalf = [...BODY_ENVELOPE.half];
+    this.bodyBoxCenter = new Vector3(...BODY_ENVELOPE.center);
     this.obstacles = [];
     this.wheels = [];
     for (const x of [1.4, -1.4]) for (const z of [-.94, .94]) this.wheels.push({
@@ -174,6 +177,14 @@ export class PhysicsSim {
     for (const key of ['inertiaRoll', 'inertiaYaw', 'inertiaPitch']) p[key] = Math.max(100, Number(p[key]) || DEFAULTS[key]);
     p.wheelbase = clamp(Number(p.wheelbase) || DEFAULTS.wheelbase, 1.5, 4);
     p.trackWidth = clamp(Number(p.trackWidth) || DEFAULTS.trackWidth, 1, 2.6);
+    // Per-vehicle contact envelope in the same body coordinates as the wheel mounts.
+    // Dimensions are collision approximations, independent of the visual mesh.
+    for (const [key,min,max] of [['bodyLength',1,8],['bodyWidth',.5,3],['bodyHeight',.3,4],['bodyCenterY',-2,2]]) {
+      const value=Number(p[key]);
+      p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],min,max);
+    }
+    this.bodyHalf=[p.bodyLength/2,p.bodyHeight/2,p.bodyWidth/2];
+    this.bodyBoxCenter.set(0,p.bodyCenterY,0);
     this.cg.set(p.cgX, p.cgY, p.cgZ);
     this.inertia.set(p.inertiaRoll, p.inertiaYaw, p.inertiaPitch);
     this.wheels.forEach((w, i) => {
@@ -245,6 +256,7 @@ export class PhysicsSim {
 
   _step(dt, input) {
     const p = this.params, s = this.state;
+    const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
     this.lastInput = input;
     const mass = this.mass, gravity = Math.max(0, p.gravity);
     this.inertia.set(p.inertiaRoll, p.inertiaYaw, p.inertiaPitch);
@@ -547,6 +559,7 @@ export class PhysicsSim {
 
   _resolveGround() {
     const s = this.state;
+    const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
     let lowest = Infinity, rLow = null;
     for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
       const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q), height = s.pos.y + r.y;

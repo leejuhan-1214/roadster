@@ -1,0 +1,32 @@
+Vehicle model attribution - Roadster Flight Lab
+Retrieved 2026-11-07. Models are community visual replicas, not manufacturer CAD.
+
+Ferrari model
+Original source title: Ferrari 458 Italia
+UI/reference variant: Ferrari 458 Spider (open-roof shape observed in the asset)
+Creator: vicent091036
+Original work: https://sketchfab.com/models/57bf6cc56931426e87494f554df1dab6
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License link: https://creativecommons.org/licenses/by/4.0/
+Downloaded from Three.js commit f2b6a71bdd088d9da387fcc62802323341099b92:
+https://raw.githubusercontent.com/mrdoob/three.js/f2b6a71bdd088d9da387fcc62802323341099b92/examples/models/gltf/ferrari.glb
+SHA256: cafe3f48da6797aa9bde75ca768bc5b57db366575fd233e90df186ae988a876e
+The Three.js example credits the creator; its media-license record identifies CC BY 4.0:
+https://github.com/mrdoob/three.js/blob/dev/examples/webgl_materials_car.html
+https://github.com/mrdoob/three.js/issues/23089
+
+BMW model
+Original source title: [FREE] BMW M3 E30
+Creator: Martin Trafas
+Original work: https://sketchfab.com/3d-models/free-bmw-m3-e30-ac3c7013434e403e8faff87948caf422
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License link: https://creativecommons.org/licenses/by/4.0/
+Optimized GLB distributed by ahnuchen/auto-atlas, commit cb039d767f549e4d032ae8a704117a3979d3adfa:
+https://raw.githubusercontent.com/ahnuchen/auto-atlas/cb039d767f549e4d032ae8a704117a3979d3adfa/public/models/free_bmw_m3_e30.glb
+SHA256: 4806a9b24954a784efc349b6b2ab2b0c347f3802422f1baf1054f45e44a933d1
+Creator/license verified from original public metadata:
+https://api.sketchfab.com/v3/models/ac3c7013434e403e8faff87948caf422
+
+Changes in this project (both models): coordinate rotation and recentering, uniform wheelbase scaling, articulated wheels, material/paint adjustments, and attachment of separate virtual propulsion/suspension hardware. BMW's parked steering pose is straightened. Source GLB binaries are retained unchanged; transformations occur at runtime. The BMW distributor has already optimized the source for the web.
+
+All original creators retain copyright in their respective models. Model licenses do not imply endorsement by their authors or the vehicle manufacturers. Existing Roadster attribution remains in assets/tesla-roadster-2020 and the application source panel.

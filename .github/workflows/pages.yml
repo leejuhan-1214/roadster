@@ -38,6 +38,9 @@ jobs:
           test -s dist/index.html
           test -s dist/assets/tesla-roadster-2020/scene.gltf
           test -s dist/assets/tesla-roadster-2020/scene.bin
+          test -s dist/assets/vehicles/ferrari.glb
+          test -s dist/assets/vehicles/bmw.glb
+          test -s dist/assets/vehicles/ATTRIBUTION.txt
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

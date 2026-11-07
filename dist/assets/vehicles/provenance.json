@@ -1,0 +1,128 @@
+{
+  "retrieved": "2026-11-07",
+  "models": [
+    {
+      "id": "ferrari-458",
+      "name": "Ferrari 458 Spider",
+      "file": "ferrari.glb",
+      "author": "vicent091036",
+      "source": "https://sketchfab.com/models/57bf6cc56931426e87494f554df1dab6",
+      "download": "https://raw.githubusercontent.com/mrdoob/three.js/f2b6a71bdd088d9da387fcc62802323341099b92/examples/models/gltf/ferrari.glb",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "https://github.com/mrdoob/three.js/issues/23089",
+      "authorEvidence": "https://github.com/mrdoob/three.js/blob/dev/examples/webgl_materials_car.html",
+      "notes": "Original Sketchfab metadata endpoint now returns 404; attribution retained by official Three.js example, license recorded by its media-license audit. Do not claim official manufacturer CAD.",
+      "extensions": [
+        "KHR_draco_mesh_compression"
+      ],
+      "frontAxis": "-Z",
+      "upAxis": "+Y",
+      "rawBounds": [
+        2.25709247589112,
+        1.236010696714791,
+        4.533591027837245
+      ],
+      "paintMaterial": "Body_Color",
+      "paintNode": "body",
+      "wheelGroups": [
+        "wheel_fl",
+        "wheel_fr",
+        "wheel_rl",
+        "wheel_rr"
+      ],
+      "dimensionsMm": {
+        "length": 4527,
+        "width": 1937,
+        "height": 1211,
+        "wheelbase": 2650,
+        "trackFront": 1672,
+        "trackRear": 1606
+      },
+      "specSource": "https://asset.moto.it/pricelist/auto/61674c8d28dccd8ee6d3b1379f6d74fe/catalogo-458-spider.pdf",
+      "specVerification": "Ferrari S.p.A. 2011 brochure, PDF page34 (printed62-63), extracted using pypdf and visually verified 2026-11-07. 1535kg kerb,1430kg dry; dimensions4527/1937/1211mm, wheelbase2650mm. Kerb figure has forged-rim/racing-seat footnote. Owner manual sources have conflicting Spider weight labels; brochure chosen because it separately states dry and kerb.",
+      "bytes": 1681572,
+      "sha256": "cafe3f48da6797aa9bde75ca768bc5b57db366575fd233e90df186ae988a876e",
+      "sourceTitle": "Ferrari 458 Italia",
+      "variantNote": "The distributor calls the asset Ferrari 458 Italia; browser visual inspection shows the open-roof Spider form. UI and reference mass therefore use 458 Spider, while attribution preserves the original title.",
+      "downloadCommit": "f2b6a71bdd088d9da387fcc62802323341099b92",
+      "referenceMassKg": 1535,
+      "referenceMassType": "Kerb weight; forged rims and racing seat",
+      "rigMassKg": 150,
+      "simulationGasExcludedMassKg": 1685,
+      "transform": "Y-up; front -Z rotated -pi/2 around Y to simulator +X; uniform scale from tire-center wheelbase to2.650m; axle-midpoint recenter; wheel-center y=-0.24m; wheel articulation and paint/glass materials adjusted; shared virtual experimental rig attached."
+    },
+    {
+      "id": "bmw-m3-e30",
+      "name": "BMW M3 E30",
+      "file": "bmw.glb",
+      "author": "Martin Trafas",
+      "authorUrl": "https://sketchfab.com/TinoD2",
+      "source": "https://sketchfab.com/3d-models/free-bmw-m3-e30-ac3c7013434e403e8faff87948caf422",
+      "download": "https://raw.githubusercontent.com/ahnuchen/auto-atlas/cb039d767f549e4d032ae8a704117a3979d3adfa/public/models/free_bmw_m3_e30.glb",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidence": "https://api.sketchfab.com/v3/models/ac3c7013434e403e8faff87948caf422",
+      "notes": "Author and CC BY4.0 license verified from public Sketchfab Data API 2026-11-07. Optimized redistribution retains asset.extras attribution; author account URL in embedded metadata is older Bexxie alias. Do not claim official manufacturer CAD.",
+      "extensions": [
+        "EXT_meshopt_compression",
+        "EXT_texture_webp",
+        "KHR_mesh_quantization"
+      ],
+      "frontAxis": "+Z",
+      "upAxis": "+Y",
+      "rawBounds": [
+        1.9131187056191403,
+        1.3515084911805522,
+        4.3620288372039795
+      ],
+      "paintMaterial": "BMW_E30_M3_PAINT",
+      "wheelGroupRegex": "^(BMW_E30_M3_(RIM|TIRE)|Brake_disc)",
+      "caliperGroupRegex": "^Brembo_Calipers",
+      "frontWheelCenter": [
+        0.6972881556,
+        0.31068995595,
+        1.35025048256
+      ],
+      "rearWheelCenter": [
+        0.7094489336,
+        0.31068995595,
+        -1.24086356163
+      ],
+      "wheelNote": "Front wheel component ancestor groups are authored yawed -28.7 degrees. Reset those group quaternions to identity before animation; rear groups already straight. Main scene root -90degX and child GLTF_SceneRootNode+90degX cancel. Uniform length rescale preserves mirrors; published width excludes mirrors.",
+      "dimensionsMm": {
+        "length": 4345,
+        "width": 1680,
+        "height": 1370,
+        "wheelbase": 2562,
+        "trackFront": 1412,
+        "trackRear": 1433
+      },
+      "massDINkg": 1200,
+      "specSource": "https://newsroom.bmwgroup.com/emea/download/77c3f415-c484-4e2d-ba85-adc55592ec7b/20260902080344136-843.pdf",
+      "specVerification": "BMW AG Presse specifications,PDF page1, first column M3 1986-1990, extracted using pypdf and visually verified2026-11-07:1200kg unladen DIN,4345/1680/1370mm,2562mmwheelbase,front/reartrack1412/1433mm. Download found through original BMW PressClub article redirect.",
+      "bytes": 2975260,
+      "sha256": "4806a9b24954a784efc349b6b2ab2b0c347f3802422f1baf1054f45e44a933d1",
+      "downloadCommit": "cb039d767f549e4d032ae8a704117a3979d3adfa",
+      "referenceMassKg": 1200,
+      "referenceMassType": "Unladen to DIN; M3 1986-1990 reference",
+      "rigMassKg": 150,
+      "simulationGasExcludedMassKg": 1350,
+      "transform": "Y-up; parked front-wheel yaw reset; front+Z rotated+pi/2 aroundY to simulator+X; uniform scale from tire-center wheelbase to2.562m; axle-midpoint recenter; wheel-center y=-0.24m; wheel articulation and paint materials adjusted; shared virtual experimental rig attached."
+    }
+  ],
+  "simulation": {
+    "roadsterGasExcludedMassKg": 1900,
+    "roadsterMassStatus": "assumption",
+    "tankVolumeL": 900,
+    "initialAirMassKg": 375,
+    "initialTotalMassKg": {
+      "roadster": 2275,
+      "ferrari": 2060,
+      "bmw": 1725
+    },
+    "powertrain": "Shared educational three-electric-motor and cold-gas conversion, not actual OEM Ferrari or BMW engine/transmission simulation",
+    "rigMassStatus": "150kg assumed net addition for Ferrari/BMW, not a measured or engineered conversion",
+    "inertia": "box approximation; spring/damper/rig shared educational parameters"
+  }
+}

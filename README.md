@@ -222,3 +222,5 @@ git push origin main
 기존 `gh-pages` 브랜치는 보존된 스냅샷이며 현재 배포 소스가 아닙니다. `scripts/publish_pages.py`와 `scripts/deploy_github.py`는 이전 브랜치 배포 방식을 위한 도구이므로 현재 workflow 운영에서는 실행하지 마세요. 특히 `deploy_github.py`는 Pages 소스를 `gh-pages`로 다시 설정하므로 현재 자동 배포 설정을 되돌릴 수 있습니다.
 
 외형 모델의 CC BY 4.0 저작자 표시와 Three.js 라이선스를 유지하세요. `.openai` 설정이나 서비스 인증 정보는 이 저장소에 포함하지 않습니다. 기존 커밋 이력을 보존하며 강제 push하지 않습니다.
+
+실차 차체 선택: Roadster 2020 / Ferrari 458 Spider / BMW M3 E30. 외형 모델·질량·축간·접촉 외피가 함께 바뀝니다. 공통 실험 추진계이며 제작사 비행차 CAD가 아닙니다. 제원과 가정은 docs/vehicle-reference.txt, 자산 출처는 dist/assets/vehicles/ATTRIBUTION.txt를 참조하세요.

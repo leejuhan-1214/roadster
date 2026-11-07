@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261107-drive2';
+import {loadRealVehicle} from './real-vehicle-model.js?v=20261107-cars1';
 import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
@@ -296,7 +297,7 @@ export class FlightScene {
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
-      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics'].includes(entry.id));
+      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId&&this.vehicle.profileId!=='roadster'?['wing','tank','battery','suspension']:[])].includes(entry.id));
     }
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
   }
@@ -343,23 +344,21 @@ export class FlightScene {
     this.camera.position.copy(center).add(new THREE.Vector3(7.2,3.4,7.4));
     this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
   }
-  async loadRoadsterModel(onStatus=()=>{}) {
-    if(this.roadsterPromise)return this.roadsterPromise;
-    this.modelStatus={ok:false,loading:true,fallback:true};onStatus(this.modelStatus);
-    this.roadsterPromise=(async()=>{
-      try{
-        const previous=this.vehicle,vehicle=await loadRoadsterVehicle(previous);
-        vehicle.root.position.copy(previous.root.position);vehicle.root.quaternion.copy(previous.root.quaternion);
-        this.scene.remove(previous.root);this.vehicle=vehicle;this.scene.add(vehicle.root);
-        this.focusPart(null);this.lastPaint='';this.lastExplosion=undefined;this.hasCustomModel=false;this.restoreParts();this.setQuality(this.quality);
-        if(this.customModel)this.customModel.visible=false;
-        this.modelStatus={ok:true,loading:false,fallback:false,...vehicle.assetInfo,meshCount:vehicle.sourceMeshCount};
-      }catch(error){
-        this.modelStatus={ok:false,loading:false,fallback:true,error:error.message};
-      }
-      onStatus(this.modelStatus);return this.modelStatus;
-    })();
-    return this.roadsterPromise;
+  async loadVehicle(profile) {
+    this.vehicleCache??=new Map();
+    let vehicle=this.vehicleCache.get(profile.id);
+    if(!vehicle){
+      vehicle=profile.id==='roadster'?await loadRoadsterVehicle(createVehicle()):await loadRealVehicle(profile);
+      vehicle.profileId=profile.id;this.vehicleCache.set(profile.id,vehicle);
+    }
+    const previous=this.vehicle;
+    vehicle.root.position.copy(previous.root.position);vehicle.root.quaternion.copy(previous.root.quaternion);
+    this.scene.remove(previous.root);this.vehicle=vehicle;this.scene.add(vehicle.root);
+    this.focusPart(null);this.lastPaint='';this.lastExplosion=undefined;this.hasCustomModel=false;
+    this.setExplode(0,true);this.restoreParts();this.setQuality(this.quality);
+    if(this.customModel)this.customModel.visible=false;
+    this.modelStatus={ok:true,loading:false,...vehicle.assetInfo,meshCount:vehicle.sourceMeshCount};
+    return vehicle;
   }
   async setModelGLB(file) {
     const result=await new GLTFLoader().parseAsync(await file.arrayBuffer(),'');

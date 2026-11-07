@@ -1,3 +1,8 @@
+Roadster v1.11 — 실차 차체 선택
+Tesla Roadster 2020 + Ferrari 458 Spider + BMW M3 E30. CC BY4 공개 아티스트 GLB 및 제작사 제원 자료; 제조사 CAD 아님. Ferrari 배포 원제목Italia지만 열린지붕 외형이라Spider로분류. 차체 선택시질량/관성/축간/윤거/타이어/충돌외피/부품목록초기화. 모델비율균일유지, BMW압축좌표Float32변환후정렬. 공통가상3모터·냉가스추진계,150kg장치순증가가정. 긴설명은docs/vehicle-reference.txt.
+검사:138개테스트통과,로컬Ferrari첫착지0.60m/s,BMW0.53m/s,충돌42.9km/h·20.89kN·s;3종전환/부품목록복귀확인. 추가모델은선택할때만로드/캐시. cache cars1.
+
+--- 이전 기록 ---
 Roadster v1.10 — 화면 문구 간소화
 사용자 요청: 사이트의 불필요한 글 삭제, 설명은 보고서로. 긴 학습/가정/출처 해설, 부품 설명·공식, 반복 안내·영문 장식 제거. 조작표·측정값·실험조건·짧은 가정 표시·CC BY 출처 유지. learning.js를 docs/learning-reference.js로 옮겨 보고서 참고용 보존. 물리/기능 변경 없음. 로컬 조작표/부품선택/파라미터/제동 UI와 콘솔 오류 없음 확인. 캐시 main/style clean1, 나머지 drive2 유지.
 
