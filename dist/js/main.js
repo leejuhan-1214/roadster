@@ -1,6 +1,6 @@
 import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js';
-import { FlightScene } from './scene.js';
-import { PARTS, LESSONS, SOURCES } from './learning.js';
+import { FlightScene } from './scene.js?v=20261107-parts2';
+import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-parts2';
 import { COURSE, createStageRun, updateStageRun } from './stage.js';
 import { manualInput } from './controls.js';
 import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput } from './flight-plan.js';

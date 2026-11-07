@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js';
-import { loadRoadsterVehicle } from './roadster-model.js';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-parts2';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
