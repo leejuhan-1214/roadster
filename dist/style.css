@@ -55,3 +55,7 @@
 .inspect #inspect-panel>*{flex-shrink:0}.inspect #inspect-panel>#part-buttons{flex:1 1 85px;min-height:85px}
 
 #part-zoom{grid-column:1/-1;background:#24453f;border-color:#6aa996}
+
+/* Keep the catalog footer clear in the narrow side-panel browser. */
+.inspect .left-panel>.model-footnote{display:none}
+@media(max-height:680px) and (min-width:701px){.inspect .left-panel{bottom:70px}.inspect #part-buttons{min-height:65px}.inspect .left-panel>.asset-credit{margin-top:4px}}
