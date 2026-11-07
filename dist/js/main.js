@@ -1,7 +1,9 @@
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261107-cars1';
+import {createLandingRun,landingRunInput,updateLandingRun,landingClearance} from './landing-experiment.js?v=20261107-land1';
+import {LandingUI} from './landing-ui.js?v=20261107-land1';
 import { RenderStateBuffer } from './render-state.js?v=20261107-drive2';
 import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-drive2';
-import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-cars1';
+import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-land1';
 import { FlightScene } from './scene.js?v=20261107-cars1';
 import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-drive2';
 import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-drive2';
@@ -22,14 +24,81 @@ const keys=new Set(),samples=[],trace=[];
 let toastTimer;
 const frameSamples=[];
 const STEP=.002;
+let landingUI,landingSession=null,landingRun=null,landingSerial=0;
+
+function restoreLandingParams(session){
+  const restored={...session.originalParams};
+  if(session.originalVehicle!==activeVehicle.id){
+    const chassis=vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS);
+    for(const key of ['dryMass','wheelRadius','wheelbase','trackWidth','bodyLength','bodyWidth','bodyHeight','bodyCenterY','inertiaRoll','inertiaYaw','inertiaPitch'])restored[key]=chassis[key];
+  }
+  Object.assign(sim.params,restored);
+  for(const [id,value] of Object.entries(session.originalControls))$(id).checked=value;
+}
+function cancelLanding(message='실험 중단 · 완료된 결과는 보존됩니다.'){
+  if(!landingSession)return;
+  const session=landingSession;landingSession=null;landingRun=null;restoreLandingParams(session);
+  landingUI.setBusy(false,message);$('vehicle-select').disabled=vehicleLoading;
+}
+function stopLanding(){cancelLanding();reset('ground',false);setPaused(true);}
+async function startLanding(kind){
+  if(vehicleLoading)return;
+  cancelLanding();
+  if(mode!=='lab')setMode('lab');
+  reset('ground',false);setPaused(true);
+  const settings=landingUI.readOptions(),groupId='landing-'+(++landingSerial);
+  const jobs=kind==='vehicles'?VEHICLES.map(v=>({vehicleId:v.id,method:settings.method})):kind==='methods'?['free','brake','gentle'].map(method=>({vehicleId:activeVehicle.id,method})):[{vehicleId:activeVehicle.id,method:settings.method}];
+  const originalControls=Object.fromEntries(['obstacles-enabled','fan','wing','stabilize','altHold'].map(id=>[id,$(id).checked]));
+  landingSession={groupId,kind,settings,jobs,index:0,originalParams:{...sim.params},originalVehicle:activeVehicle.id,originalControls};
+  landingUI.setBusy(true,'차체 준비 중…');$('vehicle-select').disabled=true;
+  await nextLanding(landingSession);
+}
+async function nextLanding(session){
+  if(landingSession!==session)return;
+  const job=session.jobs[session.index];
+  if(!job){
+    landingRun=null;setPaused(true);landingUI.setBusy(false,'비교 완료 · 결과를 확인하세요.');
+    $('vehicle-select').disabled=false;landingUI.showResults();return;
+  }
+  setPaused(true);landingUI.setProgress(`${session.index+1} / ${session.jobs.length} · 차체 준비 중…`);
+  try{
+    if(!await selectVehicle(job.vehicleId,{forLanding:true}))throw new Error('차체를 불러오지 못했습니다.');
+    if(landingSession!==session)return;
+    // Every trial uses a fresh, full tank and published-profile chassis defaults.
+    Object.assign(sim.params,vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS),{
+      tankVolume:session.originalParams.tankVolume,tankPressureMPa:session.originalParams.tankPressureMPa,
+      initialTemperature:session.originalParams.initialTemperature});
+    landingRun=createLandingRun(sim,{...session.settings,method:job.method,vehicleId:activeVehicle.id,title:activeVehicle.title});
+    session.metadata={...session.settings,method:job.method,groupId:session.groupId,groupSize:session.jobs.length,
+      groupKind:session.kind,vehicleId:activeVehicle.id,vehicleTitle:activeVehicle.title,id:session.groupId+'-'+session.index,
+      initialMass:sim.mass,initialGas:sim.initialGas,tankVolume:sim.params.tankVolume,
+      tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature};
+    for(const id of ['fan','wing','altHold'])$(id).checked=false;
+    $('obstacles-enabled').checked=false;scene.setStage(null);scene.setExplode(0,true);scene.restoreParts();scene.focusPart(null);
+    camera='chase';scene.setCamera(camera);scene.frameStageStart(sim);$('camera-label').textContent='추적 카메라';
+    keys.clear();renderStates.reset(sim);samples.length=0;trace.length=0;lastSample=0;setPaused(false);
+    $('vehicle-select').disabled=true;landingUI.setProgress(`${session.index+1} / ${session.jobs.length} · ${activeVehicle.title} · 착지 중`);
+  }catch(error){if(landingSession===session){cancelLanding('실험 중단 · '+error.message);reset('ground',false);setPaused(true);}console.error(error);}
+}
+function recordLanding(dt){
+  if(!landingRun)return;
+  updateLandingRun(landingRun,sim,dt);
+  if(!landingRun.done)return;
+  const session=landingSession;
+  landingUI.addResult({...session.metadata,...landingRun.result,samples:landingRun.samples});
+  landingRun=null;session.index++;setPaused(true);
+  // Yield until the finished step and render interpolation have committed.
+  setTimeout(()=>nextLanding(session),0);
+}
 
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function setPaused(value){paused=value;accumulator=0;renderStates.reset(sim);$('pause').textContent=paused?'▶':'Ⅱ';$('pause').setAttribute('aria-label',paused?'재생':'일시정지');$('live-label').textContent=paused?'PHYSICS PAUSED':'PHYSICS LIVE';}
 function applySandbox(enabled=$('obstacles-enabled').checked){$('obstacles-enabled').checked=enabled;$('obstacles-enabled').disabled=false;sim.setObstacles(experimentObstacles(enabled?'sandbox':'clear'));scene?.setStage(enabled?SANDBOX:null);$('obstacle-status').textContent=enabled?'장애물 6개 · 접촉과 충돌 적용':'시험 장애물 없음 · 외곽 시설 충돌 유지';}
-function reset(preset='ground',message=true){stage=null;collisionRun=null;applySandbox();sim.reset(preset);lastInput={};renderStates.reset(sim);frictionRun=null;$('friction-run-status').textContent='72 km/h · 5초 비교';demo=null;$('altHold').checked=false;$('height-setting').classList.remove('show');keys.clear();samples.length=0;trace.length=0;lastSample=0;accumulator=0;scenario=preset;$$('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===preset));if(message)toast(preset==='drop'?'3 m 낙하 실험':'차량과 탱크를 초기화했습니다.');}
+function reset(preset='ground',message=true,keepLanding=false){if(!keepLanding)cancelLanding();stage=null;collisionRun=null;applySandbox();sim.reset(preset);lastInput={};renderStates.reset(sim);frictionRun=null;$('friction-run-status').textContent='72 km/h · 5초 비교';demo=null;$('altHold').checked=false;$('height-setting').classList.remove('show');keys.clear();samples.length=0;trace.length=0;lastSample=0;accumulator=0;scenario=preset;$$('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===preset));if(message)toast(preset==='drop'?'3 m 낙하 실험':'차량과 탱크를 초기화했습니다.');}
 function vehicleCredit(p){return '<a href="'+escape(p.source)+'" target="_blank" rel="noopener noreferrer">3D: '+escape(p.author)+'</a> · <a href="'+escape(p.licenseUrl)+'" target="_blank" rel="noopener noreferrer">'+escape(p.license)+'</a> · 수정 적용';}
-async function selectVehicle(id){
-  if(vehicleLoading)return;
+async function selectVehicle(id,{forLanding=false}={}){
+  if(vehicleLoading)return false;
+  if(!forLanding)cancelLanding();
   const profile=vehicleProfile(id),wasPaused=paused;
   vehicleLoading=true;keys.clear();setPaused(true);$('vehicle-select').disabled=true;
   $('model-status').textContent=profile.short+' 불러오는 중…';
@@ -39,19 +108,22 @@ async function selectVehicle(id){
     // Preserve environment controls; each body starts with its own chassis preset.
     const shared={};for(const key of ['friction','rollingResistance','roadRoughness','aeroEnabled','tankVolume','tractionControl','absEnabled'])shared[key]=sim.params[key];
     Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),shared);
-    reset('ground',false);frictionResults.length=0;$('friction-results').innerHTML='';
+    reset('ground',false,forLanding);frictionResults.length=0;$('friction-results').innerHTML='';
     selectedPartId=null;$('part-card').hidden=true;$('part-search').value='';
     $('vehicle-title').innerHTML=escape(profile.brand)+' <em>'+escape(profile.model)+'</em>';
     $('model-status').textContent=profile.reference;
     $('vehicle-credit').innerHTML=vehicleCredit(profile);
     $('explode').value='0';$('explode-value').textContent='0%';
     refreshPartCatalog();scene.frameWholeVehicle();setPaused(mode==='inspect'||wasPaused);
-    toast(profile.title+' · 차체 변경 완료');
-  }catch(error){$('vehicle-select').value=activeVehicle.id;$('model-status').textContent='차체 로드 실패 · 이전 차체 유지';setPaused(wasPaused);toast('차체 로드 실패 · 다시 선택해 주세요');console.error(error);}
-  finally{vehicleLoading=false;$('vehicle-select').disabled=false;}
+    $('vehicle-select').value=profile.id;
+    if(!forLanding)toast(profile.title+' · 차체 변경 완료');
+    return true;
+  }catch(error){$('vehicle-select').value=activeVehicle.id;$('model-status').textContent='차체 로드 실패 · 이전 차체 유지';setPaused(wasPaused);toast('차체 로드 실패 · 다시 선택해 주세요');console.error(error);return false;}
+  finally{vehicleLoading=false;$('vehicle-select').disabled=!!landingRun||!!landingSession&&landingSession.index<landingSession.jobs.length;}
 }
 function setMode(next){
   if(next===mode)return;
+  if(landingSession){cancelLanding();reset('ground',false);}
   const wasInspect=mode==='inspect';mode=next;keys.clear();demo=null;cancelFrictionRun();
   if(mode==='inspect'){previousPause=paused;setPaused(true);camera='orbit';}
   else if(wasInspect){setPaused(previousPause);camera='chase';}
@@ -106,6 +178,7 @@ function stepSimulation(dt){
   renderStates.beforeStep();
   lastInput=getInput();sim.step(dt,lastInput);
   renderStates.afterStep(sim);
+  recordLanding(dt);
   if(frictionRun){
     updateFrictionRun(frictionRun,sim);
     if(frictionRun.done){frictionResults.unshift(frictionRun);frictionResults.length=Math.min(frictionResults.length,4);frictionRun=null;renderFrictionResults();setPaused(true);toast('비교 완료');}
@@ -121,6 +194,7 @@ function stepSimulation(dt){
   }
 }
 function getInput(){
+  if(landingRun)return landingRunInput(landingRun,sim);
   if(collisionRun)return {stabilize:false,fan:false,wing:false};
   if(frictionRun)return frictionRunInput(frictionRun);
   const input=manualInput(keys,sim.contactCount===0,{
@@ -211,7 +285,8 @@ function updateUI(realDt){
   $('speed').textContent=String(Math.round(t.speed*3.6)).padStart(3,'0');
   $('horizontal-speed').innerHTML=(t.horizontalSpeed*3.6).toFixed(1)+' <small>km/h</small>';$('horizontal-ms').textContent=t.horizontalSpeed.toFixed(2)+' m/s';
   $('tire-force').textContent=(t.frictionForceN/1000).toFixed(2)+' kN';$('air-force').textContent=(t.airDragN/1000).toFixed(2)+' kN';$('friction-value').textContent=Number(sim.params.friction).toFixed(2);
-  $('altitude').innerHTML=`${t.altitude.toFixed(2)}<small>m</small>`;$('vertical').innerHTML=`${t.verticalSpeed>=0?'+':''}${t.verticalSpeed.toFixed(2)}<small>m/s</small>`;
+  $('altitude-label').textContent=landingSession?'바퀴–지면 높이':'고도';
+  $('altitude').innerHTML=`${(landingSession?Math.max(0,landingClearance(sim)):t.altitude).toFixed(2)}<small>m</small>`;$('vertical').innerHTML=`${t.verticalSpeed>=0?'+':''}${t.verticalSpeed.toFixed(2)}<small>m/s</small>`;
   $('pressure').innerHTML=`${t.pressureMPa.toFixed(2)} <small>MPa</small>`;
   $('pressure-fill').style.width=clamp(t.pressureMPa/sim.params.tankPressureMPa*100,0,100)+'%';
   $('pressure-fill').style.background=t.pressureMPa<8?'#ffad89':'#a2f5db';
@@ -249,6 +324,13 @@ function setupParams(){
 function exportCSV(){if(!samples.length){toast('실험 기록이 아직 없습니다. 잠시 실행한 뒤 저장하세요.');return;}const headers=Object.keys(samples[0]);const text='# '+activeVehicle.title+' — hypothetical shared conversion; SI units; absolute pressure; dry_mass_kg='+sim.params.dryMass+'\n'+headers.join(',')+'\n'+samples.map(s=>headers.map(k=>typeof s[k]==='number'?s[k].toFixed(6):s[k]).join(',')).join('\n');const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='roadster-experiment.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(`${samples.length}개 시점의 실험 기록을 저장했습니다.`);}
 
 function setupUI(){
+  landingUI=new LandingUI({onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onStop:stopLanding});
+  // End the controlled trial before external settings mutate simulation state.
+  const externalSettings=['tank-capacity','road-roughness','grip-control','coast-regen','obstacles-enabled','rolling-resistance','road-surface','air-resistance','fan','wing','stabilize','altHold','target-height'];
+  const beforeExternalEdit=e=>{if(!landingSession||!externalSettings.includes(e.target.id))return;const checked=e.target.checked;cancelLanding();reset('ground',false);e.target.checked=checked;setPaused(true);};
+  $('left-panel').addEventListener('input',beforeExternalEdit,true);
+  $('left-panel').addEventListener('change',beforeExternalEdit,true);
+  $('params-form').addEventListener('submit',()=>cancelLanding(),true);
   $('vehicle-select').addEventListener('change',e=>selectVehicle(e.target.value));
   $('tank-capacity').addEventListener('change',()=>{sim.params.tankVolume=Number($('tank-capacity').value);reset('ground',false);setPaused(false);toast('탱크 변경 · 초기화');});
   $('road-roughness').addEventListener('change',()=>{cancelFrictionRun();sim.params.roadRoughness=Number($('road-roughness').value);});
@@ -305,13 +387,14 @@ function setupUI(){
   window.addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;if(e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;
     if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
     if(e.repeat)return;
+    if(landingSession&&landingSession.index<landingSession.jobs.length&&!['KeyP','KeyC','KeyR','Escape'].includes(e.code))return;
     if(e.code==='KeyR'){if(stage)startStage();else reset();return;}if(e.code==='KeyP'){setPaused(!paused);return;}if(e.code==='KeyC'){$('camera').click();return;}if(e.code==='KeyV'){$('vectors').click();return;}if(e.code==='KeyT'){toggle('stabilize');return;}if(e.code==='KeyF'){toggle('fan');return;}if(e.code==='KeyH'){toggle('altHold');return;}
     if(e.code==='Escape'){$('left-panel').classList.remove('open');return;}
     if(mode==='inspect')return;
     if(['KeyW','KeyS','KeyA','KeyD','Space','ShiftLeft','ShiftRight','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyQ','KeyE','KeyB'].includes(e.code)){keys.add(e.code);cancelFrictionRun();if(demo){demo=null;toast('수동 조작으로 전환했습니다.');}}
   });
   window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>keys.clear());
-  $$('[data-key]').forEach(b=>{b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.key);cancelFrictionRun();b.classList.add('pressed');demo=null;});const release=()=>{keys.delete(b.dataset.key);b.classList.remove('pressed');};b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);});
+  $$('[data-key]').forEach(b=>{b.addEventListener('pointerdown',e=>{e.preventDefault();if(landingSession&&landingSession.index<landingSession.jobs.length)return;b.setPointerCapture(e.pointerId);keys.add(b.dataset.key);cancelFrictionRun();b.classList.add('pressed');demo=null;});const release=()=>{keys.delete(b.dataset.key);b.classList.remove('pressed');};b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();accumulator=0;}renderStates.reset(sim);lastStamp=0;frameSamples.length=0;});
   window.addEventListener('resize',()=>scene.resize());
   $('world').addEventListener('pointerdown',()=>$('world').focus({preventScroll:true}));

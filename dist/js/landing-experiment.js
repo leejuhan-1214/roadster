@@ -1,0 +1,146 @@
+// A controlled comparison of a hypothetical common landing rig, not OEM crash data.
+// All measurement updates run at the simulation's fixed 2 ms step. Force samples
+// retain the maximum in each 10 ms chart bin; the summary never uses render rate.
+export const LANDING_STEP=.002;
+export const LANDING_METHODS=Object.freeze([
+  {id:'free',label:'자유낙하'},
+  {id:'brake',label:'지정 높이에서 분사'},
+  {id:'gentle',label:'완만한 하강 제어'},
+]);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Number(value):fallback,min,max);
+
+export function landingSettings(options={}){
+  const height=finite(options.height,3,.5,5);
+  return {...options,height,
+    method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
+    brakeHeight:finite(options.brakeHeight,2,.1,5),
+    targetSpeed:finite(options.targetSpeed,.5,.2,2),
+    springK:finite(options.springK,75000,30000,150000),
+    damperC:finite(options.damperC,6000,1000,15000),
+  };
+}
+
+/** Minimum unloaded tire-to-ground gap, unaffected by static spring sag. */
+export function landingClearance(sim){
+  return Math.min(...sim.wheels.map(w=>w.pos.clone().applyQuaternion(sim.state.q).y+sim.state.pos.y-sim.params.wheelRadius));
+}
+
+/** Resets the supplied vehicle using shared controlled environmental conditions. */
+export function createLandingRun(sim,options={}){
+  const config=landingSettings(options);
+  Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,
+    gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
+    contactEnabled:true,friction:1.15,rollingResistance:.015,
+    // Fixed level, centred loading isolates mass and chassis geometry differences.
+    cgX:0,cgY:0,cgZ:0});
+  sim.setObstacles([]);sim.reset('ground');
+  sim.state.pos.set(0,.31+sim.params.wheelRadius+config.height,0);
+  sim.state.vel.set(0,0,0);sim.state.q.identity();sim.state.omega.set(0,0,0);
+  sim.contactCount=sim.lastContactCount=0;
+  for(const w of sim.wheels){w.grounded=false;w.compression=0;w.load=0;w.omega=0;}
+  return {...config,config:Object.freeze({...config}),startTime:sim.state.time,
+    initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
+    tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
+    parameters:Object.freeze({...sim.params}),elapsed:0,done:false,status:'running',
+    braking:false,touchdownTime:null,touchdownSpeed:null,contactDuration:null,
+    peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
+    groundImpulseNs:0,totalGroundImpulseNs:0,correctionImpulseNs:0,impactCorrectionImpulseNs:0,
+    maxCompression:0,bottomedOut:false,bodyStrike:false,reboundHeight:0,
+    gasUsed:0,samples:[],sampleBucket:-1,settledFor:0,settled:false,result:null};
+}
+
+/** Feed into PhysicsSim.step(.002, ...), then call updateLandingRun. */
+export function landingRunInput(run,sim){
+  const off={stabilize:false,lift:0,altHold:false,fan:false,wing:false,boost:false,
+    throttle:0,brake:0,steer:0,coastRegen:false};
+  if(run.done||run.method==='free'||run.touchdownTime!==null)return off;
+  const gap=landingClearance(sim),velocity=sim.state.vel.y,g=sim.params.gravity;
+  if(run.method==='brake'&&gap<=run.brakeHeight)run.braking=true;
+  if(run.method==='brake'&&!run.braking)return off;
+  // Anticipate valve delay without changing actual velocity. A braking run waits
+  // for the chosen clearance; gentle descent starts shaping speed immediately.
+  const lead=Math.max(.001,sim.params.valveTau)*2;
+  const futureGap=Math.max(.015,gap+velocity*lead);
+  let acceleration;
+  if(run.method==='brake'){
+    const needed=(velocity*velocity-run.targetSpeed*run.targetSpeed)/(2*futureGap);
+    acceleration=velocity<-run.targetSpeed?needed:5*(-run.targetSpeed-velocity);
+  }else{
+    const approachSpeed=Math.sqrt(run.targetSpeed*run.targetSpeed+4*futureGap);
+    const target=-Math.min(2.5,approachSpeed);
+    // Feed forward the changing speed reference; feedback still corrects the
+    // actual finite-valve/tank response, without promising the target is reached.
+    const feedForward=approachSpeed<2.5?-2*velocity/approachSpeed:0;
+    acceleration=feedForward+6*(target-velocity);
+  }
+  return {...off,stabilize:true,verticalAcceleration:clamp(acceleration,-g,1.1*g)};
+}
+
+function complete(run,status){
+  run.done=true;run.status=status;
+  const {config,startTime,done,result,sampleBucket,settledFor,braking,...data}=run;
+  run.result={...data,samples:run.samples.map(s=>({...s})),config:{...config}};
+}
+
+/** Summary peaks use every step, including body-ground correction impulses.
+ * peakGroundForceN is the continuous suspension/skid force. The equivalent peak
+ * additionally divides a numerical contact impulse by 2 ms: a discretized load,
+ * NOT a resolved material stress or physically instantaneous impact-force peak.
+ */
+export function updateLandingRun(run,sim,dt=LANDING_STEP){
+  if(run.done)return run;
+  if(Math.abs(dt-LANDING_STEP)>1e-10||Math.abs(sim.stepDuration-LANDING_STEP)>1e-10||
+    Math.abs(sim.state.time-run.startTime-run.elapsed-LANDING_STEP)>1e-9)
+    throw new RangeError('Landing measurements require fixed 0.002 s physics steps.');
+  run.elapsed=sim.state.time-run.startTime;
+  const ground=Math.max(0,sim.groundForceN),impulse=Math.max(0,sim.groundCorrectionImpulseNs);
+  const equivalent=ground+impulse/dt;
+  const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
+  const properG=acceleration.length()/Math.max(.001,sim.params.gravity);
+  const touching=ground>0||impulse>0;
+  if(touching&&run.touchdownTime===null){
+    run.touchdownTime=run.elapsed-dt;
+    run.touchdownSpeed=Math.max(0,-sim.preStepVelocityY);
+  }
+  run.peakGroundForceN=Math.max(run.peakGroundForceN,ground);
+  run.peakEquivalentGroundForceN=Math.max(run.peakEquivalentGroundForceN,equivalent);
+  run.peakG=Math.max(run.peakG,properG);
+  if(run.touchdownTime!==null)run.contactPeakG=Math.max(run.contactPeakG,properG);
+  run.totalGroundImpulseNs+=ground*dt+impulse;
+  run.correctionImpulseNs+=impulse;
+  if(run.touchdownTime!==null&&run.contactDuration===null){
+    run.groundImpulseNs+=ground*dt+impulse;run.impactCorrectionImpulseNs+=impulse;
+    if(sim.state.vel.y>=0||Math.abs(sim.state.vel.y)<.01){
+      const fraction=sim.preStepVelocityY<0&&sim.state.vel.y>0?
+        clamp(-sim.preStepVelocityY/(sim.state.vel.y-sim.preStepVelocityY),0,1):1;
+      run.contactDuration=run.elapsed-dt+fraction*dt-run.touchdownTime;
+    }
+  }
+  const compression=Math.max(0,...sim.wheels.map(w=>w.compression));
+  run.maxCompression=Math.max(run.maxCompression,compression);
+  run.bottomedOut ||= compression>.22;
+  run.bodyStrike ||= sim.bodyGroundContacts>0||impulse>0;
+  const clearance=landingClearance(sim);
+  if(run.touchdownTime!==null)run.reboundHeight=Math.max(run.reboundHeight,clearance);
+  run.gasUsed=run.initialGas-sim.state.gas;
+  const sample={time:run.elapsed,clearance,velocity:sim.state.vel.y,groundForceN:ground,
+    equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
+    compression,gasKg:sim.state.gas,correctionImpulseNs:impulse};
+  const bucket=Math.floor((run.elapsed+1e-9)/.01);
+  if(bucket!==run.sampleBucket){run.samples.push(sample);run.sampleBucket=bucket;}
+  else{
+    const last=run.samples.at(-1);
+    last.groundForceN=Math.max(last.groundForceN,ground);
+    last.equivalentGroundForceN=Math.max(last.equivalentGroundForceN,equivalent);
+    last.gLoad=Math.max(last.gLoad,properG);last.correctionImpulseNs+=impulse;
+  }
+  if(run.touchdownTime!==null){
+    const settled=Math.abs(sim.state.vel.y)<.025&&sim.state.omega.length()<.03&&sim.contactCount>=3;
+    run.settledFor=settled?run.settledFor+dt:0;
+    const after=run.elapsed-run.touchdownTime;
+    run.settled=run.settledFor>=.3;
+    if(after>=3||(after>=1.5&&run.settled))complete(run,run.settled?'landed':'unsettled');
+  }else if(run.elapsed>=15-1e-9)complete(run,'timeout');
+  return run;
+}

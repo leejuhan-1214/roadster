@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#080d14"><meta name="description" content="압축 기체 추진 자동차의 주행, 비행, 착지를 직접 실험하는 3D 물리 연구실. 유한 탱크, 개별 추진기와 실시간 물리 계측.">
   <title>Roadster Flight Lab — 움직임을 이해하는 실험실</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=20261107-cars1">
+  <link rel="stylesheet" href="./style.css?v=20261107-land1">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
 <body class="quality-smooth">
@@ -13,7 +13,7 @@
 <div id="boot" class="boot"><div class="boot-emblem">R<span>↗</span></div><div class="eyebrow">ROADSTER FLIGHT LAB</div><p id="boot-message">실험 공간을 준비하고 있습니다<span class="loading-dots">…</span></p></div>
 <header class="topbar glass">
   <a class="brand" href="#" aria-label="Roadster Flight Lab 홈"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M6 26V9h15l8 6-8 6H11m8 0 10 9M16 15h9"/></svg><div>ROADSTER<span>FLIGHT LAB</span></div><small>01</small></a>
-  <nav class="mode-nav" aria-label="실험실 모드"><button class="active" data-mode="drive"><span>01</span>실험 주행</button><button data-mode="inspect"><span>02</span>구조 탐색</button><button data-mode="lab"><span>03</span>물리 검증</button></nav>
+  <nav class="mode-nav" aria-label="실험실 모드"><button class="active" data-mode="drive"><span>01</span>실험 주행</button><button data-mode="inspect"><span>02</span>구조 탐색</button><button data-mode="lab"><span>03</span>착지 실험</button></nav>
   <div class="header-actions"><span class="live-state"><i></i><span id="live-label">PHYSICS LIVE</span></span><button id="pause" class="icon-btn" title="일시정지 (P)" aria-label="일시정지">Ⅱ</button><button id="help" class="icon-btn" title="조작 안내" aria-label="도움말">?</button></div>
 </header>
 
@@ -100,14 +100,14 @@
     <div class="inspector-footer"><span id="inspector-state">전체 구성 표시</span><button id="parts-assemble" type="button">조립 초기화 ↺</button></div>
     <details class="custom-import"><summary>사용자 외형 파일</summary><label class="import-btn" for="model-file">＋ 내 GLB 모델 불러오기<input type="file" id="model-file" accept=".glb" hidden></label><p class="micro">GLB: 주행 외형 교체</p></details>
   </div>
-  <div id="lab-panel" hidden><div class="section-label">검증 워크벤치</div><button id="run-validation" class="primary-btn">물리 검증 실행 <span>→</span></button><div id="validation-results" class="validation-results"></div><button id="lab-drop" class="text-btn">자유낙하 직접 관찰 <span>↓</span></button><button id="export" class="text-btn">현재 실험 CSV 저장 <span>↓</span></button></div>
+  <div id="lab-panel" hidden><div id="landing-lab"></div><details class="landing-checks"><summary>물리 검증 · 기존 기록</summary><button id="run-validation" class="primary-btn">물리 검증 실행 <span>→</span></button><div id="validation-results" class="validation-results"></div><button id="lab-drop" class="text-btn">자유낙하 직접 관찰 <span>↓</span></button><button id="export" class="text-btn">현재 실험 CSV 저장 <span>↓</span></button></details></div>
   <div class="model-footnote"><i></i>실차 외형 · 공통 가상 추진계<button id="about-link" aria-label="출처 보기">↗</button></div><p id="vehicle-credit" class="asset-credit"><a href="https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8" target="_blank" rel="noopener noreferrer">3D: metarex.4d</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · 수정 적용</p>
 </aside>
 <aside class="telemetry glass" id="telemetry">
   <div class="panel-heading"><span class="eyebrow">FLIGHT TELEMETRY</span><span id="status-badge" class="status-badge">GROUND</span></div>
   <div class="attitude-display"><div class="attitude-world" id="attitude-world"><div class="horizon-line"></div><div class="horizon-line small one"></div><div class="horizon-line small two"></div></div><div class="attitude-crosshair"><span></span><i></i><span></span></div><div class="attitude-pips">N</div><div class="attitude-values"><span>ROLL <b id="roll">0.0°</b></span><span>PITCH <b id="pitch">0.0°</b></span></div></div>
   <div class="horizontal-velocity"><span>수평 속도</span><strong id="horizontal-speed">0.0 <small>km/h</small></strong><small id="horizontal-ms">0.00 m/s</small></div>
-  <div class="telemetry-pair"><div><span>고도</span><b id="altitude">0.00<small>m</small></b></div><div><span>수직 속도</span><b id="vertical">0.00<small>m/s</small></b></div></div>
+  <div class="telemetry-pair"><div><span id="altitude-label">고도</span><b id="altitude">0.00<small>m</small></b></div><div><span>수직 속도</span><b id="vertical">0.00<small>m/s</small></b></div></div>
   <div class="friction-telemetry">
     <div class="small-data"><span>타이어 접지 마찰력</span><b id="tire-force">0.00 kN</b></div>
     <div class="small-data"><span>차체 공기저항</span><b id="air-force">0.00 kN</b></div>
@@ -135,7 +135,7 @@
 <footer class="bottom-hud"><div class="speed-readout"><span class="speed-num" id="speed">000</span><div><b>수평 km/h</b><small id="drive-state">READY TO EXPLORE</small></div></div><div class="keyboard-guide glass" id="keyboard-guide"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>주행 · 공중 이동</span><span>드래그 · 시점 회전</span><span><kbd>SHIFT</kbd>부스트</span><span><kbd>SPACE</kbd>수직 추력</span><button id="all-controls" aria-label="전체 조작 방법">⌘</button></div><div class="frame-note"><i></i><span>REAL-TIME PHYSICS</span><b id="fps">60 FPS</b></div></footer>
 <div class="touch-controls"><div class="touch-dpad"><button data-key="KeyW" aria-label="가속">▲</button><button data-key="KeyA" aria-label="왼쪽 조향">◀</button><button data-key="KeyS" aria-label="후진 또는 공중 후방 이동">▼</button><button data-key="KeyD" aria-label="오른쪽 조향">▶</button></div><div class="touch-action"><button data-key="KeyB">BRAKE B</button><button data-key="ShiftLeft">BOOST</button><button data-key="Space">LIFT ↑</button></div></div>
 <div id="toast" class="toast" role="status"></div>
-<dialog id="guide-modal"><div class="modal-top"><div><h2>조작 안내</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.11</span></div></dialog>
+<dialog id="guide-modal"><div class="modal-top"><div><h2>조작 안내</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.12</span></div></dialog>
 <dialog id="params-modal"><div class="modal-top"><div><h2>실험 설정</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><p class="muted">적용 시 초기화</p><form id="params-form"><div id="param-fields"></div><div class="param-actions"><button type="button" id="params-default" class="secondary-btn">기본값</button><button type="submit" class="primary-btn">적용하고 초기화 ↗</button></div></form></dialog>
-<script type="module" src="./js/main.js?v=20261107-cars1"></script>
+<script type="module" src="./js/main.js?v=20261107-land1"></script>
 </body></html>

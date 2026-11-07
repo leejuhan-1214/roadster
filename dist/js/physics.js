@@ -209,6 +209,8 @@ export class PhysicsSim {
     this.contactCount = preset === 'drop' || preset === 'flight' ? 0 : 4;
     this.fanForce = 0; this.totalThrust = 0; this.maxThrust = 0;
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
+    this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
+    this.preStepVelocityY=0;this.resolvedAcceleration=new Vector3();this.stepDuration=0;
     this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
     this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
@@ -259,6 +261,8 @@ export class PhysicsSim {
     const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
     this.lastInput = input;
     const mass = this.mass, gravity = Math.max(0, p.gravity);
+    const velocityBefore=s.vel.clone();this.preStepVelocityY=s.vel.y;this.stepDuration=dt;
+    this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
     this.inertia.set(p.inertiaRoll, p.inertiaYaw, p.inertiaPitch);
     const qInv = s.q.clone().invert();
     const omegaWorld = s.omega.clone().applyQuaternion(s.q);
@@ -273,7 +277,7 @@ export class PhysicsSim {
     const layoutMaximum = this.thrusters.map(t => nozzle(this.manifoldPressure, s.temp, t.area));
     for (let i = 0; i < this.thrusters.length; ++i) this.thrusters[i].maxForce = layoutMaximum[i].force;
     const isAirborne = this.contactCount === 0;
-    const enabledControl = isAirborne || input.lift > .01 || input.altHold;
+    const enabledControl = isAirborne || input.lift > .01 || input.altHold || Number.isFinite(input.verticalAcceleration);
     const forward = FORWARD.clone().applyQuaternion(s.q);
     const heading = Math.atan2(-forward.z, forward.x);
     const yawTarget = new Quaternion().setFromAxisAngle(UP, heading);
@@ -308,6 +312,13 @@ export class PhysicsSim {
       const aDesired = clamp((input.targetAcceleration || 0) + 24 * (target - s.pos.y) + 10 * ((input.targetVelocity || 0) - s.vel.y), -gravity, 1.1 * Math.max(gravity, 1));
       const liftWorldY=this.gimbalDirection.clone().applyQuaternion(s.q).y;
       vertical = mass * Math.max(0, gravity + aDesired) * this.gimbalDirection.y / Math.max(.3, liftWorldY);
+    }
+    // Landing experiments request acceleration, never pose or velocity changes.
+    // The same allocation, finite tank, valve lag and force limits still apply.
+    if(Number.isFinite(input.verticalAcceleration)){
+      const aDesired=clamp(input.verticalAcceleration,-gravity,1.1*Math.max(gravity,1));
+      const liftWorldY=this.gimbalDirection.clone().applyQuaternion(s.q).y;
+      vertical=mass*Math.max(0,gravity+aDesired)*this.gimbalDirection.y/Math.max(.3,liftWorldY);
     }
     // Anticipate the first-order valve lag while the swivel changes direction.
     // Only force distribution changes; body attitude remains a result of r × F.
@@ -413,6 +424,7 @@ export class PhysicsSim {
       wheel.steer=wheel.isFront?Math.sign(steering)*Math.atan(p.wheelbase/wheelRadiusToTurn):0;
       const normal=wheel.grounded?Math.max(0,p.springK*compression-p.damperC*cornerVel.dot(n)+900000*Math.max(0,compression-.22)**1.35):0;
       wheel.load=normal;if(normal>0)this.contactCount++;
+      this.groundForceN+=normal*n.y;
       const fwd=new Vector3(Math.cos(wheel.steer),0,-Math.sin(wheel.steer)).applyQuaternion(s.q);fwd.addScaledVector(n,-fwd.dot(n)).normalize();
       const right=new Vector3().crossVectors(fwd,n).normalize(),ux=cornerVel.dot(fwd),uy=cornerVel.dot(right);
       const driveTorque=drive.wheelTorqueNm[index];
@@ -449,6 +461,7 @@ export class PhysicsSim {
         if (penetration > 0) {
           const contactVel = s.vel.clone().add(new Vector3().crossVectors(omegaWorld, r));
           const normal = Math.max(0, 420000 * penetration - 6500 * contactVel.y);
+          this.groundForceN+=normal;this.bodyGroundContacts++;
           const horizontalSpeed = Math.hypot(contactVel.x, contactVel.z);
           const drag = Math.min(normal * Math.min(.45, Math.max(0, p.friction)), horizontalSpeed * mass / Math.max(dt * 8, .02));
           applyAt(new Vector3(horizontalSpeed ? -contactVel.x / horizontalSpeed * drag : 0, normal,
@@ -470,6 +483,7 @@ export class PhysicsSim {
     const spin = s.omega.length();
     if (spin > 1e-12) s.q.multiply(new Quaternion().setFromAxisAngle(s.omega.clone().divideScalar(spin), spin * dt)).normalize();
     if (p.contactEnabled) { this._resolveBrakeStick(dt,input); this._resolveObstacles(); this._resolveGround(); }
+    this.resolvedAcceleration.copy(s.vel).sub(velocityBefore).divideScalar(dt);
     s.time += dt; s.acceleration.copy(acceleration);
     this.lastForce.copy(force); this.lastTorque.copy(torqueBody);
     this.maxAltitude = Math.max(this.maxAltitude, s.pos.y - this.restHeight);
@@ -580,6 +594,7 @@ export class PhysicsSim {
     s.vel.y += impulse / this.mass;
     s.omega.add(cross.multiplyScalar(impulse).applyQuaternion(qInv).divide(this.inertia));
     this.impactImpulse += impulse;
+    this.groundCorrectionImpulseNs+=impulse;
   }
 
   telemetry() {

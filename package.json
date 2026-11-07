@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check dist/js/main.js && node --check dist/js/physics.js && node --check dist/js/scene.js"
+    "check": "node --check dist/js/main.js && node --check dist/js/physics.js && node --check dist/js/scene.js && node --check dist/js/landing-experiment.js && node --check dist/js/landing-ui.js"
   },
   "dependencies": {
     "three": "0.180.0"
