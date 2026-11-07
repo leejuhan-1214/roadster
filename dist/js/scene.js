@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js?v=20261107-gimbal1';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-gimbal1';
-import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js';
+import { createVehicle } from './vehicle.js?v=20261107-inset1';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-inset1';
+import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-inset1';
+import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-inset1';
+import {renderPixelRatio} from './render-quality.js?v=20261107-inset1';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
 // This renderer only reads simulation state. Plumes and marks never exert forces.
@@ -120,13 +122,14 @@ export class FlightScene {
     this.gravityArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1.5,0xff9478,.18,.1);this.scene.add(this.gravityArrow);
     this.fanArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1,0xf6c75f,.18,.1);this.scene.add(this.fanArrow);
     this.contactArrows=Array.from({length:4},()=>{const a=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0x6bb7ff,.15,.07);this.scene.add(a);return a;});
+    this.frictionArrows=Array.from({length:4},()=>{const a=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0xffb052,.14,.07);a.visible=false;this.scene.add(a);return a;});
     this.resize();
   }
 
   setQuality(quality) {
     this.quality=quality==='detail'?'detail':'smooth';
     this.renderer.shadowMap.enabled=this.quality==='detail';
-    this.renderer.shadowMap.needsUpdate=true;
+    this.renderer.shadowMap.needsUpdate=true;this.resize();
     const materials=new Set();this.scene.traverse(o=>{if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
     for(const m of materials){
       if(m.transmission>0||m.userData.detailTransmission>0){
@@ -183,8 +186,8 @@ export class FlightScene {
     const aluminum=new THREE.MeshStandardMaterial({color:0x95aaa9,roughness:.4,metalness:.7});
     const glow=new THREE.MeshBasicMaterial({color:0xa2e4de});
     const building=new THREE.Group();building.position.set(-30,0,-38);this.scene.add(building);
-    mesh(new THREE.BoxGeometry(40,8,15),dark,0,4,0,building);
-    mesh(new THREE.BoxGeometry(41,.45,16),aluminum,0,8.1,0,building);
+    const facilityMesh=(id,mat,parent)=>{const d=FACILITY_SOLIDS.find(o=>o.id===id);return mesh(new THREE.BoxGeometry(...d.size),mat,d.center[0]-parent.position.x,d.center[1]-parent.position.y,d.center[2]-parent.position.z,parent);};
+    facilityMesh('hangar',dark,building);facilityMesh('hangar-roof',aluminum,building);
     for(let i=-18;i<19;i+=2.7)mesh(new THREE.BoxGeometry(.07,7.6,.15),aluminum,i,4,7.58,building);
     for(const x of [-11,11]){
       mesh(new THREE.BoxGeometry(13,5.3,.12),new THREE.MeshStandardMaterial({color:0x13272e,roughness:.3,metalness:.4}),x,2.9,7.65,building);
@@ -195,16 +198,17 @@ export class FlightScene {
     const sub=label('PROPULSION RESEARCH FACILITY',{width:9,height:.42,color:'#8eafba',size:65});sub.position.set(0,6.12,7.81);building.add(sub);
     // A modest tower provides parallax and a legible horizon without dominating the car.
     const tower=new THREE.Group();tower.position.set(-60,0,-70);this.scene.add(tower);
-    mesh(new THREE.BoxGeometry(5,13,5),concrete,0,6.5,0,tower);
-    mesh(new THREE.BoxGeometry(11,3.2,8),dark,0,13,0,tower);
+    facilityMesh('tower-base',concrete,tower);facilityMesh('tower-cabin',dark,tower);
     mesh(new THREE.BoxGeometry(10.7,1.3,8.05),new THREE.MeshStandardMaterial({color:0x79a8bd,metalness:.8,roughness:.17}),0,13.2,0,tower);
     mesh(new THREE.BoxGeometry(12,.3,9),aluminum,0,14.7,0,tower);
     mesh(new THREE.CylinderGeometry(.06,.06,8,8),aluminum,0,18.5,0,tower);
     mesh(new THREE.SphereGeometry(.16,8,8),new THREE.MeshBasicMaterial({color:0xff785d}),0,22.6,0,tower);
-    const barrier=new THREE.InstancedMesh(new THREE.BoxGeometry(2.3,.8,.45),concrete,60);
-    for(let i=0;i<60;i++){tempObj.position.set(-75+i*4, .4,-23);tempObj.rotation.set(0,0,0);tempObj.updateMatrix();barrier.setMatrixAt(i,tempObj.matrix);}barrier.castShadow=true;barrier.receiveShadow=true;this.scene.add(barrier);
-    const mast=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.13,6,8),dark,12);
-    for(let i=0;i<12;i++){tempObj.position.set(-40+i*20,3,21);tempObj.rotation.set(0,0,0);tempObj.updateMatrix();mast.setMatrixAt(i,tempObj.matrix);mesh(new THREE.BoxGeometry(1.4,.12,.35),glow,-40+i*20,6.1,21,this.scene);}this.scene.add(mast);
+    const boundary=FACILITY_SOLIDS.filter(o=>o.id.startsWith('boundary-'));
+    const barrier=new THREE.InstancedMesh(new THREE.BoxGeometry(...boundary[0].size),concrete,boundary.length);
+    for(let i=0;i<boundary.length;i++){tempObj.position.fromArray(boundary[i].center);tempObj.rotation.set(0,0,0);tempObj.updateMatrix();barrier.setMatrixAt(i,tempObj.matrix);}barrier.castShadow=true;barrier.receiveShadow=true;this.scene.add(barrier);
+    const lamps=FACILITY_SOLIDS.filter(o=>o.id.startsWith('lamp-'));
+    const mast=new THREE.InstancedMesh(new THREE.BoxGeometry(...lamps[0].size),dark,lamps.length);
+    for(let i=0;i<lamps.length;i++){tempObj.position.fromArray(lamps[i].center);tempObj.rotation.set(0,0,0);tempObj.updateMatrix();mast.setMatrixAt(i,tempObj.matrix);mesh(new THREE.BoxGeometry(1.4,.12,.35),glow,-40+i*20,6.1,21,this.scene);}this.scene.add(mast);
     // Deterministic distant ridges, intentionally outside the flat test area's collision domain.
     for(let band=0;band<3;band++){
       const verts=[],indices=[];const n=34;const z=-200-band*95;
@@ -213,12 +217,7 @@ export class FlightScene {
       const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(indices);g.computeVertexNormals();
       const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.57,.13,.32+band*.05),roughness:1,side:THREE.DoubleSide}));this.scene.add(m);
     }
-    for(let i=0;i<10;i++){
-      const cone=new THREE.Group();cone.position.set(17+i*3,0,12+(i%2)*1.2);
-      mesh(new THREE.BoxGeometry(.42,.06,.42),new THREE.MeshStandardMaterial({color:0x192a2d,roughness:.95}),0,.03,0,cone);
-      mesh(new THREE.ConeGeometry(.16,.65,16),new THREE.MeshStandardMaterial({color:0xe4a34c,roughness:.65}),0,.38,0,cone);
-      mesh(new THREE.CylinderGeometry(.082,.108,.1,16),new THREE.MeshStandardMaterial({color:0xd9dfd7,roughness:.6}),0,.45,0,cone);this.scene.add(cone);
-    }
+
   }
 
   createParticles() {
@@ -241,7 +240,8 @@ export class FlightScene {
   }
   resize() {
     const rect=this.canvas.getBoundingClientRect();const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
-    this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
+    const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality);
+    this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
   }
   setMode(mode) {
     this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
@@ -410,6 +410,11 @@ export class FlightScene {
     this.fanArrow.position.copy(bodyPosition).add(new THREE.Vector3(-.1,-.25,0).applyQuaternion(q));this.fanArrow.setDirection(tmpV.set(0,-1,0).applyQuaternion(q));this.fanArrow.setLength(Math.max(.3,(this.telemetry.fanN||0)/16000),.16,.09);
     for(let i=0;i<4;i++){const a=this.contactArrows[i],w=wheels?.[i];a.visible=!!options.vectors&&(w?.load||0)>100;if(w){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=.06+(w.surfaceY||0);a.setLength(.25+(w.load||0)/10000,.15,.07);}}
     }else{this.fanArrow.visible=false;for(const a of this.contactArrows)a.visible=false;}
+    for(let i=0;i<4;i++){
+      const a=this.frictionArrows[i],w=wheels[i],force=Math.hypot(w?.forceX||0,w?.forceZ||0);
+      a.visible=!!options.vectors&&mode!=='inspect'&&force>10;
+      if(a.visible){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=(w.surfaceY||0)+.09;a.setDirection(tmpV.set(w.forceX,0,w.forceZ).normalize());a.setLength(.15+Math.min(2.5,force/4500),.14,.07);}
+    }
     if(this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
     this.updateMarks(view);
     this.contactShadow.position.set(position.x,.016,position.z);
@@ -418,7 +423,11 @@ export class FlightScene {
     const height=Math.max(0,position.y-.6);this.contactShadow.scale.setScalar(1+height*.065);
     this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);this.sun.target.position.copy(position);this.sun.target.updateMatrixWorld();
     this.sky.position.set(position.x,0,position.z);
-    if(this.stageVisual)updateStageVisual(this.stageVisual,options.stageProgress||0,this.elapsed);
+    if(this.stageVisual){
+      updateStageVisual(this.stageVisual,options.stageProgress||0,this.elapsed);
+      const hit=this.telemetry.lastObstacleImpact;
+      for(const [id,g] of this.stageVisual.userData.obstacles){const mat=g.children[0]?.material;if(mat?.emissive){mat.emissive.setHex(0xff6e34);mat.emissiveIntensity=hit?.id===id?Math.max(0,1-(sim.state.time-hit.lastTime)/1.4)*.8:0;}}
+    }
     this.updateCamera(view,dt);
     this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=1/20){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
     this.renderer.render(this.scene,this.camera);
@@ -461,6 +470,7 @@ export class FlightScene {
       const t=thrusters[i],power=clamp((t.force||0)/14000,0,1),worldPosition=t.pos.clone().applyQuaternion(state.q).add(state.pos),forceDir=t.dir.clone().applyQuaternion(state.q);
       const nozzle=this.vehicle.gimbalNozzles?.[i];
       if(nozzle&&!this.hasCustomModel){nozzle.updateWorldMatrix(true,false);worldPosition.copy(nozzle.userData.exitOffset).applyMatrix4(nozzle.matrixWorld);}
+      else if(!this.hasCustomModel&&i>=4&&i<6&&this.vehicle.jetMounts?.[i])worldPosition.copy(this.vehicle.jetMounts[i].pos).applyQuaternion(state.q).add(sim.bodyPosition);
       const plume=this.jets[i];plume.visible=power>.005&&this.mode!=='inspect';
       plume.position.copy(worldPosition);
       // Cone extends along -Y, so local +Y is the reaction-force direction.
@@ -483,6 +493,7 @@ export class FlightScene {
       if(this.particlePositions[i*3+1]<.04){this.particlePositions[i*3+1]=.04;p.vel.y=Math.abs(p.vel.y)*.1;p.vel.x*=1.02;p.vel.z*=1.02;}
       this.particleAlphas[i]=.3*(p.life/p.maxLife);this.particleSizes[i]+=dt*.9;
     }
+    this.particlePoints.visible=particlesActive;
     if(particlesActive){
     this.particleGeometry.attributes.position.needsUpdate=true;this.particleGeometry.attributes.opacity.needsUpdate=true;this.particleGeometry.attributes.size.needsUpdate=true;
     }

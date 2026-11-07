@@ -1,11 +1,12 @@
-import { RenderStateBuffer } from './render-state.js?v=20261107-gimbal1';
-import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-gimbal1';
-import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-gimbal1';
-import { FlightScene } from './scene.js?v=20261107-gimbal1';
-import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-gimbal1';
-import { COURSE, createStageRun, updateStageRun } from './stage.js';
-import { manualInput } from './controls.js?v=20261107-gimbal1';
-import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput, getLevelMoveInput } from './flight-plan.js?v=20261107-gimbal1';
+import { RenderStateBuffer } from './render-state.js?v=20261107-inset1';
+import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-inset1';
+import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-inset1';
+import { FlightScene } from './scene.js?v=20261107-inset1';
+import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-inset1';
+import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-inset1';
+import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-inset1';
+import { manualInput } from './controls.js?v=20261107-inset1';
+import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput, getLevelMoveInput } from './flight-plan.js?v=20261107-inset1';
 
 const $ = id => document.getElementById(id);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -13,7 +14,7 @@ const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
 const escape = text => String(text ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sim = new PhysicsSim();
 const renderStates=new RenderStateBuffer(sim);
-let frictionRun=null,lastInput={};const frictionResults=[];
+let frictionRun=null,collisionRun=null,lastInput={};const frictionResults=[];
 let scene,selectedPartId=null;
 let mode='drive',camera='chase',paused=false,paint='#b51627',showVectors=false;
 let previousPause=false,scenario='ground',demo=null,stage=null,lastStamp=0,accumulator=0,lastUI=0,lastSample=0,frames=0,frameTimer=0;
@@ -24,7 +25,8 @@ const STEP=.002;
 
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function setPaused(value){paused=value;accumulator=0;renderStates.reset(sim);$('pause').textContent=paused?'▶':'Ⅱ';$('pause').setAttribute('aria-label',paused?'재생':'일시정지');$('live-label').textContent=paused?'PHYSICS PAUSED':'PHYSICS LIVE';}
-function reset(preset='ground',message=true){sim.setObstacles([]);scene?.setStage(null);stage=null;sim.reset(preset);lastInput={};renderStates.reset(sim);frictionRun=null;$('friction-run-status').textContent='동일한 72 km/h에서 5초 동안 비교합니다.';demo=null;$('altHold').checked=false;$('height-setting').classList.remove('show');keys.clear();samples.length=0;trace.length=0;lastSample=0;accumulator=0;scenario=preset;$$('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===preset));if(message)toast(preset==='drop'?'3 m 자유낙하 · 충격과 서스펜션 감쇠를 관찰하세요.':'차량과 탱크를 초기화했습니다.');}
+function applySandbox(enabled=$('obstacles-enabled').checked){$('obstacles-enabled').checked=enabled;$('obstacles-enabled').disabled=false;sim.setObstacles(experimentObstacles(enabled?'sandbox':'clear'));scene?.setStage(enabled?SANDBOX:null);$('obstacle-status').textContent=enabled?'장애물 6개 · 접촉과 충돌 적용':'시험 장애물 없음 · 외곽 시설 충돌 유지';}
+function reset(preset='ground',message=true){stage=null;collisionRun=null;applySandbox();sim.reset(preset);lastInput={};renderStates.reset(sim);frictionRun=null;$('friction-run-status').textContent='동일한 72 km/h에서 5초 동안 비교합니다.';demo=null;$('altHold').checked=false;$('height-setting').classList.remove('show');keys.clear();samples.length=0;trace.length=0;lastSample=0;accumulator=0;scenario=preset;$$('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===preset));if(message)toast(preset==='drop'?'3 m 자유낙하 · 충격과 서스펜션 감쇠를 관찰하세요.':'차량과 탱크를 초기화했습니다.');}
 function setMode(next){
   if(next===mode)return;
   const wasInspect=mode==='inspect';mode=next;keys.clear();demo=null;cancelFrictionRun();
@@ -44,7 +46,7 @@ function setMode(next){
 }
 function startDemo(){
   if(mode==='inspect')setMode('drive');
-  reset('ground',false);$('fan').checked=false;$('altHold').checked=false;$('height-setting').classList.remove('show');$('stabilize').checked=true;setPaused(false);
+  reset('ground',false);applySandbox(false);$('fan').checked=false;$('altHold').checked=false;$('height-setting').classList.remove('show');$('stabilize').checked=true;setPaused(false);
   scenario='hop';demo=createGuidedRun($('hop-profile').value,sim.state.time);
   $$('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario==='hop'));
   toast(`${demo.profile.label} 자동 도약 · 팬을 끄고 상승·착지 감속에 기체를 사용합니다.`);
@@ -56,7 +58,7 @@ function startLevelDemo(){
 }
 function startStage(){
   if(mode!=='drive')setMode('drive');
-  reset('ground',false);sim.setObstacles(COURSE.obstacles);scene.setStage(COURSE);
+  reset('ground',false);sim.setObstacles([...FACILITY_SOLIDS,...COURSE.obstacles]);scene.setStage(COURSE);$('obstacle-status').textContent='도약 코스 · 장애물 충돌 적용';$('obstacles-enabled').checked=true;$('obstacles-enabled').disabled=true;
   stage=createStageRun(sim.state.time);scenario='stage';camera='chase';scene.setCamera(camera);scene.frameStageStart(sim);$('camera-label').textContent='추적 카메라';
   $('fan').checked=false;$('stabilize').checked=true;setPaused(false);
   $$('[data-scenario]').forEach(b=>b.classList.remove('active'));
@@ -86,6 +88,10 @@ function stepSimulation(dt){
     updateFrictionRun(frictionRun,sim);
     if(frictionRun.done){frictionResults.unshift(frictionRun);frictionResults.length=Math.min(frictionResults.length,4);frictionRun=null;renderFrictionResults();setPaused(true);toast('5초 비교 완료 · 속도와 이동거리를 확인하세요.');}
   }
+  if(collisionRun){
+    if(sim.lastObstacleImpact&&collisionRun.impactTime===null)collisionRun.impactTime=sim.state.time;
+    if(collisionRun.impactTime!==null&&sim.state.time-collisionRun.impactTime>.6){collisionRun=null;setPaused(true);toast('충돌 실험 완료 · 충돌 직전 법선 속도와 충격량을 확인하세요.');}
+  }
   if(previous){
     updateStageRun(stage,previous,sim,dt);
     if(stage.lastEvent)toast(stage.status==='complete'?`STAGE CLEAR · ${stage.elapsed.toFixed(1)}초 완료`:stage.lastEvent.label+' 통과');
@@ -93,6 +99,7 @@ function stepSimulation(dt){
   }
 }
 function getInput(){
+  if(collisionRun)return {stabilize:false,fan:false,wing:false};
   if(frictionRun)return frictionRunInput(frictionRun);
   const input=manualInput(keys,sim.contactCount===0,{
     stabilize:$('stabilize').checked,altHold:$('altHold').checked,
@@ -106,9 +113,16 @@ function getInput(){
   }
   return input;
 }
-function cancelFrictionRun(){if(frictionRun){frictionRun=null;$('friction-run-status').textContent='조건 또는 조작 변경으로 실험을 중단했습니다.';}}
+function cancelFrictionRun(){collisionRun=null;if(frictionRun){frictionRun=null;$('friction-run-status').textContent='조건 또는 조작 변경으로 실험을 중단했습니다.';}}
+function startCollisionDemo(){
+ if(mode!=='drive')setMode('drive');reset('ground',false);$('obstacles-enabled').checked=true;applySandbox(true);
+ for(const id of ['fan','wing','stabilize','altHold'])$(id).checked=false;
+ sim.state.vel.x=12;for(const w of sim.wheels)w.omega=12/sim.params.wheelRadius;renderStates.reset(sim);
+ collisionRun={impactTime:null};camera='chase';scene.setCamera(camera);scene.frameStageStart(sim);$('camera-label').textContent='추적 카메라';setPaused(false);
+ toast('43.2 km/h 정면 충돌 실험 · 접촉 후 결과를 정지해서 보여줍니다.');
+}
 function startFrictionRun(kind){
- if(mode==='inspect')setMode('drive');reset('rolling',false);
+ if(mode==='inspect')setMode('drive');reset('rolling',false);applySandbox(false);
  for(const id of ['fan','wing','stabilize','altHold'])$(id).checked=false;
  frictionRun=createFrictionRun(kind,sim);setPaused(false);camera='chase';scene.setCamera(camera);scene.frameStageStart(sim);$('camera-label').textContent='추적 카메라';
  $('world').focus({preventScroll:true});toast('초기 수평속도 72 km/h · '+(kind==='brake'?'브레이크 ON':'가속·제동 OFF')+' · 5초 비교');
@@ -161,8 +175,14 @@ function selectPart(id){
 }
 function updateUI(realDt){
   updateStageUI();
-  if(frameSamples.length){const sorted=frameSamples.map(s=>s.ms).sort((a,b)=>a-b);const avg=frameSamples.reduce((s,f)=>s+f.ms,0)/frameSamples.length;const cpu=frameSamples.reduce((s,f)=>s+f.physics,0)/frameSamples.length;const render=frameSamples.reduce((s,f)=>s+f.render,0)/frameSamples.length;$('performance-readout').textContent=(1000/avg).toFixed(0)+' FPS · '+avg.toFixed(1)+' ms';$('performance-details').textContent='물리 '+cpu.toFixed(1)+' ms · 화면 '+render.toFixed(1)+' ms · P95 '+sorted[Math.floor((sorted.length-1)*.95)].toFixed(1)+' ms · '+scene.renderer.info.render.calls+' draw / '+scene.renderer.info.render.triangles+' triangles';}
+  if(frameSamples.length){const sorted=frameSamples.map(s=>s.ms).sort((a,b)=>a-b);const avg=frameSamples.reduce((s,f)=>s+f.ms,0)/frameSamples.length;const cpu=frameSamples.reduce((s,f)=>s+f.physics,0)/frameSamples.length;const render=frameSamples.reduce((s,f)=>s+f.render,0)/frameSamples.length;$('performance-readout').textContent=(1000/avg).toFixed(0)+' FPS · '+avg.toFixed(1)+' ms';$('performance-details').textContent='물리 '+cpu.toFixed(1)+' ms · 화면 '+render.toFixed(1)+' ms · P95 '+sorted[Math.floor((sorted.length-1)*.95)].toFixed(1)+' ms · '+scene.renderer.info.render.calls+' draw / '+scene.renderer.info.render.triangles+' triangles · '+scene.canvas.width+'×'+scene.canvas.height+' px';}
   const t=sim.telemetry();
+  const impact=t.lastObstacleImpact;
+  $('collision-readout').textContent=impact?(impact.speed*3.6).toFixed(1)+' km/h · '+(impact.impulse/1000).toFixed(2)+' kN·s':'아직 충돌 없음';
+  $('collision-detail').textContent=impact?'접촉 '+t.collisionCount+'회 · '+([...SANDBOX.obstacles,...COURSE.obstacles,...FACILITY_SOLIDS].find(o=>o.id===impact.id)?.label||'시설 구조물')+' · T '+impact.time.toFixed(2)+' s':'충돌 직전 법선 속도 / 충격량';
+  $('grip-usage').textContent=(t.gripUsage*100).toFixed(0)+'%';
+  $('grip-bar').style.width=Math.min(100,t.gripUsage*100)+'%';
+  $('grip-bar').classList.toggle('limit',t.gripUsage>.95);
   if(frictionRun)$('friction-run-status').textContent=(frictionRun.kind==='brake'?'제동':'타력')+' 비교 '+frictionRun.elapsed.toFixed(1)+' / 5.0 s · '+frictionRun.distance.toFixed(1)+' m';
   $('rolling-force').textContent=(t.rollingResistanceN/1000).toFixed(2)+' kN';$('brake-force').textContent=(t.brakeForceN/1000).toFixed(2)+' kN';
   $('ground-action').textContent=paused?'일시정지 · 마지막 계산값':t.contactCount===0?'공중 · 노면 마찰 0':lastInput.brake?'접지 · 제동 중':Math.abs(lastInput.throttle||0)>0?'접지 · 가속 중':'접지 · 타력 주행';
@@ -182,13 +202,14 @@ function updateUI(realDt){
   $('status-badge').textContent=paused?'PAUSED':t.status;$('drive-state').textContent=demo?'GUIDED FLIGHT':t.contactCount===0?'THRUSTER FLIGHT':t.speed>.5?'GROUND DRIVE':'READY TO EXPLORE';
   const time=sim.state.time;$('sim-time').textContent=`T + ${String(Math.floor(time/60)).padStart(2,'0')}:${(time%60).toFixed(2).padStart(5,'0')}`;
   let message='',warning=false;
-  if(demo)message=demo.vector?'VECTOR FLIGHT · 노즐 방향 전환 · 차체 수평 제어':`GUIDED FLIGHT · ${demo.profile.label} 수직 도약 진행 중`;
+  if(t.lastObstacleImpact&&time-t.lastObstacleImpact.lastTime<1.5){message='충돌 · '+(t.lastObstacleImpact.speed*3.6).toFixed(1)+' km/h · '+(t.lastObstacleImpact.impulse/1000).toFixed(2)+' kN·s';warning=true;}
+  else if(demo)message=demo.vector?'VECTOR FLIGHT · 노즐 방향 전환 · 차체 수평 제어':`GUIDED FLIGHT · ${demo.profile.label} 수직 도약 진행 중`;
   else if(t.contactCount===0&&t.pressureMPa<8){message='추력 여유 부족 · 착지 감속에 주의하세요';warning=true;}
   else if(t.saturation&&t.contactCount===0){message='추진기 출력 한계 · 목표 자세/고도에 도달하지 못할 수 있습니다';warning=true;}
   else if(t.gasPct<1){message='사용 가능한 기체가 부족합니다 · R로 초기화';warning=true;}
   else if(t.contactCount===0&&Math.abs(roll)>70){message='기울어진 추력 · 수직 성분이 감소합니다';warning=true;}
   $('flight-alert').hidden=!message||mode==='inspect';$('flight-alert').textContent=message;$('flight-alert').classList.toggle('warning',warning);
-  if(time-lastSample>=.05){lastSample=time;const row={time_s:time,x_m:sim.state.pos.x,y_m:sim.state.pos.y,z_m:sim.state.pos.z,speed_m_s:t.speed,horizontal_speed_m_s:t.horizontalSpeed,friction_force_N:t.frictionForceN,rolling_resistance_N:t.rollingResistanceN,brake_force_N:t.brakeForceN,rolling_coefficient:sim.params.rollingResistance,body_air_drag_N:t.airDragN,friction_coefficient:sim.params.friction,gimbal_deg:t.gimbalAngleDeg,gimbal_forward_deg:t.gimbalForwardDeg,gimbal_right_deg:t.gimbalRightDeg,altitude_m:t.altitude,vertical_speed_m_s:t.verticalSpeed,pressure_abs_MPa:t.pressureMPa,gas_kg:t.gasKg,temp_K:t.temperature,thrust_N:t.thrustN,fan_N:t.fanN,mass_kg:t.totalMass,contacts:t.contactCount,roll_rad:t.attitude.roll,pitch_rad:t.attitude.pitch,yaw_rad:t.attitude.yaw,kinetic_J:t.kineticEnergy,potential_J:t.potentialEnergy,spring_J:t.springEnergy,battery_pct:t.batteryPct};samples.push(row);if(samples.length>18000)samples.shift();trace.push([time,t.altitude]);while(trace.length&&trace[0][0]<time-12)trace.shift();}
+  if(time-lastSample>=.05){lastSample=time;const row={time_s:time,x_m:sim.state.pos.x,y_m:sim.state.pos.y,z_m:sim.state.pos.z,speed_m_s:t.speed,horizontal_speed_m_s:t.horizontalSpeed,friction_force_N:t.frictionForceN,rolling_resistance_N:t.rollingResistanceN,brake_force_N:t.brakeForceN,rolling_coefficient:sim.params.rollingResistance,body_air_drag_N:t.airDragN,friction_coefficient:sim.params.friction,grip_usage:t.gripUsage,collision_count:t.collisionCount,collision_speed_m_s:t.lastObstacleImpact?.speed||0,collision_impulse_Ns:t.lastObstacleImpact?.impulse||0,gimbal_deg:t.gimbalAngleDeg,gimbal_forward_deg:t.gimbalForwardDeg,gimbal_right_deg:t.gimbalRightDeg,altitude_m:t.altitude,vertical_speed_m_s:t.verticalSpeed,pressure_abs_MPa:t.pressureMPa,gas_kg:t.gasKg,temp_K:t.temperature,thrust_N:t.thrustN,fan_N:t.fanN,mass_kg:t.totalMass,contacts:t.contactCount,roll_rad:t.attitude.roll,pitch_rad:t.attitude.pitch,yaw_rad:t.attitude.yaw,kinetic_J:t.kineticEnergy,potential_J:t.potentialEnergy,spring_J:t.springEnergy,battery_pct:t.batteryPct};samples.push(row);if(samples.length>18000)samples.shift();trace.push([time,t.altitude]);while(trace.length&&trace[0][0]<time-12)trace.shift();}
   drawTrace();
 }
 function drawTrace(){const canvas=$('trace'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#7b9baf18';ctx.lineWidth=1;for(let y=20;y<h;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}if(trace.length<2)return;const max=Math.max(1,...trace.map(v=>v[1]))*1.15;const points=trace.map(v=>[(v[0]-(sim.state.time-12))/12*w,h-12-v[1]/max*(h-25)]);ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.strokeStyle='#a2f5db';ctx.lineWidth=2;ctx.stroke();ctx.lineTo(points.at(-1)[0],h);ctx.lineTo(points[0][0],h);ctx.closePath();let g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#a2f5db28');g.addColorStop(1,'#a2f5db00');ctx.fillStyle=g;ctx.fill();}
@@ -213,7 +234,9 @@ function setupUI(){
   scene.setHypothesesVisible(true);
   $('fan').checked=false;
   $('level-demo').addEventListener('click',startLevelDemo);
-  $('render-quality').addEventListener('change',()=>{scene.setQuality($('render-quality').value);frameSamples.length=0;});
+  $('render-quality').addEventListener('change',()=>{scene.setQuality($('render-quality').value);document.body.classList.toggle('quality-smooth',scene.quality==='smooth');frameSamples.length=0;});
+  $('obstacles-enabled').addEventListener('change',()=>{reset('ground',false);setPaused(false);toast('장애물 배치를 변경하고 차량을 초기화했습니다.');});
+  $('collision-demo').addEventListener('click',startCollisionDemo);
   $('rolling-resistance').addEventListener('input',()=>{cancelFrictionRun();sim.params.rollingResistance=Number($('rolling-resistance').value);$('rolling-value').textContent=sim.params.rollingResistance.toFixed(3);});
   $('coast-test').addEventListener('click',()=>startFrictionRun('coast'));$('brake-test').addEventListener('click',()=>startFrictionRun('brake'));
   $('road-surface').addEventListener('change',()=>{cancelFrictionRun();const value=Number($('road-surface').value);if(Number.isFinite(value))sim.params.friction=value;$('world').focus({preventScroll:true});toast('접지력 한도 μ 변경 · 72 km/h 제동 실험으로 차이를 비교하세요.');});
@@ -283,7 +306,7 @@ function animate(stamp){
   requestAnimationFrame(animate);
 }
 try{
-  scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent={chase:'추적 카메라',orbit:'자유 카메라',top:'상부 카메라'}[value];});setupUI();updateUI(0);requestAnimationFrame(animate);
+  scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent={chase:'추적 카메라',orbit:'자유 카메라',top:'상부 카메라'}[value];});setupUI();applySandbox();updateUI(0);requestAnimationFrame(animate);
   scene.loadRoadsterModel().then(status=>{if(!status.ok)throw status.error||new Error('Roadster model load failed');$('vehicle-title').innerHTML='Tesla <em>Roadster</em>';$('model-status').textContent='2020 CONCEPT · CC BY 4.0';refreshPartCatalog();toast('Tesla Roadster 2020 외형을 불러왔습니다. 추진계와 물리 사양은 교육용 가정입니다.');}).catch(err=>{$('model-status').textContent='외형 로드 실패 · 대체 차체';$('catalog-summary').textContent='원본 로드 실패 · 새로고침해 주세요';toast('Roadster 외형을 불러오지 못해 대체 차체를 표시합니다. 새로고침하면 다시 시도합니다.');console.error(err);});
   $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
   // Read-only convenience for local diagnostics; UI remains the supported interaction.

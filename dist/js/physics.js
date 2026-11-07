@@ -1,4 +1,5 @@
 import { Vector3, Quaternion, Euler } from 'three';
+import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-inset1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -48,7 +49,7 @@ export const GIMBAL_LIMIT=25*Math.PI/180,GIMBAL_RATE=120*Math.PI/180;
 
 // Fy is the body-Y component. Account for the moment of lateral thrust below CG.
 export function allocateLift(vertical,tx,tz,direction,cg,maxima){
- const gx=direction.x/direction.y,gz=direction.z/direction.y,h=-.20-cg.y,a=.86,b=1.08;
+ const gx=direction.x/direction.y,gz=direction.z/direction.y,h=LIFT_LAYOUT.y-cg.y,a=LIFT_LAYOUT.x,b=LIFT_LAYOUT.z;
  const x=[a,a,-a,-a],z=[-b,b,-b,b],sign=[-1,1,1,-1];
  const support=x.map((xi,i)=>.25+z[i]*(cg.z+h*gz)/(4*b*b)+xi*(cg.x+h*gx)/(4*a*a));
  const moment=x.map((xi,i)=>-z[i]*tx/(4*b*b)+xi*tz/(4*a*a));
@@ -71,8 +72,8 @@ export function allocateLift(vertical,tx,tz,direction,cg,maxima){
  return {thrust,yawTorque,saturated};
 }
 const BOX_AXES = [new Vector3(1,0,0), new Vector3(0,1,0), new Vector3(0,0,1)];
-const BODY_HALF = [1.95, .435, .87];
-const BODY_BOX_CENTER = new Vector3(0, .115, 0);
+const BODY_HALF = BODY_ENVELOPE.half;
+const BODY_BOX_CENTER = new Vector3(...BODY_ENVELOPE.center);
 
 // Oriented chassis box versus a static axis-aligned obstacle. This is a contact
 // envelope, not the render mesh, tire deformation, or structural damage model.
@@ -126,11 +127,11 @@ export function rocketReference(mInitial, mFinal, effectiveVelocity) {
 
 function makeThrusters() {
   const result = [];
-  for (const x of [.86, -.86]) for (const z of [-1.08, 1.08])
+  for (const x of [LIFT_LAYOUT.x, -LIFT_LAYOUT.x]) for (const z of [-LIFT_LAYOUT.z, LIFT_LAYOUT.z])
     result.push({ name: `${x > 0 ? '전' : '후'}${z < 0 ? '좌' : '우'} 수직`, group: 'lift',
-      pos: new Vector3(x, -.20, z), dir: new Vector3(0, 1, 0), area: .00035 });
-  for (const z of [-.56, .56]) result.push({ name: z < 0 ? '후방 좌 추진' : '후방 우 추진', group: 'boost',
-    pos: new Vector3(-1.92, -.05, z), dir: new Vector3(1, 0, 0), area: .00025 });
+      pos: new Vector3(x, LIFT_LAYOUT.y, z), dir: new Vector3(0, 1, 0), area: .00035 });
+  for (const z of [-BOOST_LAYOUT.z, BOOST_LAYOUT.z]) result.push({ name: z < 0 ? '후방 좌 추진' : '후방 우 추진', group: 'boost',
+    pos: new Vector3(BOOST_LAYOUT.x, BOOST_LAYOUT.y, z), dir: new Vector3(1, 0, 0), area: .00025 });
   result.push(
     { name: '전방 요 +', group: 'yaw+', pos: new Vector3(1.35, 0, .87), dir: new Vector3(0, 0, -1), area: .00004 },
     { name: '후방 요 +', group: 'yaw+', pos: new Vector3(-1.35, 0, -.87), dir: new Vector3(0, 0, 1), area: .00004 },
@@ -194,8 +195,8 @@ export class PhysicsSim {
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
     this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
     this.history = [];
-    this.obstacleContacts = []; this.lastObstacleImpact = null;
-    for (const w of this.wheels) { w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
+    this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
+    for (const w of this.wheels) { w.forceX=0;w.forceZ=0;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
       w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
@@ -260,6 +261,7 @@ export class PhysicsSim {
     const airMoveActive=moveLength>1e-5;
     // WASD steers the nozzles, while the attitude target remains level at current heading.
     // A bounded actuator moves continuously; it cannot alter the body's pose or velocity.
+    const oldGx=this.gimbalDirection.x/this.gimbalDirection.y,oldGz=this.gimbalDirection.z/this.gimbalDirection.y;
     const targetX=GIMBAL_LIMIT*moveForward,targetZ=GIMBAL_LIMIT*moveRight;
     const deltaX=targetX-this.gimbalX,deltaZ=targetZ-this.gimbalZ,delta=Math.hypot(deltaX,deltaZ);
     const fraction=delta>0?Math.min(1,GIMBAL_RATE*dt/delta):0;
@@ -284,6 +286,11 @@ export class PhysicsSim {
       const liftWorldY=this.gimbalDirection.clone().applyQuaternion(s.q).y;
       vertical = mass * Math.max(0, gravity + aDesired) * this.gimbalDirection.y / Math.max(.3, liftWorldY);
     }
+    // Anticipate the first-order valve lag while the swivel changes direction.
+    // Only force distribution changes; body attitude remains a result of r × F.
+    const lead=Math.max(.001,Number(p.valveTau)||.03)*(LIFT_LAYOUT.y-this.cg.y)*vertical/dt;
+    tx-=lead*(this.gimbalDirection.z/this.gimbalDirection.y-oldGz);
+    tz+=lead*(this.gimbalDirection.x/this.gimbalDirection.y-oldGx);
     const allocation=allocateLift(vertical,tx,tz,this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force));
     // Parallel lift vectors couple yaw to roll/pitch. Side RCS counters that moment.
     const yawRequest=ty-allocation.yawTorque;
@@ -399,6 +406,7 @@ export class PhysicsSim {
       }
       wheel.rollingResistanceN=Math.abs(rolling);this.rollingResistanceN+=wheel.rollingResistanceN;
       wheel.tireForceN = Math.hypot(fx + rolling, fy);
+      wheel.forceX=fwd.x*(fx+rolling)+right.x*fy;wheel.forceZ=fwd.z*(fx+rolling)+right.z*fy;
       if (normal > 0) {
         const horizontalForce = fwd.clone().multiplyScalar(fx + rolling).addScaledVector(right, fy);
         tireResultant.add(horizontalForce);
@@ -430,7 +438,7 @@ export class PhysicsSim {
 
     // Body skid contact is separate from suspension; forces and impulses are explicit.
     if (p.contactEnabled) {
-      for (const x of [-1.95, 1.95]) for (const y of [-.32, .55]) for (const z of [-.87, .87]) {
+      for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
         const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q);
         const penetration = .006 - (s.pos.y + r.y);
         if (penetration > 0) {
@@ -456,12 +464,43 @@ export class PhysicsSim {
     s.omega.addScaledVector(angularAcceleration, dt);
     const spin = s.omega.length();
     if (spin > 1e-12) s.q.multiply(new Quaternion().setFromAxisAngle(s.omega.clone().divideScalar(spin), spin * dt)).normalize();
-    if (p.contactEnabled) { this._resolveObstacles(); this._resolveGround(); }
+    if (p.contactEnabled) { this._resolveBrakeStick(dt,input); this._resolveObstacles(); this._resolveGround(); }
     s.time += dt; s.acceleration.copy(acceleration);
     this.lastForce.copy(force); this.lastTorque.copy(torqueBody);
     this.maxAltitude = Math.max(this.maxAltitude, s.pos.y - this.restHeight);
     if (this.lastContactCount === 0 && this.contactCount > 0) this.lastImpactSpeed = Math.abs(s.vel.y - acceleration.y * dt);
     this.maxG = Math.max(this.maxG, acceleration.clone().addScaledVector(UP, gravity).length() / Math.max(gravity, .001));
+  }
+
+  _resolveBrakeStick(dt,input) {
+    // A held brake can sustain static friction at near-zero contact speed.
+    // Project impulses into each tire's remaining Coulomb/brake budget instead
+    // of zeroing the vehicle velocity (which would also stop it on ice/in air).
+    const s=this.state,p=this.params;
+    if(!(input.brake>0)||!(p.friction>0)||Math.hypot(s.vel.x,s.vel.z)>.5)return;
+    const qi=s.q.clone().invert(),inverseMass=1/this.mass;
+    const contacts=this.wheels.filter(w=>w.load>1&&Math.abs(w.omega*p.wheelRadius)<.1).map(w=>{
+      const r=w.pos.clone().applyQuaternion(s.q);r.y=w.surfaceY-s.pos.y;
+      const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);forward.y=0;forward.normalize();
+      const side=new Vector3().crossVectors(forward,UP);
+      return {w,r,forward,side,j:new Vector3(w.forceX*dt,0,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/p.wheelRadius+(w.rollingResistanceN||0))*dt};
+    });
+    for(let pass=0;pass<6;pass++)for(const c of contacts)for(const axis of [c.forward,c.side]){
+      const velocity=s.vel.clone().add(new Vector3().crossVectors(s.omega.clone().applyQuaternion(s.q),c.r));
+      const cross=new Vector3().crossVectors(c.r,axis);
+      const invRot=cross.clone().applyQuaternion(qi).divide(this.inertia).applyQuaternion(s.q);
+      const candidate=c.j.clone().addScaledVector(axis,-velocity.dot(axis)/(inverseMass+cross.dot(invRot)));
+      const longitudinal=candidate.dot(c.forward);
+      candidate.addScaledVector(c.forward,clamp(longitudinal,-c.longLimit,c.longLimit)-longitudinal);
+      if(candidate.length()>c.limit)candidate.setLength(c.limit);
+      const change=candidate.clone().sub(c.j);c.j.copy(candidate);
+      s.vel.addScaledVector(change,inverseMass);
+      s.omega.add(new Vector3().crossVectors(c.r,change).applyQuaternion(qi).divide(this.inertia));
+    }
+    for(const c of contacts){c.w.forceX=c.j.x/dt;c.w.forceZ=c.j.z/dt;c.w.tireForceN=c.j.length()/dt;}
+    const resultant=new Vector3();this.brakeForceN=0;
+    for(const w of this.wheels){resultant.add(new Vector3(w.forceX,0,w.forceZ));const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);this.brakeForceN+=Math.abs(w.forceX*forward.x+w.forceZ*forward.z);}
+    this.frictionForceN=resultant.length();
   }
 
   _resolveObstacles() {
@@ -502,7 +541,11 @@ export class PhysicsSim {
           applyImpulse(tangent.multiplyScalar(-frictionImpulse));
         }
         this.impactImpulse+=normalImpulse;
-        if(normalSpeed<-.3)this.lastObstacleImpact={id:box.id,speed:-normalSpeed,time:s.time,impulse:normalImpulse};
+        if(normalSpeed<-.3){
+          const previous=this.lastObstacleImpact;
+          if(previous&&previous.id===box.id&&s.time-previous.lastTime<.2){previous.speed=Math.max(previous.speed,-normalSpeed);previous.impulse+=normalImpulse;previous.lastTime=s.time;}
+          else {this.collisionCount++;this.lastObstacleImpact={id:box.id,speed:-normalSpeed,time:s.time,lastTime:s.time,impulse:normalImpulse};}
+        }
       }
       if(!any)break;
     }
@@ -511,7 +554,7 @@ export class PhysicsSim {
   _resolveGround() {
     const s = this.state;
     let lowest = Infinity, rLow = null;
-    for (const x of [-1.95, 1.95]) for (const y of [-.32, .55]) for (const z of [-.87, .87]) {
+    for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
       const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q), height = s.pos.y + r.y;
       if (height < lowest) { lowest = height; rLow = r; }
     }
@@ -558,7 +601,8 @@ export class PhysicsSim {
       massBalanceError: Math.abs(s.gas + s.gasUsed - this.initialGas),
       tankEnergyBalanceError: Math.abs(s.gas * CV * s.temp + s.expelledEnthalpy - this.initialEnergy),
       groundHeight: this.restHeight, time: s.time, cgOffset: this.cg.clone(), inertia: this.inertia.clone(),
-      obstacleContacts: [...this.obstacleContacts], lastObstacleImpact: this.lastObstacleImpact,
+      obstacleContacts: [...this.obstacleContacts], lastObstacleImpact: this.lastObstacleImpact, collisionCount:this.collisionCount,
+      gripUsage:Math.max(0,...this.wheels.map(w=>w.load>1&&p.friction>0?w.tireForceN/(p.friction*w.load):0)),
       frontAxleLoad: this.wheels.filter(w => w.isFront).reduce((sum, w) => sum + w.load, 0),
       rearAxleLoad: this.wheels.filter(w => !w.isFront).reduce((sum, w) => sum + w.load, 0),
     };

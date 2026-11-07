@@ -12,7 +12,7 @@ test('vector allocator conserves commanded vertical force and cancels off-axis r
  for(const cg of [new Vector3(),new Vector3(.2,.1,-.1)])for(const direction of [new Vector3(.3,1,0).normalize(),new Vector3(.25,1,-.3).normalize()]){
   const V=21000,tx=450,tz=-700,result=allocateLift(V,tx,tz,direction,cg,[18000,18000,18000,18000]);
   const force=new Vector3(),torque=new Vector3();let i=0;
-  for(const x of [.86,-.86])for(const z of [-1.08,1.08]){const r=new Vector3(x,-.2,z).sub(cg),f=direction.clone().multiplyScalar(result.thrust[i++]);force.add(f);torque.add(new Vector3().crossVectors(r,f));}
+  for(const x of [.86,-.86])for(const z of [-.80,.80]){const r=new Vector3(x,-.46,z).sub(cg),f=direction.clone().multiplyScalar(result.thrust[i++]);force.add(f);torque.add(new Vector3().crossVectors(r,f));}
   assert.ok(!result.saturated);assert.ok(result.thrust.every(f=>f>=0&&f<=18000));
   assert.ok(Math.abs(force.y-V)<1e-8);assert.ok(Math.abs(torque.x-tx)<1e-8);assert.ok(Math.abs(torque.z-tz)<1e-8);assert.ok(Math.abs(torque.y-result.yawTorque)<1e-8);
  }

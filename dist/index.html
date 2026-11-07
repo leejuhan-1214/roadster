@@ -5,10 +5,10 @@
   <meta name="theme-color" content="#080d14"><meta name="description" content="압축 기체 추진 자동차의 주행, 비행, 착지를 직접 실험하는 3D 물리 연구실. 유한 탱크, 개별 추진기와 실시간 물리 계측.">
   <title>Roadster Flight Lab — 움직임을 이해하는 실험실</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=20261107-gimbal1">
+  <link rel="stylesheet" href="./style.css?v=20261107-inset1">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
-<body>
+<body class="quality-smooth">
 <canvas id="world" aria-label="주행과 비행을 실험하는 3D 공간" tabindex="0"></canvas>
 <div id="boot" class="boot"><div class="boot-emblem">R<span>↗</span></div><div class="eyebrow">ROADSTER FLIGHT LAB</div><p id="boot-message">실험 공간을 준비하고 있습니다<span class="loading-dots">…</span></p></div>
 <header class="topbar glass">
@@ -24,6 +24,14 @@
   <div class="paint-row"><span>바디 피니시</span><div class="swatches"><button data-paint="#b51627" class="selected" style="--paint:#d52336" aria-label="크림슨 레드"></button><button data-paint="#c6d2db" style="--paint:#c6d2db" aria-label="아크틱 실버"></button><button data-paint="#143b51" style="--paint:#23728e" aria-label="딥 페트롤"></button><button data-paint="#252b35" style="--paint:#444b58" aria-label="그래파이트"></button></div></div>
   <div id="drive-panel">
     <details class="performance-panel"><summary>화면 성능 <b id="performance-readout">측정 중…</b></summary><label for="render-quality">화면 품질 <select id="render-quality"><option value="smooth">부드럽게 · 기본</option><option value="detail">정밀 효과 · 부하 높음</option></select></label><p id="performance-details"></p></details>
+    <section class="obstacle-controls" aria-label="장애물 충돌 실험">
+      <div class="section-label">장애물과 충돌 <span>CONTACT LAB</span></div>
+      <label class="aero-toggle"><input id="obstacles-enabled" type="checkbox" checked>시험 장애물 표시 · 충돌 적용</label>
+      <small id="obstacle-status"></small>
+      <button id="collision-demo" class="primary-btn">43.2 km/h 충돌 시연 <span>→▌</span></button>
+      <b id="collision-readout">아직 충돌 없음</b><small id="collision-detail">충돌 직전 법선 속도 / 충격량</small>
+      <p>벽·상자·착지대·상부 구조물에 부딪히면 감속하거나 회전합니다. 고정 장애물과 차체 상자 접촉 모델이며 변형·파손은 제외합니다.</p>
+    </section>
     <section class="vector-controls" aria-label="노즐 수평 이동">
       <div class="section-label">노즐 수평 이동 <span>VECTOR THRUST</span></div>
       <p>공중 W/S 전후 · A/D 좌우<br>Space 분사 또는 H 고도 유지와 함께 조작</p>
@@ -38,6 +46,7 @@
       <label class="aero-toggle"><input id="air-resistance" type="checkbox" checked>공기저항 적용 · 비행 중에도 작용</label>
       <div class="experiment-pedals"><button data-key="KeyW">가속 <kbd>W</kbd></button><button data-key="KeyB">브레이크 <kbd>B</kbd></button><button data-key="Space">분사 <kbd>SPACE</kbd></button></div>
       <div class="friction-forces"><span id="ground-action">접지 · 타력 주행</span><span>구름저항 <b id="rolling-force">0.00 kN</b></span><span>제동력 <b id="brake-force">0.00 kN</b></span></div>
+      <div class="grip-readout">타이어 접지 한도 사용 <b id="grip-usage">0%</b><div><i id="grip-bar"></i></div><small>힘 벡터 V: 주황색은 실제 노면 마찰력</small></div>
       <div class="friction-tests"><button id="coast-test">72 km/h 타력 비교</button><button id="brake-test">72 km/h 제동 비교</button></div>
       <p id="friction-run-status" role="status">동일한 72 km/h에서 5초 동안 비교합니다.</p><ol id="friction-results" aria-label="최근 5초 비교 결과"></ol>
       <p class="driving-hint">μ는 접지력의 한도, Crr는 가속을 놓았을 때의 구름저항입니다. 비교 결과는 5초 후 속도와 그동안의 이동거리이며, 공기저항 ON이면 총감속을 측정합니다. 길게 눌러 조작하세요. 노면 마찰은 접지할 때만 작용합니다. 공중에서는 공기저항과 추력으로 운동합니다. 계수는 실험용 가정값입니다.</p>
@@ -108,7 +117,7 @@
 <footer class="bottom-hud"><div class="speed-readout"><span class="speed-num" id="speed">000</span><div><b>수평 km/h</b><small id="drive-state">READY TO EXPLORE</small></div></div><div class="keyboard-guide glass" id="keyboard-guide"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>주행 · 공중 이동</span><span>드래그 · 시점 회전</span><span><kbd>SHIFT</kbd>부스트</span><span><kbd>SPACE</kbd>수직 추력</span><button id="all-controls" aria-label="전체 조작 방법">⌘</button></div><div class="frame-note"><i></i><span>REAL-TIME PHYSICS</span><b id="fps">60 FPS</b></div></footer>
 <div class="touch-controls"><div class="touch-dpad"><button data-key="KeyW" aria-label="가속">▲</button><button data-key="KeyA" aria-label="왼쪽 조향">◀</button><button data-key="KeyS" aria-label="후진 또는 공중 후방 이동">▼</button><button data-key="KeyD" aria-label="오른쪽 조향">▶</button></div><div class="touch-action"><button data-key="KeyB">BRAKE B</button><button data-key="ShiftLeft">BOOST</button><button data-key="Space">LIFT ↑</button></div></div>
 <div id="toast" class="toast" role="status"></div>
-<dialog id="guide-modal"><div class="modal-top"><div><span class="eyebrow">FIELD MANUAL</span><h2>움직임을 이해하는 실험실</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="physics">물리 원리</button><button data-guide="sources">가정과 출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.5</span></div></dialog>
+<dialog id="guide-modal"><div class="modal-top"><div><span class="eyebrow">FIELD MANUAL</span><h2>움직임을 이해하는 실험실</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="physics">물리 원리</button><button data-guide="sources">가정과 출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.8</span></div></dialog>
 <dialog id="params-modal"><div class="modal-top"><div><span class="eyebrow">MODEL PARAMETERS</span><h2>조건을 바꾸고, 차이를 관찰하세요.</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><p class="muted">아래 값은 실험용 가정입니다. 적용하면 차량과 기체가 초기화됩니다.</p><form id="params-form"><div id="param-fields"></div><div class="param-actions"><button type="button" id="params-default" class="secondary-btn">기본값</button><button type="submit" class="primary-btn">적용하고 초기화 ↗</button></div></form></dialog>
-<script type="module" src="./js/main.js?v=20261107-gimbal1"></script>
+<script type="module" src="./js/main.js?v=20261107-inset1"></script>
 </body></html>

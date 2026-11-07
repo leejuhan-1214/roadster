@@ -1,5 +1,5 @@
 import {Vector3,Quaternion} from 'three';
-const wheelFields=['compression','steer','omega','spinAngle','load','surfaceY'];
+const wheelFields=['compression','steer','omega','spinAngle','load','surfaceY','forceX','forceZ'];
 const pose=()=>({pos:new Vector3(),q:new Quaternion(),vel:new Vector3(),bodyPosition:new Vector3(),wheels:[],thrusters:[]});
 function capture(out,sim){
  out.pos.copy(sim.state.pos);out.q.copy(sim.state.q);out.vel.copy(sim.state.vel);out.bodyPosition.copy(sim.bodyPosition);

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-inset1';
 
 // An independently authored visual prototype, not Tesla engineering geometry.
 // Coordinate convention: +X nose, +Y roof, +Z right side. Metres throughout.
@@ -236,28 +237,26 @@ export function createVehicle() {
 
   const thrusters=part('thrusters',[-.2,.30,-3.25]);
   const jetMounts=[],gimbalNozzles=[];
-  // Four illustrative two-axis gimbals. The fixed support remains attached to the chassis.
-  // Order matches physics: front-left, front-right, rear-left, rear-right.
-  const hingeMaterial=new THREE.MeshStandardMaterial({color:0xc2a675,metalness:.72,roughness:.3});
-  for(const x of [.86,-.86]) for(const z of [-1.08,1.08]) {
-    const mount=new THREE.Group();mount.position.set(x,-.20,z);thrusters.add(mount);
-    box(mount,[.26,.055,.23],carbon,[0,.045,0]);
-    for(const side of [-1,1])box(mount,[.035,.13,.055],hingeMaterial,[side*.10,0,0]);
-    put(mount,new THREE.TorusGeometry(.09,.012,6,20),hingeMaterial,[0,0,0]);
-    const pivot=new THREE.Group();pivot.name='lift nozzle gimbal '+gimbalNozzles.length;mount.add(pivot);
-    put(pivot,new THREE.CylinderGeometry(.04,.06,.08,12),satin,[0,-.04,0]);
-    put(pivot,new THREE.CylinderGeometry(.06,.13,.22,20,1,true),silver,[0,-.175,0]);
-    put(pivot,new THREE.TorusGeometry(.13,.018,8,24),dark,[0,-.285,0],[Math.PI/2,0,0]);
-    put(pivot,new THREE.CircleGeometry(.091,20),black,[0,-.282,0],[Math.PI/2,0,0]);
-    pivot.userData.exitOffset=new THREE.Vector3(0,-.285,0);gimbalNozzles.push(pivot);
-    jetMounts.push({pos:new THREE.Vector3(x,-.485,z),dir:new THREE.Vector3(0,1,0)});
+  // Compact swivel outlets inset into the underfloor. Only the short exit lip
+  // extends below the diffuser; the actuator and its swept volume stay inboard.
+  for(const x of [LIFT_LAYOUT.x,-LIFT_LAYOUT.x]) for(const z of [-LIFT_LAYOUT.z,LIFT_LAYOUT.z]) {
+    const mount=new THREE.Group();mount.position.set(x,LIFT_LAYOUT.y,z);thrusters.add(mount);
+    box(mount,[.32,.025,.30],carbon,[0,-.014,0]);
+    put(mount,new THREE.CircleGeometry(.137,24),black,[0,-.034,0],[Math.PI/2,0,0]);
+    put(mount,new THREE.TorusGeometry(.137,.009,6,24),satin,[0,-.035,0],[Math.PI/2,0,0]);
+    const pivot=new THREE.Group();pivot.name='recessed lift gimbal '+gimbalNozzles.length;mount.add(pivot);
+    put(pivot,new THREE.CylinderGeometry(.043,.082,.036,16,1,true),satin,[0,-.029,0]);
+    put(pivot,new THREE.TorusGeometry(.082,.009,6,24),silver,[0,-.05,0],[Math.PI/2,0,0]);
+    put(pivot,new THREE.CircleGeometry(.072,20),black,[0,-.051,0],[Math.PI/2,0,0]);
+    pivot.userData.exitOffset=new THREE.Vector3(0,-LIFT_LAYOUT.exitDepth,0);gimbalNozzles.push(pivot);
+    jetMounts.push({pos:new THREE.Vector3(x,LIFT_LAYOUT.y-LIFT_LAYOUT.exitDepth,z),dir:new THREE.Vector3(0,1,0)});
   }
-  for(const z of [-.54,.54]) {
-    const nozzle=new THREE.Group(); nozzle.position.set(-2.29,-.14,z);nozzle.rotation.z=-Math.PI/2;thrusters.add(nozzle);
-    put(nozzle,new THREE.CylinderGeometry(.08,.11,.20,24,1,true),satin,[0,-.02,0]);
-    put(nozzle,new THREE.TorusGeometry(.108,.018,8,24),silver,[0,-.12,0],[Math.PI/2,0,0]);
-    put(nozzle,new THREE.CircleGeometry(.08,20),black,[0,-.12,0],[Math.PI/2,0,0]);
-    jetMounts.push({pos:new THREE.Vector3(-2.43,-.14,z),dir:new THREE.Vector3(1,0,0)});
+  for(const z of [-BOOST_LAYOUT.z,BOOST_LAYOUT.z]) {
+    const nozzle=new THREE.Group();nozzle.position.set(BOOST_LAYOUT.x,BOOST_LAYOUT.y,z);nozzle.rotation.z=-Math.PI/2;thrusters.add(nozzle);
+    put(nozzle,new THREE.CylinderGeometry(.04,.055,.045,20,1,true),satin,[0,-.025,0]);
+    put(nozzle,new THREE.TorusGeometry(.055,.006,6,24),dark,[0,-BOOST_LAYOUT.exitDepth,0],[Math.PI/2,0,0]);
+    put(nozzle,new THREE.CircleGeometry(.049,20),black,[0,-BOOST_LAYOUT.exitDepth-.001,0],[Math.PI/2,0,0]);
+    jetMounts.push({pos:new THREE.Vector3(BOOST_LAYOUT.x-BOOST_LAYOUT.exitDepth,BOOST_LAYOUT.y,z),dir:new THREE.Vector3(1,0,0)});
   }
   const fans=[];
   for(const z of [-.44,.44]) {

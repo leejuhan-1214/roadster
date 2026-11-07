@@ -21,7 +21,7 @@ export const COURSE = {
     { id: 'drive', label: '01 · 왼쪽 주행 게이트', type: 'drive', center: [12, 0, -4], radius: 3.8,
       hint: 'WASD로 왼쪽 표시 구역을 지나세요. 바퀴가 지면에 닿아 있어야 합니다.' },
     { id: 'air', label: '02 · 공중 링 통과', type: 'air', center: [28, 2.6, 0], radius: 2.1, minHeight: .8,
-      hint: '링 약 8 m 앞까지 주행한 뒤 Space를 짧게 눌러 이륙하세요. WASD로 기울여 앞으로 통과합니다. 표시 고도 0.8 m 이상.' },
+      hint: '링 약 8 m 앞까지 주행한 뒤 Space를 짧게 눌러 이륙하세요. WASD로 노즐을 돌려 수평 이동합니다. 표시 고도 0.8 m 이상.' },
     { id: 'land', label: '03 · 착지하고 정지', type: 'land', center: [41, 0, 0], radius: 5,
       maxSpeed: 1.5, maxVerticalSpeed: .5, holdSeconds: .5,
       hint: '착지 구역에서 3개 이상 바퀴를 접지하고 1.5 m/s 미만으로 감속해 0.5초 유지하세요.' },
