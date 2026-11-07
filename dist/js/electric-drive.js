@@ -174,7 +174,9 @@ export function evaluateElectricDrive(input, parameters = {}) {
         mode = 'regen';
       }
     } else if (brake === 0 && throttle !== 0) {
-      const motoring = throttle * shaftOmega >= 0;
+      // Near rest, allow an energy-budgeted powered direction change. A stop-only
+      // impulse would otherwise trap a wheel in tiny terrain-induced counter-rotation.
+      const motoring = throttle * shaftOmega >= 0 || Math.abs(axleOmega)*p.wheelRadius < .1;
       const rpmFade = motoring ? clamp((p.maxMotorRPM - rpm) / (p.maxMotorRPM * .05), 0, 1) : 1;
       const torqueLimit = Math.min(p.motorTorqueNm / 3,
         p.motorPowerKW * 1000 / 3 / Math.max(Math.abs(shaftOmega), 1e-9));

@@ -173,15 +173,15 @@ test('one joule at rest bounds actual free-wheel launch work instead of clipping
   assert.ok(drive.limits.driveEnergyBoundJ <= 1 + 1e-10);
 });
 
-test('opposite throttle cannot overshoot tiny positive rotor speed into powered reverse', () => {
+test('near-rest powered reversal consumes budgeted energy and still requires charge', () => {
   const speeds = [.001, .001, .001, .001], dt = .002;
-  const drive = evaluate({ wheelOmega: speeds, throttle: -1, dt });
+  const drive = evaluate({ wheelOmega: speeds, throttle: -1, batteryEnergyJ:1, dt });
   const next = speeds.map((omega, i) => omega +
     (drive.wheelTorqueNm[i] - DEFAULTS.wheelViscousDrag * omega) / DEFAULTS.wheelInertia * dt);
-  assert.ok(next.every(omega => omega >= -1e-12));
+  assert.ok(next.every(omega => omega < 0));
   const work = accountDriveWork(drive, speeds, next, dt);
-  assert.equal(work.electricalEnergyJ, 0);
-  assert.ok(work.wheelWorkJ < 0);
+  assert.ok(work.electricalEnergyJ>0&&work.electricalEnergyJ<=1+1e-10);
+  near(work.electricalEnergyJ,work.wheelWorkJ+work.lossEnergyJ);
   const empty = evaluate({ wheelOmega: speeds, throttle: -1, batteryEnergyJ: 0, dt });
   assert.ok(empty.wheelTorqueNm.every(torque => torque === 0));
 });

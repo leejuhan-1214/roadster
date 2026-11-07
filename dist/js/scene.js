@@ -1,14 +1,14 @@
 import * as THREE from 'three';
-import {sampleRoadSurface} from './road-surface.js?v=20261107-drive1';
+import {sampleRoadSurface} from './road-surface.js?v=20261107-drive2';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js?v=20261107-drive1';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive1';
-import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive1';
-import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive1';
-import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive1';
-import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive1';
+import { createVehicle } from './vehicle.js?v=20261107-drive2';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
+import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
+import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
+import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive2';
+import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive2';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
 // This renderer only reads simulation state. Plumes and marks never exert forces.

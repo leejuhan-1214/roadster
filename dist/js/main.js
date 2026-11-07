@@ -1,12 +1,12 @@
-import { RenderStateBuffer } from './render-state.js?v=20261107-drive1';
-import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-drive1';
-import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-drive1';
-import { FlightScene } from './scene.js?v=20261107-drive1';
-import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-drive1';
-import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-drive1';
-import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-drive1';
-import { manualInput } from './controls.js?v=20261107-drive1';
-import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput, getLevelMoveInput } from './flight-plan.js?v=20261107-drive1';
+import { RenderStateBuffer } from './render-state.js?v=20261107-drive2';
+import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-drive2';
+import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-drive2';
+import { FlightScene } from './scene.js?v=20261107-drive2';
+import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-drive2';
+import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-drive2';
+import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-drive2';
+import { manualInput } from './controls.js?v=20261107-drive2';
+import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput, getLevelMoveInput } from './flight-plan.js?v=20261107-drive2';
 
 const $ = id => document.getElementById(id);
 const $$ = selector => [...document.querySelectorAll(selector)];

@@ -1,7 +1,7 @@
 import { Vector3, Quaternion, Euler } from 'three';
-import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive1';
-import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive1';
-import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive1';
+import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
+import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive2';
+import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.

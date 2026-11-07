@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#080d14"><meta name="description" content="압축 기체 추진 자동차의 주행, 비행, 착지를 직접 실험하는 3D 물리 연구실. 유한 탱크, 개별 추진기와 실시간 물리 계측.">
   <title>Roadster Flight Lab — 움직임을 이해하는 실험실</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=20261107-drive1">
+  <link rel="stylesheet" href="./style.css?v=20261107-drive2">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
 <body class="quality-smooth">
@@ -113,12 +113,12 @@
     <div class="small-data"><span>노면 마찰계수</span><b id="friction-value">1.15</b></div>
   </div>
   <div class="pressure-head"><span>탱크 압력 <small>절대압</small></span><b id="pressure">35.88 <small>MPa</small></b></div><div class="pressure-bar"><i id="pressure-fill"></i></div>
-  <div class="small-data"><span>기체 잔량</span><b><span id="gas">250.0</span> <small>kg</small></b></div>
+  <div class="small-data"><span>기체 잔량</span><b><span id="gas">375.0</span> <small>kg</small></b></div>
   <div class="small-data"><span>노즐 추력 합계</span><b><span id="thrust">0.0</span> <small>kN</small></b></div>
   <div class="small-data"><span>팬 다운포스</span><b><span id="fan-force">0.0</span> <small>kN</small></b></div>
-  <div class="small-data"><span>현재 총질량</span><b><span id="mass">2,150</span> <small>kg</small></b></div>
+  <div class="small-data"><span>현재 총질량</span><b><span id="mass">2,275</span> <small>kg</small></b></div>
   <div class="contact-row"><span>바퀴 접지</span><div id="contact-dots"><i></i><i></i><i></i><i></i></div><b id="contact-count">4 / 4</b></div>
-  <div class="small-data"><span>차축 하중 · 앞 / 뒤</span><b id="axle-loads">10.5 / 10.5 kN</b></div><div class="chart-heading"><span>고도 이력</span><span>LAST 12 s</span></div><canvas id="trace" width="440" height="130" aria-label="최근 12초 고도 그래프"></canvas>
+  <div class="small-data"><span>차축 하중 · 앞 / 뒤</span><b id="axle-loads">11.2 / 11.2 kN</b></div><div class="chart-heading"><span>고도 이력</span><span>LAST 12 s</span></div><canvas id="trace" width="440" height="130" aria-label="최근 12초 고도 그래프"></canvas>
   <div class="time-row"><span id="sim-time">T + 00:00.00</span><span id="physics-rate">500 Hz</span></div>
 </aside>
 <aside id="part-card" class="part-card glass" hidden>
@@ -136,5 +136,5 @@
 <div id="toast" class="toast" role="status"></div>
 <dialog id="guide-modal"><div class="modal-top"><div><span class="eyebrow">FIELD MANUAL</span><h2>움직임을 이해하는 실험실</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="physics">물리 원리</button><button data-guide="sources">가정과 출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.9</span></div></dialog>
 <dialog id="params-modal"><div class="modal-top"><div><span class="eyebrow">MODEL PARAMETERS</span><h2>조건을 바꾸고, 차이를 관찰하세요.</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><p class="muted">아래 값은 실험용 가정입니다. 적용하면 차량과 기체가 초기화됩니다.</p><form id="params-form"><div id="param-fields"></div><div class="param-actions"><button type="button" id="params-default" class="secondary-btn">기본값</button><button type="submit" class="primary-btn">적용하고 초기화 ↗</button></div></form></dialog>
-<script type="module" src="./js/main.js?v=20261107-drive1"></script>
+<script type="module" src="./js/main.js?v=20261107-drive2"></script>
 </body></html>

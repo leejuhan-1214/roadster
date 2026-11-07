@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-drive1';
+import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-drive2';
 
 // An independently authored visual prototype, not Tesla engineering geometry.
 // Coordinate convention: +X nose, +Y roof, +Z right side. Metres throughout.
