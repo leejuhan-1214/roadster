@@ -16,7 +16,7 @@ export const PARTS = {
   cabin: {
     title: '캐빈 · 자세',
     subtitle: 'CABIN & ORIENTATION',
-    description: '차량에는 앞으로 가는 방향과 지붕 방향이 있습니다. 차체가 기울면 차체에 붙은 추진기의 힘도 함께 기울어집니다. 화면의 피치·롤·요는 복잡한 3차원 자세를 읽기 쉽게 표시한 값입니다.',
+    description: '기본은 바퀴로 달리는 전기 주행이며 비행은 별도 실험입니다. 차량에는 앞으로 가는 방향과 지붕 방향이 있습니다. 차체가 기울면 차체에 붙은 추진기의 힘도 함께 기울어집니다. 화면의 피치·롤·요는 복잡한 3차원 자세를 읽기 쉽게 표시한 값입니다.',
     formula: 'F_world = R(q) F_body  ·  F_vertical = F cos θ',
     variables: 'R(q) 차체에서 지면 좌표계로의 회전 · q 쿼터니언 · θ 추력과 수직선 사이의 각도 [rad]',
     assumption: '내부 적분은 쿼터니언을 사용합니다. 2020 콘셉트 외형·좌석·유리는 아티스트가 제작한 시각 모델입니다. 추가 추진계는 교육용 가정이며 이 콘셉트의 실제 내부 구조를 재현한 설계도가 아닙니다.',
@@ -24,7 +24,7 @@ export const PARTS = {
   wheels: {
     title: '타이어 · 접지력',
     subtitle: 'TIRES & TRACTION',
-    description: '타이어는 노면을 밀어 차량을 가속하고 방향을 바꿉니다. 가속과 코너링은 같은 접지력을 나눠 사용하므로 동시에 강하게 요구하면 미끄러집니다. 공중에 뜬 바퀴는 노면 힘을 만들 수 없습니다.',
+    description: '타이어와 노면의 마찰은 가속·감속·방향 전환을 가능하게 합니다. 모터 구동·회생·브레이크 힘은 접지력 한계 안에서 전달됩니다. 가속과 코너링은 같은 접지력을 나눠 사용하므로 동시에 강하게 요구하면 미끄러집니다. 공중에 뜬 바퀴는 노면 힘을 만들 수 없습니다.',
     formula: '√(Fx² + Fz²) ≤ μN  ·  Iw ω̇w = τdrive − τbrake − rw Fx',
     variables: 'Fx 바퀴 전후 힘 [N] · Fz 바퀴 좌우 힘 [N] · μ 마찰계수 · N 수직항력 [N] · Iw 바퀴 관성 [kg·m²]',
     assumption: '안쪽·바깥쪽 앞바퀴가 다른 각도로 꺾이는 Ackermann 조향과 마찰 원·슬립을 사용하는 축소 타이어 모델입니다. 온도·마모·노면 요철·타이어 내부 변형을 모두 재현하지 않습니다.',
@@ -62,13 +62,13 @@ export const PARTS = {
     assumption: '추가 윙과 계수·공력 작용점은 교육용 가정입니다. 2020 콘셉트의 실제 윙 설계나 풍동 데이터, 전체 유동 해석을 사용한 모델은 아닙니다.',
   },
   battery: {
-    title: '모터 · 배터리 · 팬',
-    subtitle: 'ELECTRIC POWER',
-    description: '모터는 낮은 회전수에서는 토크, 높은 회전수에서는 출력에 제한됩니다. 팬은 차체 밑의 압력을 낮춰 접지력을 높이며 전력을 사용합니다. 팬의 지면 흡착력을 공중 양력으로 바꾸어 계산하지 않습니다.',
-    formula: 'P = τω  ·  F_fan ≈ Δp A  ·  P_fan ≈ Δp Q/η',
-    variables: 'P 출력 [W] · τ 토크 [N·m] · ω 각속도 [rad/s] · Δp 압력차 [Pa] · Q 체적 유량 [m³/s] · η 효율',
-    assumption: '배터리 용량·효율·모터 한계·팬 성능은 교육용 설정입니다. 추가 흡착 팬은 2020 콘셉트의 확인된 부품이 아닙니다. 팬 흡착은 차고에 따라 감소하며, 기체 탱크의 에너지와 별도로 기록합니다.',
-  },
+    "title": "모터 · 배터리",
+    "subtitle": "ELECTRIC POWER",
+    "description": "2017년에 공개된 콘셉트는 앞 모터 1개와 뒤 모터 2개의 AWD 구성을 발표했습니다. 모터는 낮은 회전수에서 토크, 높은 회전수에서 출력에 제한됩니다. 가속을 놓으면 회생제동으로 감속하고 에너지 일부를 배터리에 돌려줍니다. 브레이크 입력은 마찰제동으로 감속하며, 정지 유지는 브레이크로 차를 붙잡습니다.",
+    "formula": "P = τω  ·  E_recovered = ∫ η_regen P_regen dt",
+    "variables": "P 출력 [W] · τ 토크 [N·m] · ω 각속도 [rad/s] · E_recovered 회수 에너지 [J] · η_regen 회생 효율",
+    "assumption": "3모터 AWD와 배터리 200 kWh는 당시 발표 구성입니다. 출력 650 kW·토크 900 N·m·기체 제외 질량 1,900 kg과 효율은 가정입니다. 회생제동·정지 유지·D/R 전환은 Tesla EV를 참고한 근사이며 2020 콘셉트의 공개된 정밀 제어가 아닙니다. 흡착 팬은 별도 실험 장치입니다."
+},
 };
 
 export const LESSONS = [
@@ -132,9 +132,42 @@ export const LESSONS = [
     formula: 'Δt → Δt/2 → Δt/4  ·  U = m cvT',
     body: '화면 갱신과 별개로 작은 고정 시간 간격으로 힘과 운동을 계산합니다. 시간 간격을 줄여 결과가 수렴하는지, 질량·에너지 수지가 맞는지 검사합니다. 이 검사가 통과해도 실제 차량과 같다는 뜻은 아닙니다. 배출 기체와 열 손실을 포함해 에너지를 해석해야 합니다.',
   },
+  {
+    "title": "수평속도와 수직속도를 나눠 봅니다",
+    "tag": "11 · VELOCITY",
+    "formula": "v_horizontal = √(vx² + vz²)  ·  v_vertical = vy",
+    "body": "y축이 위쪽입니다. 수평속도는 지면에 나란한 x·z 방향 속도의 크기이고, 수직속도는 상승·하강의 부호 있는 값입니다. 수평속도는 후진하거나 옆으로 미끄러질 때도 양수입니다. 차체 앞쪽 기준의 전진·후진 속도와는 다르며 m/s에 3.6을 곱하면 km/h입니다."
+},
+  {
+    "title": "회생제동과 마찰제동을 구분합니다",
+    "tag": "12 · BRAKING",
+    "formula": "P_regen = −τ_regen ω  ·  E_heat = ∫ |F_brake · v| dt",
+    "body": "가속을 놓을 때 회생제동은 모터가 회전을 방해하는 토크를 만들고 에너지 일부를 회수합니다. 마찰 브레이크는 운동에너지를 열로 바꿉니다. 정지 유지는 브레이크로 멈춘 상태를 유지하며 제동 입력과 후진 구동은 다릅니다. D/R은 정지 부근에서 전환합니다. 일반 Tesla EV를 참고한 근사이며 제어값은 2020 Roadster의 실측값이 아닙니다."
+},
 ];
 
 export const SOURCES = [
+  {
+    "title": "Tesla Model 3 · 제동과 정지",
+    "label": "Tesla EV Braking",
+    "url": "https://www.tesla.com/ownersmanual/2017_2023_model3/en_us/GUID-3DFFB071-C0F6-474D-8A45-17BE1A006365.html",
+    "kind": "일반 Tesla EV 동작 참고",
+    "note": "가속 해제 시 회생제동과 별도의 마찰 브레이크를 설명합니다. 앱의 감속·정지를 근사하는 참고이며 2020 Roadster의 회생량이나 제어 명세가 아닙니다."
+},
+  {
+    "title": "Tesla Model 3 · 전진과 후진 선택",
+    "label": "Tesla EV Drive / Reverse",
+    "url": "https://www.tesla.com/ownersmanual/2017_2023_model3/en_us/GUID-41E02406-1983-4511-BBB4-158DD94796C6.html",
+    "kind": "일반 Tesla EV 동작 참고",
+    "note": "전진·후진은 별도 방향 선택이며 저속에서만 전환합니다. 앱의 전환 속도 문턱과 키보드 조작은 자체 설정입니다."
+},
+  {
+    "title": "Tesla Model 3 · 트랙션 제어",
+    "label": "Tesla EV Traction",
+    "url": "https://www.tesla.com/ownersmanual/2017_2023_model3/en_us/GUID-CC0F27E7-FD78-448D-B739-209EBBEDF2C3.html",
+    "kind": "일반 Tesla EV 동작 참고",
+    "note": "모터 출력·브레이크로 헛돎을 줄이는 원리의 참고입니다. 앱의 슬립 모델과 계수는 근사이며 2020 Roadster 제어 알고리즘이나 타이어 실측값이 아닙니다."
+},
   {
     title: 'Tesla Roadster 2020 · metarex.4d의 3D 모델',
     label: 'Exterior model · metarex.4d',

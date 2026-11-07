@@ -59,3 +59,14 @@
 /* Keep the catalog footer clear in the narrow side-panel browser. */
 .inspect .left-panel>.model-footnote{display:none}
 @media(max-height:680px) and (min-width:701px){.inspect .left-panel{bottom:70px}.inspect #part-buttons{min-height:65px}.inspect .left-panel>.asset-credit{margin-top:4px}}
+
+/* Electric road driving and horizontal velocity */
+.drive-mode-select,.road-surface-label{display:grid;gap:8px;font-size:12px;color:#c5d8e0;margin:16px 0}.drive-mode-select select,.road-surface-label select{width:100%;background:#11232d;color:#e4f3ef;border:1px solid #527278;border-radius:7px;padding:10px;font:inherit}
+.gear-selector,.road-pedals{display:grid;grid-template-columns:1fr 1fr;gap:9px}.gear-selector button{border:1px solid #48626c;border-radius:7px;background:#14232d;color:#c9dce1;padding:11px;font-size:20px;font-weight:600;cursor:pointer}.gear-selector span{font-size:11px;margin-left:7px;font-weight:400}.gear-selector button.active{background:#28564c;border-color:#a2f5db;color:#d6fff0}
+.road-pedals{margin:17px 0 8px}.road-pedals button{min-height:48px;background:#2f5c51;border:1px solid #7cae9b;border-radius:8px;color:#e7fff1;touch-action:none;user-select:none;cursor:pointer}.road-pedals button+button{background:#542e2d;border-color:#aa7366}.road-pedals button.pressed{filter:brightness(1.5);transform:translateY(1px)}.road-pedals kbd{margin-left:7px}
+.driving-hint{font-size:11px;line-height:1.8;color:#b8cdd4;margin:8px 0 16px}.regen-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:#d6e5e7}.regen-toggle input{accent-color:#a2f5db;width:16px;height:16px}
+.horizontal-velocity{display:grid;grid-template-columns:1fr auto;gap:5px;padding:14px 0;border-bottom:1px solid #ffffff18;color:#b8cdd4}.horizontal-velocity>span{font-size:12px;grid-column:1/-1}.horizontal-velocity strong{font-size:26px;font-weight:500;color:#e0fff3;letter-spacing:-1px}.horizontal-velocity strong small{font-size:11px;letter-spacing:0}.horizontal-velocity>small{align-self:end;font-size:11px;padding-bottom:4px;color:#a2cbbf}
+.road-drive-status{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:12px 0;font-size:11px;color:#a2f5db}.road-drive-status span{color:#9ab0bb;font-size:10px}.electric-drive .attitude-display{height:88px}.electric-drive .telemetry{overflow-y:auto;max-height:calc(100vh - 200px)}.electric-drive #road-telemetry .small-data{margin:7px 0}.electric-drive .telemetry-pair{padding-top:12px;padding-bottom:12px}.keyboard-guide i{font-style:normal}
+@media(max-width:700px){.horizontal-velocity{padding:8px 0}.horizontal-velocity strong{font-size:23px}.electric-drive .telemetry{max-height:calc(100vh - 240px)}.road-pedals button{min-height:48px}}
+
+.telemetry{scrollbar-width:thin;scrollbar-color:#536875 transparent}.electric-drive #electric-controls>.section-label{margin-top:14px}.electric-drive .left-panel h1{font-size:32px}

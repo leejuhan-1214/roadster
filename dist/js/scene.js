@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-parts2';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
@@ -64,7 +64,7 @@ export class FlightScene {
   constructor(canvas,onPartSelect=()=>{},onInspectExplode=()=>{},onCameraChange=()=>{}) {
     this.canvas=canvas;this.onPartSelect=onPartSelect;this.mode='drive';this.cameraName='chase';this.elapsed=0;this.lastPaint='';
     this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;
-    this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=false;this.touchPointers=new Map();this.pinchDistance=0;
+    this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=false;this.driveMode='experimental';this.touchPointers=new Map();this.pinchDistance=0;
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -254,12 +254,18 @@ export class FlightScene {
   getPartCatalog() {
     return this.vehicle.catalog||[];
   }
+  setDriveMode(mode) {
+    this.driveMode=mode==='electric'?'electric':'experimental';this.applyInspectorVisibility();
+  }
   applyInspectorVisibility() {
-    if(!this.vehicle?.detailParts)return;
+    if(!this.vehicle?.detailParts){
+      for(const id of ['tank','battery','suspension','thrusters','wing']){const part=this.vehicle?.parts?.get(id);if(part)part.visible=this.mode==='inspect'||this.driveMode!=='electric';}
+      return;
+    }
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
-      if(part)part.visible=!inspecting||((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId));
+      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(entry.kind==='model'||this.driveMode!=='electric');
     }
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
   }
