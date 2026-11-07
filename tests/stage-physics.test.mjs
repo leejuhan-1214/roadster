@@ -72,12 +72,12 @@ test('empty obstacle set leaves normal integration unchanged and malformed geome
 });
 
 function airborne(){const s=new PhysicsSim({aeroEnabled:false});s.state.pos.y=20;s.contactCount=0;return s;}
-test('WASD air input tilts through finite thruster torque, then accelerates in the requested direction',()=>{
+test('WASD vectors finite-gas thrust while holding the chassis nearly level',()=>{
   const forward=airborne();forward.step(.002,{lift:1,airMoveForward:1});
-  assert.ok(Math.abs(forward.state.vel.x)<1e-5,'no instantaneous horizontal velocity command');
+  assert.ok(Math.abs(forward.state.vel.x)<.001,'actuator and valve lag give bounded first-step acceleration');
   step(forward,499,{lift:1,airMoveForward:1});
   assert.ok(forward.state.vel.x>1.5);
-  assert.ok(forward.state.q.angleTo(new Quaternion())<.35,'tilt request stays bounded');
+  assert.ok(forward.state.q.angleTo(new Quaternion())<.02,'body stays level while nozzles turn');
   assert.ok(forward.state.gas<forward.initialGas);
   assert.ok(forward.wheels.every(w=>w.load===0));
   const right=airborne(),left=airborne();step(right,500,{lift:1,airMoveRight:1});step(left,500,{lift:1,airMoveRight:-1});

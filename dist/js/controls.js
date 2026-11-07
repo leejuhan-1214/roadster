@@ -1,4 +1,4 @@
-/** Vehicle-relative inputs. Air movement requests a bounded attitude through
+/** Vehicle-relative inputs. Air movement requests a bounded nozzle direction through
  * the finite-gas controller; this module never changes position or velocity. */
 export function manualInput(keys, airborne, settings = {}) {
   const pressed = code => keys.has(code) ? 1 : 0;

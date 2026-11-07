@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-smooth1';
+import { createVehicle } from './vehicle.js?v=20261107-gimbal1';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-gimbal1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
@@ -231,7 +231,7 @@ export class FlightScene {
   }
   createJet() {
     const geo=new THREE.ConeGeometry(.2,1,16,1,true);geo.translate(0,-.5,0);
-    const mat=new THREE.ShaderMaterial({transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{power:{value:0},time:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float power;uniform float time;varying vec2 vUv;void main(){float bands=.75+.25*sin(vUv.y*44.-time*70.);float a=pow(vUv.y,1.8)*power*.34*bands;gl_FragColor=vec4(.67,.9,1.,a);}'});
+    const mat=new THREE.ShaderMaterial({transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{power:{value:0},time:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float power;uniform float time;varying vec2 vUv;void main(){float bands=.75+.25*sin(vUv.y*44.-time*70.);float a=pow(vUv.y,1.8)*power*.65*bands;gl_FragColor=vec4(.67,.9,1.,a);}'});
     const plume=new THREE.Mesh(geo,mat);this.scene.add(plume);return plume;
   }
   createMarks() {
@@ -249,7 +249,14 @@ export class FlightScene {
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
     this.applyInspectorVisibility?.();
   }
-  setCamera(camera) {this.cameraName=camera;this.controls.enabled=true;this.controls.enableZoom=this.mode!=='inspect';}
+  setCamera(camera) {this.cameraName=camera;this.controls.maxPolarAngle=Math.PI*.485;this.controls.enabled=true;this.controls.enableZoom=this.mode!=='inspect';}
+  frameLevelDemo(sim){
+    const p=sim.bodyPosition||sim.state.pos;
+    this.cameraTarget.copy(p);this.cameraTarget.y+=.05;
+    this.controls.maxPolarAngle=Math.PI*.65;
+    this.camera.position.copy(p).add(new THREE.Vector3(6,Math.max(-.6,.12-p.y),9));
+    this.cameraPosition.copy(this.camera.position);this.controls.target.copy(this.cameraTarget);this.camera.lookAt(this.cameraTarget);
+  }
   frameStageStart(sim) {
     const p=sim.bodyPosition||sim.state.pos;
     this.cameraTarget.copy(p);this.cameraTarget.y+=.15;
@@ -365,7 +372,8 @@ export class FlightScene {
     const wheels=options.renderState?.wheels||sim.wheels;
     const cg=sim.cg||new THREE.Vector3();
     const bodyPosition=options.renderState?.bodyPosition||sim.bodyPosition||position.clone().sub(cg.clone().applyQuaternion(q));
-    const view={state,bodyPosition,wheels,thrusters:sim.thrusters};
+    const thrusters=options.renderState?.thrusters||sim.thrusters;
+    const view={state,bodyPosition,wheels,thrusters};
     this.telemetry=sim.telemetry?.()||{};
     this.vehicle.root.position.copy(bodyPosition);this.vehicle.root.quaternion.copy(q);
     if(Number.isFinite(options.explode))this.setExplode(options.explode);
@@ -393,6 +401,7 @@ export class FlightScene {
     for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
     this.vehicle.root.visible=!this.hasCustomModel||this.mode==='inspect';
     if(this.customModel){this.customModel.visible=!!this.hasCustomModel&&this.mode!=='inspect';this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
+    for(let i=0;i<(this.vehicle.gimbalNozzles?.length||0);i++){const nozzle=this.vehicle.gimbalNozzles[i];if(thrusters[i])nozzle.quaternion.setFromUnitVectors(UP,thrusters[i].dir);}
     this.updateJets(view,dt,!!options.vectors);
     this.gravityArrow.visible=!!options.vectors;
     if(options.vectors){
@@ -450,8 +459,10 @@ export class FlightScene {
       if(!this.jets[i])this.jets[i]=this.createJet();
       if(!this.forceArrows[i]){this.forceArrows[i]=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0x71f4dd,.17,.09);this.scene.add(this.forceArrows[i]);}
       const t=thrusters[i],power=clamp((t.force||0)/14000,0,1),worldPosition=t.pos.clone().applyQuaternion(state.q).add(state.pos),forceDir=t.dir.clone().applyQuaternion(state.q);
+      const nozzle=this.vehicle.gimbalNozzles?.[i];
+      if(nozzle&&!this.hasCustomModel){nozzle.updateWorldMatrix(true,false);worldPosition.copy(nozzle.userData.exitOffset).applyMatrix4(nozzle.matrixWorld);}
       const plume=this.jets[i];plume.visible=power>.005&&this.mode!=='inspect';
-      plume.position.copy(worldPosition).addScaledVector(forceDir,-.05);
+      plume.position.copy(worldPosition);
       // Cone extends along -Y, so local +Y is the reaction-force direction.
       plume.quaternion.setFromUnitVectors(UP,forceDir);plume.scale.set(.8+power*.7,.35+power*1.1,.8+power*.7);
       plume.material.uniforms.power.value=power;plume.material.uniforms.time.value=this.elapsed+i;

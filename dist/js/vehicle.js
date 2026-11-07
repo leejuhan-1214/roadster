@@ -235,14 +235,22 @@ export function createVehicle() {
   box(suspension,[3.4,.08,.93],carbon,[0,-.37,0]);
 
   const thrusters=part('thrusters',[-.2,.30,-3.25]);
-  const jetMounts=[];
-  for(const x of [-1.35,1.35]) for(const z of [-.69,.69]) {
-    const nozzle=new THREE.Group(); nozzle.position.set(x,-.32,z);thrusters.add(nozzle);
-    put(nozzle,new THREE.CylinderGeometry(.075,.13,.18,20,1,true),silver,[0,-.055,0]);
-    put(nozzle,new THREE.TorusGeometry(.13,.018,8,24),dark,[0,-.145,0],[Math.PI/2,0,0]);
-    put(nozzle,new THREE.CircleGeometry(.091,20),black,[0,-.14,0],[Math.PI/2,0,0]);
-    box(nozzle,[.26,.07,.25],carbon,[0,.03,0]);
-    jetMounts.push({pos:new THREE.Vector3(x,-.45,z),dir:new THREE.Vector3(0,1,0)});
+  const jetMounts=[],gimbalNozzles=[];
+  // Four illustrative two-axis gimbals. The fixed support remains attached to the chassis.
+  // Order matches physics: front-left, front-right, rear-left, rear-right.
+  const hingeMaterial=new THREE.MeshStandardMaterial({color:0xc2a675,metalness:.72,roughness:.3});
+  for(const x of [.86,-.86]) for(const z of [-1.08,1.08]) {
+    const mount=new THREE.Group();mount.position.set(x,-.20,z);thrusters.add(mount);
+    box(mount,[.26,.055,.23],carbon,[0,.045,0]);
+    for(const side of [-1,1])box(mount,[.035,.13,.055],hingeMaterial,[side*.10,0,0]);
+    put(mount,new THREE.TorusGeometry(.09,.012,6,20),hingeMaterial,[0,0,0]);
+    const pivot=new THREE.Group();pivot.name='lift nozzle gimbal '+gimbalNozzles.length;mount.add(pivot);
+    put(pivot,new THREE.CylinderGeometry(.04,.06,.08,12),satin,[0,-.04,0]);
+    put(pivot,new THREE.CylinderGeometry(.06,.13,.22,20,1,true),silver,[0,-.175,0]);
+    put(pivot,new THREE.TorusGeometry(.13,.018,8,24),dark,[0,-.285,0],[Math.PI/2,0,0]);
+    put(pivot,new THREE.CircleGeometry(.091,20),black,[0,-.282,0],[Math.PI/2,0,0]);
+    pivot.userData.exitOffset=new THREE.Vector3(0,-.285,0);gimbalNozzles.push(pivot);
+    jetMounts.push({pos:new THREE.Vector3(x,-.485,z),dir:new THREE.Vector3(0,1,0)});
   }
   for(const z of [-.54,.54]) {
     const nozzle=new THREE.Group(); nozzle.position.set(-2.29,-.14,z);nozzle.rotation.z=-Math.PI/2;thrusters.add(nozzle);
@@ -277,5 +285,5 @@ export function createVehicle() {
       o.castShadow=true;o.receiveShadow=true;
     }
   });
-  return {root,parts,paintMaterials,wheels,fans,wing,tank,battery,jetMounts,bounds:{length:4.7,width:2.2,height:1.27}};
+  return {root,parts,paintMaterials,wheels,fans,wing,tank,battery,jetMounts,gimbalNozzles,bounds:{length:4.7,width:2.2,height:1.27}};
 }

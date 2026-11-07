@@ -44,6 +44,32 @@ const CRITICAL = (2 / (GAMMA + 1)) ** (GAMMA / (GAMMA - 1));
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 const UP = new Vector3(0, 1, 0);
 const FORWARD = new Vector3(1, 0, 0);
+export const GIMBAL_LIMIT=25*Math.PI/180,GIMBAL_RATE=120*Math.PI/180;
+
+// Fy is the body-Y component. Account for the moment of lateral thrust below CG.
+export function allocateLift(vertical,tx,tz,direction,cg,maxima){
+ const gx=direction.x/direction.y,gz=direction.z/direction.y,h=-.20-cg.y,a=.86,b=1.08;
+ const x=[a,a,-a,-a],z=[-b,b,-b,b],sign=[-1,1,1,-1];
+ const support=x.map((xi,i)=>.25+z[i]*(cg.z+h*gz)/(4*b*b)+xi*(cg.x+h*gx)/(4*a*a));
+ const moment=x.map((xi,i)=>-z[i]*tx/(4*b*b)+xi*tz/(4*a*a));
+ const caps=maxima.map(f=>f*direction.y);
+ const bounded=(v)=>{
+  const f=moment.map((m,i)=>m+support[i]*v);let lo=-Infinity,hi=Infinity;
+  for(let i=0;i<4;i++){const aa=-f[i]/sign[i],bb=(caps[i]-f[i])/sign[i];lo=Math.max(lo,Math.min(aa,bb));hi=Math.min(hi,Math.max(aa,bb));}
+  if(lo<=hi+1e-9){const lambda=clamp(0,lo,hi);return f.map((n,i)=>clamp(n+sign[i]*lambda,0,caps[i]));}
+  return null;
+ };
+ let v=Math.max(0,vertical),forces=bounded(v),saturated=false;
+ if(!forces){
+  // Positive-only RCS needs some collective lift when a torque is requested at V=0.
+  let needed=v;for(let i=0;i<4;i++)if(support[i]>1e-9)needed=Math.max(needed,-moment[i]/support[i]);
+  forces=bounded(needed);
+  if(!forces){saturated=true;forces=moment.map((m,i)=>clamp(m+support[i]*needed,0,caps[i]));}
+ }
+ const thrust=forces.map(f=>f/direction.y);
+ const yawTorque=forces.reduce((sum,f,i)=>sum+((z[i]-cg.z)*gx-(x[i]-cg.x)*gz)*f,0);
+ return {thrust,yawTorque,saturated};
+}
 const BOX_AXES = [new Vector3(1,0,0), new Vector3(0,1,0), new Vector3(0,0,1)];
 const BODY_HALF = [1.95, .435, .87];
 const BODY_BOX_CENTER = new Vector3(0, .115, 0);
@@ -100,7 +126,7 @@ export function rocketReference(mInitial, mFinal, effectiveVelocity) {
 
 function makeThrusters() {
   const result = [];
-  for (const x of [1.28, -1.28]) for (const z of [-.78, .78])
+  for (const x of [.86, -.86]) for (const z of [-1.08, 1.08])
     result.push({ name: `${x > 0 ? '전' : '후'}${z < 0 ? '좌' : '우'} 수직`, group: 'lift',
       pos: new Vector3(x, -.20, z), dir: new Vector3(0, 1, 0), area: .00035 });
   for (const z of [-.56, .56]) result.push({ name: z < 0 ? '후방 좌 추진' : '후방 우 추진', group: 'boost',
@@ -126,6 +152,7 @@ export class PhysicsSim {
       compression: 0, omega: 0, load: 0, slip: 0, steer: 0, grounded: false,
     });
     this.inertia = new Vector3(900, 3400, 3500);
+    this.gimbalX=0;this.gimbalZ=0;this.gimbalDirection=new Vector3(0,1,0);
     this.reset();
   }
 
@@ -145,7 +172,8 @@ export class PhysicsSim {
       w.pos.set(i < 2 ? p.wheelbase / 2 : -p.wheelbase / 2, -.31, i % 2 ? p.trackWidth / 2 : -p.trackWidth / 2).sub(this.cg);
       w.isFront = i < 2;
     });
-    for (const t of this.thrusters) t.pos.copy(t.mountPosition).sub(this.cg);
+    this.gimbalX=0;this.gimbalZ=0;this.gimbalDirection.set(0,1,0);
+    for (const t of this.thrusters){t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);}
     const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
     this.initialGas = gas;
     this.initialEnergy = gas * CV * p.initialTemperature;
@@ -230,9 +258,15 @@ export class PhysicsSim {
     const moveLength=Math.hypot(moveForward,moveRight);
     if(moveLength>1){moveForward/=moveLength;moveRight/=moveLength;}
     const airMoveActive=moveLength>1e-5;
-    // WASD requests a bounded attitude. Only physical thruster forces can then
-    // accelerate horizontally; there is no velocity assignment or airborne tire force.
-    if(airMoveActive)yawTarget.multiply(new Quaternion().setFromEuler(new Euler(.30*moveRight,0,-.30*moveForward,'XYZ')));
+    // WASD steers the nozzles, while the attitude target remains level at current heading.
+    // A bounded actuator moves continuously; it cannot alter the body's pose or velocity.
+    const targetX=GIMBAL_LIMIT*moveForward,targetZ=GIMBAL_LIMIT*moveRight;
+    const deltaX=targetX-this.gimbalX,deltaZ=targetZ-this.gimbalZ,delta=Math.hypot(deltaX,deltaZ);
+    const fraction=delta>0?Math.min(1,GIMBAL_RATE*dt/delta):0;
+    this.gimbalX+=deltaX*fraction;this.gimbalZ+=deltaZ*fraction;
+    const angle=Math.hypot(this.gimbalX,this.gimbalZ),sine=angle>1e-12?Math.sin(angle)/angle:1;
+    this.gimbalDirection.set(this.gimbalX*sine,Math.cos(angle),this.gimbalZ*sine);
+    for(let i=0;i<4;i++)this.thrusters[i].dir.copy(this.gimbalDirection);
     const qError = qInv.clone().multiply(yawTarget);
     if (qError.w < 0) qError.set(-qError.x, -qError.y, -qError.z, -qError.w);
     const error = new Vector3(qError.x, qError.y, qError.z).multiplyScalar(2);
@@ -247,21 +281,18 @@ export class PhysicsSim {
     if (input.altHold) {
       const target = clamp(input.targetHeight ?? 1.5, 0, 15) + this.restHeight;
       const aDesired = clamp((input.targetAcceleration || 0) + 24 * (target - s.pos.y) + 10 * ((input.targetVelocity || 0) - s.vel.y), -gravity, 1.1 * Math.max(gravity, 1));
-      vertical = mass * Math.max(0, gravity + aDesired) / Math.max(.3, bodyUp.y);
+      const liftWorldY=this.gimbalDirection.clone().applyQuaternion(s.q).y;
+      vertical = mass * Math.max(0, gravity + aDesired) * this.gimbalDirection.y / Math.max(.3, liftWorldY);
     }
-    // Solve the symmetric physical mount layout about the selected CG. A shifted
-    // CG changes each lever arm; collective lift requires unequal valve commands.
-    const trimRoll = tx - this.cg.z * vertical, trimPitch = tz + this.cg.x * vertical;
-    let liftForces = [0, 1, 2, 3].map(i => vertical / 4 + trimRoll * (-this.thrusters[i].mountPosition.z) / (4 * .78 ** 2) + trimPitch * this.thrusters[i].mountPosition.x / (4 * 1.28 ** 2));
-    // A nonnegative common-mode shift enables physical RCS roll/pitch with no negative thrusters.
-    const minLift = Math.min(...liftForces);
-    if (minLift < 0) liftForces = liftForces.map(f => f - minLift);
-    const desiredForces = [...liftForces, input.boost ? layoutMaximum[4].force : 0, input.boost ? layoutMaximum[5].force : 0,
-      Math.max(0, ty) / 2.7, Math.max(0, ty) / 2.7, Math.max(0, -ty) / 2.7, Math.max(0, -ty) / 2.7];
+    const allocation=allocateLift(vertical,tx,tz,this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force));
+    // Parallel lift vectors couple yaw to roll/pitch. Side RCS counters that moment.
+    const yawRequest=ty-allocation.yawTorque;
+    const desiredForces = [...allocation.thrust, input.boost ? layoutMaximum[4].force : 0, input.boost ? layoutMaximum[5].force : 0,
+      Math.max(0, yawRequest) / 2.7, Math.max(0, yawRequest) / 2.7, Math.max(0, -yawRequest) / 2.7, Math.max(0, -yawRequest) / 2.7];
     // Educational per-nozzle override, still constrained by valve lag and tank state.
     if (Array.isArray(input.thrusterCommands)) for (let i = 0; i < desiredForces.length; ++i)
       desiredForces[i] = clamp(input.thrusterCommands[i] || 0, 0, 1) * layoutMaximum[i].force;
-    this.saturation = false; this.totalThrust = 0; this.maxThrust = 0;
+    this.saturation = allocation.saturated; this.totalThrust = 0; this.maxThrust = 0;
     let totalFlow = 0;
     for (let i = 0; i < this.thrusters.length; ++i) {
       const t = this.thrusters[i], available = layoutMaximum[i];
@@ -512,7 +543,8 @@ export class PhysicsSim {
     const gLoad = s.acceleration.clone().addScaledVector(UP, p.gravity).length() / Math.max(.001, p.gravity);
     let status = contact >= 3 ? 'GROUND' : contact > 0 ? 'CONTACT' : s.vel.y > .12 ? 'ASCENDING' : s.vel.y < -.12 ? 'DESCENDING' : 'AIRBORNE';
     if (s.pressure <= ATMOSPHERE * 1.01) status = 'GAS DEPLETED';
-    return { horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
+    return { gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
+      horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
       verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,

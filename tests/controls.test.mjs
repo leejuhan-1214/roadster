@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { manualInput } from '../dist/js/controls.js';
 
-test('WASD uses tire controls on ground and attitude requests in air', () => {
+test('WASD uses tire controls on ground and nozzle-vector requests in air', () => {
   const keys = new Set(['KeyW','KeyA']);
   const ground=manualInput(keys,false),air=manualInput(keys,true);
   assert.equal(ground.throttle,1);assert.equal(ground.steer,1);

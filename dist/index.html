@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#080d14"><meta name="description" content="압축 기체 추진 자동차의 주행, 비행, 착지를 직접 실험하는 3D 물리 연구실. 유한 탱크, 개별 추진기와 실시간 물리 계측.">
   <title>Roadster Flight Lab — 움직임을 이해하는 실험실</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=20261107-smooth1">
+  <link rel="stylesheet" href="./style.css?v=20261107-gimbal1">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
 <body>
@@ -24,6 +24,13 @@
   <div class="paint-row"><span>바디 피니시</span><div class="swatches"><button data-paint="#b51627" class="selected" style="--paint:#d52336" aria-label="크림슨 레드"></button><button data-paint="#c6d2db" style="--paint:#c6d2db" aria-label="아크틱 실버"></button><button data-paint="#143b51" style="--paint:#23728e" aria-label="딥 페트롤"></button><button data-paint="#252b35" style="--paint:#444b58" aria-label="그래파이트"></button></div></div>
   <div id="drive-panel">
     <details class="performance-panel"><summary>화면 성능 <b id="performance-readout">측정 중…</b></summary><label for="render-quality">화면 품질 <select id="render-quality"><option value="smooth">부드럽게 · 기본</option><option value="detail">정밀 효과 · 부하 높음</option></select></label><p id="performance-details"></p></details>
+    <section class="vector-controls" aria-label="노즐 수평 이동">
+      <div class="section-label">노즐 수평 이동 <span>VECTOR THRUST</span></div>
+      <p>공중 W/S 전후 · A/D 좌우<br>Space 분사 또는 H 고도 유지와 함께 조작</p>
+      <div><span>노즐 편향 <b id="gimbal-angle">0.0°</b></span><span>차체 롤 / 피치 <b id="level-attitude">0.0° / 0.0°</b></span></div>
+      <button id="level-demo" class="primary-btn">수평 이동 시연 <span>↔</span></button>
+      <small>노즐 방향 전환·수평 자세 제어 · 짐벌 구조/가동각은 교육용 가정</small>
+    </section>
     <section class="friction-controls" aria-label="가상 실험 마찰 설정">
       <div class="section-label">마찰 실험 <span>GROUND / AIR</span></div>
       <label class="road-surface-label" for="road-surface">접지력 한도 μ<select id="road-surface"><option value="1.15">건조 노면 · μ 1.15</option><option value="0.65">젖은 노면 · μ 0.65</option><option value="0.15">빙판 근사 · μ 0.15</option><option value="0">무마찰 비교 · μ 0</option><option value="custom" hidden>사용자 설정</option></select></label>
@@ -103,5 +110,5 @@
 <div id="toast" class="toast" role="status"></div>
 <dialog id="guide-modal"><div class="modal-top"><div><span class="eyebrow">FIELD MANUAL</span><h2>움직임을 이해하는 실험실</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="physics">물리 원리</button><button data-guide="sources">가정과 출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.5</span></div></dialog>
 <dialog id="params-modal"><div class="modal-top"><div><span class="eyebrow">MODEL PARAMETERS</span><h2>조건을 바꾸고, 차이를 관찰하세요.</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><p class="muted">아래 값은 실험용 가정입니다. 적용하면 차량과 기체가 초기화됩니다.</p><form id="params-form"><div id="param-fields"></div><div class="param-actions"><button type="button" id="params-default" class="secondary-btn">기본값</button><button type="submit" class="primary-btn">적용하고 초기화 ↗</button></div></form></dialog>
-<script type="module" src="./js/main.js?v=20261107-smooth1"></script>
+<script type="module" src="./js/main.js?v=20261107-gimbal1"></script>
 </body></html>

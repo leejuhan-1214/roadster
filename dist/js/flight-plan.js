@@ -73,3 +73,9 @@ export function updateGuidedRun(run, sim) {
   }
   return run;
 }
+
+/** A short visible vectoring example using the ordinary finite-gas 2 m hop. */
+export function getLevelMoveInput(time){
+ const input=getGuidedInput(time,'2');
+ return {...input,airMoveForward:0,airMoveRight:time>=.6&&time<1.5?1:time>=1.5&&time<2.4?-1:0};
+}
