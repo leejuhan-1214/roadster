@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js?v=20261107-inset1';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-inset1';
-import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-inset1';
-import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-inset1';
-import {renderPixelRatio} from './render-quality.js?v=20261107-inset1';
+import { createVehicle } from './vehicle.js?v=20261107-inset2';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-inset2';
+import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-inset2';
+import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-inset2';
+import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-inset2';
+import {batchStaticEnvironment} from './static-batch.js?v=20261107-inset2';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
 // This renderer only reads simulation state. Plumes and marks never exert forces.
@@ -71,7 +72,7 @@ export class FlightScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.08;
-    this.quality='smooth';this.renderer.shadowMap.enabled=false;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.shadowElapsed=1;
+    this.renderBudget=new RenderBudget();this.quality='smooth';this.renderer.shadowMap.enabled=false;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.shadowElapsed=1;
     this.scene=new THREE.Scene();this.scene.fog=new THREE.FogExp2(0x899da8,0.0028);
     this.camera=new THREE.PerspectiveCamera(43,1,.08,1500);this.camera.position.set(7.7,3.8,7.5);
     this.controls=new OrbitControls(this.camera,canvas);this.controls.enableDamping=true;this.controls.dampingFactor=.08;
@@ -115,7 +116,7 @@ export class FlightScene {
     canvas.addEventListener('pointerdown',this._onDown,true);canvas.addEventListener('pointerup',this._onUp,true);
     canvas.addEventListener('pointermove',this._onMove,{capture:true,passive:false});canvas.addEventListener('pointercancel',this._onCancel,true);
     canvas.addEventListener('wheel',this._onWheel,{capture:true,passive:false});
-    this.createEnvironment();
+    this.createEnvironment();this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
@@ -240,9 +241,10 @@ export class FlightScene {
   }
   resize() {
     const rect=this.canvas.getBoundingClientRect();const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
-    const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality);
+    const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000);
     this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
   }
+  observeFrame(ms){if(this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
   setMode(mode) {
     this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
@@ -467,7 +469,9 @@ export class FlightScene {
     for(let i=0;i<thrusters.length;i++){
       if(!this.jets[i])this.jets[i]=this.createJet();
       if(!this.forceArrows[i]){this.forceArrows[i]=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0x71f4dd,.17,.09);this.scene.add(this.forceArrows[i]);}
-      const t=thrusters[i],power=clamp((t.force||0)/14000,0,1),worldPosition=t.pos.clone().applyQuaternion(state.q).add(state.pos),forceDir=t.dir.clone().applyQuaternion(state.q);
+      const t=thrusters[i],power=clamp((t.force||0)/14000,0,1);
+      if(power<=.005&&!showVectors){this.jets[i].visible=false;this.forceArrows[i].visible=false;continue;}
+      const worldPosition=t.pos.clone().applyQuaternion(state.q).add(state.pos),forceDir=t.dir.clone().applyQuaternion(state.q);
       const nozzle=this.vehicle.gimbalNozzles?.[i];
       if(nozzle&&!this.hasCustomModel){nozzle.updateWorldMatrix(true,false);worldPosition.copy(nozzle.userData.exitOffset).applyMatrix4(nozzle.matrixWorld);}
       else if(!this.hasCustomModel&&i>=4&&i<6&&this.vehicle.jetMounts?.[i])worldPosition.copy(this.vehicle.jetMounts[i].pos).applyQuaternion(state.q).add(sim.bodyPosition);

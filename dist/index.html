@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#080d14"><meta name="description" content="압축 기체 추진 자동차의 주행, 비행, 착지를 직접 실험하는 3D 물리 연구실. 유한 탱크, 개별 추진기와 실시간 물리 계측.">
   <title>Roadster Flight Lab — 움직임을 이해하는 실험실</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-  <link rel="stylesheet" href="./style.css?v=20261107-inset1">
+  <link rel="stylesheet" href="./style.css?v=20261107-inset2">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
 <body class="quality-smooth">
@@ -23,7 +23,7 @@
   <h1 id="vehicle-title">Roadster <em>2020</em></h1><p class="vehicle-sub" id="model-status">TESLA 외형 불러오는 중…</p>
   <div class="paint-row"><span>바디 피니시</span><div class="swatches"><button data-paint="#b51627" class="selected" style="--paint:#d52336" aria-label="크림슨 레드"></button><button data-paint="#c6d2db" style="--paint:#c6d2db" aria-label="아크틱 실버"></button><button data-paint="#143b51" style="--paint:#23728e" aria-label="딥 페트롤"></button><button data-paint="#252b35" style="--paint:#444b58" aria-label="그래파이트"></button></div></div>
   <div id="drive-panel">
-    <details class="performance-panel"><summary>화면 성능 <b id="performance-readout">측정 중…</b></summary><label for="render-quality">화면 품질 <select id="render-quality"><option value="smooth">부드럽게 · 기본</option><option value="detail">정밀 효과 · 부하 높음</option></select></label><p id="performance-details"></p></details>
+    <details class="performance-panel"><summary>화면 성능 <b id="performance-readout">측정 중…</b></summary><label for="render-quality">화면 품질 <select id="render-quality"><option value="smooth">부드럽게 · 자동 해상도</option><option value="detail">정밀 효과 · 부하 높음</option></select></label><p id="performance-details"></p></details>
     <section class="obstacle-controls" aria-label="장애물 충돌 실험">
       <div class="section-label">장애물과 충돌 <span>CONTACT LAB</span></div>
       <label class="aero-toggle"><input id="obstacles-enabled" type="checkbox" checked>시험 장애물 표시 · 충돌 적용</label>
@@ -119,5 +119,5 @@
 <div id="toast" class="toast" role="status"></div>
 <dialog id="guide-modal"><div class="modal-top"><div><span class="eyebrow">FIELD MANUAL</span><h2>움직임을 이해하는 실험실</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">조작 방법</button><button data-guide="physics">물리 원리</button><button data-guide="sources">가정과 출처</button></nav><div id="guide-content"></div><div class="modal-bottom">ROADSTER FLIGHT LAB <span>독립 교육용 시뮬레이션 · v1.8</span></div></dialog>
 <dialog id="params-modal"><div class="modal-top"><div><span class="eyebrow">MODEL PARAMETERS</span><h2>조건을 바꾸고, 차이를 관찰하세요.</h2></div><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><p class="muted">아래 값은 실험용 가정입니다. 적용하면 차량과 기체가 초기화됩니다.</p><form id="params-form"><div id="param-fields"></div><div class="param-actions"><button type="button" id="params-default" class="secondary-btn">기본값</button><button type="submit" class="primary-btn">적용하고 초기화 ↗</button></div></form></dialog>
-<script type="module" src="./js/main.js?v=20261107-inset1"></script>
+<script type="module" src="./js/main.js?v=20261107-inset2"></script>
 </body></html>

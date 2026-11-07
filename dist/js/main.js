@@ -1,12 +1,12 @@
-import { RenderStateBuffer } from './render-state.js?v=20261107-inset1';
-import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-inset1';
-import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-inset1';
-import { FlightScene } from './scene.js?v=20261107-inset1';
-import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-inset1';
-import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-inset1';
-import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-inset1';
-import { manualInput } from './controls.js?v=20261107-inset1';
-import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput, getLevelMoveInput } from './flight-plan.js?v=20261107-inset1';
+import { RenderStateBuffer } from './render-state.js?v=20261107-inset2';
+import { createFrictionRun, frictionRunInput, updateFrictionRun } from './friction-experiment.js?v=20261107-inset2';
+import { PhysicsSim, DEFAULTS, PARAMETER_INFO, runValidation } from './physics.js?v=20261107-inset2';
+import { FlightScene } from './scene.js?v=20261107-inset2';
+import { PARTS, LESSONS, SOURCES } from './learning.js?v=20261107-inset2';
+import { COURSE, createStageRun, updateStageRun } from './stage.js?v=20261107-inset2';
+import {SANDBOX,FACILITY_SOLIDS,experimentObstacles} from './world-obstacles.js?v=20261107-inset2';
+import { manualInput } from './controls.js?v=20261107-inset2';
+import { FLIGHT_PROFILES, DEFAULT_FLIGHT_PROFILE, createGuidedRun, updateGuidedRun, getGuidedInput, getLevelMoveInput } from './flight-plan.js?v=20261107-inset2';
 
 const $ = id => document.getElementById(id);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -299,6 +299,7 @@ function animate(stamp){
   if(!paused&&mode!=='inspect'&&!uiBlocked&&!document.hidden){accumulator+=elapsed;let iterations=0;while(accumulator>=STEP&&iterations<50&&!paused){stepSimulation(STEP);accumulator=Math.max(0,accumulator-STEP);iterations++;}}
   else accumulator=0;
   const physicsEnd=performance.now();
+  if(!document.hidden&&lastStamp)scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,vectors:showVectors,explode:Number($('explode').value),paint,wing:$('wing').checked,stageProgress:stage?.progress??0,renderState:renderStates.sample(paused||mode==='inspect'||uiBlocked?1:accumulator/STEP)});
   const renderEnd=performance.now();if(!document.hidden&&frameMs<500){frameSamples.push({ms:frameMs,physics:physicsEnd-physicsStart,render:renderEnd-physicsEnd});if(frameSamples.length>240)frameSamples.shift();}
   if(stamp-lastUI>80){updateUI(elapsed);lastUI=stamp;}
