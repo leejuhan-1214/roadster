@@ -2,7 +2,7 @@
 
 실행: https://leejuhan-1214.github.io/roadster/
 
-GitHub Pages는 `gh-pages` 브랜치의 정적 파일을 배포합니다. 원본 소스는 `main` 브랜치에 있습니다.
+GitHub Pages는 `.github/workflows/pages.yml`을 통해 `main` 브랜치의 `dist/`를 자동 배포합니다. 원본 소스도 `main`에 있으며, 기존 `gh-pages` 브랜치는 이전 배포 파일의 스냅샷으로 보존합니다.
 
 압축 기체 자동차의 지상 주행, 추진기 비행, 자세와 착지를 탐구하는 브라우저 3D 실험실입니다. 한국어 교육 설명과 구조 탐색, 물리 검산을 함께 제공합니다.
 
@@ -21,7 +21,8 @@ python3 -m http.server 8080 --directory dist
 개발용 의존성 설치 및 수치 검사:
 
 ```sh
-npm install
+npm ci --ignore-scripts
+npm run check
 npm test
 ```
 
@@ -106,7 +107,9 @@ Three.js 라이선스는 `dist/vendor/THREE-LICENSE.txt`에 있습니다. 참고
 
 ## 이번 버전 검산
 
-기본 물리 12개, 공유 도약 궤적 5개, CG·하중 이동·관성·조향 기하 5개의 자동 테스트를 통과했습니다. 3 m 시연의 최고 고도는 물리 시간 간격 2 / 1 / 0.5 ms에서 3.14757 / 3.14883 / 3.14946 m로 수렴합니다. 이 수치는 엔진의 수치 검산이며 실차 시험 결과가 아닙니다. 검증용 브라우저는 연결 오류가 있어 최종 시각·조작 검사는 완료하지 못했습니다.
+자동 테스트 47개를 통과했으며, 기본 물리, 공유 도약 궤적, CG·하중 이동·관성·조향 기하와 스테이지 회귀 검사를 포함합니다. 3 m 시연의 최고 고도는 물리 시간 간격 2 / 1 / 0.5 ms에서 3.14757 / 3.14883 / 3.14946 m로 수렴합니다. 이 수치는 엔진의 수치 검산이며 실차 시험 결과가 아닙니다.
+
+2026-11-07 공개 배포 후 HTML·JS·Tesla 모델 데이터 등을 포함한 34개 파일의 HTTP 200 응답과 로컬 파일 대비 SHA-256 일치를 확인했습니다. 실제 공개 사이트의 브라우저에서는 Tesla 모델 표시, 스테이지 시작, 자동 도약 시 고도 2.60 m 상승 표시와 구조 탐색 스크롤 분해 24%를 확인했으며 콘솔 오류는 없었습니다. WASD 조작으로 코스 전체를 완주하거나 모든 입력 조합을 검증한 것은 아닙니다.
 
 ## 스테이지와 공중 조종 (v1.2)
 
@@ -118,24 +121,25 @@ Three.js 라이선스는 `dist/vendor/THREE-LICENSE.txt`에 있습니다. 참고
 
 스테이지의 블록·아치와 충돌하며 박스 상면에는 개별 바퀴 접촉이 적용됩니다. 차체는 회전하는 상자(OBB), 장애물은 고정 축정렬 상자(AABB)로 근사합니다. 교차 검사와 충격량·마찰, 잔여 관통 보정을 사용하며 정밀 외형 메시 충돌·변형·파손 또는 일반적인 연속 충돌 검출은 아닙니다. 목표 링은 통과 판정용이며 먼 건물·콘·산은 배경입니다.
 
-스테이지 완주 회귀 검사는 일반 모터·조향·자세·Space형 분사 입력으로 약 7.27초, 최고 약 2.73 m, 기체 약154.5 kg 잔량에서 완료했습니다. 조향·자세는 연속 피드백 입력을 사용했으므로 사람이 키보드로 쉽게 완주한다는 검증은 아닙니다. 자동 테스트 47개를 통과했으며 입력 전환, 벽·천장·플랫폼 충돌, 단계별 분해, 카메라 시점 유지, 코스 판정·완주를 포함합니다. 실제 브라우저의 드래그·핀치 동작 검증은 환경 연결 제한으로 남아 있습니다.
+스테이지 완주 회귀 검사는 일반 모터·조향·자세·Space형 분사 입력으로 약 7.27초, 최고 약 2.73 m, 기체 약154.5 kg 잔량에서 완료했습니다. 조향·자세는 연속 피드백 입력을 사용했으므로 사람이 키보드로 쉽게 완주한다는 검증은 아닙니다. 자동 테스트 47개를 통과했으며 입력 전환, 벽·천장·플랫폼 충돌, 단계별 분해, 카메라 시점 유지, 코스 판정·완주를 포함합니다. 공개 사이트의 브라우저 확인 범위는 위 검산 항목에 기재했으며, 마우스 드래그·트랙패드 핀치와 WASD 전체 코스 완주는 이번 확인 범위에 포함하지 않았습니다.
 
 ## GitHub Pages 업데이트
 
-main에서 dist를 수정하고 검사·커밋한 다음 아래 명령으로 정적 배포 브랜치를 갱신합니다.
+`main`에서 `dist/`를 수정하고 다음 검사를 실행한 뒤 변경 사항을 커밋하고 `main`에 push합니다.
 
 ```sh
-python3 scripts/publish_pages.py
+npm ci --ignore-scripts
+npm run check
+npm test
+git push origin main
 ```
 
-외형 모델의 CC BY 4.0 저작자 표시와 Three.js 라이선스를 유지하세요. `.openai` 설정이나 서비스 인증 정보는 이 저장소에 포함하지 않습니다.
+`.github/workflows/pages.yml`은 `main`의 `dist/**`, `tests/**`, `package*.json` 또는 workflow 파일이 변경되면 실행됩니다. 의존성 설치, JavaScript 문법 검사와 자동 테스트, 정적 진입점·모델 파일 검사를 통과한 뒤 `dist/`를 아티팩트로 업로드하여 배포합니다. README 등 문서만 변경한 push는 배포를 실행하지 않습니다. 필요하면 GitHub Actions의 **Deploy Roadster to GitHub Pages**에서 **Run workflow**로 수동 실행할 수 있습니다.
 
-## 연결 권한 오류 시 본인 PC에서 배포
+저장소 Settings → Pages의 Source는 **GitHub Actions**(`build_type: workflow`)를 유지합니다. `github-pages` 환경은 `main` 배포를 허용하도록 설정되어 있습니다. Actions에서 build와 deploy가 모두 성공한 다음 공개 URL을 확인합니다. 배포 주소는 https://leejuhan-1214.github.io/roadster/ 입니다.
 
-Git 및 [GitHub CLI](https://cli.github.com)가 설치된 PC에서 압축을 풀고 프로젝트 폴더의 터미널에서 실행합니다.
+2026-11-07 [배포 실행 42319605851](https://github.com/leejuhan-1214/roadster/actions/runs/42319605851)에서 build와 deploy 성공 및 공개 사이트 응답을 확인했습니다.
 
-```sh
-python3 scripts/deploy_github.py
-```
+기존 `gh-pages` 브랜치는 보존된 스냅샷이며 현재 배포 소스가 아닙니다. `scripts/publish_pages.py`와 `scripts/deploy_github.py`는 이전 브랜치 배포 방식을 위한 도구이므로 현재 workflow 운영에서는 실행하지 마세요. 특히 `deploy_github.py`는 Pages 소스를 `gh-pages`로 다시 설정하므로 현재 자동 배포 설정을 되돌릴 수 있습니다.
 
-Windows에서는 `python scripts/deploy_github.py`를 사용할 수 있습니다. 필요하면 브라우저에서 본인의 `leejuhan-1214` GitHub 로그인을 완료합니다. 스크립트가 코드 업로드와 Pages 설정을 진행합니다. 토큰을 대화에 보내지 마세요. 기존 저장소 이력을 강제로 덮어쓰지 않으며, 서버가 거부하면 중단하고 안내합니다.
+외형 모델의 CC BY 4.0 저작자 표시와 Three.js 라이선스를 유지하세요. `.openai` 설정이나 서비스 인증 정보는 이 저장소에 포함하지 않습니다. 기존 커밋 이력을 보존하며 강제 push하지 않습니다.
