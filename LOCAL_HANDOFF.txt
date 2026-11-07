@@ -1,3 +1,6 @@
+공개 배포 완료: 2e825706dfce86040341b8cfc5f33a9c9177b1ca
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42367169057 build/deploy success. 52개 실행·자산파일 HTTP200 및 SHA256일치. 공개3차종선택/로드확인. 첫 cd3e43b 배포와동일작업재시도는GitHub동기화/빈상태응답으로10분timeout; 새릴리스2e82570 배포정상성공.
+
 Roadster v1.11 — 실차 차체 선택
 Tesla Roadster 2020 + Ferrari 458 Spider + BMW M3 E30. CC BY4 공개 아티스트 GLB 및 제작사 제원 자료; 제조사 CAD 아님. Ferrari 배포 원제목Italia지만 열린지붕 외형이라Spider로분류. 차체 선택시질량/관성/축간/윤거/타이어/충돌외피/부품목록초기화. 모델비율균일유지, BMW압축좌표Float32변환후정렬. 공통가상3모터·냉가스추진계,150kg장치순증가가정. 긴설명은docs/vehicle-reference.txt.
 검사:138개테스트통과,로컬Ferrari첫착지0.60m/s,BMW0.53m/s,충돌42.9km/h·20.89kN·s;3종전환/부품목록복귀확인. 추가모델은선택할때만로드/캐시. cache cars1.
