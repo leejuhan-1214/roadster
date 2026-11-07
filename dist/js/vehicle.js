@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-inset2';
+import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-drive1';
 
 // An independently authored visual prototype, not Tesla engineering geometry.
 // Coordinate convention: +X nose, +Y roof, +Z right side. Metres throughout.
@@ -206,18 +206,54 @@ export function createVehicle() {
   tube(battery,[[-1.1,-.25,.67],[-.2,-.25,.67],[.65,-.25,.67],[1.25,-.25,.55]],.014,caliper);
   box(battery,[.18,.055,.14],blue,[1.30,-.25,.52]);
 
-  const tank=part('tank',[-.35,.3,0]);
-  // Centreline COPV: illustrative tank, not an OEM internal arrangement.
+  const tank=part('tank',[-.35,.8,0]);
+  // Two illustrative ~450 L capsule vessels; packaging is an educational diagram.
   const tankMaterial=new THREE.MeshStandardMaterial({color:'#435865',metalness:.6,roughness:.32});
-  const tankCore=put(tank,new THREE.CapsuleGeometry(.23,1.25,8,24),tankMaterial,[-.40,-.17,0],[0,0,Math.PI/2]);
-  for(const x of [-.92,-.10]) {
-    put(tank,new THREE.TorusGeometry(.237,.024,8,30),silver,[x,-.17,0],[0,Math.PI/2,0]);
-    box(tank,[.09,.09,.57],carbon,[x,-.39,0]);
+  for(const z of [-.33,.33]){
+    put(tank,new THREE.CapsuleGeometry(.2835,1.4,8,24),tankMaterial,[-.40,-.10,z],[0,0,Math.PI/2]);
+    for(const x of [-.92,.1]){put(tank,new THREE.TorusGeometry(.29,.018,6,24),silver,[x,-.10,z],[0,Math.PI/2,0]);box(tank,[.07,.055,.59],carbon,[x,-.40,z]);}
+    put(tank,new THREE.CylinderGeometry(.043,.043,.13,12),satin,[.65,-.10,z],[0,0,Math.PI/2]);
+    tube(tank,[[.68,-.10,z],[.79,-.10,z],[.79,-.23,0]],.016,silver);
   }
-  put(tank,new THREE.CylinderGeometry(.055,.055,.20,12),satin,[.43,-.17,0],[0,0,Math.PI/2]);
-  put(tank,new THREE.TorusGeometry(.065,.012,6,16),blue,[.53,-.17,0],[0,Math.PI/2,0]);
-  tube(tank,[[.55,-.17,0],[.65,-.24,0],[.65,-.26,.43],[-1.5,-.26,.43]],.012,silver);
-  tube(tank,[[.65,-.26,0],[.65,-.26,-.43],[-1.5,-.26,-.43]],.012,silver);
+  const gasManifold=box(tank,[.21,.11,.36],satin,[.79,-.22,0]);
+  const supplyLamp=put(tank,new THREE.SphereGeometry(.035,8,6),blue,[.81,-.15,0]);
+  tube(tank,[[.81,-.25,0],[.9,-.34,0],[.9,-.36,.66],[-1.45,-.36,.66]],.014,silver);
+  tube(tank,[[.9,-.34,0],[.9,-.36,-.66],[-1.45,-.36,-.66]],.014,silver);
+  tank.userData.supplyLamp=supplyLamp;
+
+  // Three-motor functional layout. Rotor/reduction/half-shafts are illustrative,
+  // not an OEM CAD assembly; shaft phase follows the simulated wheel state.
+  const driveRotors=[],driveUnits=[];
+  const copper=new THREE.MeshStandardMaterial({color:'#d68a46',metalness:.8,roughness:.3});
+  const casing=new THREE.MeshStandardMaterial({color:'#64838a',metalness:.65,roughness:.32,transparent:true,opacity:.52,depthWrite:false});
+  function motorAssembly(id,origin,wheelIndices,offset){
+    const unit=part(id,offset);const g=new THREE.Group();g.position.fromArray(origin);unit.add(g);
+    put(g,new THREE.CylinderGeometry(.15,.15,.34,20,1,true),casing,[0,0,0],[Math.PI/2,0,0]);
+    for(const z of [-.18,.18])put(g,new THREE.TorusGeometry(.151,.012,6,24),silver,[0,0,z]);
+    const rotor=new THREE.Group();g.add(rotor);
+    put(rotor,new THREE.CylinderGeometry(.095,.095,.37,16),copper,[0,0,0],[Math.PI/2,0,0]);
+    box(rotor,[.025,.2,.025],dark,[0,0,.19]);
+    put(g,new THREE.CylinderGeometry(.025,.025,.48,12),silver,[0,0,0],[Math.PI/2,0,0]);
+    const gear=new THREE.Group();gear.position.set(.21,0,0);g.add(gear);
+    put(gear,new THREE.CylinderGeometry(.13,.13,.11,20),satin,[0,0,0],[Math.PI/2,0,0]);
+    for(let i=0;i<12;i++){const a=i*Math.PI/6;box(gear,[.025,.035,.12],silver,[Math.cos(a)*.128,Math.sin(a)*.128,0],[0,0,a]);}
+    put(g,new THREE.CylinderGeometry(.052,.052,.10,16),copper,[0,0,0],[Math.PI/2,0,0]);
+    driveRotors.push({rotor,gear,wheelIndices});driveUnits.push(unit);return unit;
+  }
+  const frontDrive=motorAssembly('drive-front',[1.19,-.20,0],[0,1],[1.15,.35,0]);
+  // Differential housing and half shafts from the single front motor.
+  put(frontDrive,new THREE.SphereGeometry(.10,12,8),dark,[1.4,-.20,0]);
+  for(const z of [-.89,.89])cylinderBetween(frontDrive,[1.4,-.20,0],[1.4,-.24,z],.022,silver);
+  for(const [i,z] of [[2,-.66],[3,.66]]){
+    const unit=motorAssembly(i===2?'drive-rear-left':'drive-rear-right',[-1.61,-.20,z],[i],[-.8,.35,Math.sign(z)*1.1]);
+    cylinderBetween(unit,[-1.4,-.20,z],[-1.4,-.24,Math.sign(z)*.89],.024,silver);
+  }
+  const electronics=part('power-electronics',[.1,1.35,-.5]);
+  for(const [x,z] of [[1.15,0],[-1.52,-.62],[-1.52,.62]]){
+    box(electronics,[.30,.065,.25],satin,[x,.015,z]);
+    for(let i=0;i<6;i++)box(electronics,[.28,.018,.012],silver,[x,.055,z-.1+i*.04]);
+    tube(electronics,[[x,.015,z],[x,.015,Math.sign(z||1)*.73],[.1,-.30,Math.sign(z||1)*.73]],.012,copper);
+  }
 
   const suspension=part('suspension',[.1,.38,-1.85]);
   for(const [id,x,z] of wheelData) {
@@ -236,7 +272,7 @@ export function createVehicle() {
   box(suspension,[3.4,.08,.93],carbon,[0,-.37,0]);
 
   const thrusters=part('thrusters',[-.2,.30,-3.25]);
-  const jetMounts=[],gimbalNozzles=[];
+  const jetMounts=[],gimbalNozzles=[],valveIndicators=[];
   // Compact swivel outlets inset into the underfloor. Only the short exit lip
   // extends below the diffuser; the actuator and its swept volume stay inboard.
   for(const x of [LIFT_LAYOUT.x,-LIFT_LAYOUT.x]) for(const z of [-LIFT_LAYOUT.z,LIFT_LAYOUT.z]) {
@@ -244,6 +280,7 @@ export function createVehicle() {
     box(mount,[.32,.025,.30],carbon,[0,-.014,0]);
     put(mount,new THREE.CircleGeometry(.137,24),black,[0,-.034,0],[Math.PI/2,0,0]);
     put(mount,new THREE.TorusGeometry(.137,.009,6,24),satin,[0,-.035,0],[Math.PI/2,0,0]);
+    const valve=put(mount,new THREE.BoxGeometry(.06,.04,.07),blue,[.10,.07,0]);valveIndicators.push(valve);
     const pivot=new THREE.Group();pivot.name='recessed lift gimbal '+gimbalNozzles.length;mount.add(pivot);
     put(pivot,new THREE.CylinderGeometry(.043,.082,.036,16,1,true),satin,[0,-.029,0]);
     put(pivot,new THREE.TorusGeometry(.082,.009,6,24),silver,[0,-.05,0],[Math.PI/2,0,0]);
@@ -284,5 +321,5 @@ export function createVehicle() {
       o.castShadow=true;o.receiveShadow=true;
     }
   });
-  return {root,parts,paintMaterials,wheels,fans,wing,tank,battery,jetMounts,gimbalNozzles,bounds:{length:4.7,width:2.2,height:1.27}};
+  return {root,parts,paintMaterials,wheels,fans,wing,tank,battery,jetMounts,gimbalNozzles,valveIndicators,driveRotors,driveUnits,bounds:{length:4.7,width:2.2,height:1.27}};
 }

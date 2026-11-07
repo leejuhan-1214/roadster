@@ -1,13 +1,14 @@
 import * as THREE from 'three';
+import {sampleRoadSurface} from './road-surface.js?v=20261107-drive1';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js?v=20261107-inset2';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-inset2';
-import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-inset2';
-import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-inset2';
-import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-inset2';
-import {batchStaticEnvironment} from './static-batch.js?v=20261107-inset2';
+import { createVehicle } from './vehicle.js?v=20261107-drive1';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive1';
+import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive1';
+import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive1';
+import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive1';
+import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive1';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
 // This renderer only reads simulation state. Plumes and marks never exert forces.
@@ -19,6 +20,7 @@ const clamp = THREE.MathUtils.clamp;
 export const EXPLODE_STAGES = Object.freeze({
   'wheel-fl':[0,.32],'wheel-fr':[0,.32],'wheel-rl':[.04,.36],'wheel-rr':[.04,.36],
   body:[.12,.5],cabin:[.22,.64],wing:[.24,.65],tank:[.38,.78],
+  'drive-front':[.48,.94],'drive-rear-left':[.48,.94],'drive-rear-right':[.48,.94],'power-electronics':[.44,.9],
   battery:[.47,.88],suspension:[.56,.96],thrusters:[.66,1]
 });
 export function partExplodeProgress(id,progress) {
@@ -116,7 +118,7 @@ export class FlightScene {
     canvas.addEventListener('pointerdown',this._onDown,true);canvas.addEventListener('pointerup',this._onUp,true);
     canvas.addEventListener('pointermove',this._onMove,{capture:true,passive:false});canvas.addEventListener('pointercancel',this._onCancel,true);
     canvas.addEventListener('wheel',this._onWheel,{capture:true,passive:false});
-    this.createEnvironment();this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
+    this.createEnvironment();this.roadRelief.userData.dynamicGeometry=true;this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
@@ -159,8 +161,8 @@ export class FlightScene {
     });groundTx.wrapS=groundTx.wrapT=THREE.RepeatWrapping;groundTx.repeat.set(100,100);
     const groundMat=new THREE.MeshStandardMaterial({map:groundTx,color:0x768080,roughness:.88,metalness:.06});
     const ground=mesh(new THREE.PlaneGeometry(1800,1800),groundMat,0,-.026,0,this.scene);ground.rotation.x=-Math.PI/2;ground.castShadow=false;
-    const runway=mesh(new THREE.PlaneGeometry(250,20),new THREE.MeshStandardMaterial({color:0x303c40,roughness:.76,metalness:.07}),65,-.012,0,this.scene);runway.rotation.x=-Math.PI/2;runway.castShadow=false;
-    const pad=mesh(new THREE.CircleGeometry(28,128),new THREE.MeshStandardMaterial({color:0x46565a,roughness:.72,metalness:.1}),0,-.005,0,this.scene);pad.rotation.x=-Math.PI/2;pad.castShadow=false;
+    const runway=mesh(new THREE.PlaneGeometry(250,20),new THREE.MeshStandardMaterial({color:0x303c40,roughness:.76,metalness:.07}),65,-.018,0,this.scene);runway.rotation.x=-Math.PI/2;runway.castShadow=false;
+    const pad=mesh(new THREE.CircleGeometry(28,128),new THREE.MeshStandardMaterial({color:0x46565a,roughness:.72,metalness:.1}),0,-.012,0,this.scene);pad.rotation.x=-Math.PI/2;pad.castShadow=false;
     const grid=new THREE.GridHelper(56,28,0x728589,0x5b7075);grid.position.y=.001;grid.material.transparent=true;grid.material.opacity=.24;grid.material.depthWrite=false;this.scene.add(grid);
     const padRing=ring(25,.11,0x9babaa,.7);padRing.position.y=.006;this.scene.add(padRing);
     const inner=ring(7.5,.045,0xb6d2d0,.38);inner.position.y=.009;this.scene.add(inner);
@@ -168,7 +170,7 @@ export class FlightScene {
     const arc=ring(2.7,.055,0x77ebd4,.85);arc.position.set(0,.012,0);this.scene.add(arc);
     const padLabel=label('01  /  FLIGHT DECK',{width:8,height:1,color:'#d1ddd9',size:77});padLabel.rotation.x=-Math.PI/2;padLabel.rotation.z=Math.PI/2;padLabel.position.set(-5,.018,0);this.scene.add(padLabel);
     const axisLabel=label('COLD GAS  ·  TEST SECTOR',{width:13,height:1,color:'#a2b6b5',size:64});axisLabel.rotation.x=-Math.PI/2;axisLabel.position.set(0,.018,-12);this.scene.add(axisLabel);
-    // Lane paint is visual; the physics ground is one continuous plane.
+    // Lane paint is visual; the tire ground uses the shared continuous relief function.
     const paint=new THREE.MeshBasicMaterial({color:0xd0d6ce,transparent:true,opacity:.62});
     for(const z of [-8.7,8.7]){let m=mesh(new THREE.PlaneGeometry(235,.085),paint,65,.008,z,this.scene);m.rotation.x=-Math.PI/2;m.castShadow=false;}
     for(let x=27;x<185;x+=8){let m=mesh(new THREE.PlaneGeometry(3.7,.1),paint,x,.012,0,this.scene);m.rotation.x=-Math.PI/2;m.castShadow=false;}
@@ -176,6 +178,8 @@ export class FlightScene {
     for(let x=40;x<190;x+=15){for(const z of [-10,10]){mesh(new THREE.BoxGeometry(.22,.16,.3),new THREE.MeshBasicMaterial({color:0x9deada}),x,.08,z,this.scene);}}
     for(const radius of [18,22]){const r=ring(radius,.08,0xbac6bc,.45);r.position.set(65,.018,50);this.scene.add(r);}
     const sk=label('DYNAMICS / 02',{width:12,height:1.4,color:'#bdc9c4',size:80});sk.rotation.x=-Math.PI/2;sk.position.set(65,.02,50);this.scene.add(sk);
+    const relief=new THREE.PlaneGeometry(160,100,160,100);relief.rotateX(-Math.PI/2);relief.translate(50,0,0);
+    this.roadRelief=new THREE.Mesh(relief,new THREE.MeshStandardMaterial({map:groundTx,color:0x536064,roughness:.96,metalness:.02}));this.roadRelief.receiveShadow=true;this.scene.add(this.roadRelief);
     this.createArchitecture();
     const shadowTx=canvasTexture((ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(.45,'rgba(0,0,0,.24)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);},128,128);
     this.contactShadow=new THREE.Mesh(new THREE.PlaneGeometry(6.5,4),new THREE.MeshBasicMaterial({map:shadowTx,transparent:true,depthWrite:false,opacity:.85}));this.contactShadow.rotation.x=-Math.PI/2;this.scene.add(this.contactShadow);
@@ -244,6 +248,11 @@ export class FlightScene {
     const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000);
     this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
   }
+  updateRoadRelief(roughness=0){
+    if(!this.roadRelief)return;this.roadRelief.visible=roughness>0;
+    const a=this.roadRelief.geometry.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,sampleRoadSurface(a.getX(i),a.getZ(i),{roughness}).height-.003);
+    a.needsUpdate=true;this.roadRelief.geometry.computeVertexNormals();
+  }
   observeFrame(ms){if(this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
   setMode(mode) {
     this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
@@ -281,13 +290,13 @@ export class FlightScene {
   }
   applyInspectorVisibility() {
     if(!this.vehicle?.detailParts){
-      for(const id of ['tank','battery','suspension','thrusters','wing']){const part=this.vehicle?.parts?.get(id);if(part)part.visible=this.mode!=='inspect'||this.showHypotheses;}
+      for(const id of ['tank','battery','suspension','thrusters','wing','drive-front','drive-rear-left','drive-rear-right','power-electronics']){const part=this.vehicle?.parts?.get(id);if(part)part.visible=this.mode!=='inspect'||this.showHypotheses;}
       return;
     }
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
-      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):true;
+      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics'].includes(entry.id));
     }
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
   }
@@ -370,6 +379,7 @@ export class FlightScene {
     dt=Math.min(Math.max(dt||0,0),.1);this.elapsed+=dt;
     const mode=options.mode||this.mode,camera=options.camera||this.cameraName;
     if(mode!==this.mode)this.setMode(mode);if(camera!==this.cameraName)this.setCamera(camera);
+    if(this.cutaway!==!!options.cutaway){this.cutaway=!!options.cutaway;this.applyInspectorVisibility();}
     const state=options.renderState||sim.state,position=state.pos,q=state.q;
     const wheels=options.renderState?.wheels||sim.wheels;
     const cg=sim.cg||new THREE.Vector3();
@@ -399,6 +409,10 @@ export class FlightScene {
       w.rotation.y=physicsWheel.steer||0;
       if(w.userData.spinGroup)w.userData.spinGroup.rotation.z=-(physicsWheel.spinAngle||0);
     }
+    for(const unit of this.vehicle.driveRotors||[]){const phase=unit.wheelIndices.reduce((sum,i)=>sum+(wheels[i]?.spinAngle||0),0)/unit.wheelIndices.length;unit.rotor.rotation.z=-phase*(sim.params.gearRatio||9);unit.gear.rotation.z=phase;}
+    for(let i=0;i<(this.vehicle.valveIndicators?.length||0);i++){const valve=this.vehicle.valveIndicators[i];valve.scale.y=.35+.65*(thrusters[i]?.opening||0);}
+    const lamp=this.vehicle.tank?.userData.supplyLamp;if(lamp)lamp.scale.setScalar(.7+.3*Math.min(1,(sim.massFlowKgS||0)/50));
+    if(this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
     for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
     this.vehicle.root.visible=!this.hasCustomModel||this.mode==='inspect';
@@ -413,9 +427,9 @@ export class FlightScene {
     for(let i=0;i<4;i++){const a=this.contactArrows[i],w=wheels?.[i];a.visible=!!options.vectors&&(w?.load||0)>100;if(w){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=.06+(w.surfaceY||0);a.setLength(.25+(w.load||0)/10000,.15,.07);}}
     }else{this.fanArrow.visible=false;for(const a of this.contactArrows)a.visible=false;}
     for(let i=0;i<4;i++){
-      const a=this.frictionArrows[i],w=wheels[i],force=Math.hypot(w?.forceX||0,w?.forceZ||0);
+      const a=this.frictionArrows[i],w=wheels[i],force=Math.hypot(w?.forceX||0,w?.forceY||0,w?.forceZ||0);
       a.visible=!!options.vectors&&mode!=='inspect'&&force>10;
-      if(a.visible){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=(w.surfaceY||0)+.09;a.setDirection(tmpV.set(w.forceX,0,w.forceZ).normalize());a.setLength(.15+Math.min(2.5,force/4500),.14,.07);}
+      if(a.visible){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=(w.surfaceY||0)+.09;a.setDirection(tmpV.set(w.forceX,w.forceY||0,w.forceZ).normalize());a.setLength(.15+Math.min(2.5,force/4500),.14,.07);}
     }
     if(this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
     this.updateMarks(view);

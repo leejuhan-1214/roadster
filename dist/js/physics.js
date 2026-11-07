@@ -1,5 +1,7 @@
 import { Vector3, Quaternion, Euler } from 'three';
-import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-inset2';
+import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive1';
+import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive1';
+import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -8,12 +10,12 @@ import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=2026
  * The ten-nozzle layout and all performance parameters are hypothetical.
  */
 export const DEFAULTS = Object.freeze({
-  dryMass: 1900, tankVolume: .6, tankPressureMPa: 35.875, initialTemperature: 300,
-  friction: 1.15, rollingResistance: .012, springK: 75000, damperC: 6000, fanMaxForce: 18000,
+  dryMass: 1900, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
+  friction: 1.15, rollingResistance: .015, springK: 75000, damperC: 6000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
   gravity: 9.80665, dragScale: 1, valveTau: .03,
   wheelRadius: .36, wheelInertia: 2.6, gearRatio: 9, driveEfficiency: .94,
-  batteryKWh: 75, contactEnabled: true, aeroEnabled: true,
+  batteryKWh: 200, roadRoughness:0, tractionControl:true, absEnabled:true, feedLossCoefficient:1000, contactEnabled: true, aeroEnabled: true,
   cgX: 0, cgY: 0, cgZ: 0, inertiaRoll: 900, inertiaYaw: 3400, inertiaPitch: 3500,
   wheelbase: 2.8, trackWidth: 1.88,
 });
@@ -28,15 +30,15 @@ export const PARAMETER_INFO = {
   trackWidth: ['윤거', 'm', '가정 · 좌우 바퀴 중심 간 거리, 공개 실측 치수 아님'],
   dryMass: ['기체 제외 질량', 'kg', '가정 · 차체, 배터리, 빈 탱크, 탑승자 포함'],
   tankVolume: ['탱크 체적', 'm³', '가정 · 비행 실험용 저장 용량, 실차 확정 사양 아님'],
-  tankPressureMPa: ['초기 절대압력', 'MPa', '이상 공기 250 kg / 600 L / 300 K로 역산한 가정'],
+  tankPressureMPa: ['초기 절대압력', 'MPa', '이상 공기 375 kg / 900 L / 300 K로 역산한 가정'],
   initialTemperature: ['초기 기체 온도', 'K', '실측값이 아닌 상온 가정'],
   friction: ['접지력 한도 μ', '—', '타이어가 전달할 수 있는 힘의 한도. 타력 감속 계수와 다름'],
   rollingResistance: ['구름저항 계수 Crr', '—', '가정 · 접지 하중에 비례하는 타력 주행 저항, μN 한도 안에서 적용'],
   springK: ['바퀴별 스프링 상수', 'N/m', '타이어와 서스펜션을 합친 가정값'],
   damperC: ['바퀴별 감쇠 계수', 'N·s/m', '선형 댐퍼 가정'],
   fanMaxForce: ['팬 최대 다운포스', 'N', '가정 · 차고·기울기에 따라 감소'],
-  motorPowerKW: ['모터 최대 출력', 'kW', '가정 · 후륜 모터 합산'],
-  motorTorqueNm: ['모터 최대 토크', 'N·m', '가정 · 후륜 모터 합산'],
+  motorPowerKW: ['모터 최대 출력', 'kW', '가정 · 앞 1개·뒤 2개 모터 합산'],
+  motorTorqueNm: ['모터 최대 토크', 'N·m', '가정 · 앞 1개·뒤 2개 모터 합산'],
   valveTau: ['밸브 응답 시정수', 's', '1차 지연 가정'],
 };
 const R = 287, GAMMA = 1.4, CV = R / (GAMMA - 1), CP = GAMMA * CV;
@@ -54,8 +56,8 @@ export function allocateLift(vertical,tx,tz,direction,cg,maxima){
  const support=x.map((xi,i)=>.25+z[i]*(cg.z+h*gz)/(4*b*b)+xi*(cg.x+h*gx)/(4*a*a));
  const moment=x.map((xi,i)=>-z[i]*tx/(4*b*b)+xi*tz/(4*a*a));
  const caps=maxima.map(f=>f*direction.y);
- const bounded=(v)=>{
-  const f=moment.map((m,i)=>m+support[i]*v);let lo=-Infinity,hi=Infinity;
+ const bounded=(v,torqueScale=1)=>{
+  const f=moment.map((m,i)=>m*torqueScale+support[i]*v);let lo=-Infinity,hi=Infinity;
   for(let i=0;i<4;i++){const aa=-f[i]/sign[i],bb=(caps[i]-f[i])/sign[i];lo=Math.max(lo,Math.min(aa,bb));hi=Math.min(hi,Math.max(aa,bb));}
   if(lo<=hi+1e-9){const lambda=clamp(0,lo,hi);return f.map((n,i)=>clamp(n+sign[i]*lambda,0,caps[i]));}
   return null;
@@ -65,7 +67,12 @@ export function allocateLift(vertical,tx,tz,direction,cg,maxima){
   // Positive-only RCS needs some collective lift when a torque is requested at V=0.
   let needed=v;for(let i=0;i<4;i++)if(support[i]>1e-9)needed=Math.max(needed,-moment[i]/support[i]);
   forces=bounded(needed);
-  if(!forces){saturated=true;forces=moment.map((m,i)=>clamp(m+support[i]*needed,0,caps[i]));}
+  if(!forces){
+   // Preserve balanced force ratios when pressure cannot meet collective demand.
+   // Uniformly reduce the requested wrench instead of clipping one nozzle and tipping.
+   saturated=true;let low=0,high=1;forces=bounded(0,0);
+   for(let k=0;k<24;k++){const scale=(low+high)/2,candidate=bounded(needed*scale,scale);if(candidate){low=scale;forces=candidate;}else high=scale;}
+  }
  }
  const thrust=forces.map(f=>f/direction.y);
  const yawTorque=forces.reduce((sum,f,i)=>sum+((z[i]-cg.z)*gx-(x[i]-cg.x)*gz)*f,0);
@@ -107,7 +114,7 @@ function boxContact(sim, obstacle) {
 }
 
 /** Ideal convergent nozzle, exit=throat. Pressure thrust is retained when choked.
- * Pa absolute; K; m². Inlet is tank stagnation state, no plumbing losses (Cd=1).
+ * Pa absolute; K; m². Inlet is the supplied stagnation state; feed-line loss is applied upstream (Cd=1).
  */
 export function nozzle(pressure, temperature, area, ambient = ATMOSPHERE) {
   if (!(pressure > ambient) || !(temperature > 0) || !(area > 0))
@@ -194,9 +201,11 @@ export class PhysicsSim {
     this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
     this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
+    this.motorState=evaluateElectricDrive({wheelOmega:[0,0,0,0],throttle:0,brake:0,batteryEnergyJ:this.state.batteryJ,dt:.002},p);
+    this.manifoldPressure=this.state.pressure;this.massFlowKgS=0;this.electricPowerW=0;this.regenPowerW=0;this.driveLossW=0;this.tractionCut=1;
     this.history = [];
     this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
-    for (const w of this.wheels) { w.forceX=0;w.forceZ=0;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
+    for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
       w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
@@ -218,7 +227,7 @@ export class PhysicsSim {
 
   /** Highest horizontal supporting surface below this wheel/fan reference point. */
   surfaceHeightAt(x,z,referenceY=Infinity) {
-    let height=0;
+    let height=sampleRoadSurface(x,z,{roughness:this.params.roadRoughness}).height;
     for(const box of this.obstacles)if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
       box.max.y<=referenceY+.10&&box.max.y>height)height=box.max.y;
     return height;
@@ -246,8 +255,10 @@ export class PhysicsSim {
     const applyAt = (f, r) => { force.add(f); torqueWorld.add(new Vector3().crossVectors(r, f)); };
     const bodyVelocity = s.vel.clone().applyQuaternion(qInv);
 
-    // Rate-limited first-order valves, physical positive-only allocation.
-    const layoutMaximum = this.thrusters.map(t => nozzle(s.pressure, s.temp, t.area));
+    // Direct blowdown: pressure falls with the tank, and flow adds a supply-line loss.
+    const oldFlow=this.thrusters.reduce((sum,t)=>sum+t.mdot,0);
+    this.manifoldPressure=Math.max(ATMOSPHERE,s.pressure-Math.max(0,p.feedLossCoefficient)*oldFlow*oldFlow);
+    const layoutMaximum = this.thrusters.map(t => nozzle(this.manifoldPressure, s.temp, t.area));
     for (let i = 0; i < this.thrusters.length; ++i) this.thrusters[i].maxForce = layoutMaximum[i].force;
     const isAirborne = this.contactCount === 0;
     const enabledControl = isAirborne || input.lift > .01 || input.altHold;
@@ -329,7 +340,7 @@ export class PhysicsSim {
       s.expelledEnthalpy += oldU - s.gas * CV * s.temp;
       s.pressure = s.gas * R * s.temp / p.tankVolume;
     }
-    s.gasUsed = this.initialGas - s.gas;
+    s.gasUsed = this.initialGas - s.gas;this.massFlowKgS=totalFlow*flowScale;
 
     // Anisotropic body drag, relative wind, and aerodynamic surface moment.
     const relative = s.vel.clone().sub(new Vector3(p.windX || 0, 0, p.windZ || 0)).applyQuaternion(qInv);
@@ -354,9 +365,10 @@ export class PhysicsSim {
     if (input.fan && s.batteryJ > 0) {
       const fanSurface=this.surfaceHeightAt(s.pos.x,s.pos.z,s.pos.y-this.restHeight);
       const clearance = Math.max(0, s.pos.y - this.restHeight - fanSurface);
-      this.fanForce = Math.max(0, p.fanMaxForce) * Math.exp(-clearance / .10) * Math.max(0, bodyUp.y) ** 6;
+      electricPower=Math.min(80000,s.batteryJ/dt);
+      this.fanForce = Math.max(0, p.fanMaxForce) * Math.exp(-clearance / .10) * Math.max(0, bodyUp.y) ** 6 * electricPower/80000;
       applyAt(bodyUp.clone().multiplyScalar(-this.fanForce), new Vector3(-.10, -.25, 0).sub(this.cg).applyQuaternion(s.q));
-      electricPower += 80000;
+
     }
 
     this.lastContactCount = this.contactCount;
@@ -365,76 +377,57 @@ export class PhysicsSim {
     const brakeAmount = clamp(input.brake || 0, 0, 1);
     const throttle = brakeAmount > 0 ? 0 : clamp(input.throttle || 0, -1, 1);
     const tireResultant = new Vector3();
-    this.brakeForceN = 0; this.rollingResistanceN = 0;
-    let maxSlip = 0;
-    for (const wheel of this.wheels) {
-      const rCenter = wheel.pos.clone().applyQuaternion(s.q);
-      const worldCenter = s.pos.clone().add(rCenter);
-      const cornerVel = s.vel.clone().add(new Vector3().crossVectors(omegaWorld, rCenter));
+    this.brakeForceN=0;this.rollingResistanceN=0;let maxSlip=0;
+    // TCS limits torque when the wheel is outrunning the road, separately from friction.
+    const spinning=Math.max(0,...this.wheels.map(w=>(w.slip||0)*Math.sign(throttle)));
+    this.tractionCut=p.tractionControl!==false&&Math.abs(throttle)>0&&(throttle*bodyVelocity.x>=0||Math.abs(bodyVelocity.x)<.5)?clamp(1-(spinning-.14)*2.2,.12,1):1;
+    const coastBrake=input.coastRegen&&this.lastContactCount>0&&Math.abs(throttle)<.01&&brakeAmount===0?.25:0;
+    for(const w of this.wheels){const target=p.absEnabled!==false&&Math.max(brakeAmount,coastBrake)>0&&Math.abs(bodyVelocity.x)>2?clamp(1+((w.slip||0)*Math.sign(bodyVelocity.x)+.16)*7,.08,1):1;w.absFactor+=(target-w.absFactor)*(1-Math.exp(-dt/.025));}
+    const absScale=Math.min(...this.wheels.map(w=>w.absFactor));
+    const oldWheelOmega=this.wheels.map(w=>w.omega);
+    const wheelOmegaBound=this.wheels.map(w=>Math.max(Math.abs(w.omega),s.vel.clone().add(new Vector3().crossVectors(omegaWorld,w.pos.clone().applyQuaternion(s.q))).length()/p.wheelRadius));
+    const drive=evaluateElectricDrive({wheelOmega:oldWheelOmega,wheelOmegaBound,throttle:throttle*this.tractionCut,brake:Math.max(brakeAmount,coastBrake)*absScale,batteryEnergyJ:Math.max(0,s.batteryJ-electricPower*dt),dt},p);
+    for(let index=0;index<this.wheels.length;index++){
+      const wheel=this.wheels[index],rCenter=wheel.pos.clone().applyQuaternion(s.q),worldCenter=s.pos.clone().add(rCenter);
+      const cornerVel=s.vel.clone().add(new Vector3().crossVectors(omegaWorld,rCenter));
+      const road=sampleRoadSurface(worldCenter.x,worldCenter.z,{roughness:p.roadRoughness});
       const surfaceY=this.surfaceHeightAt(worldCenter.x,worldCenter.z,worldCenter.y);
-      wheel.surfaceY=surfaceY;
-      const compression = Math.max(0, p.wheelRadius + surfaceY - worldCenter.y);
-      wheel.compression = compression;
-      wheel.grounded = !!p.contactEnabled && compression > 0;
-      // Ackermann geometry: inner front wheel steers farther so rolling wheels
-      // share an instantaneous turn centre. Tire slip still determines actual force.
-      const centreRadius = Math.abs(steering) > 1e-7 ? p.wheelbase / Math.tan(Math.abs(steering)) : Infinity;
-      const mountZ = wheel.pos.z + this.cg.z;
-      const wheelRadiusToTurn = centreRadius + Math.sign(steering) * mountZ;
-      wheel.steer = wheel.isFront ? Math.sign(steering) * Math.atan(p.wheelbase / wheelRadiusToTurn) : 0;
-      let normal = 0;
-      if (wheel.grounded) {
-        normal = Math.max(0, p.springK * compression - p.damperC * cornerVel.y + 900000 * Math.max(0, compression - .22) ** 1.35);
-        if (normal > 0) ++this.contactCount;
-      }
-      wheel.load = normal;
-      const fwd = new Vector3(Math.cos(wheel.steer), 0, -Math.sin(wheel.steer)).applyQuaternion(s.q);
-      fwd.y = 0; if (fwd.lengthSq() < 1e-8) fwd.set(1, 0, 0); else fwd.normalize();
-      const right = new Vector3().crossVectors(fwd, UP).normalize();
-      const ux = cornerVel.dot(fwd), uy = cornerVel.dot(right);
-      const wheelSpeed = wheel.omega * p.wheelRadius;
-      const slip = (wheelSpeed - ux) / Math.max(2.5, Math.abs(ux), Math.abs(wheelSpeed));
-      wheel.slip = wheel.grounded ? slip : 0;
-      maxSlip = Math.max(maxSlip, Math.abs(wheel.slip));
-      let fx = wheel.grounded ? 11000 * slip : 0;
-      let fy = wheel.grounded ? -55000 * Math.atan2(uy, Math.max(3, Math.abs(ux))) : 0;
-      // Tire slip and rolling resistance share one contact-friction budget.
-      let rolling = -Math.max(0,p.rollingResistance) * normal * Math.tanh(ux / .6);
-      const combined = Math.hypot(fx + rolling, fy), limit = Math.max(0, p.friction) * normal;
-      if (combined > limit && combined > 0) {
-        const scale = limit / combined; fx *= scale; fy *= scale; rolling *= scale;
-      }
-      wheel.rollingResistanceN=Math.abs(rolling);this.rollingResistanceN+=wheel.rollingResistanceN;
-      wheel.tireForceN = Math.hypot(fx + rolling, fy);
-      wheel.forceX=fwd.x*(fx+rolling)+right.x*fy;wheel.forceZ=fwd.z*(fx+rolling)+right.z*fy;
-      if (normal > 0) {
-        const horizontalForce = fwd.clone().multiplyScalar(fx + rolling).addScaledVector(right, fy);
-        tireResultant.add(horizontalForce);
-        const groundForce = horizontalForce.addScaledVector(UP, normal);
-        const contactLever = new Vector3(rCenter.x, surfaceY-s.pos.y, rCenter.z);
-        applyAt(groundForce, contactLever);
-      }
-      let driveTorque = 0;
-      if (!wheel.isFront && s.batteryJ > 0) {
-        const motorOmega = wheel.omega * p.gearRatio;
-        const motorLimit = Math.min(Math.max(0, p.motorTorqueNm) / 2, Math.max(0, p.motorPowerKW) * 1000 / 2 / Math.max(Math.abs(motorOmega), 10));
-        driveTorque = throttle * motorLimit * p.gearRatio * p.driveEfficiency;
-        const mechanicalPower = driveTorque * wheel.omega;
-        electricPower += mechanicalPower >= 0 ? mechanicalPower / p.driveEfficiency : mechanicalPower * .65;
-      }
-      const brakeTorque = brakeAmount * 3100;
-      // Report the tire force actually opposing travel, not commanded brake torque / radius.
+      const n=surfaceY>road.height+1e-8?UP.clone():new Vector3(...road.normal);
+      wheel.surfaceY=surfaceY;wheel.normalX=n.x;wheel.normalY=n.y;wheel.normalZ=n.z;
+      const compression=Math.max(0,p.wheelRadius-(worldCenter.y-surfaceY)*n.y);
+      wheel.compression=compression;wheel.grounded=!!p.contactEnabled&&compression>0;
+      const centreRadius=Math.abs(steering)>1e-7?p.wheelbase/Math.tan(Math.abs(steering)):Infinity;
+      const mountZ=wheel.pos.z+this.cg.z,wheelRadiusToTurn=centreRadius+Math.sign(steering)*mountZ;
+      wheel.steer=wheel.isFront?Math.sign(steering)*Math.atan(p.wheelbase/wheelRadiusToTurn):0;
+      const normal=wheel.grounded?Math.max(0,p.springK*compression-p.damperC*cornerVel.dot(n)+900000*Math.max(0,compression-.22)**1.35):0;
+      wheel.load=normal;if(normal>0)this.contactCount++;
+      const fwd=new Vector3(Math.cos(wheel.steer),0,-Math.sin(wheel.steer)).applyQuaternion(s.q);fwd.addScaledVector(n,-fwd.dot(n)).normalize();
+      const right=new Vector3().crossVectors(fwd,n).normalize(),ux=cornerVel.dot(fwd),uy=cornerVel.dot(right);
+      const driveTorque=drive.wheelTorqueNm[index];
+      const frictionBrake=Math.max(0,brakeAmount*wheel.absFactor*3100-Math.abs(drive.wheelRegenTorqueNm[index]));
+      const omegaFor=fx=>{let omega=wheel.omega+(driveTorque-fx*p.wheelRadius-.025*wheel.omega)/p.wheelInertia*dt;return Math.sign(omega)*Math.max(0,Math.abs(omega)-frictionBrake/p.wheelInertia*dt);};
+      const profile=p.friction<=.2?'ice':p.friction<=.7?'wet':'dry';
+      const atForce=fx=>{const speed=(wheel.omega+omegaFor(fx))*.5*p.wheelRadius;return tireContactForces({surface:profile,normalLoad:normal,grounded:wheel.grounded,muPeak:Math.max(0,p.friction),rollingResistance:p.rollingResistance,forwardSpeed:ux,slipRatio:(speed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(speed)),slipAngle:Math.atan2(uy,Math.max(3,Math.abs(ux))),longitudinalStiffness:120000,corneringStiffness:70000});};
+      // Implicit wheel reaction makes realistic high slip stiffness stable at 500 Hz.
+      let lo=-Math.max(0,p.friction)*normal,hi=-lo;
+      for(let k=0;k<(Math.abs(ux)<2?20:14)&&normal>0&&p.friction>0;k++){const mid=(lo+hi)*.5;const residual=mid-atForce(mid).fx;if(Math.abs(residual)<1e-7){lo=hi=mid;break;}if(residual>0)hi=mid;else lo=mid;}
+      const tire=atForce((lo+hi)*.5),fx=tire.fx,fy=tire.fy,rolling=tire.rolling;
+      const nextOmega=omegaFor(fx),patchSpeed=(wheel.omega+nextOmega)*.5*p.wheelRadius;
+      wheel.slip=wheel.grounded?(patchSpeed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(patchSpeed)):0;
+      wheel.sliding=wheel.grounded&&(tire.sliding||Math.abs(wheel.slip)>.2);maxSlip=Math.max(maxSlip,Math.abs(wheel.slip));
+      wheel.rollingResistanceN=Math.abs(rolling);this.rollingResistanceN+=wheel.rollingResistanceN;wheel.tireForceN=tire.magnitude;
+      const contactForce=fwd.clone().multiplyScalar(fx+rolling).addScaledVector(right,fy);
+      wheel.forceX=contactForce.x;wheel.forceY=contactForce.y;wheel.forceZ=contactForce.z;
+      if(normal>0){tireResultant.add(contactForce);const lever=new Vector3(rCenter.x,surfaceY-s.pos.y,rCenter.z);applyAt(contactForce.clone().addScaledVector(n,normal),lever);}
       if(brakeAmount>0&&normal>0)this.brakeForceN+=Math.max(0,-fx*Math.sign(ux));
-      wheel.driveTorque = driveTorque; wheel.brakeTorque = brakeTorque;
-      const accelerationTorque = driveTorque - fx * p.wheelRadius - .025 * wheel.omega;
-      let nextOmega = wheel.omega + accelerationTorque / p.wheelInertia * dt;
-      // Brake complementarity: dissipative torque may stop a wheel, never reverse it.
-      if (brakeTorque > 0) nextOmega = Math.sign(nextOmega) * Math.max(0, Math.abs(nextOmega) - brakeTorque / p.wheelInertia * dt);
-      wheel.omega = nextOmega;wheel.spinAngle += nextOmega * dt;
+      wheel.driveTorque=drive.wheelDriveTorqueNm[index];wheel.regenTorque=drive.wheelRegenTorqueNm[index];wheel.brakeTorque=frictionBrake;
+      wheel.omega=nextOmega;wheel.spinAngle+=nextOmega*dt;
     }
-    this.frictionForceN = tireResultant.length();
-    this.maxSlip = maxSlip;
-    s.batteryJ = clamp(s.batteryJ - electricPower * dt, 0, p.batteryKWh * 3.6e6);
+    this.frictionForceN=tireResultant.length();this.maxSlip=maxSlip;
+    const work=accountDriveWork(drive,oldWheelOmega,this.wheels.map(w=>w.omega),dt,p);
+    electricPower+=work.electricalEnergyJ/dt;this.electricPowerW=electricPower;this.regenPowerW=Math.max(0,-work.electricalEnergyJ/dt);this.driveLossW=work.lossEnergyJ/dt;
+    this.motorState=drive;for(let i=0;i<drive.motors.length;i++){drive.motors[i].electricalPowerW=work.perMotor[i].electricalEnergyJ/dt;drive.motors[i].shaftPowerW=work.perMotor[i].shaftWorkJ/dt;}
+    s.batteryJ=clamp(s.batteryJ-electricPower*dt,0,p.batteryKWh*3.6e6);
 
     // Body skid contact is separate from suspension; forces and impulses are explicit.
     if (p.contactEnabled) {
@@ -481,9 +474,10 @@ export class PhysicsSim {
     const qi=s.q.clone().invert(),inverseMass=1/this.mass;
     const contacts=this.wheels.filter(w=>w.load>1&&Math.abs(w.omega*p.wheelRadius)<.1).map(w=>{
       const r=w.pos.clone().applyQuaternion(s.q);r.y=w.surfaceY-s.pos.y;
-      const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);forward.y=0;forward.normalize();
-      const side=new Vector3().crossVectors(forward,UP);
-      return {w,r,forward,side,j:new Vector3(w.forceX*dt,0,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/p.wheelRadius+(w.rollingResistanceN||0))*dt};
+      const normal=new Vector3(w.normalX,w.normalY,w.normalZ);
+      const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);forward.addScaledVector(normal,-forward.dot(normal)).normalize();
+      const side=new Vector3().crossVectors(forward,normal);
+      return {w,r,forward,side,j:new Vector3(w.forceX*dt,w.forceY*dt,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/p.wheelRadius+(w.rollingResistanceN||0))*dt};
     });
     for(let pass=0;pass<6;pass++)for(const c of contacts)for(const axis of [c.forward,c.side]){
       const velocity=s.vel.clone().add(new Vector3().crossVectors(s.omega.clone().applyQuaternion(s.q),c.r));
@@ -497,9 +491,9 @@ export class PhysicsSim {
       s.vel.addScaledVector(change,inverseMass);
       s.omega.add(new Vector3().crossVectors(c.r,change).applyQuaternion(qi).divide(this.inertia));
     }
-    for(const c of contacts){c.w.forceX=c.j.x/dt;c.w.forceZ=c.j.z/dt;c.w.tireForceN=c.j.length()/dt;}
+    for(const c of contacts){c.w.forceX=c.j.x/dt;c.w.forceY=c.j.y/dt;c.w.forceZ=c.j.z/dt;c.w.tireForceN=c.j.length()/dt;}
     const resultant=new Vector3();this.brakeForceN=0;
-    for(const w of this.wheels){resultant.add(new Vector3(w.forceX,0,w.forceZ));const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);this.brakeForceN+=Math.abs(w.forceX*forward.x+w.forceZ*forward.z);}
+    for(const w of this.wheels){resultant.add(new Vector3(w.forceX,w.forceY,w.forceZ));const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);this.brakeForceN+=Math.abs(w.forceX*forward.x+w.forceZ*forward.z);}
     this.frictionForceN=resultant.length();
   }
 
@@ -586,7 +580,8 @@ export class PhysicsSim {
     const gLoad = s.acceleration.clone().addScaledVector(UP, p.gravity).length() / Math.max(.001, p.gravity);
     let status = contact >= 3 ? 'GROUND' : contact > 0 ? 'CONTACT' : s.vel.y > .12 ? 'ASCENDING' : s.vel.y < -.12 ? 'DESCENDING' : 'AIRBORNE';
     if (s.pressure <= ATMOSPHERE * 1.01) status = 'GAS DEPLETED';
-    return { gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
+    return {motorState:this.motorState, electricPowerW:this.electricPowerW,regenPowerW:this.regenPowerW,driveLossW:this.driveLossW,tractionCut:this.tractionCut,slidingWheels:this.wheels.filter(w=>w.sliding).length,massFlowKgS:this.massFlowKgS,manifoldPressureMPa:this.manifoldPressure/1e6,tankCapacityKg:this.initialGas,tankVolumeL:p.tankVolume*1000,
+      gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
       horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),

@@ -18,6 +18,6 @@ export function manualInput(keys, airborne, settings = {}) {
     stabilize: settings.stabilize !== false,
     altHold: !!settings.altHold && !lift,
     targetHeight: settings.targetHeight ?? .8,
-    fan: !!settings.fan, wing: !!settings.wing,
+    fan: !!settings.fan, wing: !!settings.wing, coastRegen: !!settings.coastRegen,
   };
 }

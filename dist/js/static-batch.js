@@ -4,7 +4,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 // Transparent overlays and animated/instanced/shader objects retain their own draw.
 export function batchStaticEnvironment(root){
  root.updateMatrixWorld(true);const groups=new Map();
- root.traverse(o=>{const m=o.material;if(!o.isMesh||o.isInstancedMesh||Array.isArray(m)||m.transparent||m.isShaderMaterial)return;
+ root.traverse(o=>{const m=o.material;if(!o.isMesh||o.userData.dynamicGeometry||o.isInstancedMesh||Array.isArray(m)||m.transparent||m.isShaderMaterial)return;
   const key=[m.type,m.color?.getHex(),m.emissive?.getHex(),m.emissiveIntensity,m.roughness,m.metalness,m.map?.uuid,m.normalMap?.uuid,m.side,o.castShadow,o.receiveShadow,Object.keys(o.geometry.attributes).sort().join(',')].join('|');
   if(!groups.has(key))groups.set(key,[]);groups.get(key).push(o);
  });

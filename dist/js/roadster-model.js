@@ -123,7 +123,7 @@ export function adaptRoadsterScene(source,fallback,sourceParser={}) {
     }
   }
   // Retain openly hypothetical educational hardware, never substitute an invented shell.
-  for(const id of ['tank','battery','suspension','thrusters','wing']){
+  for(const id of ['tank','battery','suspension','thrusters','wing','drive-front','drive-rear-left','drive-rear-right','power-electronics']){
     const part=fallback.parts.get(id);if(part){
       root.add(part);parts.set(id,part);part.userData.hypothetical=true;part.userData.kind='hypothesis';
       part.userData.basePosition=part.userData.basePosition.clone();part.userData.explodeStage=hypothesisExplosionStage(id);
@@ -136,7 +136,7 @@ export function adaptRoadsterScene(source,fallback,sourceParser={}) {
   root.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
   catalog.sort((a,b)=>a.kind===b.kind?a.id.localeCompare(b.id):a.kind==='model'?-1:1);
-  return {root,parts,detailParts,catalog,wheels,paintMaterials,fans:fallback.fans,wing:parts.get('wing'),tank:parts.get('tank'),battery:parts.get('battery'),jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles||[],
+  return {root,parts,detailParts,catalog,wheels,paintMaterials,fans:fallback.fans,wing:parts.get('wing'),tank:parts.get('tank'),battery:parts.get('battery'),jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles||[],driveRotors:fallback.driveRotors||[],valveIndicators:fallback.valveIndicators||[],
     bounds:{length:bounds.x,width:bounds.z,height:bounds.y},actualRoadster:true,sourceMeshCount:records.length,
     sourceObjectCount:sourceObjects.size,
     assetInfo:{title:'Tesla Roadster 2020',author:'metarex.4d',license:'CC BY 4.0',yearScope:'2017 concept / artist 2020 label; not the 2026 Rocket',alignment:root.userData.alignment,objectCount:sourceObjects.size}};

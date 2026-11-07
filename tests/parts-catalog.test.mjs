@@ -31,9 +31,9 @@ test('every original Roadster mesh has a stable selectable entry without inventi
   assert.equal(document.meshes.length, 105);
   assert.equal(vehicle.sourceMeshCount, 105);
   assert.equal(vehicle.sourceObjectCount, 85);
-  assert.equal(vehicle.parts.size, 11);
-  assert.equal(vehicle.detailParts.size, 110);
-  assert.equal(vehicle.catalog.length, 110);
+  assert.equal(vehicle.parts.size, 15);
+  assert.equal(vehicle.detailParts.size, 114);
+  assert.equal(vehicle.catalog.length, 114);
   const models = vehicle.catalog.filter(entry => entry.kind === 'model');
   assert.equal(models.length, 105);
   assert.equal(new Set(models.map(entry => entry.sourceObjectKey)).size, 85);
@@ -99,9 +99,9 @@ test('each wheel retains rotating tire/rim/disc surfaces and a non-spinning cali
   }
 });
 
-test('the five invented educational assemblies remain explicit and preserve simulation references', () => {
+test('the nine invented educational assemblies remain explicit and preserve simulation references', () => {
   const hypotheses = vehicle.catalog.filter(entry => entry.kind === 'hypothesis');
-  assert.deepEqual(hypotheses.map(entry => entry.id).sort(), ['battery', 'suspension', 'tank', 'thrusters', 'wing']);
+  assert.deepEqual(hypotheses.map(entry => entry.id).sort(), ['battery', 'drive-front', 'drive-rear-left', 'drive-rear-right', 'power-electronics', 'suspension', 'tank', 'thrusters', 'wing']);
   for (const entry of hypotheses) {
     assert.equal(vehicle.detailParts.get(entry.id), vehicle.parts.get(entry.id));
     assert.equal(entry.category, 'hypothesis');

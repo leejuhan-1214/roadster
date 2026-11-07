@@ -5,7 +5,7 @@ const simFor=(params={})=>new PhysicsSim({aeroEnabled:false,...params});
 const advance=(sim,seconds,input={})=>{for(let i=0;i<Math.round(seconds/.002);i++)sim.step(.002,input);};
 const rollingStart=(sim,vx,vz=0)=>{sim.state.vel.set(vx,0,vz);sim.wheels.forEach(w=>{w.omega=vx/sim.params.wheelRadius;});};
 test('the single flight experiment starts with its finite tank and can lift',()=>{
- const sim=simFor();assert.ok(Math.abs(sim.state.gas-250)<1e-8);assert.ok(Math.abs(sim.mass-2150)<1e-8);const gas=sim.state.gas;advance(sim,.5,{lift:1});assert.ok(sim.totalThrust>0);assert.ok(sim.state.gas<gas);assert.ok(sim.telemetry().altitude>0);
+ const sim=simFor();assert.ok(Math.abs(sim.state.gas-375)<1e-8);assert.ok(Math.abs(sim.mass-2275)<1e-8);const gas=sim.state.gas;advance(sim,.5,{lift:1});assert.ok(sim.totalThrust>0);assert.ok(sim.state.gas<gas);assert.ok(sim.telemetry().altitude>0);
 });
 test('zero friction with air resistance off removes tire braking and rolling drag',()=>{
  const sim=simFor({friction:0});rollingStart(sim,20,3);advance(sim,2,{brake:1});assert.ok(Math.abs(sim.state.vel.x-20)<1e-8);assert.ok(Math.abs(sim.state.vel.z-3)<1e-8);assert.equal(sim.telemetry().frictionForceN,0);assert.ok(sim.wheels.every(w=>w.tireForceN===0));
