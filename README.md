@@ -130,6 +130,8 @@ Three.js 라이선스는 `dist/vendor/THREE-LICENSE.txt`에 있습니다. 참고
 
 ## 이번 버전 검산
 
+v1.4 [공개 배포 실행 42326626230](https://github.com/leejuhan-1214/roadster/actions/runs/42326626230)의 build/deploy가 성공했고, 35개 공개 런타임 파일의 HTTP 200 및 로컬 SHA-256 일치를 확인했습니다. 공개 브라우저에서 수평 속도 81.0 km/h·회생 50.8 kW·접지 마찰 합력 3.52 kN 표시, 주행 중 D/R 차단, 브레이크 정지를 확인했습니다. 콘솔 오류·경고는 없었습니다.
+
 전기 주행 변경 후 자동 테스트 68개를 통과했습니다. 전기 구동·회생 에너지 상한·마찰 원·무마찰 조건·만충전·저속 정지·공중 접지 금지·방향 전환 입력을 검증합니다. 로컬 브라우저에서 가속 후 회생 전력과 마찰력 표시, 후진, 주행 중 D/R 전환 차단, 브레이크 정지와 비행 모드 전환·도약을 확인했습니다. 실측 자료와 맞춘 실차 검증이 아닙니다.
 
 기존 57개 회귀 검사도 통과했으며, 기본 물리, 공유 도약 궤적, CG·하중 이동·관성·조향 기하와 스테이지 회귀 검사를 포함합니다. 3 m 시연의 최고 고도는 물리 시간 간격 2 / 1 / 0.5 ms에서 3.14757 / 3.14883 / 3.14946 m로 수렴합니다. 이 수치는 엔진의 수치 검산이며 실차 시험 결과가 아닙니다.
@@ -163,7 +165,7 @@ git push origin main
 
 저장소 Settings → Pages의 Source는 **GitHub Actions**(`build_type: workflow`)를 유지합니다. `github-pages` 환경은 `main` 배포를 허용하도록 설정되어 있습니다. Actions에서 build와 deploy가 모두 성공한 다음 공개 URL을 확인합니다. 배포 주소는 https://leejuhan-1214.github.io/roadster/ 입니다.
 
-2026-11-07 [배포 실행 42323860851](https://github.com/leejuhan-1214/roadster/actions/runs/42323860851)에서 build와 deploy 성공 및 공개 사이트 응답을 확인했습니다.
+2026-11-07 [최신 배포 실행 42326626230](https://github.com/leejuhan-1214/roadster/actions/runs/42326626230)에서 build와 deploy 성공 및 공개 사이트 응답을 확인했습니다.
 
 기존 `gh-pages` 브랜치는 보존된 스냅샷이며 현재 배포 소스가 아닙니다. `scripts/publish_pages.py`와 `scripts/deploy_github.py`는 이전 브랜치 배포 방식을 위한 도구이므로 현재 workflow 운영에서는 실행하지 마세요. 특히 `deploy_github.py`는 Pages 소스를 `gh-pages`로 다시 설정하므로 현재 자동 배포 설정을 되돌릴 수 있습니다.
 
