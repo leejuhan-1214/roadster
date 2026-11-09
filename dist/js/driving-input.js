@@ -58,6 +58,7 @@ export class DrivingController {
     if(this.landingAssist&&sim.contactCount===4&&Math.abs(velocity.y)<.2&&Math.hypot(velocity.x,velocity.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
     const go=held(keys,'KeyW',...(this.airborne?[]:['ArrowUp'])),back=held(keys,'KeyS',...(this.airborne?[]:['ArrowDown']));
     const hardBrake=held(keys,'KeyB')||(go&&back)||this.landingAssist,direction=Number(go)-Number(back);
+    const turn=Number(held(keys,'KeyA',...(this.airborne?[]:['ArrowLeft'])))-Number(held(keys,'KeyD',...(this.airborne?[]:['ArrowRight'])));
     const changingDirection=direction!==0&&direction*speed<-.3;
     let throttle=0,brake=0;
     if(hardBrake||changingDirection)brake=1;
@@ -68,13 +69,18 @@ export class DrivingController {
       throttle=-clamp((8+speed)/2,0,1);
       if(speed<-8)brake=.1;
     }
+    // Full keyboard throttle consumed most of the tire friction circle during
+    // turns, so A/D lost much of its authority while the 650 kW drive accelerated.
+    // Reserve grip for steering by reducing only the forward torque request;
+    // tire forces still determine curvature, including reduced grip on ice.
+    const corneringBlend=!this.airborne&&turn!==0&&throttle>0?clamp((speed-4)/8,0,1):0;
+    throttle*=1-.55*corneringBlend;
     // Brake has immediate priority; releasing a brake never leaves drive torque
     // opposed to it during a transition to reverse or forwards.
     this.brake=approach(this.brake,brake,step*10);
     this.throttle=brake>0?0:approach(this.throttle,throttle,step*8);
     if(throttle!==0&&this.brake<.001)this.brake=0;
     if(this.brake>0)this.throttle=0;
-    const turn=Number(held(keys,'KeyA',...(this.airborne?[]:['ArrowLeft'])))-Number(held(keys,'KeyD',...(this.airborne?[]:['ArrowRight'])));
     const magnitude=Math.abs(speed),baseSteer=.52/(1+magnitude/28);
     // Keyboard steering follows a usable curve: full parking lock, then a
     // target lateral acceleration of 0.7g. This does not add yaw or lateral grip.
@@ -102,7 +108,7 @@ export class DrivingController {
       pitch:this.airborne?Number(held(keys,'ArrowDown'))-Number(held(keys,'ArrowUp')):0,
       roll:this.airborne?Number(held(keys,'ArrowRight'))-Number(held(keys,'ArrowLeft')):0,
       yaw:flight?clamp(Number(held(keys,'KeyQ'))-Number(held(keys,'KeyE'))+(turnInAir?turn:0),-1,1):0,
-      airBrake,airborne:this.airborne,landingAssist:this.landingAssist,flightAssist:false,
+      airBrake,airborne:this.airborne,landingAssist:this.landingAssist,flightAssist:false,corneringAssist:corneringBlend>0,
     };
     // The existing actuator acceleration path supports a captured height above
     // 15 m as well. This is a force request, not a position/velocity assignment.
