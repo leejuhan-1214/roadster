@@ -1,3 +1,20 @@
+Roadster v1.18 — 실제 방향 조작 수정 / 착지 제동높이 비교 / 도시 실험 복원
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+런타임 d27b585a805b503715ade3bc40349ac2e67c9b52
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42549576824 (build/deploy success)
+
+사용자 최신 요청: 방향 조정 문제 수정, 착지 실험 보강, 예전 실험주행 기능을 도시주행에 적절히 복원. 배포 재확인 면제 유지. 지상/공중 중 어느 상황인지 선택 질문을 보냈으나 답은 없었으며 둘 다 점검했다. 기존13차종39회·구조탐색·강남 건물/환경 유지.
+
+원인/수정: 공중A/D는짐벌각만바꾸고H/Space없이추력이0이었다. 기본공중A/D를차체선회로연결,W/S추진. 예전횡이동은실험패널공중A/D=strafe로선택가능. Q/E기수회전/화살표자세유지. 방향조작동안높이보정이기체를쓰는추력을요청(기본ON,끄기가능),H는지속유지. 위치/속도/자세강제대입없음. 지상W/S와A/D를함께사용하며정차한차가제자리회전하지않는것은정상. 방향각HUD와조작상태표시. 입력select/체크변경후canvas포커스복구,Escape는숫자입력에서도패널닫기+운전복귀.
+도시비행: 목표높이입력(0.8m이상유한값·상한없음),착지보조(.6m/s부근하강+수평감속). 수동WASD/QE/화살표/Space/Shift/B/H로보조취소. 4접지때는기체분사/자세제어없이제동만해서불필요기체소모없음. 유한압축기체모델이므로고고도/압력저하에서는착지성공보장안함.
+도시실험패널: 기본접힘. 노면dry1.15/wet.65/ice.15/none0, Crr0–.08, 항력토글,동쪽/남쪽바람±30m/s,요철0–1. 마찰/항력/구름저항/추력/접지/유량표시. R복귀시설정/기록유지,기본조건버튼은조건초기화. 착지실험에는전파하지않음.
+B측정: 2m/s이상에서B최초입력→.1m/s이하정지까지실제경로거리·시간/50ms평균최대감속. 충돌·접지상실·분사·B해제·조건/차체변경·일시정지·60초시간초과무효. 최근6회CSV,초기속도/조건전부포함. 반응거리제외,동일속도/차체/경로에서비교.
+착지: 제동높이비교버튼→자유낙하1+높이10/25/50/75/100%제동5회. 출발0m는중복제거2회. 실제job.brakeHeight를run/metadata반영. 같은group/차체/높이/질량/스프링/감쇠/탱크조건의기준대비반력감소율,초기기준ID/감소율CSV. 세부표=첫접촉→첫수직정지시간·그구간지면충격량·최대압축·관찰구간반발높이. 지면충격량은중력/분사충격량제외해전체운동량변화와다름. 차체접촉/불안정/한계초과는최소후보제외.
+
+검증: 전체273/273PASS,추가지상착지보조수정포함focused22/22PASS,최종CI전체성공(전체수274). 모듈23구문/diffPASS. 방향ground±36도/2s,airyaw/strafe/유한gas/압력한계/groundassist무분사tests. 실제물리wet제동거리증가,μ0항력OFF3sB후19.9m/s이상유지. 로컬CUA:Space+A방위160→120도,이후A단독→12도실제차체회전. 실험selector변경후activeElement=world,숫자필드Escape복귀확인. 로컬B43.4km/h→7.60m·1.22s·50ms최대감속10.5m/s²,CSV1행저장. 착지3m6회완료및CSV6행+메타/헤더,안정최소2.25m제동27.51kN/98.4%감소/기체60.20kg. 3m즉시제동30.06kN/기체213.56kg. 실제차량수치아닌가정실험결과. 공개108파일HTTP200·SHA256일치. 공개W가속30.3km/h→B정지3.77m·.86s/최대감속10.5m/s²및새실험패널확인,콘솔오류·경고없음.
+증거 outputs:drive-landing-v118-test.log,drive-landing-v118-final-check.log,landing-v118-six-heights.csv,city-braking-v118.csv,landing-v118-local.png,v118-deployment-status.json,v118-public-verification.json,Roadster-v118-live.png. 공개탭은도시지상기본조건·재생상태. 캐시20261109-drive2. 신규modulecity-experiment.js. 기존Pagesworkflowmain배포유지. 임시미리보기서버종료완료.
+
+--- 이전 기록 ---
 Roadster v1.17 — 강남 랜드마크 재현 / WASD 직접 주행·A/D 조향 수정
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 런타임 커밋: 5e0552fe3a540097f37e34cee01d642d5a4a8ee9
