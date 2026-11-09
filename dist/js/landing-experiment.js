@@ -7,6 +7,7 @@ export const LANDING_METHODS=Object.freeze([
   {id:'brake',label:'지정 높이에서 분사'},
   {id:'gentle',label:'완만한 하강 제어'},
 ]);
+export const BRAKE_HEIGHT_FRACTIONS=Object.freeze([.1,.25,.5,.75,1]);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Number(value):fallback,min,max);
 
@@ -21,12 +22,19 @@ export function landingSettings(options={}){
   };
 }
 
-/** One shared settings object is applied to every job; the order avoids reloads. */
+/** Release/rig settings stay shared; a trigger sweep overrides only brakeHeight. */
 export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
   const fleet=[...new Map(vehicles.map(vehicle=>[vehicle.id,vehicle])).values()];
   const active=fleet.find(vehicle=>vehicle.id===activeVehicleId)||fleet[0];
   if(!active)return [];
   const method=landingSettings(settings).method;
+  if(kind==='brake-heights'){
+    const height=landingSettings(settings).height;
+    // Include an untreated baseline, then change only the brake trigger. Zero
+    // height has one distinct trigger; avoid five identical measurements.
+    const brakeHeights=[...new Set(BRAKE_HEIGHT_FRACTIONS.map(fraction=>height*fraction))];
+    return [{vehicleId:active.id,method:'free'},...brakeHeights.map(brakeHeight=>({vehicleId:active.id,method:'brake',brakeHeight}))];
+  }
   if(kind==='fleet-methods')return fleet.flatMap(vehicle=>LANDING_METHODS.map(item=>({vehicleId:vehicle.id,method:item.id})));
   if(kind==='methods')return LANDING_METHODS.map(item=>({vehicleId:active.id,method:item.id}));
   if(kind==='vehicles')return fleet.filter(vehicle=>settings.vehicleIds?.includes(vehicle.id)).map(vehicle=>({vehicleId:vehicle.id,method}));

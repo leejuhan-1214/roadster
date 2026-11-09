@@ -6,7 +6,22 @@ const heightNumber = value => Number.isFinite(value)?String(Number(value.toPreci
 const csvCell = value => '"'+String(value??'').replace(/"/g,'""')+'"';
 const isLanded = result => result.status==='landed'&&result.settled!==false&&Number.isFinite(result.touchdownSpeed);
 const label = result => result.vehicleTitle||result.title||result.vehicleId||'차체';
+const methodLabel = result => (METHODS[result.method]||result.method)+(result.method==='brake'?' · '+heightNumber(result.brakeHeight)+' m':'');
 export const LANDING_HISTORY_LIMIT=78;
+
+/** Compare only the same vehicle, release, rig and initial tank conditions.
+ * An untreated baseline may hit its chassis: that does not erase its measured
+ * impact. Failed/unmeasured trials cannot become a baseline or improvement.
+ */
+export function landingBaselineComparison(result,results){
+  const measured=item=>['landed','unsettled'].includes(item.status)&&Number.isFinite(item.touchdownSpeed)&&Number.isFinite(item.peakEquivalentGroundForceN)&&item.peakEquivalentGroundForceN>0;
+  if(!measured(result))return null;
+  const keys=['groupId','vehicleId','height','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature'];
+  if(!result.groupId||!result.vehicleId||keys.slice(2).some(key=>!Number.isFinite(result[key])))return null;
+  const baseline=results.find(item=>item.method==='free'&&measured(item)&&keys.every(key=>item[key]===result[key]));
+  if(!baseline)return null;
+  return {baseline,reductionPercent:100*(1-result.peakEquivalentGroundForceN/baseline.peakEquivalentGroundForceN)};
+}
 
 // Never evict the first rows of an active 39-run comparison. Remove complete
 // older groups together so every retained comparison remains reviewable.
@@ -28,7 +43,7 @@ function download(name,rows){
 }
 
 export class LandingUI {
-  constructor({onStart,onCompareVehicles,onCompareMethods,onCompareFleetMethods,onStop,vehicles=[]}){
+  constructor({onStart,onCompareVehicles,onCompareMethods,onCompareFleetMethods,onCompareBrakeHeights,onStop,vehicles=[]}){
     this.root=document.getElementById('landing-lab');
     this.results=[];this.busy=false;this.selectedGroup=null;this.nextId=1;
     this.root.innerHTML=`<div class="section-label">착지 충격 실험</div>
@@ -47,17 +62,22 @@ export class LandingUI {
         <button id="landing-start" class="primary-btn" type="submit">현재 차체 실험 <span>↓</span></button>
         <details class="landing-fleet"><summary>비교할 차체 선택</summary><div class="landing-fleet-list">${vehicles.map((v,i)=>'<label><input type="checkbox" name="vehicleId" value="'+html(v.id)+'" '+(i<3?'checked':'')+'>'+html(v.title)+'</label>').join('')}</div></details>
         <div class="landing-batch-buttons"><button id="landing-vehicles" type="button">선택 차체 비교</button><button id="landing-methods" type="button">착지 3방식 비교</button></div>
+        <button id="landing-brake-heights" class="landing-sweep-button" type="button">제동 높이 비교 <span>5단계 · 기준 포함 6회</span></button>
         <button id="landing-fleet-methods" class="primary-btn" type="button">모든 차체 × 3방식 <span>${vehicles.length*3}회</span></button>
       </form>
       <div class="landing-run-footer"><p id="landing-status" role="status" aria-live="polite">높이와 착지 방식을 선택하세요.</p><button id="landing-stop" type="button" hidden>중단</button></div>
       <button id="landing-results" class="text-btn" type="button" disabled>비교 결과 <span id="landing-result-count">0회</span></button>
       <p class="landing-note">비교마다 초기 탱크 조건을 통일합니다.</p>`;
     this.form=this.root.querySelector('form');this.status=this.root.querySelector('#landing-status');
-    this.form.addEventListener('input',event=>event.target.setCustomValidity?.(''));
+    this.form.addEventListener('input',event=>{
+      event.target.setCustomValidity?.('');
+      if(event.target.id==='landing-height')this.root.querySelector('#landing-brake-heights span').textContent=Number(event.target.value)>0?'5단계 · 기준 포함 6회':'0 m · 기준 포함 2회';
+    });
     this.form.addEventListener('submit',event=>{event.preventDefault();if(!this.busy&&this.checkValidity())onStart(this.readOptions());});
     this.root.querySelector('#landing-vehicles').addEventListener('click',()=>{if(!this.busy&&this.checkValidity()){if(this.readOptions().vehicleIds.length<2){this.setProgress('비교할 차체를 2개 이상 선택하세요.');return;}onCompareVehicles(this.readOptions());}});
     this.root.querySelector('#landing-methods').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareMethods(this.readOptions());});
     this.root.querySelector('#landing-fleet-methods').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareFleetMethods(this.readOptions());});
+    this.root.querySelector('#landing-brake-heights').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareBrakeHeights?.(this.readOptions());});
     this.root.querySelector('#landing-stop').addEventListener('click',()=>onStop());
     this.root.querySelector('#landing-results').addEventListener('click',()=>this.showResults());
     this.dialog=document.createElement('dialog');this.dialog.id='landing-results-dialog';this.dialog.className='landing-results-dialog';
@@ -65,7 +85,8 @@ export class LandingUI {
     this.dialog.innerHTML=`<div class="modal-top"><h2 id="landing-results-heading">착지 비교 결과</h2><button class="icon-btn" id="landing-results-close" aria-label="착지 결과 닫기">×</button></div>
       <div class="landing-results-toolbar"><label for="landing-result-group">실험 묶음 <select id="landing-result-group"></select></label><span id="landing-group-conditions"></span></div>
       <p id="landing-best" class="landing-best"></p>
-      <div class="landing-table-wrap" tabindex="0" aria-label="착지 결과 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">높이<br>m</th><th scope="col">초기 질량<br>kg</th><th scope="col">최대 등가반력<br>kN · 2 ms</th><th scope="col">접촉 최대 하중<br>g</th><th scope="col">첫 접촉 속도<br>m/s</th><th scope="col">기체 사용<br>kg</th><th scope="col">착지 상태</th></tr></thead><tbody id="landing-result-rows"></tbody></table></div>
+      <div class="landing-table-wrap" tabindex="0" aria-label="착지 결과 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">높이<br>m</th><th scope="col">초기 질량<br>kg</th><th scope="col">최대 등가반력<br>kN · 2 ms</th><th scope="col">자유낙하 대비<br>반력 변화</th><th scope="col">접촉 최대 하중<br>g</th><th scope="col">첫 접촉 속도<br>m/s</th><th scope="col">기체 사용<br>kg</th><th scope="col">착지 상태</th></tr></thead><tbody id="landing-result-rows"></tbody></table></div>
+      <details class="landing-metrics-details"><summary>접촉시간·충격량·압축·반발 비교</summary><div class="landing-table-wrap" tabindex="0" aria-label="착지 세부 계측 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">첫 접촉→첫 수직 정지<br>ms</th><th scope="col">첫 감속 지면 충격량<br>kN·s</th><th scope="col">최대 압축<br>cm</th><th scope="col">최대 반발 높이<br>cm</th></tr></thead><tbody id="landing-metric-rows"></tbody></table></div><p class="landing-result-note">충격량은 첫 접촉부터 첫 수직 정지까지 지면 반력을 2 ms 간격으로 적분한 값입니다. 중력·분사력이 함께 작용하므로 차체의 전체 운동량 변화와 같지 않습니다. 반발은 접촉 후 관찰 구간의 최대 바퀴 높이입니다.</p></details>
       <div class="landing-chart-heading"><h3>첫 접촉 전후 등가반력</h3><label id="landing-chart-selector" hidden>그래프 차체 <select id="landing-chart-vehicle" aria-label="그래프 차체"></select></label><span id="landing-chart-range">0 s = 각 실험의 첫 접촉</span></div><div id="landing-force-chart" class="landing-force-chart"></div><div id="landing-chart-legend" class="landing-chart-legend"></div>
       <p class="landing-result-note">접촉 보정 충격량을 2 ms로 나눈 등가력 포함. 최대값은 2 ms 기준, 그래프는 10 ms 구간 최댓값입니다. 하중 1 g는 정지 지지 상태입니다. 실차 안전성 평가가 아닌 가정 모델 비교입니다.</p>
       <div class="landing-results-actions"><button id="landing-export-summary">전체 결과 CSV</button><button id="landing-export-traces">전체 시간기록 CSV</button><button id="landing-clear-results">기록 지우기</button></div>`;
@@ -121,23 +142,26 @@ export class LandingUI {
     const rows=allHistory?this.results:this.results.filter(result=>result.groupId===this.selectedGroup);
     if(!rows.length)return;
     const first=rows[0];
-    this.dialog.querySelector('#landing-group-conditions').textContent=allHistory?'전체 '+rows.length+'회 · 각 행의 조건을 비교하세요.':'동일 높이 '+heightNumber(first.height)+' m · 스프링 '+number(first.springK/1000,0)+' kN/m · 감쇠 '+number(first.damperC/1000,1)+' kN·s/m · 탱크 '+number(first.tankVolume*1000,0)+' L';
+    this.dialog.querySelector('#landing-group-conditions').textContent=allHistory?'전체 '+rows.length+'회 · 각 행의 조건을 비교하세요.':'동일 높이 '+heightNumber(first.height)+' m · 스프링 '+number(first.springK/1000,0)+' kN/m · 감쇠 '+number(first.damperC/1000,1)+' kN·s/m · 탱크 '+number(first.tankVolume*1000,0)+' L'+(first.groupKind==='brake-heights'?' · 제동 시작 높이만 변경':'');
     const complete=!allHistory&&rows.length>1&&rows.length>=Math.max(...rows.map(result=>result.groupSize||1));
     const valid=rows.filter(result=>isLanded(result)&&!result.bodyStrike&&!result.bottomedOut);
     const sorted=valid.slice().sort((a,b)=>a.peakEquivalentGroundForceN-b.peakEquivalentGroundForceN);
     const best=sorted[0];
     const bestText=this.dialog.querySelector('#landing-best');
     if(complete&&best){
-      const base=valid.find(result=>result.method==='free'&&result.vehicleId===best.vehicleId);
-      const reduction=base&&base!==best&&base.peakEquivalentGroundForceN>0?100*(1-best.peakEquivalentGroundForceN/base.peakEquivalentGroundForceN):null;
+      const comparison=landingBaselineComparison(best,rows);
+      const reduction=comparison&&comparison.baseline!==best?comparison.reductionPercent:null;
       const tied=sorted.filter(result=>Math.abs(result.peakEquivalentGroundForceN-best.peakEquivalentGroundForceN)<1).length>1;
-      bestText.textContent='이 묶음의 안정 착지 중 '+(tied?'공동 ':'')+'최소 등가반력: '+label(best)+' · '+(METHODS[best.method]||best.method)+' · '+number(best.peakEquivalentGroundForceN/1000)+' kN'+(reduction!==null?' · 자유 낙하보다 '+number(reduction,1)+'% 감소':'')+(valid.length<rows.length?' · 차체 접촉·진동·한계 초과 결과 제외':'');
+      bestText.textContent='이 묶음의 안정 착지 중 '+(tied?'공동 ':'')+'최소 등가반력: '+label(best)+' · '+methodLabel(best)+' · '+number(best.peakEquivalentGroundForceN/1000)+' kN'+(reduction!==null?' · 자유 낙하보다 '+number(Math.abs(reduction),1)+'% '+(reduction>=0?'감소':'증가'):'')+(valid.length<rows.length?' · 차체 접촉·진동·한계 초과 결과는 최소값 후보에서 제외':'');
     }else bestText.textContent=allHistory?'조건이 다른 전체 기록입니다. 높이·질량·스프링·감쇠를 확인하며 비교하세요. 전체 순위는 매기지 않습니다.':complete?'안정 착지 조건을 충족한 결과가 없어 최소 충격 순위를 매기지 않았습니다.':rows.length===1?'같은 조건으로 다른 차체나 착지 방식을 비교해 보세요.':'비교 실험 진행 중';
     this.dialog.querySelector('#landing-result-rows').innerHTML=rows.map((result,index)=>{
       const landed=isLanded(result),unsettled=result.status==='unsettled'||(result.settled===false&&Number.isFinite(result.touchdownSpeed));
       const status=result.bodyStrike?'차체 접촉'+(unsettled?' · 진동':''):result.bottomedOut?'서스펜션 한계'+(unsettled?' · 진동':''):unsettled?'측정 완료 · 진동 지속':!landed?'미착지':'안정 착지';
-      return '<tr'+(complete&&best===result?' class="landing-best-row"':'')+'><th scope="row"><i style="background:'+COLORS[index%COLORS.length]+'"></i>'+html(label(result))+'<small>'+html(METHODS[result.method]||result.method)+'</small><small>제동 '+heightNumber(result.brakeHeight)+' m · 목표 '+number(result.targetSpeed,1)+' m/s</small><small>스프링 '+number(result.springK/1000,0)+' kN/m · 감쇠 '+number(result.damperC/1000,1)+' kN·s/m</small></th><td>'+heightNumber(result.height)+'</td><td>'+number(result.initialMass,0)+'</td><td>'+number(result.peakEquivalentGroundForceN/1000)+'</td><td>'+number(result.contactPeakG)+'</td><td>'+number(result.touchdownSpeed)+'</td><td>'+number(result.gasUsed)+'</td><td class="'+(status==='안정 착지'?'landing-ok':'landing-warning')+'">'+status+'</td></tr>';
+      const comparison=landingBaselineComparison(result,rows),reduction=comparison?.reductionPercent;
+      const change=comparison?.baseline===result?'기준':Number.isFinite(reduction)?number(Math.abs(reduction),1)+'% '+(reduction>=0?'감소':'증가'):'—';
+      return '<tr'+(complete&&best===result?' class="landing-best-row"':'')+'><th scope="row"><i style="background:'+COLORS[index%COLORS.length]+'"></i>'+html(label(result))+'<small>'+html(methodLabel(result))+'</small>'+(result.method!=='free'?'<small>목표 '+number(result.targetSpeed,1)+' m/s</small>':'')+'<small>스프링 '+number(result.springK/1000,0)+' kN/m · 감쇠 '+number(result.damperC/1000,1)+' kN·s/m</small></th><td>'+heightNumber(result.height)+'</td><td>'+number(result.initialMass,0)+'</td><td>'+number(result.peakEquivalentGroundForceN/1000)+'</td><td>'+change+'</td><td>'+number(result.contactPeakG)+'</td><td>'+number(result.touchdownSpeed)+'</td><td>'+number(result.gasUsed)+'</td><td class="'+(status==='안정 착지'?'landing-ok':'landing-warning')+'">'+status+'</td></tr>';
     }).join('');
+    this.dialog.querySelector('#landing-metric-rows').innerHTML=rows.map(result=>'<tr><th scope="row">'+html(label(result))+'<small>'+html(methodLabel(result))+'</small></th><td>'+number(Number.isFinite(result.contactDuration)?result.contactDuration*1000:NaN,1)+'</td><td>'+number(Number.isFinite(result.touchdownTime)?result.groundImpulseNs/1000:NaN,3)+'</td><td>'+number(result.maxCompression*100,1)+'</td><td>'+number(Number.isFinite(result.touchdownTime)?result.reboundHeight*100:NaN,1)+'</td></tr>').join('');
     this.renderChart(rows,allHistory);
   }
 
@@ -171,12 +195,12 @@ export class LandingUI {
     svg+='<text x="18" y="15">kN</text><text x="'+(W-12)+'" y="'+(H-13)+'">s</text><line class="landing-contact-line" x1="'+x(0)+'" x2="'+x(0)+'" y1="'+pad.top+'" y2="'+(H-pad.bottom)+'"/>';
     traces.forEach(({result,samples})=>{const color=COLORS[rows.indexOf(result)%COLORS.length],points=samples.map(sample=>x(sample.time-result.touchdownTime).toFixed(2)+','+y(value(sample)).toFixed(2)).join(' ');svg+='<polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+points+'"/>';});
     chart.innerHTML=svg+'</svg>';
-    legend.innerHTML=traces.map(({result})=>'<span><i style="background:'+COLORS[rows.indexOf(result)%COLORS.length]+'"></i>'+html(label(result)+' · '+(METHODS[result.method]||result.method)+(allHistory?' · k '+number(result.springK/1000,0)+' / c '+number(result.damperC/1000,1):''))+'</span>').join('');
+    legend.innerHTML=traces.map(({result})=>'<span><i style="background:'+COLORS[rows.indexOf(result)%COLORS.length]+'"></i>'+html(label(result)+' · '+methodLabel(result)+(allHistory?' · k '+number(result.springK/1000,0)+' / c '+number(result.damperC/1000,1):''))+'</span>').join('');
   }
 
   exportSummary(){
     const keys=['id','groupId','vehicleId','vehicleTitle','method','height','brakeHeight','targetSpeed','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature','status','settled','touchdownTime','touchdownSpeed','peakGroundForceN','peakEquivalentGroundForceN','peakG','contactPeakG','groundImpulseNs','totalGroundImpulseNs','correctionImpulseNs','impactCorrectionImpulseNs','contactDuration','maxCompression','bottomedOut','bodyStrike','reboundHeight','gasUsed','elapsed','flightTimeout','precontactSampleInterval'];
-    download('landing-results.csv',[['Roadster landing model; SI units; common hypothetical suspension/rig; peak equivalent force averages corrections over 0.002 s'],[...keys,'parameters_json'],...this.results.map(result=>[...keys.map(key=>result[key]),JSON.stringify(result.parameters||{})])]);
+    download('landing-results.csv',[['Roadster landing model; SI units; common hypothetical suspension/rig; peak equivalent force averages corrections over 0.002 s; baseline reduction is vehicle-specific within equal release/rig/tank conditions'],[...keys,'free_baseline_id','peak_force_reduction_percent','parameters_json'],...this.results.map(result=>{const comparison=landingBaselineComparison(result,this.results);return [...keys.map(key=>result[key]),comparison?.baseline.id??'',comparison?.reductionPercent??'',JSON.stringify(result.parameters||{})];})]);
   }
   exportTraces(){
     const keys=['time','sampleInterval','clearance','velocity','groundForceN','equivalentGroundForceN','gLoad','thrustN','compression','gasKg','correctionImpulseNs'];

@@ -1,4 +1,4 @@
-서울 강남역 자유 주행·비행 — v1.17
+서울 강남역 자유 주행·비행 — v1.18
 
 좌표 원점: 위도 37.4979, 경도 127.0276.
 범위: 남 37.4912 / 서 127.0191 / 북 37.5046 / 동 127.0361.
@@ -79,3 +79,10 @@ https://opendatacommons.org/licenses/odbl/1-0/
 - 공개원본 Mobiltech FBX는 재배포 조건 때문에 사용하지 않았다. 모델 출처/형태 근거/원본과의 차이는 assets/city-buildings/README.txt, manifest.json, provenance-extra.json과 docs/gangnam-architecture-sources.json에 남겼다.
 - A/D가 공중 상태에서 조향각을 0으로 만들던 분기를 수정했다. 앞바퀴 조향은 유지하되 공중 접지 마찰은 생성하지 않는다. 일시정지 중 운전 입력은 자동 재개한다.
 - 재생성: node scripts/prepare-landmark-footprints.mjs, node scripts/build-gangnam-landmarks.mjs, node scripts/prepare-extra-gangnam-buildings.mjs. 기존 fetch-gangnam.mjs만 실행해도 별도 landmark manifest가 복구한 relation은 유지된다.
+
+주행·실험 보강 — v1.18
+- 공중방향입력은 노즐만꺾이고 추력0이던 조건을 수정. 공중 기본 A/D는 기수회전, W/S는전후추진. 예전수평옆이동은 실험패널의공중A/D선택으로복원가능. Q/E기수회전·화살표자세·B감속은유지.
+- 조작중높이보정은 방향입력동안만유한기체추력으로수직속도를보정한다. H는지속유지, Space는수동상승우선. 목표높이입력과착지보조(하강약.6m/s·수평감속)를추가. 수동입력시착지보조해제. 네바퀴접지시분사없이제동.
+- 도시실험노면4종μ1.15/.65/.15/0, Crr0–.08, 항력토글, 동쪽/남쪽바람±30m/s, 노면요철0–1. R은차량/탱크초기화,실험설정유지. 기본조건버튼으로설정복구. 착지실험은별도통제조건.
+- B처음누름시수평속도2m/s이상에서측정시작. 0.1m/s이하정지까지실제경로거리·시간,50ms평균최대감속. 충돌·접지상실·분사·B해제·설정/차체변경·일시정지·60초미정지무효. 최근6회CSV에초기속도와모든조건포함. 반응거리제외; 동일속도/경로/차체비교필수.
+- 설정select/체크박스변경후운전포커스복구, Escape는입력칸에서도실험패널을닫고운전복귀.

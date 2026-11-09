@@ -74,7 +74,7 @@ test('H captures altitude once per press and respects Space override above the o
 });
 
 test('air WASD steers gimbals while B slows with gas and cannot brake an empty tank in vacuum',()=>{
-  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false}),control=new DrivingController();
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false}),control=new DrivingController({flightSteering:'strafe'});
   sim.reset('flight');sim.state.pos.y=sim.restHeight+20;sim.state.vel.set(8,0,0);
   const request=control.update(keys('KeyW','KeyD','ArrowUp','KeyQ'),sim,STEP);
   assert.equal(request.throttle,0);assert.ok(request.steer<0,'unloaded front wheels still follow D');
@@ -106,7 +106,7 @@ test('keyboard steering recentres and reduces high-speed steering without invent
 });
 
 test('A/D turns unloaded front wheels without adding airborne tire forces',()=>{
-  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,aeroEnabled:false,roadRoughness:0}),control=new DrivingController();
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,aeroEnabled:false,roadRoughness:0}),control=new DrivingController({flightSteering:'strafe'});
   sim.reset('flight');sim.state.pos.y=sim.restHeight+20;sim.state.vel.set(0,0,0);
   advance(sim,control,keys('KeyA'),.35);
   assert.equal(sim.contactCount,0);assert.ok(control.airborne);
