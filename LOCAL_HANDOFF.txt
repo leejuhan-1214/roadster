@@ -1,3 +1,16 @@
+Roadster v1.21 — 타이어 연기·연속 자국·점진 드리프트·차체 색상
+2026-11-09 KST. https://leejuhan-1214.github.io/roadster/
+런타임 a745828ac8b9bfb98186339f4d3c5e38aaacdc75
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42558180375 성공.
+사용자 확정 조작은 W 전진 / F 부스트 / Shift 드리프트. 기존 배포 허가 유지.
+각 타이어의 접지하중·종방향 slip·접촉점 횡속도에서 효과 강도 계산. 공중/정지에는 새 효과 없음. tire-effects.js의 Points160개 연기 입자는 상승·확산·페이드, InstancedMesh1600개 자국은 바퀴별 이전 접촉점과 연결. 도시 도색보다 위 .045m에서 표시하며 메모리 고정. 시뮬레이션시간으로 갱신하므로 일시정지 효과도 정지, R/모드전환 초기화. 기존 전체차량 slip에 의존한 자국 함수 대신 사용.
+후륜 핸드브레이크 실제 제동량을 80ms 시정수로 점진 적용(약.24초에95%). 차체 속도/yaw·마찰계수를 강제로 바꾸지 않음. B/Shift해제 즉시 핸드브레이크요청 해제, 이후 실제 타이어 힘으로 회복. 부분잠김도 정상이며 회복검사 통과.
+도시 차고의5색팔레트와 자유색 선택기 제공. 기존 paintMaterials에만 적용하여 유리·타이어·등화 유지. 차종전환/모드전환/R에 선택색 유지, 페이지새로고침은기본빨강. 캐시20261109-smoke1.
+검증: 전체294/294PASS, 마감후15/15PASS, 24모듈문법/diffPASS, GitHubCI성공. 효과접지/미끄럼조건·유한풀·일시정지/초기화·점진제동 및 기존착지/13모델검사. 초기테스트의즉시완전잠김가정은 점진적slip기준으로수정, 효과pause검사는 마지막물리스텝을동기화후실제같은시간 재호출로수정. 최종실패없음.
+로컬/공개CUA 파란차체 W주행→Shift+A 드리프트에서 연기와 이어진 자국 관찰, 콘솔경고/오류없음. 공개109파일HTTP200/SHA256일치. 공개탭1은도시주행Roadster·파랑·R초기화·재생상태. 미리보기서버종료.
+outputs:smoke-v121-tests-final.log,smoke-v121-focused-final.log,smoke-v121-check.log,smoke-v121-deployment-status.json,smoke-v121-public-verification.json,Roadster-v121-live.png.
+
+--- 이전 기록 ---
 Roadster v1.20 — 주행 중 실제 앞바퀴 조향 / F 가속 / Shift 드리프트
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 런타임 5e34f8d7f2863cb9199602f7db38dd76b19e6cd0
