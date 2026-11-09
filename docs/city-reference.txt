@@ -1,4 +1,4 @@
-서울 강남역 자유 주행·비행 — v1.16
+서울 강남역 자유 주행·비행 — v1.17
 
 좌표 원점: 위도 37.4979, 경도 127.0276.
 범위: 남 37.4912 / 서 127.0191 / 북 37.5046 / 동 127.0361.
@@ -69,3 +69,13 @@ https://opendatacommons.org/licenses/odbl/1-0/
 갱신
 프로젝트 루트에서 node scripts/fetch-gangnam.mjs 실행.
 고정된 좁은 범위를 한 번 요청한다. 데이터 및 provenance가 함께 바뀐다.
+
+강남 건물 보강 — v1.17
+- 사용자가 말한 자율주행은 WASD 직접 자유 주행으로 확인했다. 별도 자동 운전은 추가하지 않았다.
+- GT Tower East, 삼성 서초타운 3동, 교보타워, 부띠크모나코: 자체 재현 GLB 2개, 총 약8.39 MB·85,914삼각형·21재질 메시.
+- docs/research의 OSM relation outer rings를 각각 복구한다. convex envelope를 통째로 충돌체로 사용하지 않는다.
+- 실제 모델의 주요 매스별 높이·기단·상부 연결부·빈 공간을 반영하는 충돌체로 대체한다. 기존 중복 부속 way 박스도 제거한다. GT 파형은 직선 중심부 충돌로 단순화했다.
+- 나머지 주변 건물의 입구/창틀/캐노피/수직 핀/난간은 추정 장식이다. 실사나 전수 복제라는 의미가 아니다.
+- 공개원본 Mobiltech FBX는 재배포 조건 때문에 사용하지 않았다. 모델 출처/형태 근거/원본과의 차이는 assets/city-buildings/README.txt, manifest.json, provenance-extra.json과 docs/gangnam-architecture-sources.json에 남겼다.
+- A/D가 공중 상태에서 조향각을 0으로 만들던 분기를 수정했다. 앞바퀴 조향은 유지하되 공중 접지 마찰은 생성하지 않는다. 일시정지 중 운전 입력은 자동 재개한다.
+- 재생성: node scripts/prepare-landmark-footprints.mjs, node scripts/build-gangnam-landmarks.mjs, node scripts/prepare-extra-gangnam-buildings.mjs. 기존 fetch-gangnam.mjs만 실행해도 별도 landmark manifest가 복구한 relation은 유지된다.

@@ -1,0 +1,89 @@
+{
+  "verifiedAt": "2026-11-09",
+  "purpose": "Evidence for original, approximate landmark models and OSM-derived building placement. Public reference photographs are not redistributed as textures. No Mobiltech or S-Map mesh geometry is incorporated.",
+  "coordinateSystem": {
+    "originLatLon": [37.4979, 127.0276],
+    "axes": "x east, y up, z south; metres",
+    "projection": "x=(longitude-127.0276)*111320*cos(37.4979*pi/180); z=-(latitude-37.4979)*111320",
+    "precision": "Coordinates rounded to centimetres; this rounding is not a claim of survey accuracy."
+  },
+  "osm": {
+    "attribution": "© OpenStreetMap contributors",
+    "license": "ODbL-1.0",
+    "licenseUrl": "https://www.openstreetmap.org/copyright",
+    "footprintData": "research/gangnam-landmark-footprints.json",
+    "originalData": "research/gangnam-landmark-osm.json",
+    "finding": "The prior extract retained ways but omitted multipolygon relations. The main Samsung towers, Kyobo Tower and Boutique Monaco are multipolygon relations and were consequently absent or represented only by detached component ways.",
+    "geometryCaution": "Each record's rings array contains actual OSM outer rings. Its points array is their convex envelope for positioning only; it must not be used to fill gaps for exact collision or surveyed building geometry. OSM heights and levels are contributor data."
+  },
+  "landmarks": [
+    {
+      "name": "GT Tower East",
+      "osmWay": 301605795,
+      "sourceHeightMetres": 130,
+      "footprintCenter": [-146.235, -18.1825],
+      "facts": "Official architect publishes project views and a 3D design diagram. Its distinct facade is wave-shaped glazing; manufacturer case study gives 130 m height. Public dimensions and OSM footprint guide original geometry, with simplified glazing and details.",
+      "primarySources": [
+        "https://convexarchitecten.nl/projecten/kantoren/gt-tower-east",
+        "https://www.securistyle.com/uk/en/pdf%27s/GT%2520Tower%2520East%2520Case%2520Study.pdf"
+      ]
+    },
+    {
+      "name": "Samsung Seocho complex",
+      "osmRelations": [8311183, 8311184, 8311185],
+      "osmHeightsMetres": [136, 150, 203],
+      "facts": "Architect describes interrelated towers with interlocking volumes inspired by Korean woodworking joints, different vertical and horizontal mullion rhythms, podium volumes and public plazas. OSM relation heights guide approximate overall scale; facade offsets, subdivisions and heights of otherwise untagged individual volumes remain visual estimates.",
+      "primarySources": ["https://www.kpf.com/project/samsung-seocho"]
+    },
+    {
+      "name": "Kyobo Tower",
+      "osmRelation": 7747040,
+      "osmHeightMetres": 118,
+      "facts": "Owner identifies Mario Botta as architect, 25 above-ground floors and 8 basement levels, 3042.38 square metres building area, completion April 2003. Architect describes brick-clad twin towers connected by a glazed passage and lens-shaped terrace roofs. The original model follows these recognizable features with simplified geometry.",
+      "primarySources": [
+        "https://www.kyobotower.co.kr/en/intro",
+        "https://www.kyobotower.co.kr/intro",
+        "https://www.botta.ch/en/SPAZI%20DEL%20LAVORO?idx=13",
+        "https://www.cja.co.kr/ko-kr/projects/kyobo-tower"
+      ]
+    },
+    {
+      "name": "Boutique Monaco",
+      "osmRelation": 19640833,
+      "osmHeightMetres": 117,
+      "osmFloors": 27,
+      "facts": "OSM relation and all its outer rings provide placement and approximate scale. Architecture references, original modeling choices and texture provenance are recorded by the model generator separately.",
+      "primarySources": ["https://www.openstreetmap.org/relation/19640833"]
+    }
+  ],
+  "externalAssetResearch": [
+    {
+      "provider": "Mobiltech OpenData / Modelink",
+      "asset": "Gangnam Station B sector, 2023 FBX",
+      "source": "https://www.mobiltech.io/opendata/%EA%B0%95%EB%82%A8%EC%97%AD-%28b%EA%B5%AC%EC%97%AD%29",
+      "download": "https://www.mobiltech.io/_files/archives/2b9753_dc40f36c4ba74201b061d15afe12df6d.zip?dn=12.zip",
+      "inspection": "Archive contains gangnam_sector_b.fbx (44726144 bytes) only, with no license or readme. The asset is not included in runtime/deployment files and its geometry is not used to derive the original models.",
+      "licenseReview": "The old Mobiltech page offers Download but no separate redistribution license. Mobiltech announces transfer of OpenData to Modelink. Current Modelink terms article 18-2 permits noncommercial uses subject to specific conditions but prohibits resale, redistribution or third-party use without prior company consent. The old download is not demonstrated to have a different reusable license, so public GitHub redistribution was not cleared.",
+      "termsEffectiveDate": "2026-10-30",
+      "termsUrl": "https://www.modelink.io/terms",
+      "termsPublicApi": "https://www.modelink.io/api/terms",
+      "status": "excluded: redistribution permission not established"
+    },
+    {
+      "provider": "Seoul S-Map",
+      "sources": [
+        "https://english.seoul.go.kr/policy/smart-city/spatial-data/",
+        "https://news.seoul.go.kr/gov/archives/528155",
+        "https://openlab.eseoul.go.kr/mobile/qna.do",
+        "https://smap.seoul.go.kr/point/guide/guide.html"
+      ],
+      "finding": "Official platform describes 600000 buildings and multiple 3D detail levels. Public viewing is available, but the map Download button exports a PNG screenshot. Official data-use Q&A directs requesters, including public web game developers, to the data-provision FAQ and restricted-spatial-information application process. No direct asset download with a verified public-web redistribution license was obtained.",
+      "status": "no S-Map mesh extracted or redistributed"
+    }
+  ],
+  "genericFacadeDetails": {
+    "module": "dist/js/city-facades.js",
+    "provenance": "Original procedural storefront frames, plain entrances, facade fins, inset canopies and roof parapets. Road-facing placement follows OSM footprints; details are plausible visual inference rather than individual building replicas.",
+    "validation": "422 buildings, 9630 box instances, 115560 instanced triangles and 6 draw calls on the bundled city sample; maximum outward facade projection is 0.1 m."
+  }
+}

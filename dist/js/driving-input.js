@@ -70,7 +70,9 @@ export class DrivingController {
     }
     const holding=this.altHold&&!lift;
     const flight=this.airborne||!!lift||holding;
-    const input={throttle:this.airborne?0:this.throttle,brake:this.brake,steer:this.airborne?0:this.steer,
+    // Steering linkage still turns unloaded front wheels in flight. Tire forces
+    // require contact in the solver; airborne A/D also retains nozzle vectoring.
+    const input={throttle:this.airborne?0:this.throttle,brake:this.brake,steer:this.steer,
       stabilize:flight,fan:false,wing:false,coastRegen:false,lift,
       boost:held(keys,'ShiftLeft','ShiftRight')&&!hardBrake,
       airMoveForward,airMoveRight,altHold:holding,targetHeight:this.targetHeight,

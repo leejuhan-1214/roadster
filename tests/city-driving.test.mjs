@@ -77,7 +77,7 @@ test('air WASD steers gimbals while B slows with gas and cannot brake an empty t
   const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false}),control=new DrivingController();
   sim.reset('flight');sim.state.pos.y=sim.restHeight+20;sim.state.vel.set(8,0,0);
   const request=control.update(keys('KeyW','KeyD','ArrowUp','KeyQ'),sim,STEP);
-  assert.equal(request.throttle,0);assert.equal(request.steer,0);
+  assert.equal(request.throttle,0);assert.ok(request.steer<0,'unloaded front wheels still follow D');
   assert.equal(request.airMoveForward,1);assert.equal(request.airMoveRight,1);
   assert.equal(request.pitch,-1);assert.equal(request.yaw,1);
   const gas=sim.state.gas;
@@ -103,4 +103,16 @@ test('keyboard steering recentres and reduces high-speed steering without invent
   assert.equal(control.steer,0);
   const conflict=control.update(keys('KeyW','KeyS','KeyD','KeyA'),sim,STEP);
   assert.equal(conflict.throttle,0);assert.ok(conflict.brake>0);assert.equal(conflict.steer,0);
+});
+
+test('A/D turns unloaded front wheels without adding airborne tire forces',()=>{
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,aeroEnabled:false,roadRoughness:0}),control=new DrivingController();
+  sim.reset('flight');sim.state.pos.y=sim.restHeight+20;sim.state.vel.set(0,0,0);
+  advance(sim,control,keys('KeyA'),.35);
+  assert.equal(sim.contactCount,0);assert.ok(control.airborne);
+  assert.ok(sim.wheels[0].steer>.4&&sim.wheels[1].steer>.4);
+  assert.equal(sim.wheels[2].steer,0);assert.equal(sim.wheels[3].steer,0);
+  assert.ok(sim.wheels.every(w=>w.tireForceN===0),'unloaded steering does not invent grip');
+  assert.equal(sim.lastInput.airMoveRight,-1,'A retains left nozzle vectoring in the air');
+  assert.ok(sim.gimbalZ<0,'the lift nozzles swivel alongside the wheel linkage');
 });

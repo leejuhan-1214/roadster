@@ -1,5 +1,5 @@
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
-import {loadCityWorld} from './city-world.js?v=20261109-real1';
+import {loadCityWorld} from './city-world.js?v=20261109-gangnam1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';
@@ -165,7 +165,7 @@ export class FlightScene {
 
   setQuality(quality) {
     this.quality=quality==='detail'?'detail':'smooth';
-    this.renderer.shadowMap.enabled=this.quality==='detail';
+    this.renderer.shadowMap.enabled=this.mode==='city'||this.quality==='detail';
     this.renderer.shadowMap.needsUpdate=true;this.resize();
     const materials=new Set();this.scene.traverse(o=>{if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
     for(const m of materials){
@@ -292,6 +292,8 @@ export class FlightScene {
   setMode(mode) {
     this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
+    // City facades need depth precision hundreds of metres away; inspection keeps its close view.
+    if(this.camera){this.camera.near=mode==='city'?.25:.08;this.camera.updateProjectionMatrix?.();}
     if(mode!=='inspect')this.camera.clearViewOffset();
     for(const object of this.inspectionOccluders||[])object.visible=mode!=='inspect';
     if(this.labEnvironment){
@@ -299,6 +301,7 @@ export class FlightScene {
     }
     if(this.city)this.city.root.visible=mode==='city';
     if(this.renderer){this.renderer.shadowMap.enabled=mode==='city'||this.quality==='detail';this.renderer.shadowMap.needsUpdate=true;}
+    if(this.sun?.shadow){this.sun.shadow.camera.far=mode==='city'?650:150;this.sun.shadow.camera.updateProjectionMatrix();}
     if(this.scene?.fog)this.scene.fog.density=mode==='city'?.0015:.0025;
     if(this.marks){this.marks.count=0;this.markIndex=0;}
     if(this.stageVisual)this.stageVisual.visible=mode!=='inspect';
@@ -482,6 +485,18 @@ export class FlightScene {
     return {name:file.name,length:4.6,normalized:true};
   }
 
+  updateWheels(wheels,cg,explode=0) {
+    for(let i=0;i<this.vehicle.wheels.length;i++){
+      if(this.mode==='inspect'&&this.vehicle.fitLayout)continue;
+      const w=this.vehicle.wheels[i],physicsWheel=wheels?.[i];if(!physicsWheel)continue;
+      const offset=w.userData.explodeOffset||tmpV.set(0,0,0);
+      const base=w.userData.basePosition;
+      w.position.set((physicsWheel.pos?.x??base.x)+cg.x,(physicsWheel.pos?.y??-.31)+cg.y+(physicsWheel.compression||0),(physicsWheel.pos?.z??base.z)+cg.z).addScaledVector(offset,partExplodeProgress(w.userData.partId,explode));
+      w.rotation.y=physicsWheel.steer||0;
+      if(w.userData.spinGroup)w.userData.spinGroup.rotation.z=-(physicsWheel.spinAngle||0);
+    }
+  }
+
   update(sim,dt,options={}) {
     dt=Math.min(Math.max(dt||0,0),.1);this.elapsed+=dt;
     const mode=options.mode||this.mode,camera=options.camera||this.cameraName;
@@ -509,15 +524,7 @@ export class FlightScene {
     }
     updateDetailExplosion(this.vehicle,explode);this.lastExplosion=explode;
     }
-    for(let i=0;i<this.vehicle.wheels.length;i++){
-      if(this.mode==='inspect'&&this.vehicle.fitLayout)continue;
-      const w=this.vehicle.wheels[i],physicsWheel=wheels?.[i];if(!physicsWheel)continue;
-      const offset=w.userData.explodeOffset||tmpV.set(0,0,0);
-      const base=w.userData.basePosition;
-      w.position.set((physicsWheel.pos?.x??base.x)+cg.x,(physicsWheel.pos?.y??-.31)+cg.y+(physicsWheel.compression||0),(physicsWheel.pos?.z??base.z)+cg.z).addScaledVector(offset,partExplodeProgress(w.userData.partId,explode));
-      w.rotation.y=physicsWheel.steer||0;
-      if(w.userData.spinGroup)w.userData.spinGroup.rotation.z=-(physicsWheel.spinAngle||0);
-    }
+    this.updateWheels(wheels,cg,explode);
     for(const unit of this.vehicle.driveRotors||[]){const phase=unit.wheelIndices.reduce((sum,i)=>sum+(wheels[i]?.spinAngle||0),0)/unit.wheelIndices.length;unit.rotor.rotation.z=-phase*(sim.params.gearRatio||9);unit.gear.rotation.z=phase;}
     for(let i=0;i<(this.vehicle.valveIndicators?.length||0);i++){const valve=this.vehicle.valveIndicators[i];valve.scale.y=.35+.65*(thrusters[i]?.opening||0);}
     const lamp=this.vehicle.tank?.userData.supplyLamp;if(lamp)lamp.scale.setScalar(.7+.3*Math.min(1,(sim.massFlowKgS||0)/50));
@@ -551,7 +558,7 @@ export class FlightScene {
     this.contactShadow.rotation.z=-Math.atan2(tmpV.set(1,0,0).applyQuaternion(q).z,tmpV.x);
     this.contactShadow.material.opacity=.65*Math.exp(-Math.max(0,position.y-.6)*.35);
     const height=Math.max(0,position.y-.6);this.contactShadow.scale.setScalar(1+height*.065);
-    if(this.sunDirection)this.sun.position.copy(position).addScaledVector(this.sunDirection,50);
+    if(this.sunDirection)this.sun.position.copy(position).addScaledVector(this.sunDirection,this.mode==='city'?300:50);
     else this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);
     this.sun.target.position.copy(position);this.sun.target.updateMatrixWorld();
     this.sky.position.set(position.x,position.y,position.z);

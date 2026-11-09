@@ -1,0 +1,12 @@
+Original Gangnam Landmark Meshes
+
+These newly authored visualization meshes are dedicated under CC0 1.0:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+OpenStreetMap-derived geographic footprints and placement remain under ODbL 1.0.
+© OpenStreetMap contributors — https://www.openstreetmap.org/copyright
+
+Architectural design references: Convexarchitecten GT Tower East and KPF Samsung Seocho.
+The photographs, architectural drawings, logos and third-party model files are not bundled.
+These are independent simplified exterior reconstructions, not official manufacturer or architect CAD.
+Full references, limitations and checksums: manifest.json

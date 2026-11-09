@@ -30,10 +30,10 @@ test('city keyboard and touch controls ignore experiments and text fields and re
   assert.ok(source,'drive control setup is available for independent interaction testing');
   const listeners={},touchListeners={};
   const button={dataset:{drive:'KeyW'},classList:{add(){},remove(){}},setPointerCapture(){},addEventListener(type,callback){touchListeners[type]=callback;}};
-  const context={mode:'lab',paused:false,cityLoading:false,driveKeys:new Set(),DRIVE_KEYS:new Set(['KeyW','KeyS','Space']),
+  const context={mode:'lab',paused:false,cityLoading:false,vehicleLoading:false,driveKeys:new Set(),DRIVE_KEYS:new Set(['KeyW','KeyS','Space']),
     window:{addEventListener(type,callback){listeners[type]=callback;}},
     document:{querySelector(){return context.dialogOpen?{}:null;}},
-    $(){return null;},$$(selector){assert.equal(selector,'[data-drive]');return [button];},dialogOpen:false};
+    setPaused(value){context.paused=value;},$(){return null;},$$(selector){assert.equal(selector,'[data-drive]');return [button];},dialogOpen:false};
   runInNewContext(source+'\nsetupDriveControls();',context);
   const event=(code,editing=false)=>({code,target:{matches(){return editing;}},preventDefault(){this.prevented=true;}});
   listeners.keydown(event('KeyW'));assert.equal(context.driveKeys.size,0,'lab cannot throttle');
@@ -46,5 +46,8 @@ test('city keyboard and touch controls ignore experiments and text fields and re
   context.mode='lab';touchListeners.pointerdown({...event('KeyW'),pointerId:1});assert.equal(context.driveKeys.size,0);
   context.mode='city';touchListeners.pointerdown({...event('KeyW'),pointerId:1});assert.ok(context.driveKeys.has('KeyW'));
   touchListeners.pointercancel();assert.equal(context.driveKeys.size,0);
-  context.paused=true;listeners.keydown(event('KeyW'));touchListeners.pointerdown({...event('KeyW'),pointerId:1});assert.equal(context.driveKeys.size,0);
+  context.paused=true;listeners.keydown(event('KeyW'));assert.equal(context.paused,false);assert.ok(context.driveKeys.has('KeyW'),'a city drive key resumes paused free driving');
+  listeners.keyup(event('KeyW'));context.paused=true;touchListeners.pointerdown({...event('KeyW'),pointerId:1});assert.equal(context.paused,false);assert.ok(context.driveKeys.has('KeyW'));touchListeners.pointercancel();
+  context.cityLoading=true;context.paused=true;listeners.keydown(event('KeyW'));assert.equal(context.paused,true);assert.equal(context.driveKeys.size,0);context.cityLoading=false;
+  context.vehicleLoading=true;touchListeners.pointerdown({...event('KeyW'),pointerId:1});assert.equal(context.driveKeys.size,0);
 });
