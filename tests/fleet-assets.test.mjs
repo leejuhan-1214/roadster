@@ -46,7 +46,7 @@ for(const profile of VEHICLES)test(`${profile.id}: actual asset, fitted ports an
   const wb=vehicle.wheels[0].position.x-vehicle.wheels[2].position.x;
   assert.ok(Math.abs(wb-(profile.wheelbase||2.8))<.03,'wheelbase is scaled to this car');
   updateNozzleCovers(vehicle,[],true);updateVehicleExplosion(vehicle,1,{inspect:true});
-  const boxes=vehicle.fitLayout.entries.map(e=>({id:e.id,box:new THREE.Box3().setFromObject(e.object)}));
+  const boxes=vehicle.fitLayout.logicalGroups.map(g=>({id:g.id,box:g.entries.reduce((b,e)=>b.union(new THREE.Box3().setFromObject(e.object)),new THREE.Box3())}));
   for(let i=0;i<boxes.length;i++){
     assert.ok(boxes[i].box.min.y>=.14,`${boxes[i].id} stays above the ground`);
     for(let j=i+1;j<boxes.length;j++)assert.equal(boxes[i].box.intersectsBox(boxes[j].box),false,`${boxes[i].id} overlaps ${boxes[j].id}`);

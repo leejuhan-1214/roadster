@@ -136,6 +136,12 @@ export const EXTRA_VEHICLES = [
       "brakeNames": [
         "Object_13"
       ],
+      "fixedWheelNames": [
+        "Object_14"
+      ],
+      "wheelDetailNames": [
+        "Object_31"
+      ],
       "excludeNames": [
         "Object_4"
       ],

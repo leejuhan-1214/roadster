@@ -1,11 +1,12 @@
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
 import * as THREE from 'three';
 import {sampleRoadSurface} from './road-surface.js?v=20261107-drive2';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261107-drive2';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261107-fleet1';
-import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261107-fleet1';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261109-assessment1';
+import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261109-assessment1';
 import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
@@ -67,6 +68,20 @@ function label(text,{width=9,height=1,color='#e6eceb',bg=null,font='600',size=90
   const tx=canvasTexture((ctx,w,h)=>{ctx.clearRect(0,0,w,h); if(bg){ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);}ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`${font} ${size}px sans-serif`;ctx.fillText(text,w/2,h/2);},1024,128);
   const m=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
   return m;
+}
+
+// Fit the complete 3D envelope in the usable inspector viewport, retaining its
+// current orbit direction instead of flattening the assembly into a front board.
+export function inspectionDistance(box,direction,fov,aspect,availableWidth=1){
+  const center=box.getCenter(new THREE.Vector3()),right=new THREE.Vector3().crossVectors(UP,direction).normalize();
+  if(right.lengthSq()<.01)right.set(1,0,0);
+  const up=new THREE.Vector3().crossVectors(direction,right).normalize();
+  const tanY=Math.tan(THREE.MathUtils.degToRad(fov)/2)*.78,tanX=tanY*aspect*availableWidth;
+  let distance=3;
+  for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
+    const point=new THREE.Vector3(x,y,z).sub(center),near=point.dot(direction);
+    distance=Math.max(distance,near+Math.abs(point.dot(right))/tanX,near+Math.abs(point.dot(up))/tanY);
+  }return distance+.25;
 }
 
 export class FlightScene {
@@ -252,7 +267,7 @@ export class FlightScene {
   resize() {
     const rect=this.canvas.getBoundingClientRect();const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
     const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000);
-    this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
+    this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.inspectionViewport();this.camera.updateProjectionMatrix();
   }
   updateRoadRelief(roughness=0){
     if(!this.roadRelief)return;this.roadRelief.visible=roughness>0;
@@ -263,6 +278,7 @@ export class FlightScene {
   setMode(mode) {
     this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
+    if(mode!=='inspect')this.camera.clearViewOffset();
     for(const object of this.inspectionOccluders||[])object.visible=mode!=='inspect';
     if(this.stageVisual)this.stageVisual.visible=mode!=='inspect';
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
@@ -347,22 +363,31 @@ export class FlightScene {
     this.camera.position.copy(center).addScaledVector(direction,distance);
     this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
   }
-  frameWholeVehicle() {
+  inspectionBounds(amount=this.explodeTarget) {
+    const base=this.vehicle.assemblyBounds||new THREE.Box3(new THREE.Vector3(-2.8,-.6,-1.3),new THREE.Vector3(2.8,1.6,1.3));
+    const box=base.clone(),full=this.vehicle.explosionBounds,t=amount*amount*(3-2*amount);
+    if(full){box.min.lerp(full.min,t);box.max.lerp(full.max,t);}return box;
+  }
+  inspectionViewport() {
+    const w=this.canvas?.clientWidth||1280,h=this.canvas?.clientHeight||720;
+    const panel=this.mode==='inspect'&&w>700?Math.min(360,w*.36):0;
+    if(panel)this.camera.setViewOffset(w,h,-panel/2,0,w,h);else this.camera.clearViewOffset();
+    return 1-panel/w;
+  }
+  frameWholeVehicle({resetView=false}={}) {
     if(this.mode==='inspect'&&this.vehicle.fitLayout){
-      const packed=this.vehicle.explosionBounds,amount=this.explodeTarget;
-      const assembled=new THREE.Box3(new THREE.Vector3(-2.8,-.6,-1.3),new THREE.Vector3(2.8,1.6,1.3));
-      const box=assembled.clone();box.min.lerp(packed.min,amount);box.max.lerp(packed.max,amount);
       this.vehicle.root.updateMatrixWorld(true);
-      const center=box.getCenter(new THREE.Vector3()).applyMatrix4(this.vehicle.root.matrixWorld),size=box.getSize(new THREE.Vector3());
-      const vfov=THREE.MathUtils.degToRad(this.camera.fov),hfov=2*Math.atan(Math.tan(vfov/2)*this.camera.aspect);
-      const distance=Math.max(size.y/(2*Math.tan(vfov/2)),size.x/(2*Math.tan(hfov/2)))*1.65+size.z;
+      const box=this.inspectionBounds().applyMatrix4(this.vehicle.root.matrixWorld);
+      const center=box.getCenter(new THREE.Vector3());
+      const direction=resetView?new THREE.Vector3(1,.65,1.3):this.camera.position.clone().sub(this.controls.target);
+      if(direction.lengthSq()<.01)direction.set(1,.65,1.3);direction.normalize();
+      const available=this.inspectionViewport();
+      const distance=inspectionDistance(box,direction,this.camera.fov,this.camera.aspect,available);
       this.controls.maxDistance=Math.max(55,distance*1.4);
-      // The XY shelf layout is best read from its front; assembled vehicles keep
-      // the three-quarter angle. The user can still orbit any view freely.
-      const direction=new THREE.Vector3(1-amount,.36*(1-amount),1).normalize();
       this.camera.position.copy(center).addScaledVector(direction,distance);
       this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();return;
     }
+    this.camera.clearViewOffset();
     const center=this.vehicle.root.position.clone();center.y+=.15;
     this.camera.position.copy(center).add(new THREE.Vector3(7.2,3.4,7.4));
     this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
@@ -372,6 +397,7 @@ export class FlightScene {
     let vehicle=this.vehicleCache.get(profile.id);
     if(!vehicle){
       vehicle=profile.id==='roadster'?await loadRoadsterVehicle(createVehicle()):await loadRealVehicle(profile);
+      prepareAssessmentVehicle(vehicle);
       configureVehicleFit(vehicle,profile);
       vehicle.profileId=profile.id;this.vehicleCache.set(profile.id,vehicle);
     }
@@ -487,7 +513,7 @@ export class FlightScene {
     if(this.mode==='inspect'||this.cameraName==='orbit'){
       if(this.selectedPart&&this.mode==='inspect')new THREE.Box3().setFromObject(this.selectedPart).getCenter(this.cameraTarget);
       else if(this.mode==='inspect'&&this.vehicle.fitLayout){
-        this.cameraTarget.set(0,.5,0).lerp(this.vehicle.explosionBounds.getCenter(tmpV2),this.explodeTarget).applyMatrix4(this.vehicle.root.matrixWorld);
+        this.inspectionBounds(this.explodeProgress).getCenter(this.cameraTarget).applyMatrix4(this.vehicle.root.matrixWorld);
       }else{this.cameraTarget.copy(p);this.cameraTarget.y+=.15;}
       // Translate eye and pivot equally: driving follows without resetting the user's orbit.
       this.camera.position.add(tmpV.copy(this.cameraTarget).sub(this.controls.target));

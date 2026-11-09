@@ -95,7 +95,7 @@ test('orbit follow translates camera and pivot together without resetting viewin
 
 test('explode setter synchronizes an optional callback while mode changes reserve inspector zoom for assembly', () => {
   const notifications = [];
-  const view = { onInspectExplode: value => notifications.push(value), controls: {}, selectedBox: { visible: true }, selectedPart: {} };
+  const view = { onInspectExplode: value => notifications.push(value), camera: new THREE.PerspectiveCamera(), controls: {}, selectedBox: { visible: true }, selectedPart: {} };
   assert.equal(FlightScene.prototype.setExplode.call(view, .4), .4);
   assert.deepEqual(notifications, []);
   assert.equal(FlightScene.prototype.setExplode.call(view, 2, true), 1);

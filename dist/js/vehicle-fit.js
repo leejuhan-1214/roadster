@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261109-assessment1';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const Z=new THREE.Vector3(0,0,1),UP=new THREE.Vector3(0,1,0);
@@ -141,35 +142,24 @@ export function configureVehicleFit(vehicle,profile={}){
   vehicle.root.updateMatrixWorld(true);
   Object.assign(vehicle.geometryParams??={},fitNozzles(vehicle));
   vehicle.root.updateMatrixWorld(true);
+  // Reserve the actual open hatch envelope used by structure inspection.
+  // A single large padding estimate either wastes space or misses a hinge arc.
+  const hatchAngles=(vehicle.nozzleCovers||[]).map(c=>c.hinge.rotation.y);
+  for(const cover of vehicle.nozzleCovers||[])cover.hinge.rotation.y=-Math.PI*.48;
+  vehicle.root.updateMatrixWorld(true);
   const entries=[];
   for(const entry of vehicle.catalog||[]){
     const object=vehicle.detailParts?.get(entry.id);if(!object)continue;
     const bounds=rootBounds(object,vehicle.root);if(bounds.isEmpty())continue;
     const size=bounds.getSize(new THREE.Vector3());
-    // The entire assumed device remains one catalog component. Allow its hatch
-    // and internal rotors to move within a conservative component envelope.
-    if(entry.kind==='hypothesis')size.addScalar(.72);
-    entries.push({id:entry.id,kind:entry.kind,object,bounds,size,center:bounds.getCenter(new THREE.Vector3()),basePosition:object.position.clone()});
+    // Each selectable primitive retains its source bounds and assembly position.
+    entries.push({id:entry.id,kind:entry.kind,category:entry.category,sourceKey:object.userData.sourceObjectKey||entry.sourceObjectName||entry.id,object,bounds,size,center:bounds.getCenter(new THREE.Vector3()),basePosition:object.position.clone()});
   }
-  const gap=.22,area=entries.reduce((sum,e)=>sum+(Math.max(.1,e.size.x)+gap)*(Math.max(.1,e.size.y)+gap),0);
-  const width=clamp(Math.sqrt(area)*1.25,9,26);
-  entries.sort((a,b)=>b.size.y-a.size.y||b.size.x-a.size.x||a.id.localeCompare(b.id));
-  let x=0,y=0,rowHeight=0;
-  for(const entry of entries){
-    const w=Math.max(.10,entry.size.x),h=Math.max(.10,entry.size.y);
-    if(x>0&&x+w>width){x=0;y+=rowHeight+gap;rowHeight=0;}
-    entry.target=new THREE.Vector3(x+w/2,y+h/2,0);x+=w+gap;rowHeight=Math.max(rowHeight,h);
-  }
-  const bounds=new THREE.Box3();
-  for(const entry of entries)bounds.union(new THREE.Box3().setFromCenterAndSize(entry.target,entry.size));
-  const center=bounds.getCenter(new THREE.Vector3());
-  // Raise the inspection board clear of the test pad. A centered board would
-  // hide its lower rows beneath the opaque ground at maximum disassembly.
-  const shift=new THREE.Vector3(-center.x,.15-bounds.min.y,-center.z);
-  for(const entry of entries){entry.target.add(shift);entry.delta=entry.target.clone().sub(entry.center);}
-  bounds.translate(shift);
-  vehicle.explosionBounds=bounds;
-  vehicle.fitLayout={entries,assembly:[...vehicle.parts.values()].map(object=>({object,basePosition:object.userData.basePosition?.clone()||object.position.clone()})),profileId:profile.id,gap};
+  (vehicle.nozzleCovers||[]).forEach((cover,i)=>{cover.hinge.rotation.y=hatchAngles[i];});
+  vehicle.root.updateMatrixWorld(true);
+  const layout=createNaturalExplosionLayout(entries,vehicle);
+  vehicle.assemblyBounds=layout.assemblyBounds;vehicle.explosionBounds=layout.explosionBounds;
+  vehicle.fitLayout={...layout,entries,assembly:[...vehicle.parts.values()].map(object=>({object,basePosition:object.userData.basePosition?.clone()||object.position.clone()})),profileId:profile.id};
   return vehicle.geometryParams;
 }
 

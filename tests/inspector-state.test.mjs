@@ -18,7 +18,7 @@ function inspector() {
     vehicle: { root, parts: new Map([['body', exterior], ['wheel-fl', wheel], ['tank', tank]]), detailParts,
       catalog: [{id:'model-000',kind:'model'}, {id:'model-001',kind:'model'}, {id:'tank',kind:'hypothesis'}] },
     hiddenParts: new Set(), isolatedPartId: null, showHypotheses: true,
-    mode: 'inspect', controls: {}, selectedBox: new THREE.BoxHelper(), selectedPart: null,
+    camera: new THREE.PerspectiveCamera(), mode: 'inspect', controls: {}, selectedBox: new THREE.BoxHelper(), selectedPart: null,
   });
   view.applyInspectorVisibility();
   return {view, body, rim, tank, exterior, wheel};
@@ -31,7 +31,9 @@ test('inspector shows experiment apparatus by default and restores all geometry 
   view.togglePartVisibility('model-000');
   assert.equal(body.visible, false);
   view.isolatePart('model-001');
+  view.camera.setViewOffset(1280,720,-180,0,1280,720);
   view.setMode('drive');
+  assert.equal(view.camera.view.enabled,false,'driving restores the full viewport');
   assert.ok(body.visible && rim.visible && tank.visible);
   assert.equal(view.selectedPart, null);
   assert.equal(view.selectedBox.visible, false);

@@ -37,14 +37,17 @@ export function transformedGeometry(original,matrix){
 // Some artists use one mesh for two or four wheels. Partition its existing
 // triangles, preserving normals, UVs, materials and index topology. No new tires
 // are invented and no non-wheel triangles are selected without manifest review.
-export function splitWheelGeometry(geometry,splitX=0,splitZ=0){
+export function splitWheelGeometry(geometry,splitX=0,splitZ=0,wheelBoxes=null){
   const position=geometry.getAttribute('position'),index=geometry.getIndex();
-  const count=index?index.count:position.count,buckets=[[],[],[],[]];
+  const count=index?index.count:position.count,buckets=[[],[],[],[],[]],point=new THREE.Vector3();
   const groups=geometry.groups.length?geometry.groups:[{start:0,count,materialIndex:0}];
   for(const group of groups)for(let t=group.start;t<Math.min(count,group.start+group.count);t+=3){
     const vertices=[0,1,2].map(k=>index?index.getX(t+k):t+k);
     const x=vertices.reduce((s,i)=>s+position.getX(i),0)/3,z=vertices.reduce((s,i)=>s+position.getZ(i),0)/3;
-    buckets[(x>splitX?0:2)+(z>splitZ?1:0)].push({vertices,materialIndex:group.materialIndex});
+    // Only reviewed mixed meshes use tire bounds. Keep the remaining original
+    // triangles as a body piece, including badges sharing the wheel material.
+    const wheel=wheelBoxes?wheelBoxes.findIndex(box=>vertices.every(i=>box.containsPoint(point.fromBufferAttribute(position,i)))):(x>splitX?0:2)+(z>splitZ?1:0);
+    buckets[wheel<0?4:wheel].push({vertices,materialIndex:group.materialIndex});
   }
   return buckets.map((triangles,wheel)=>{
     if(!triangles.length)return null;
@@ -67,6 +70,6 @@ export function splitWheelGeometry(geometry,splitX=0,splitZ=0){
       out.setAttribute(name,new THREE.Float32BufferAttribute(values,attribute.itemSize));
     }
     out.setIndex(indices);out.computeBoundingBox();out.computeBoundingSphere();
-    return {geometry:out,wheel};
+    return {geometry:out,wheel:wheel===4?-1:wheel};
   }).filter(Boolean);
 }

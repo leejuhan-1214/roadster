@@ -19,10 +19,10 @@ before(async()=>{
   configureVehicleFit(vehicle,{id:'roadster'});
 });
 
-function boxes(v){v.root.updateMatrixWorld(true);return v.fitLayout.entries.map(e=>({id:e.id,box:new THREE.Box3().setFromObject(e.object)}));}
+function boxes(v){v.root.updateMatrixWorld(true);return v.fitLayout.logicalGroups.map(g=>({id:g.id,box:g.entries.reduce((b,e)=>b.union(new THREE.Box3().setFromObject(e.object)),new THREE.Box3())}));}
 function overlappingPairs(v){const b=boxes(v),overlaps=[];for(let i=0;i<b.length;i++)for(let j=i+1;j<b.length;j++)if(b[i].box.intersectsBox(b[j].box))overlaps.push([b[i].id,b[j].id]);return overlaps;}
 
-test('actual Roadster catalog has no overlapping component bounds at 100% disassembly',()=>{
+test('actual Roadster source components have no overlapping bounds at 100% disassembly',()=>{
   assert.equal(vehicle.fitLayout.entries.length,114);
   updateNozzleCovers(vehicle,[],true);
   updateVehicleExplosion(vehicle,1,{inspect:true});

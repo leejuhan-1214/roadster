@@ -1,4 +1,4 @@
-import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261107-fleet1';
+import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261109-assessment1';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.
 export const VEHICLES = Object.freeze([
