@@ -1,4 +1,4 @@
-# Roadster Landing Lab · v1.20
+# Roadster Landing Lab · v1.21
 
 같은 높이에서 내려오는 차량의 충격을 비교하고, 충격을 줄이는 착지 방법을 찾는 3D 실험실입니다. 별도 도시 주행 모드에서는 강남역 실제 도로 배치를 따라 운전하거나 가상 냉가스 추진기로 비행할 수 있습니다.
 
@@ -88,3 +88,5 @@ python -m http.server 8080 --directory dist
 [Pages 워크플로](.github/workflows/pages.yml)는 `main`의 `dist/`를 검사한 뒤 배포합니다. `dist/**`, `tests/**`, `package*.json`, 워크플로 변경을 push하면 실행되며 수동 실행도 지원합니다. 문서만 수정한 push는 자동 배포를 시작하지 않습니다. 예전 `gh-pages` 브랜치는 현재 배포 원본이 아닙니다.
 
 배포 후 Actions의 build/deploy 성공과 공개 URL의 변경 내용을 확인합니다. 현재 기능과 이전 배포 기록을 혼동하지 않도록 과거 README는 [이전 버전 기록](docs/version-history.md)에 보존했습니다.
+
+도시 주행은 접지한 각 타이어의 실제 미끄럼에 따라 연기와 연속 자국을 표시합니다. 연기160개·자국1600개로 제한하며 일시정지에서는 효과도 정지하고 R로 초기화합니다. Shift 후륜 제동은80ms 시정수로 서서히 적용되어 진입이 부드러워졌으며 B는 즉시 우선합니다. 차체 색상은 색상표 또는 자유 색 선택으로 바꿀 수 있습니다.

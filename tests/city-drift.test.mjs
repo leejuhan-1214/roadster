@@ -18,9 +18,9 @@ test('rear handbrake locks only the rear wheels while front drive and steering s
   for(const wheel of sim.wheels){
     assert.ok(wheel.tireForceN<=mu*wheel.load+1e-6,'combined tire forces retain their normal friction budget');
     if(wheel.isFront){assert.equal(wheel.handbrakeTorque,0);assert.ok(wheel.omega>10);assert.ok(wheel.driveTorque>0);assert.ok(wheel.steer>0);}
-    else{assert.equal(wheel.handbrakeTorque,5200);assert.ok(Math.abs(wheel.omega)<1e-8);assert.ok(wheel.slip<-.8);assert.equal(wheel.sliding,true);}
+    else{assert.ok(wheel.handbrakeTorque>5190&&wheel.handbrakeTorque<=5200);assert.ok(Math.abs(wheel.omega)<1e-8);assert.ok(wheel.slip<-.8);assert.equal(wheel.sliding,true);}
   }
-  assert.ok(sim.handbrakeForceN>1000);assert.ok(sim.telemetry().handbrakeForceN>1000);assert.equal(sim.handbrakeAmount,1);
+  assert.ok(sim.handbrakeForceN>1000);assert.ok(sim.telemetry().handbrakeForceN>1000);assert.ok(sim.handbrakeAmount>.99&&sim.handbrakeAmount<1);
 });
 
 test('rear locking produces signed yaw and sideslip through tire forces in both steering directions',()=>{
@@ -59,8 +59,8 @@ test('W+A+Shift pulse enters a physical drift and releasing Shift permits W+D re
   const sim=moving(),driver=new DrivingController();driver.throttle=1;driver.brake=0;
   const controls=(codes,seconds)=>{const keys=new Set(codes);for(let i=0;i<seconds/dt;i++)sim.step(dt,driver.update(keys,sim,dt));};
   controls(['KeyW','KeyA','ShiftLeft'],.4);
-  assert.equal(sim.handbrakeAmount,1);assert.ok(beta(sim)>.08);assert.ok(sim.state.omega.y>.8);
-  assert.ok(sim.wheels.filter(w=>!w.isFront).every(w=>Math.abs(w.omega)<1e-8));
+  assert.ok(sim.handbrakeAmount>.99&&sim.handbrakeAmount<1);assert.ok(beta(sim)>.08);assert.ok(sim.state.omega.y>.8);
+  assert.ok(sim.wheels.filter(w=>!w.isFront).every(w=>w.slip<-.7),'progressive rear braking creates strong slip without requiring simultaneous wheel lock');
   // Stop countersteering once the initial yaw is arrested. Continuing to hold
   // D for two seconds would intentionally enter a new right turn, rather than
   // test whether releasing the rear brake restores a controllable trajectory.
@@ -84,3 +84,5 @@ test('service brake overrides drift and handbrake zero preserves existing ground
   const old=new PhysicsSim(),explicit=new PhysicsSim();old.reset('drop');explicit.reset('drop');
   advance(old,.8,{});advance(explicit,.8,{handbrake:0});assert.deepEqual(state(explicit),state(old));
 });
+
+test('rear brake builds progressively rather than snapping to lock',()=>{const sim=moving();advance(sim,.002,{handbrake:1});assert.ok(sim.handbrakeAmount>0&&sim.handbrakeAmount<.03);advance(sim,.078,{handbrake:1});assert.ok(sim.handbrakeAmount>.62&&sim.handbrakeAmount<.64);advance(sim,.002,{brake:1,handbrake:1});assert.equal(sim.handbrakeAmount,0);});

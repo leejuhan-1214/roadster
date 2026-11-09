@@ -39,3 +39,9 @@ dialog.landing-results-dialog{width:min(1100px,calc(100vw - 36px));max-width:110
 @media(max-width:700px){.city-experiments{top:202px;left:10px;right:10px;width:auto;max-height:calc(100dvh - 220px)}.city-garage{max-width:220px}.city.show-drive-controls .city-touch{bottom:290px}.city-experiment-grid{gap:7px}.city-speedometer{padding:10px 12px}.city-speedometer #city-hover,.city-speedometer #city-land{padding:5px}.city-flight-readings{margin:7px 0}}
 
 .city-key-hint-active{color:#9dffe0!important;font-weight:600}.city-surface-slippery{color:#ffc48e!important}
+
+.city-paint-label{display:flex;align-items:center;gap:8px;font-size:11px;margin-top:7px}.city-paint-label input{width:44px;height:25px;padding:0;border:1px solid #728c91;border-radius:4px;background:transparent;cursor:pointer}
+
+.paint-swatches{display:flex;gap:6px;margin-top:5px}.city-garage .paint-swatches button{flex:none;width:24px;height:18px;padding:0;border:1px solid #9aadb4;border-radius:4px}
+
+.city-colors{flex:0 0 100%;display:flex;align-items:center;justify-content:space-between;gap:8px}.city-colors .city-paint-label,.city-colors .paint-swatches{margin:0}.city-colors input{width:32px}@media(max-width:1000px){.city-experiments{top:235px;max-height:calc(100dvh - 250px)}}

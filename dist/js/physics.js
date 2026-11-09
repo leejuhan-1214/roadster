@@ -417,7 +417,8 @@ export class PhysicsSim {
     // or yaw. Service braking has priority. It deliberately bypasses ABS, so
     // a locked rear tire spends its friction budget opposing longitudinal
     // slip and has less lateral authority through the same tire model.
-    const handbrakeAmount=brakeAmount>0?0:clamp(input.handbrake||0,0,1);
+    const handbrakeTarget=brakeAmount>0?0:clamp(input.handbrake||0,0,1);
+    const handbrakeAmount=handbrakeTarget>0?(this.handbrakeAmount||0)+(handbrakeTarget-(this.handbrakeAmount||0))*(1-Math.exp(-dt/.08)):0;
     this.handbrakeAmount=handbrakeAmount;this.handbrakeForceN=0;
     const throttle = brakeAmount > 0 ? 0 : clamp(input.throttle || 0, -1, 1);
     const tireResultant = new Vector3();

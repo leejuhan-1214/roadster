@@ -1,3 +1,4 @@
+import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
 import {loadCityWorld} from './city-world.js?v=20261109-gangnam1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
@@ -145,6 +146,7 @@ export class FlightScene {
     canvas.addEventListener('pointerdown',this._onDown,true);canvas.addEventListener('pointerup',this._onUp,true);
     canvas.addEventListener('pointermove',this._onMove,{capture:true,passive:false});canvas.addEventListener('pointercancel',this._onCancel,true);
     canvas.addEventListener('wheel',this._onWheel,{capture:true,passive:false});
+    this.tireEffects=new TireEffects(this.scene);
     this.createEnvironment();this.roadRelief.userData.dynamicGeometry=true;this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
     this.inspectionOccluders=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.groundSurface&&o!==this.roadRelief&&o!==this.contactShadow);
     this.labEnvironment=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.contactShadow);
@@ -553,7 +555,7 @@ export class FlightScene {
       if(a.visible){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=(w.surfaceY||0)+.09;a.setDirection(tmpV.set(w.forceX,w.forceY||0,w.forceZ).normalize());a.setLength(.15+Math.min(2.5,force/4500),.14,.07);}
     }
     if(this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
-    this.updateMarks(view);
+    this.tireEffects.update(sim,view,this.mode==='city');
     this.contactShadow.position.set(position.x,.016,position.z);
     this.contactShadow.rotation.z=-Math.atan2(tmpV.set(1,0,0).applyQuaternion(q).z,tmpV.x);
     this.contactShadow.material.opacity=.65*Math.exp(-Math.max(0,position.y-.6)*.35);
