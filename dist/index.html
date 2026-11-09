@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b151e"><meta name="description" content="차체별 같은 높이 착지 충격을 비교하고 충격을 줄이는 착지 방법을 실험합니다.">
+<meta name="theme-color" content="#0b151e"><meta name="description" content="13종 차체의 착지 3방식을 같은 높이에서 비교하고 실제 강남역 도로에서 자유롭게 주행합니다.">
 <title>Roadster Landing Lab — 착지 충격 실험</title>
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
-<link rel="stylesheet" href="./style.css?v=20261109-assessment2">
+<link rel="stylesheet" href="./style.css?v=20261109-city1">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head><body class="quality-smooth">
 <canvas id="world" aria-label="착지 충격과 차체 구조를 관찰하는 3D 공간" tabindex="0"></canvas>
 <div id="boot" class="boot"><b>ROADSTER LANDING LAB</b><p id="boot-message">실험 공간을 준비하고 있습니다…</p></div>
 <header class="topbar glass"><div class="brand">ROADSTER<small>LANDING LAB</small></div>
-<nav class="mode-nav" aria-label="실험실 모드"><button class="active" data-mode="lab">01 <span>착지 실험</span></button><button data-mode="inspect">02 <span>구조 탐색</span></button></nav>
+<nav class="mode-nav" aria-label="실험실 모드"><button class="active" data-mode="lab">01 <span>착지 실험</span></button><button data-mode="inspect">02 <span>구조 탐색</span></button><button data-mode="city">03 <span>도시 주행</span></button></nav>
 <div class="header-actions"><span id="live-label">실험 준비</span><button id="pause" class="icon-btn" aria-label="실험 재생" title="일시정지 / 재생 (P)" disabled>▶</button><button id="help" class="icon-btn" aria-label="사용 방법과 출처">?</button></div></header>
 <button id="panel-toggle" class="mobile-panel glass" aria-label="실험 패널 열기">☷ 실험 설정</button>
 <aside id="left-panel" class="left-panel glass"><label class="vehicle-picker" for="vehicle-select">차체 선택<select id="vehicle-select" disabled><option value="roadster">Tesla Roadster 2020</option></select></label>
@@ -25,7 +25,16 @@
 <aside id="telemetry" class="telemetry glass" aria-label="착지 실시간 측정"><div class="panel-heading"><span>착지 측정</span><b id="status-badge">준비</b></div><div class="telemetry-pair"><div><span>바퀴–지면 높이</span><b id="altitude">0.00 <small>m</small></b></div><div><span>수직 속도</span><b id="vertical">0.00 <small>m/s</small></b></div></div>
 <div class="force-reading"><span>현재 등가반력 · 2 ms</span><strong id="ground-force">0.00 <small>kN</small></strong></div>
 <dl class="measurements"><div><dt>최대 등가반력</dt><dd id="peak-force">—</dd></div><div><dt>접촉 최대 하중</dt><dd id="peak-g">—</dd></div><div><dt>첫 접촉 속도</dt><dd id="touchdown-speed">—</dd></div><div><dt>최대 압축</dt><dd id="compression">—</dd></div><div><dt>노즐 추력</dt><dd id="thrust">0.0 kN</dd></div><div><dt>기체 잔량</dt><dd id="gas">375.0 kg</dd></div><div><dt>현재 총질량</dt><dd id="mass">2,275 kg</dd></div><div><dt>바퀴 접지</dt><dd id="contact-count">4 / 4</dd></div></dl><div class="time-row"><span id="sim-time">0.00 s</span><span>500 Hz</span></div><p class="micro">하중 1 g = 정지 지지 상태</p></aside>
+<section id="city-hud" hidden aria-label="도시 주행">
+<div id="city-loading" class="city-loading" hidden>강남역 도로를 불러오는 중…</div>
+<div class="city-garage glass"><label for="city-vehicle-select" class="sr-only">주행 차체</label><select id="city-vehicle-select" aria-label="주행 차체"></select><button id="city-reset" title="출발점 복귀 (R)">↺ 복귀</button><button id="city-controls" aria-pressed="false" title="화면 조작 버튼">조작</button><button id="city-camera" title="시점 변경 (C)">◉ 시점</button><p id="city-credit"></p></div>
+<div class="city-location"><b id="city-road">강남역 · 서울</b><span>W / ↑ 가속 · S / ↓ 제동·후진 · A D 방향 · Space 제동</span></div>
+<div class="city-map-wrap"><canvas id="city-map" width="210" height="170" aria-label="주변 도로 지도"></canvas><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></div>
+<div class="city-speedometer glass"><div><b id="city-speed">0</b><span>km/h</span><strong id="city-gear">N</strong></div><p><span id="city-motion">정지 유지</span><span id="city-acceleration">0.0 m/s²</span></p><div class="pedal-track"><i id="city-throttle"></i></div><div class="pedal-track brake"><i id="city-brake"></i></div><small id="city-distance">0.00 km</small></div>
+<p id="city-boundary" class="city-boundary" hidden>지도 구역 밖 · R로 출발점 복귀</p>
+<div class="city-touch" aria-label="터치 주행 조작"><div><button data-drive="KeyA" aria-label="왼쪽 조향">◀</button><button data-drive="KeyD" aria-label="오른쪽 조향">▶</button></div><div><button data-drive="KeyS" aria-label="제동 또는 후진">↓</button><button data-drive="KeyW" aria-label="가속">↑</button><button data-drive="Space" aria-label="강한 제동">■</button></div></div>
+</section>
 <aside id="part-card" class="part-card glass" hidden><div class="panel-heading"><span id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 선택 닫기">×</button></div><h2 id="part-title"></h2><div class="part-actions"><button id="part-zoom">가까이 보기</button><button id="part-isolate" aria-pressed="false">이것만 보기</button><button id="part-hide">선택 숨기기</button></div></aside>
 <div class="view-tools glass"><button id="camera" title="카메라 전환 (C)">◉ <span id="camera-label">자유 카메라</span></button><button id="vectors" aria-pressed="false" title="힘 벡터 (V)">↗ 힘 벡터</button><button id="reset" title="실험 초기화 (R)">↺ 초기화</button></div><span id="fps" class="frame-note"></span><div id="toast" class="toast" role="status"></div>
-<dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.14</div></dialog>
-<script type="module" src="./js/main.js?v=20261109-assessment2"></script></body></html>
+<dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.15</div></dialog>
+<script type="module" src="./js/main.js?v=20261109-city1"></script></body></html>

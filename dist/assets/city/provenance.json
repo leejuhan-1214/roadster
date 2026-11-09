@@ -1,0 +1,25 @@
+{
+  "query": "[out:json][timeout:90];(way[\"highway\"][\"area\"!=\"yes\"](37.4912,127.0191,37.5046,127.0361);way[\"building\"](37.4912,127.0191,37.5046,127.0361););out geom;",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "bbox": [
+    37.4912,
+    127.0191,
+    37.5046,
+    127.0361
+  ],
+  "origin": [
+    37.4979,
+    127.0276
+  ],
+  "sourceTimestamp": "2026-11-09T00:11:56Z",
+  "downloadedAt": "2026-11-09T00:13:18.270Z",
+  "rawSha256": "b1f50c198618418b61e76f5b60e5e35d61bf9e1d9f8d36c7ac75a46e3590b36e",
+  "counts": {
+    "roads": 500,
+    "buildings": 1879
+  },
+  "license": "Open Database License 1.0",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors",
+  "changes": "Projected to local metre coordinates and rounded to centimetres; retained driving roads and building outlines/tags. Road width and building height fallbacks are rendering assumptions."
+}

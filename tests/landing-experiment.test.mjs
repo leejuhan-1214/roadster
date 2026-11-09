@@ -121,3 +121,20 @@ test('reaching the observation limit while still oscillating is not a settled la
   assert.equal(r.status,'unsettled');assert.equal(r.settled,false);
   assert.ok(r.elapsed-r.touchdownTime>=3);assert.ok(r.touchdownSpeed>0);
 });
+
+test('high releases keep the entered clearance and are measured past the old 15 second deadline',()=>{
+  for(const height of [0,.01,6,100,2000,1e8]){
+    const sim=new PhysicsSim(),run=createLandingRun(sim,{height,brakeHeight:height});
+    assert.equal(run.height,height);assert.equal(run.brakeHeight,height);
+    assert.ok(Math.abs(landingClearance(sim)-height)<1e-7);
+    assert.ok(Number.isFinite(run.flightTimeout)&&run.flightTimeout>=15);
+  }
+  const {result}=experiment({height:2000,method:'free'},{},[25]);
+  assert.equal(result.height,2000);assert.ok(result.touchdownTime>15);
+  assert.notEqual(result.status,'timeout');
+  assert.ok(Math.abs(result.touchdownSpeed-Math.sqrt(2*9.80665*2000))<.03);
+  const contactSamples=result.samples.filter(sample=>Math.abs(sample.time-result.touchdownTime)<.19);
+  assert.ok(contactSamples.length>30,'retain dense samples on both sides of first contact');
+  assert.ok(contactSamples.every(sample=>sample.sampleInterval===.01));
+  assert.equal(Math.max(...result.samples.map(sample=>sample.equivalentGroundForceN)),result.peakEquivalentGroundForceN);
+});

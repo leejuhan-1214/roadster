@@ -11,14 +11,26 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Number(value):fallback,min,max);
 
 export function landingSettings(options={}){
-  const height=finite(options.height,3,.5,5);
+  const height=finite(options.height,3,0,Number.MAX_VALUE);
   return {...options,height,
     method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
-    brakeHeight:finite(options.brakeHeight,2,.1,5),
+    brakeHeight:finite(options.brakeHeight,2,0,Number.MAX_VALUE),
     targetSpeed:finite(options.targetSpeed,.5,.2,2),
     springK:finite(options.springK,75000,30000,150000),
     damperC:finite(options.damperC,6000,1000,15000),
   };
+}
+
+/** One shared settings object is applied to every job; the order avoids reloads. */
+export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
+  const fleet=[...new Map(vehicles.map(vehicle=>[vehicle.id,vehicle])).values()];
+  const active=fleet.find(vehicle=>vehicle.id===activeVehicleId)||fleet[0];
+  if(!active)return [];
+  const method=landingSettings(settings).method;
+  if(kind==='fleet-methods')return fleet.flatMap(vehicle=>LANDING_METHODS.map(item=>({vehicleId:vehicle.id,method:item.id})));
+  if(kind==='methods')return LANDING_METHODS.map(item=>({vehicleId:active.id,method:item.id}));
+  if(kind==='vehicles')return fleet.filter(vehicle=>settings.vehicleIds?.includes(vehicle.id)).map(vehicle=>({vehicleId:vehicle.id,method}));
+  return [{vehicleId:active.id,method}];
 }
 
 /** Minimum unloaded tire-to-ground gap, unaffected by static spring sag. */
@@ -29,6 +41,12 @@ export function landingClearance(sim){
 /** Resets the supplied vehicle using shared controlled environmental conditions. */
 export function createLandingRun(sim,options={}){
   const config=landingSettings(options);
+  // A fixed 15 s deadline silently discarded high drops before first contact.
+  // Keep that failure guard at ordinary heights, but scale it with free fall
+  // and the gentle controller's 2.5 m/s cruise reference for larger releases.
+  const freeFallTime=Math.sqrt(config.height)*Math.sqrt(2/9.80665);
+  const flightTimeout=Math.max(15,freeFallTime*2+10,config.method==='gentle'?config.height/2.5+10:0);
+  const precontactSampleInterval=Math.max(.01,flightTimeout/4000);
   Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,
     gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
     contactEnabled:true,friction:1.15,rollingResistance:.015,
@@ -42,7 +60,7 @@ export function createLandingRun(sim,options={}){
   return {...config,config:Object.freeze({...config}),startTime:sim.state.time,
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
-    parameters:Object.freeze({...sim.params}),elapsed:0,done:false,status:'running',
+    parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
     braking:false,touchdownTime:null,touchdownSpeed:null,contactDuration:null,
     peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
     groundImpulseNs:0,totalGroundImpulseNs:0,correctionImpulseNs:0,impactCorrectionImpulseNs:0,
@@ -124,10 +142,14 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   const clearance=landingClearance(sim);
   if(run.touchdownTime!==null)run.reboundHeight=Math.max(run.reboundHeight,clearance);
   run.gasUsed=run.initialGas-sim.state.gas;
-  const sample={time:run.elapsed,clearance,velocity:sim.state.vel.y,groundForceN:ground,
+  // Preserve the full 10 ms contact trace, while long high-altitude approaches
+  // use bounded sparse samples. Every 2 ms step still contributes to all peaks.
+  const nearContact=run.touchdownTime!==null||clearance<=Math.max(2,-sim.state.vel.y*.3);
+  const sampleInterval=nearContact?.01:run.precontactSampleInterval;
+  const sample={time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,groundForceN:ground,
     equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
     compression,gasKg:sim.state.gas,correctionImpulseNs:impulse};
-  const bucket=Math.floor((run.elapsed+1e-9)/.01);
+  const bucket=sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
   if(bucket!==run.sampleBucket){run.samples.push(sample);run.sampleBucket=bucket;}
   else{
     const last=run.samples.at(-1);
@@ -141,6 +163,6 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
     const after=run.elapsed-run.touchdownTime;
     run.settled=run.settledFor>=.3;
     if(after>=3||(after>=1.5&&run.settled))complete(run,run.settled?'landed':'unsettled');
-  }else if(run.elapsed>=15-1e-9)complete(run,'timeout');
+  }else if(run.elapsed>=run.flightTimeout-1e-9)complete(run,'timeout');
   return run;
 }

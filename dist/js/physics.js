@@ -2,6 +2,7 @@ import { Vector3, Quaternion, Euler } from 'three';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
 import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive2';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
+import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -247,13 +248,14 @@ export class PhysicsSim {
       const center=new Vector3(...box.center),half=new Vector3(...box.size).multiplyScalar(.5);
       return {id:box.id??String(i),center,half,min:center.clone().sub(half),max:center.clone().add(half)};
     });
+    this.obstacleIndex=createObstacleIndex(this.obstacles);
     this.obstacleContacts=[];this.lastObstacleImpact=null;
   }
 
   /** Highest horizontal supporting surface below this wheel/fan reference point. */
   surfaceHeightAt(x,z,referenceY=Infinity) {
     let height=sampleRoadSurface(x,z,{roughness:this.params.roadRoughness}).height;
-    for(const box of this.obstacles)if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
+    for(const box of this.obstacleIndex?queryObstacles(this.obstacleIndex,x,z):this.obstacles)if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
       box.max.y<=referenceY+.10&&box.max.y>height)height=box.max.y;
     return height;
   }
@@ -543,7 +545,9 @@ export class PhysicsSim {
     // energy. Full residual overlap correction is a numerical constraint, not thrust.
     for(let pass=0;pass<4;++pass){
       let any=false;
-      for(const box of this.obstacles){
+      const searchRadius=Math.hypot(...this.bodyHalf)+this.cg.length()+this.bodyBoxCenter.length();
+      const nearby=this.obstacleIndex?queryObstacles(this.obstacleIndex,s.pos.x,s.pos.z,searchRadius):this.obstacles;
+      for(const box of nearby){
         const contact=boxContact(this,box);if(!contact)continue;
         any=true;const {normal,depth,point}=contact;
         const r=point.clone().sub(s.pos),qInv=s.q.clone().invert();
