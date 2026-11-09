@@ -16,7 +16,7 @@ export const BRAKE_REASONS=Object.freeze({
   collision:'장애물 충돌',airborne:'접지 상실',released:'정지 전 B 해제',
   'settings-changed':'실험 조건 변경','vehicle-changed':'차체 변경',
   reset:'주행 초기화',paused:'일시정지',timeout:'60초 안에 정지하지 않음',thrust:'추진기 작동',
-  invalid:'유효하지 않은 측정 상태',
+  invalid:'유효하지 않은 측정 상태',drift:'드리프트 입력',
 });
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const numeric=(value,fallback,min,max)=>{
@@ -70,7 +70,7 @@ export class CityBrakeTrial {
     this.lastResult=result;this._results.push(result);if(this._results.length>6)this._results.shift();
     this._active=null;this.status=valid?'complete':'invalid';this.reason=reason;
   }
-  sample(sim,{braking=false,airborne=false,settings=CITY_EXPERIMENT_DEFAULTS,vehicleId=''}={}){
+  sample(sim,{braking=false,drifting=false,airborne=false,settings=CITY_EXPERIMENT_DEFAULTS,vehicleId=''}={}){
     const held=!!braking,rising=held&&!this._held;this._held=held;
     if(!this._active&&!rising)return this.status;
     const s=sim?.state,time=s?.time,x=s?.pos?.x,z=s?.pos?.z,speed=Math.hypot(s?.vel?.x,s?.vel?.z);
@@ -89,6 +89,7 @@ export class CityBrakeTrial {
       else if(vehicleId!==a.vehicleId)this._finish(false,'vehicle-changed');
       else if(flying)this._finish(false,'airborne');
       else if(thrust)this._finish(false,'thrust');
+      else if(drifting)this._finish(false,'drift');
       else if(dt>0){
         const distance=Math.hypot(x-a.previousX,z-a.previousZ);
         const fraction=speed<=BRAKE_STOP_SPEED&&a.previousSpeed>BRAKE_STOP_SPEED?
@@ -107,7 +108,7 @@ export class CityBrakeTrial {
     }
     // Ignore a held key after completion/cancellation until it is released.
     // Invalid initial conditions do not produce misleading zero-length trials.
-    if(!this._active&&rising&&speed>=2&&!flying&&!collision&&!thrust){
+    if(!this._active&&rising&&speed>=2&&!flying&&!collision&&!thrust&&!drifting){
       this._active={initialSpeed:speed,distance:0,elapsed:0,maxDeceleration:0,
         vehicleId,settings:normalized,settingsKey:key,startTime:time,collisionCount,
         previousTime:time,previousX:x,previousZ:z,previousSpeed:speed,speeds:[{time,speed}]};

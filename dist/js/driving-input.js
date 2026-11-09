@@ -43,8 +43,8 @@ export class DrivingController {
   update(keys,sim,dt){
     const step=clamp(Number.isFinite(dt)?dt:0,0,.1),q=sim.state.q;
     const lift=Number(held(keys,'Space')),holdKey=held(keys,'KeyH');
-    const activeManeuver=held(keys,'KeyW','KeyS','KeyA','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight');
-    const manualFlight=activeManeuver||!!lift||held(keys,'KeyB','KeyH');
+    const activeManeuver=held(keys,'KeyW','KeyS','KeyA','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyF');
+    const manualFlight=activeManeuver||!!lift||held(keys,'KeyB','KeyH')||(sim.contactCount>0&&held(keys,'ShiftLeft','ShiftRight'));
     if(this.landingAssist&&manualFlight){this.landingAssist=false;this.landingStatus='manual';}
     if(holdKey&&!this._holdKey)this.toggleAltitudeHold(sim);
     this._holdKey=holdKey;
@@ -60,10 +60,12 @@ export class DrivingController {
     const hardBrake=held(keys,'KeyB')||(go&&back)||this.landingAssist,direction=Number(go)-Number(back);
     const turn=Number(held(keys,'KeyA',...(this.airborne?[]:['ArrowLeft'])))-Number(held(keys,'KeyD',...(this.airborne?[]:['ArrowRight'])));
     const changingDirection=direction!==0&&direction*speed<-.3;
+    const drifting=!this.airborne&&held(keys,'ShiftLeft','ShiftRight')&&!hardBrake&&!changingDirection&&!lift&&!this.altHold;
+    const boosting=held(keys,'KeyF')&&!hardBrake&&!changingDirection&&!back;
     let throttle=0,brake=0;
     if(hardBrake||changingDirection)brake=1;
     else if(direction){throttle=direction;this.gear=direction>0?'D':'R';}
-    else brake=Math.abs(speed)<.4?.2:.1;
+    else brake=drifting||boosting?0:Math.abs(speed)<.4?.2:.1;
     // Reverse uses a low-speed torque governor, never a velocity clamp.
     if(direction<0&&!changingDirection&&!hardBrake&&speed<-6){
       throttle=-clamp((8+speed)/2,0,1);
@@ -73,7 +75,7 @@ export class DrivingController {
     // turns, so A/D lost much of its authority while the 650 kW drive accelerated.
     // Reserve grip for steering by reducing only the forward torque request;
     // tire forces still determine curvature, including reduced grip on ice.
-    const corneringBlend=!this.airborne&&turn!==0&&throttle>0?clamp((speed-4)/8,0,1):0;
+    const corneringBlend=!this.airborne&&!drifting&&turn!==0&&throttle>0?clamp((speed-4)/8,0,1):0;
     throttle*=1-.55*corneringBlend;
     // Brake has immediate priority; releasing a brake never leaves drive torque
     // opposed to it during a transition to reverse or forwards.
@@ -83,8 +85,10 @@ export class DrivingController {
     if(this.brake>0)this.throttle=0;
     const magnitude=Math.abs(speed),baseSteer=.52/(1+magnitude/28);
     // Keyboard steering follows a usable curve: full parking lock, then a
-    // target lateral acceleration of 0.7g. This does not add yaw or lateral grip.
-    const steeringLimit=Math.min(1,Math.atan(.7*sim.params.gravity*sim.params.wheelbase/Math.max(1,magnitude*magnitude))/baseSteer);
+    // nominal 0.7g cornering curve. Retain 30% of rack travel so a held key
+    // still turns the actual tires at speed; grip limits the resulting path.
+    // Handbrake drift allows the full rack for countersteering.
+    const steeringLimit=drifting?1:Math.max(.30,Math.min(1,Math.atan(.7*sim.params.gravity*sim.params.wheelbase/Math.max(1,magnitude*magnitude))/baseSteer));
     this.steer=approach(this.steer,turn*steeringLimit,step*(turn?5:8));
     const airBrake=this.airborne&&held(keys,'KeyB');
     const turnInAir=this.airborne&&this.flightSteering==='turn';
@@ -103,7 +107,7 @@ export class DrivingController {
     // require contact; the selected air mode uses yaw jets or lateral vectoring.
     const input={throttle:this.airborne?0:this.throttle,brake:this.brake,steer:this.steer,
       stabilize:flight,fan:false,wing:false,coastRegen:false,lift,
-      boost:held(keys,'ShiftLeft','ShiftRight')&&!hardBrake,
+      boost:boosting,handbrake:drifting?1:0,
       airMoveForward,airMoveRight,altHold:holding,targetHeight:this.targetHeight,
       pitch:this.airborne?Number(held(keys,'ArrowDown'))-Number(held(keys,'ArrowUp')):0,
       roll:this.airborne?Number(held(keys,'ArrowRight'))-Number(held(keys,'ArrowLeft')):0,

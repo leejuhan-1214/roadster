@@ -42,16 +42,16 @@ test('city braking respects the tire surface instead of forcing velocity to zero
   assert.equal(ice.frictionForceN,0);assert.ok(dry.state.pos.x<24);
 });
 
-test('restored Space lift and Shift rear boost use the finite tank, with B taking brake priority',()=>{
+test('restored Space lift and F rear boost use the finite tank, with B taking brake priority',()=>{
   const sim=new PhysicsSim(CITY_DRIVE_PARAMS),control=new DrivingController(),gas=sim.state.gas;
   advance(sim,control,keys('Space'),1.2);
   assert.ok(sim.state.pos.y-sim.restHeight>.5,'Space lifts the car through actual nozzle force');
   assert.equal(sim.contactCount,0);assert.ok(sim.state.gas<gas-10);
   const before=sim.state.vel.x;
-  advance(sim,control,keys('Space','ShiftLeft'),.6);
+  advance(sim,control,keys('Space','KeyF'),.6);
   assert.ok(sim.state.vel.x>before+1,'rear boost accelerates the rigid body');
   assert.ok(sim.thrusters[4].force>0&&sim.thrusters[5].force>0);
-  const brake=control.update(keys('ShiftRight','KeyB'),sim,STEP);
+  const brake=control.update(keys('KeyF','KeyB'),sim,STEP);
   assert.equal(brake.boost,false);assert.equal(brake.airBrake,true);assert.ok(brake.airMoveForward<0);
 });
 
@@ -98,7 +98,7 @@ test('keyboard steering recentres and reduces high-speed steering without invent
   assert.ok(control.steer>.99);
   sim.state.vel.x=40;
   for(let i=0;i<200;i++)control.update(keys('ArrowLeft'),sim,STEP);
-  assert.ok(control.steer<.08);assert.equal(sim.state.omega.length(),0);
+  assert.ok(control.steer>=.3&&control.steer<.35,'high-speed steering retains visible physical rack travel below parking lock');assert.equal(sim.state.omega.length(),0);
   for(let i=0;i<200;i++)control.update(keys(),sim,STEP);
   assert.equal(control.steer,0);
   const conflict=control.update(keys('KeyW','KeyS','KeyD','KeyA'),sim,STEP);

@@ -20,16 +20,25 @@ function moving(params={},speed=70/3.6){
   sim.wheels.forEach(w=>w.omega=speed/sim.params.wheelRadius);driver.throttle=1;
   return {sim,driver};
 }
-function turnRun(params,kph,code='KeyA',fullThrottle=false){
+function turnRun(params,kph,code='KeyA',{fullThrottle=false,legacySteering=false}={}){
   const {sim,driver}=moving(params,kph/3.6),initialGas=sim.state.gas;
+  let previousSteer=0;
   for(let i=0;i<1000;i++){
     const input=driver.update(keys('KeyW',code),sim,dt);
-    // A sustained full-torque request is the former keyboard behaviour.
+    // Keep the old rack curve and full drive torque as separate baselines:
+    // v1.19 already reserved drive torque but limited steering to ideal 0.7g.
+    if(legacySteering){
+      const speed=Math.abs(sim.state.vel.clone().applyQuaternion(sim.state.q.clone().invert()).x);
+      const baseSteer=.52/(1+speed/28);
+      const target=(code==='KeyA'?1:-1)*Math.min(1,Math.atan(.7*sim.params.gravity*sim.params.wheelbase/Math.max(1,speed*speed))/baseSteer);
+      previousSteer+=Math.max(-dt*5,Math.min(dt*5,target-previousSteer));input.steer=previousSteer;
+    }
     if(fullThrottle)input.throttle=1;
     sim.step(dt,input);
     assert.equal(sim.contactCount,4);assert.equal(sim.state.gas,initialGas);
   }
-  return {yaw:Math.atan2(Math.sin(sim.telemetry().attitude.yaw-spawnHeading),Math.cos(sim.telemetry().attitude.yaw-spawnHeading)),speed:sim.telemetry().horizontalSpeed,sim};
+  const pathHeading=Math.atan2(-sim.state.vel.z,sim.state.vel.x);
+  return {yaw:Math.atan2(Math.sin(sim.telemetry().attitude.yaw-spawnHeading),Math.cos(sim.telemetry().attitude.yaw-spawnHeading)),pathTurn:Math.atan2(Math.sin(pathHeading-spawnHeading),Math.cos(pathHeading-spawnHeading)),speed:sim.telemetry().horizontalSpeed,sim,driver};
 }
 
 test('actual Roadster chassis steers in both directions at city heading under held W',async()=>{
@@ -38,18 +47,26 @@ test('actual Roadster chassis steers in both directions at city heading under he
   try{
     prepareAssessmentVehicle(vehicle);configureVehicleFit(vehicle,profile);
     const params={...vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS};
-    const full=turnRun(params,70,'KeyA',true),left=turnRun(params,70),right=turnRun(params,70,'KeyD');
-    assert.ok(left.yaw>full.yaw*1.65,'reserving tire grip must improve actual heading response over full drive torque');
+    const full=turnRun(params,70,'KeyA',{fullThrottle:true}),previous=turnRun(params,70,'KeyA',{legacySteering:true}),left=turnRun(params,70),right=turnRun(params,70,'KeyD');
+    assert.ok(left.yaw>full.yaw+.1&&left.pathTurn>full.pathTurn+.1,'torque priority improves both body and travel direction with the same steering curve');
+    assert.ok(left.yaw>previous.yaw+.1&&left.pathTurn>previous.pathTurn+.1,'the wider physical steering improves on v1.19 with its torque priority retained');
     assert.ok(left.yaw>.4&&right.yaw<-.4,'A/D must turn the rigid chassis, not only its wheels');
     assert.ok(Math.abs(left.yaw+right.yaw)<.015,'left and right remain symmetric at the real spawn heading');
     assert.ok(left.speed<full.speed-3,'assist changes wheel drive request instead of inventing extra lateral force');
+    const {sim,driver}=left,gas=sim.state.gas;
+    for(let i=0;i<2000;i++){sim.step(dt,driver.update(keys('KeyW'),sim,dt));assert.equal(sim.contactCount,4);}
+    assert.equal(driver.steer,0);assert.equal(sim.wheels[0].steer,0);
+    assert.ok(Math.abs(sim.state.omega.y)<.01,'releasing steering settles yaw through tire forces');
+    assert.equal(sim.state.gas,gas,'normal turning and release do not use cold-gas thrust');
   }finally{disposeVehicle(vehicle);}
 });
 
-test('keyboard cornering improves full-accelerator turns at moderate and high road speeds',()=>{
+test('physical steering travel and torque priority independently improve the driven path',()=>{
   for(const kph of [40,100]){
-    const full=turnRun({},kph,'KeyA',true),assisted=turnRun({},kph);
-    assert.ok(assisted.yaw>full.yaw*1.4,kph+' km/h heading response improves');
+    const full=turnRun({},kph,'KeyA',{fullThrottle:true}),previous=turnRun({},kph,'KeyA',{legacySteering:true}),assisted=turnRun({},kph);
+    assert.ok(assisted.pathTurn>full.pathTurn+.1,kph+' km/h torque priority improves the velocity direction with steering unchanged');
+    assert.ok(assisted.pathTurn>previous.pathTurn+.025,kph+' km/h actual steering travel improves on the legacy 0.7g rack cap');
+    assert.ok(assisted.sim.wheels[0].steer>previous.sim.wheels[0].steer*1.4,'the visible wheel angle changes in the physical solver');
     assert.ok(assisted.speed>kph/3.6,'forward drive still accelerates while steering');
   }
 });

@@ -43,7 +43,7 @@ for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotat
   const sim=new PhysicsSim({...vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false});
   const buffer=new RenderStateBuffer(sim),control=new DrivingController(),renderer={vehicle,mode:'city'};
   for(const [key,sign]of [['KeyA',1],['KeyD',-1]]){
-    sim.reset('ground');control.reset();buffer.reset(sim);
+    sim.reset('ground');control.reset();buffer.reset(sim);vehicle.root.quaternion.identity();
     for(let i=0;i<150;i++){buffer.beforeStep();sim.step(.002,control.update(new Set([key,'KeyB']),sim,.002));buffer.afterStep(sim);}
     const pose=buffer.sample(.5);
     FlightScene.prototype.updateWheels.call(renderer,pose.wheels,sim.cg);
@@ -61,6 +61,30 @@ for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotat
     FlightScene.prototype.updateWheels.call(renderer,pose.wheels,sim.cg);
     updateVehicleExplosion(vehicle,0,{inspect:false});
     assert.ok(vehicle.wheels[0].rotation.y*sign>.4,'returning from structure inspection restores live steering');
+
+    // The city camera follows a yawed, rolling car. Check the actual tire axes
+    // after spin, interpolated steering and body rotation together, rather than
+    // inferring visible steering from a stopped wheel group's Euler angle.
+    sim.reset('ground');control.reset();
+    const heading=-1.22009,speed=70/3.6;
+    sim.state.q.setFromAxisAngle(new THREE.Vector3(0,1,0),heading);
+    sim.state.vel.set(Math.cos(heading)*speed,0,-Math.sin(heading)*speed);
+    sim.wheels.forEach(w=>w.omega=speed/sim.params.wheelRadius);
+    control.throttle=1;buffer.reset(sim);
+    for(let i=0;i<600;i++){buffer.beforeStep();sim.step(.002,control.update(new Set([key,'KeyW']),sim,.002));buffer.afterStep(sim);}
+    const moving=buffer.sample(.35);vehicle.root.quaternion.copy(moving.q);
+    FlightScene.prototype.updateWheels.call(renderer,moving.wheels,sim.cg);
+    updateVehicleExplosion(vehicle,0,{inspect:false});vehicle.root.updateMatrixWorld(true);
+    for(let i=0;i<4;i++){
+      const wheel=vehicle.wheels[i],angle=moving.wheels[i].steer;
+      assert.ok(Math.abs(moving.wheels[i].spinAngle)>10,'the visual test must include a genuinely rolling wheel');
+      if(i<2)assert.ok(angle*sign>.006,'front tires retain steering while the car moves');
+      else assert.equal(angle,0,'moving rear wheels remain unsteered');
+      assert.ok(Math.abs(wheel.rotation.y-angle)<1e-10,'moving wheel displays the physical angle without exaggeration');
+      const actual=axes[i].clone().applyQuaternion(wheel.userData.spinGroup.getWorldQuaternion(new THREE.Quaternion()));
+      const expected=new THREE.Vector3(Math.sin(angle),0,Math.cos(angle)).applyQuaternion(moving.q);
+      assert.ok(actual.angleTo(expected)<.011,'steered rolling tire stays aligned with its chassis-relative axle');
+    }
   }
   }finally{disposeVehicle(vehicle);}
 });

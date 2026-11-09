@@ -227,13 +227,14 @@ export class PhysicsSim {
     this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
     this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
+    this.handbrakeAmount=0;this.handbrakeForceN=0;
     this.motorState=evaluateElectricDrive({wheelOmega:[0,0,0,0],throttle:0,brake:0,batteryEnergyJ:this.state.batteryJ,dt:.002},p);
     this.manifoldPressure=this.state.pressure;this.massFlowKgS=0;this.electricPowerW=0;this.regenPowerW=0;this.driveLossW=0;this.tractionCut=1;
     this.history = [];
     this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
     for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
       w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
-      w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
+      w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
     return this.state;
   }
@@ -412,6 +413,12 @@ export class PhysicsSim {
     this.contactCount = 0;
     let steering = clamp(input.steer || 0, -1, 1) * .52 / (1 + Math.abs(bodyVelocity.x) / 28);
     const brakeAmount = clamp(input.brake || 0, 0, 1);
+    // The city handbrake acts on rear wheel rotation, not on vehicle velocity
+    // or yaw. Service braking has priority. It deliberately bypasses ABS, so
+    // a locked rear tire spends its friction budget opposing longitudinal
+    // slip and has less lateral authority through the same tire model.
+    const handbrakeAmount=brakeAmount>0?0:clamp(input.handbrake||0,0,1);
+    this.handbrakeAmount=handbrakeAmount;this.handbrakeForceN=0;
     const throttle = brakeAmount > 0 ? 0 : clamp(input.throttle || 0, -1, 1);
     const tireResultant = new Vector3();
     this.brakeForceN=0;this.rollingResistanceN=0;let maxSlip=0;
@@ -442,7 +449,8 @@ export class PhysicsSim {
       const fwd=new Vector3(Math.cos(wheel.steer),0,-Math.sin(wheel.steer)).applyQuaternion(s.q);fwd.addScaledVector(n,-fwd.dot(n)).normalize();
       const right=new Vector3().crossVectors(fwd,n).normalize(),ux=cornerVel.dot(fwd),uy=cornerVel.dot(right);
       const driveTorque=drive.wheelTorqueNm[index];
-      const frictionBrake=Math.max(0,brakeAmount*wheel.absFactor*3100-Math.abs(drive.wheelRegenTorqueNm[index]));
+      const rearHandbrake=wheel.isFront?0:handbrakeAmount*5200;
+      const frictionBrake=Math.max(0,brakeAmount*wheel.absFactor*3100-Math.abs(drive.wheelRegenTorqueNm[index]))+rearHandbrake;
       const omegaFor=fx=>{let omega=wheel.omega+(driveTorque-fx*p.wheelRadius-.025*wheel.omega)/p.wheelInertia*dt;return Math.sign(omega)*Math.max(0,Math.abs(omega)-frictionBrake/p.wheelInertia*dt);};
       const profile=p.friction<=.2?'ice':p.friction<=.7?'wet':'dry';
       const atForce=fx=>{const speed=(wheel.omega+omegaFor(fx))*.5*p.wheelRadius;return tireContactForces({surface:profile,normalLoad:normal,grounded:wheel.grounded,muPeak:Math.max(0,p.friction),rollingResistance:p.rollingResistance,forwardSpeed:ux,slipRatio:(speed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(speed)),slipAngle:Math.atan2(uy,Math.max(3,Math.abs(ux))),longitudinalStiffness:120000,corneringStiffness:70000});};
@@ -457,8 +465,11 @@ export class PhysicsSim {
       const contactForce=fwd.clone().multiplyScalar(fx+rolling).addScaledVector(right,fy);
       wheel.forceX=contactForce.x;wheel.forceY=contactForce.y;wheel.forceZ=contactForce.z;
       if(normal>0){tireResultant.add(contactForce);const lever=new Vector3(rCenter.x,surfaceY-s.pos.y,rCenter.z);applyAt(contactForce.clone().addScaledVector(n,normal),lever);}
-      if(brakeAmount>0&&normal>0)this.brakeForceN+=Math.max(0,-fx*Math.sign(ux));
-      wheel.driveTorque=drive.wheelDriveTorqueNm[index];wheel.regenTorque=drive.wheelRegenTorqueNm[index];wheel.brakeTorque=frictionBrake;
+      if((brakeAmount>0||rearHandbrake>0)&&normal>0){
+        const brakingForce=Math.max(0,-fx*Math.sign(ux));this.brakeForceN+=brakingForce;
+        if(rearHandbrake>0)this.handbrakeForceN+=brakingForce;
+      }
+      wheel.driveTorque=drive.wheelDriveTorqueNm[index];wheel.regenTorque=drive.wheelRegenTorqueNm[index];wheel.brakeTorque=frictionBrake;wheel.handbrakeTorque=rearHandbrake;
       wheel.omega=nextOmega;wheel.spinAngle+=nextOmega*dt;
     }
     this.frictionForceN=tireResultant.length();this.maxSlip=maxSlip;
@@ -628,6 +639,7 @@ export class PhysicsSim {
       gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
       horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
+      handbrakeAmount:this.handbrakeAmount,handbrakeForceN:this.handbrakeForceN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
       verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,
       temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
