@@ -3,7 +3,7 @@ import {createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDI
 import {LandingUI} from './landing-ui.js?v=20261107-fleet1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261107-fleet1';
-import {FlightScene} from './scene.js?v=20261109-assessment1';
+import {FlightScene} from './scene.js?v=20261109-assessment2';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -67,7 +67,7 @@ async function nextLanding(session){
     camera='orbit';scene.setCamera(camera);scene.frameStageStart(sim);$('camera-label').textContent='자유 카메라';
     renderStates.reset(sim);setPaused(false);$('vehicle-select').disabled=true;
     landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · '+activeVehicle.title+' · 착지 중');
-    if(matchMedia('(max-width:700px)').matches)$('left-panel').classList.remove('open');
+    if(matchMedia('(max-width:1000px)').matches)$('left-panel').classList.remove('open');
   }catch(error){if(landingSession===session){cancelLanding('실험 중단 · '+error.message);reset({cancel:false});}console.error(error);}
 }
 function stepSimulation(){
@@ -140,7 +140,7 @@ function selectPart(id){
   $('part-subtitle').textContent=entry.categoryLabel;
   $('part-card').hidden=false;
   renderPartCatalog();
-  if(matchMedia('(max-width:700px)').matches){$('left-panel').classList.remove('open');$('panel-toggle').textContent='☷ 부품 목록';}
+  if(matchMedia('(max-width:1000px)').matches){$('left-panel').classList.remove('open');$('panel-toggle').textContent='☷ 부품 목록';}
 }
 
 function updateUI(){
@@ -201,10 +201,10 @@ function setupUI(){
     else if(e.code==='Escape')$('left-panel').classList.remove('open');
   });
   document.addEventListener('visibilitychange',()=>{accumulator=0;renderStates.reset(sim);lastStamp=0;});
-  window.addEventListener('resize',()=>scene.resize());
+  window.addEventListener('resize',()=>{scene.resize();if(landingRun&&matchMedia('(max-width:1000px)').matches)$('left-panel').classList.remove('open');});
   $('world').addEventListener('pointerdown',()=>$('world').focus({preventScroll:true}));$('world').addEventListener('contextmenu',e=>e.preventDefault());
   scene.setHypothesesVisible(true);refreshPartCatalog();
-  if(matchMedia('(max-width:700px)').matches)$('left-panel').classList.add('open');
+  if(matchMedia('(max-width:1000px)').matches)$('left-panel').classList.add('open');
 }
 function animate(stamp){
   const frameMs=lastStamp?stamp-lastStamp:16.67,elapsed=lastStamp?Math.min((stamp-lastStamp)/1000,.1):1/60;lastStamp=stamp;

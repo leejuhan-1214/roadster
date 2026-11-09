@@ -370,7 +370,7 @@ export class FlightScene {
   }
   inspectionViewport() {
     const w=this.canvas?.clientWidth||1280,h=this.canvas?.clientHeight||720;
-    const panel=this.mode==='inspect'&&w>700?Math.min(360,w*.36):0;
+    const panel=this.mode==='inspect'&&w>1000?Math.min(360,w*.36):0;
     if(panel)this.camera.setViewOffset(w,h,-panel/2,0,w,h);else this.camera.clearViewOffset();
     return 1-panel/w;
   }
