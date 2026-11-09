@@ -1,3 +1,17 @@
+Roadster v1.15 — 전체 차체 39회 착지 비교 / 높이 상한 해제 / 강남역 도시 주행
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+런타임 커밋: de34376e417caf007192d470e5e8d333a0b0d680
+Actions: https://github.com/leejuhan-1214/roadster/actions/runs/42539444238 (build/deploy success)
+
+최신 요청은 v1.14의 주행 제거를 수정함: 01 착지 실험, 02 구조 탐색을 유지하고 03 도시 자유 주행 추가. 선택 도시는 사용자가 답한 서울 강남역 주변. 기존 공개 URL 배포 허가는 계속 유효.
+착지: 출발/제동 높이의 임의 상한 제거(유한한 0 이상 입력). 높이에 비례한 시간 제한, 높은 낙하의 희소 비행 기록과 접촉 10ms 최대 그래프/2ms 전체계측 유지. createLandingJobs로 13종×3방식39회 동일 높이/초기탱크 비교. 결과는 묶음 단위로78회 보존, 39회 결과가 잘리지 않음. 다차종 결과는 차체별3곡선 선택, 전체CSV 유지.
+도시: OSM 실제 강남역 약1.5×1.5km 도로500개/지상 건물윤곽1879개 오프라인 번들. 약1821개 화면 범위 건물, 도로/인도/차선/횡단보도/나무/가로등/미니맵. 지하상가 지상표시 제외. 건물 높이 누락값·외관·도로폭 일부는 가정. 거리/건물 충돌체 공간 인덱스, 묶음 렌더링. 월드UV 및 독립 노이즈로 노면 삼각형/줄무늬 해소. 출처 assets/city/provenance.json/LICENSE.txt, 수집 scripts/fetch-gangnam.mjs. 반드시 화면 OSM attribution 유지.
+주행: W/↑ 가속, S/↓ 전진 중 제동 후 후진, A/D/좌우 조향, Space/B 강제제동, C 추적/전방/자유 시점, R 출발 복귀. 조작 버튼으로 화면 페달 표시 가능. 고속 조향 완화, 후진은8m/s 부근 토크제한. 페달 해제 시0.10 블렌드 제동, 완충에서도 마찰제동으로 감속; 저속정지홀드. 마찰μ1.15/Crr.015 자체를 과장하지 않음. city는 기준질량 및 대기압 탱크, 공통 가상650kW구동계이며 실제 차종 엔진별 성능 재현 아님. lab/inspect로 나가면 도시 입력무효/기본실험조건 복구. 큰실험패널은도시에없음.
+
+검증: 전체234/234 PASS, JS구문/diff검사PASS, 최종Actions성공. 실제13개모델/맞춤기하로3m39회 자동물리완료. 브라우저0.3m39회 전체완료·결과39행·CSV39행 보존. 500m브라우저 자유낙하완료(첫접촉99.03m/s), 2000m자동검사완료. 로컬도시73km/h가속→제동0, 조향과전방카메라확인. 공개도시58km/h가속→제동0, BMW↔Roadster변경, 콘솔경고/오류없음. 공개코드/차량/도시자산75개HTTP200·SHA256일치.
+증거(상위 작업공간 outputs): landing-39-local.png, landing-39-comparison.csv, landing-500m-local.png, city-final-test.log, city-public-verification.json, Roadster-Gangnam-live.png. 공개탭1은도시주행Roadster출발점·추적카메라·화면조작숨김으로유지. 임시미리보기서버종료.
+
+--- 이전 기록 ---
 Roadster v1.14 — 착지 수행평가 전용 / 자연 분해 / 바퀴 회전축 수정
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 최종 런타임: b47be586f99d7f796bbe0e02d0f49267f5c5df80
