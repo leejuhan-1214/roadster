@@ -1,3 +1,21 @@
+Roadster v1.17 — 강남 랜드마크 재현 / WASD 직접 주행·A/D 조향 수정
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+런타임 커밋: 5e0552fe3a540097f37e34cee01d642d5a4a8ee9
+Actions: https://github.com/leejuhan-1214/roadster/actions/runs/42545502201 (build/deploy success)
+
+사용자 확인: 자율주행이라는 말은 WASD로 직접 자유 주행을 뜻함. 자동 운전 기능을 추가하지 않음. 기존 공개 URL에 추가 승인 없이 배포하는 허가 유효. 01 착지 실험·02 구조 탐색·13차체×3방식39회·높이 입력·Roadster 비행 조작 유지.
+
+건물: GT Tower East, 삼성 서초타운 3동, 교보타워, 부띠크모나코를 공식 건축 자료와 OSM에서 자체 외형 재현. GLB2개(5,752,360 +2,636,268B), 85,914삼각형·21재질 메시. GT 물결/삼성 매스·입면/교보 적갈색 쌍동·상부 연결/모나코 중정·파인 공간·기단 격자. 실측CAD·공식원본·강남전수복제라고 주장하지 말 것. Mobiltech 강남 FBX는 찾았으나 재배포 조건 때문에 사용·변환·배포하지 않음. 출처 및 추정 범위 assets/city-buildings/README.txt, manifest.json, provenance-extra.json, docs/gangnam-architecture-sources.json. 원본 자체 제작 메시 CC0, OSM 위치/윤곽 ODbL.
+
+원래 fetch-gangnam의 way 전용 수집으로 빠진 관계형 건물 outer rings11개를 manifest로 복구. relation이 여러 외곽선이면 각각 추가하고 배치용 convex envelope를 단일 충돌로 쓰지 않음. 삼성 및 교보/모나코의 기존 중복 부속 건물 제거. 실제 모델 주요 매스의 축정렬 띠 충돌706개로 해당 일반 충돌체 대체. 교보 중앙/모나코 중정 및 오목 공간/삼성 저층 기단·상부 연결부 빈공간 보존. GT는 중앙 직선 충돌로 파형 단순화. 주변 일반 건물 유리 외벽·로비·창틀·문·캐노피·핀·옥상 난간은 추정 장식. facade6배치와450m범위로 렌더비용 제한. 유리판과 바탕벽 간격 .18m/프레임.22m, 작은 색편차와 비반복 패턴으로 원거리 겹침 개선. 도시 카메라 near.25(다른모드.08), 고층 그림자거리650.
+
+조향: airborne일때 앞바퀴 steer0을 강제하던 분기 제거. 실제13차량 GLB의 타이어축→조향→렌더보간·분해/복원 연결 테스트. 공중에도바퀴방향표시되지만 공중타이어마찰은0유지. 일시정지 상태 운전 키/화면 페달은 자동재개; 로딩/모달/입력창보호 유지. 조향각과 지상/비행 상태 계기 추가. B,Space,Shift,H,Q/E,화살표,C,V,P,R,마우스 드래그/휠 유지.
+
+검증: 초기 전체249/249 PASS, 최종 건물통합+기하+도시13/13 PASS(통합6개포함), 최종재질수정후기하3/3 PASS, 문법22모듈/diff검사PASS, 최종Actions 전체check/test+deploy성공. 로컬 가속+좌회전53km/h, B정지, 일시정지운전키자동재개, 마우스자유시점 확인. 별도 로컬 QA뷰로6동의형태 검수. 공개 W가속46km/h·B정지0km/h·지상도로/건물로드·마우스자유시점·출발점 복귀 확인, 콘솔경고/오류없음. 공개107개실행/차체/환경/건물파일HTTP200·SHA256원본일치. 약55–56FPS관찰(전구간보장아님).
+
+증거(상위작업공간 outputs): buildings-test.log, buildings-integration-test.log, buildings-deployment-status.json, buildings-public-verification.json, buildings-landmark-QA.png, Roadster-Gangnam-v117-live.png. 공개 탭1은03도시주행·Roadster·지상·재생상태로 유지. 운전키즉시사용가능. 임시QA/preview서버종료완료. 캐시20261109-gangnam1. 재생성 scripts/prepare-landmark-footprints.mjs, build-gangnam-landmarks.mjs, prepare-extra-gangnam-buildings.mjs. 배포는main GitHubActions, force push/과거gh-pages스크립트사용금지.
+
+--- 이전 기록 ---
 Roadster v1.16 — 비행·조작 복원 / 실제 나무 모델 / 촬영 하늘·노면
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 런타임 커밋: 0035fe2c92ad1917f176e6c4331b48cbcfe4256c
