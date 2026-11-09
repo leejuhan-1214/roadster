@@ -1,3 +1,20 @@
+Roadster v1.14 — 착지 수행평가 전용 / 자연 분해 / 바퀴 회전축 수정
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+최종 런타임: b47be586f99d7f796bbe0e02d0f49267f5c5df80
+Actions: https://github.com/leejuhan-1214/roadster/actions/runs/42538124556 (build/deploy success)
+기능 구현 커밋 b5ddda5879bbfc06871467de9f884eac3c693725 + 좁은 화면 보완 b47be58.
+
+최신 사용자 범위: 바퀴가 틀어진 채 회전하는 문제 수정. 물리 수행평가(같은 높이의 착지 충격 비교와 충격을 줄이는 방법) 관련 기능만 유지. 수평 이동 시연·자유 주행 등 제거. 앞선 자연스러운 분해 요청도 함께 반영. 배포 재확인 면제는 계속 유효.
+화면은 착지 실험 / 구조 탐색 2개. 수동 주행·수평 시연·충돌 시연·스테이지·임의 GLB·일반 구동 설정과 해당 입력 경로 제거. 착지 3방식, 13차종 비교, 높이/제동/하강속도/서스펜션, 결과 표·그래프·CSV 유지. 물리 계산은 활성 착지 실험에서만 진행. 가상 장치는 탱크·서스펜션·추진기 3종만 남기고 구동모터·배터리·윙·팬 표시 제거. 공유 물리 엔진의 기존 검산 모듈은 보존.
+자연 분해: 원본 위치의 앞뒤/좌우를 유지해 조립체가 벌어짐. 재질 표면을 같은 조립체로 이동, 주차 조향/자전 상태에 독립, 쉘 중심 유지, 실제 부품 bounds와 열린 노즐덮개 기준 간격. 13차종 100% 조립체 AABB 무겹침, 39개 중간 단계 새 교차 없음, 정확 재조립 검증. 카메라 전체 범위 추적.
+바퀴: 타이어 형상 주축을 측정해 실제 허브 중심에서 중립 Z축으로 정렬. AMG 약25도 조향, Audi/MX5 캠버 보정. AMG Object_31의 휠 스포크/캡만 타이어 영역에서 추출하고 차체 엠블럼 보존. Object_14 조향 링크는 자전 제외. 13종 52개 타이어 축과 원본 삼각형 보존 검사.
+좁은 화면: 1000px 이하에서 설정 서랍 토글, 실험 시작/부품 선택 때 접기. 701–1000px 계측 폭 170px와 72px 헤더. 캐시 main/style/scene assessment2, 나머지 새 geometry/adapter 개별 버전.
+
+검증: 전체 자동 검사 218/218 PASS, JS 문법 PASS. 후속 레이아웃 관련 5/5 PASS 및 최종 Actions 전체 검사 성공. 공개 실행/자산 69개 HTTP200·SHA256 일치. 로컬 Roadster 3m 3방식 완료. 최종 공개 Roadster 3m 완만한 하강 완료: 최대 등가반력 27.16kN(2ms), 접촉 최대 하중 1.51g, 첫접촉 .39m/s, 기체 사용 77.54kg, 안정 착지. 공개 AMG 100% 분해: 48개 외형 메시+3개 가상장치, 스포크 타이어와 함께 이동, 콘솔 경고/오류 없음. 실차 CAD/실측 안전성 결과가 아님.
+증거: outputs/Roadster-landing-v114-live.png, outputs/Roadster-landing-v114-result.png, outputs/assessment-public-verification.json, outputs/assessment-test.log (상위 작업공간).
+공개 탭 1을 AMG 100% 구조 탐색으로 유지. README와 docs/landing-experiment.txt가 현재 설명, 구 README는 docs/version-history.md로 보존. 이전 기록의 자유 주행/수평 이동 기능 설명은 현재 기능이 아님.
+
+--- 이전 기록 ---
 Roadster v1.13 — 차체 13종 / 차종별 분해·매립 노즐 / 표면 재질
 2026-11-07: 기존3종+실차 외관10종 추가. CC BY4.0 원본아티스트 모델, 제조사CAD아님. AudiR8/GT500/AventadorRoadster/AMGGT/R34/930Turbo/SupraMkIV/Model3/MX5NA/Cybertruck2019concept. 공개제원·질량기준/가정은 dist/assets/vehicles/vehicle-specifications.md, 저작권·해시는 ATTRIBUTION.txt와fleet-provenance.json.
 차체별원본바퀴분리·축간균일정규화, 양자화Float32·음수스케일면방향보정, Audi앞33도주차조향중립화. 차체표면샘플로10노즐/덮개매립, 물리추력/모멘트좌표동일적용. Mercedes휠하우스회피. 100%부품크기기반정렬·간격·바닥위배치·정확조립복귀. 구조탐색카메라프레이밍/주변구조물가림제거.
