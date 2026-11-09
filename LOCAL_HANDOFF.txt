@@ -1,3 +1,21 @@
+Roadster v1.19 — 지상 A/D 조향 입력 수정 / 가속 중 코너링 보조
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+런타임 2a30a470f4f344fec89e652994f5635f622fad13
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42553673376 (build/deploy success)
+
+최신 사용자 답변: 방향 문제는 '지상에서 A/D로 회전할 때'. v1.18 완료 후 도착한 구체화이며 공중 기능 문제로만 해석하지 말 것. 추가 허락 없이 기존 Pages 배포하는 허가 유지. 기존 착지 실험·13차종39회·제동높이6회·도시실험·비행·강남환경 유지.
+
+확인한 실제 문제: 숫자 입력창을 클릭하면 기존 W 입력은 남고 새 A/D만 입력창 보호로 무시됨. 키보드 A/D와 동일 화면 버튼은 Set 하나를 공유해 한쪽을 놓으면 다른 쪽도 해제됨. main.js clearDriveInputs로 키보드Set/포인터Map을 각각 추적하고 합집합 생성. 편집focusin·blur·pause·reset·mode/visibility전환에서 원본과표시 함께해제. 숫자Enter→canvas포커스, Escape패널닫기복귀 유지. 화면페달도canvasfocus. 키보드입력도해당버튼held표시.
+
+지상물리 진단: 실제13차종기하 × 2/10/25m/s × 2방향 × 원점/실제spawnheading 156조건 모두올바른방향회전·4접지·무분사. 좌표축오류나공통물리엔진오류는재현안됨. 고속fullW의650kW가가속에마찰여유를써조향약화. 지상전진W+A/D(화살표포함)시4–12m/s에서점진적으로최대가속요청을1→.45로제한하는키보드코너링보조. 직선·저속·타력·제동·후진·공중은유지. 타이어/물리엔진그대로, yaw/속도강제대입·마찰추가없음. 실제Roadster70km/h에서2s회전13.5→27.6도. 실차OEM제어재현아닌교육용키보드보조. 정차A/D는바퀴만조향하며W/S이동때차체진행방향이바뀜.
+
+HUD: 현재노면μ는패널닫아도보임, 빙판/젖음주황표시. A/D입력방향과가속키, 입력창편집/Enter복귀, 코너링보조작동을기존계기공간에표시. 캐시20261109-ground1, v1.19.
+
+검증: 전체281/281PASS(150.5s), 23모듈문법·최종main문법·diffPASS, GitHubCI성공. 신규ground4tests=실제RoadsterGLB+spawn좌우/40·100kmh개선/μ별마찰상한·μ0무회전/직선·타력·제동·후진·비행유지. 신규input3회귀검사 포함assessment6PASS. 독립리뷰에서착지/비행회귀없음. 로컬CUA지상좌160→121도·우160→194도, 숫자편집시throttle0%·held없음·Enter후activeElementworld. 공개CUA지상좌160→117도·우160→201도확인, 추가조향좌27도·방향131도에서스크린샷저장. 공개콘솔경고/오류없음. 공개108파일HTTP200·SHA256일치. 공개탭1은03도시지상Roadster·건조·R초기화·재생상태, 패널닫힘으로유지.
+
+증거 outputs: ground-v119-tests.log,ground-v119-check.log,ground-steering-probe.jsonl,ground-cornering-final.log,ground-v119-deployment-status.json,ground-v119-public-verification.json,Roadster-v119-ground-steering.png. 임시미리보기서버종료. 기존main Pages workflow유지, forcepush안함.
+
+--- 이전 기록 ---
 Roadster v1.18 — 실제 방향 조작 수정 / 착지 제동높이 비교 / 도시 실험 복원
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 런타임 d27b585a805b503715ade3bc40349ac2e67c9b52
