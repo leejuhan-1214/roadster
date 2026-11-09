@@ -1,3 +1,19 @@
+Roadster v1.16 — 비행·조작 복원 / 실제 나무 모델 / 촬영 하늘·노면
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+런타임 커밋: 0035fe2c92ad1917f176e6c4331b48cbcfe4256c
+Actions: https://github.com/leejuhan-1214/roadster/actions/runs/42541646830 (build/deploy success)
+
+최신 사용자 요청: 이전 Roadster 비행 기능, B 제동, 마우스 시점 및 조작 버튼 복원. 실제 모델링 나무와 현실적인 하늘·재질. 기존 01 착지 실험 / 02 구조 탐색 / 03 도시 주행 및 13차종×3방식39회·높이 입력 유지. 과거 수동 비행 제거 지시는 이번 복원 요청으로 변경됨. 기존 공개 URL 배포 허가 유효.
+
+도시 조작: 지상 WASD/화살표 운전, B 제동. Space 상승, Shift 후방 추진, H 현재 고도 유지(지상 목표0.8m); Space가 H보다 우선하며 놓으면 저장 높이 복귀. 공중 WASD는 수평차체/짐벌 이동, Q/E 기수 회전, 화살표 자세제어, B는 유한 기체를 쓰는 역분사 감속. 속도/위치 직접변경 없음. H는15m상한 없이 힘 요청. 공중조작·압력저하·가스소진/추력한계 표시, 높이/수직속도/가스/압력 계기. V 힘 벡터, P 일시정지, C 추적/전방/자유, R 복귀·충전. 조작 버튼을 눌러 화면패널 표시. 마우스 첫 드래그로 자유시점 전환, 단순클릭은추적유지, 휠확대. 이전고도유지/분사노즐·덮개 표시 복원.
+도시 질량은 vehiclePhysics의 착지용 개조 질량과 동일하며900L/35.875MPa/300K 초기375kg기체 충전. 기존도로마찰/브레이크/TCS/ABS/전기구동계 유지. 실차순정비행하드웨어가 아닌 교육가정. 비행중가스가남아도압력하락으로고도유지실패가능. 착지실험조건은 별도로재설정.
+
+환경: Poly Haven Tree Small02/Rico Cilliers CC0 실제 원본 경량화. 465그루, 근거리11678/중거리3287삼각형,96m타일 인스턴싱,85m/280m LOD, 알파잎/수피노멀/충돌 유지. 모델+텍스처2.81MB. assets/trees LICENSE/provenance 및 재생성스크립트. Kloppenheim03 Pure Sky2K촬영HDR5.32MB 배경+PMREM반사, 실제태양방향 정렬. Asphalt02/ConcretePavement02 촬영재질3.57MB, 법선/거칠기/물리적반복크기. 창유리·벽면 거칠기분리. 도시그림자1024/12Hz, 메인렌더적응해상도. 환경출처 assets/environment/sky 및road. 하늘/나무/재질은 범용자산이며 강남실사스캔/수종실측은 아님.
+
+검증: 전체245/245 PASS, 수정후UI3/3 PASS, JS19모듈구문/diff검사PASS, 최종Actions전체검사성공. 로컬82km/h가속→B정지0, Space상승/H5m수평유지/W공중17km/h/B감속2km/h. 마우스첫드래그와클릭구분확인. 도시에서착지실험복귀후3m완만한하강완료:27.16kN/1.51g/첫접촉.39m/s/안정착지(기체77.54kg), 이전결과동일. 공개Space/H2.2m/Shift10km/h→B1km/h와H2.1m유지, 마우스자유시점, 나무/노면/하늘/노즐시각확인. 콘솔경고·오류없음. 56–60FPS관찰(기기/로드상태따라변동). 공개97개코드·차체·환경자산 HTTP200·SHA256일치.
+증거(상위작업공간 outputs): realism-test.log, realism-public-verification.json, realism-flight-local.png, Roadster-realism-live.png. 공개탭1은Roadster도시비행약2.1m/자유카메라/일시정지 상태로유지. ▶재생 또는R복귀·충전후운전가능. 미리보기서버종료. 캐시20261109-real1(나무모듈realism1).
+
+--- 이전 기록 ---
 Roadster v1.15 — 전체 차체 39회 착지 비교 / 높이 상한 해제 / 강남역 도시 주행
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 런타임 커밋: de34376e417caf007192d470e5e8d333a0b0d680
