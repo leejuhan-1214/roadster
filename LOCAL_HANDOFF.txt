@@ -1,3 +1,23 @@
+Roadster v1.20 — 주행 중 실제 앞바퀴 조향 / F 가속 / Shift 드리프트
+2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
+런타임 5e34f8d7f2863cb9199602f7db38dd76b19e6cd0
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42556097878 (build/deploy success)
+
+최신 요청: 달리는 중 바퀴 방향이 안 바뀌는 문제, 가속 F·드리프트 Shift. F가 W 대체인지 기존 Shift 부스트 이동인지 선택 질문을 보냈으나 답변은 없었다. 사전 고지한 기본 해석대로 W/S 운전 유지, 기존 추가 추진 가속을 F로 이동, Shift는 지상 후륜 핸드브레이크로 구현했다. 추후 사용자 답변이 오면 이 해석을 조정할 것. 추가 승인 없는 기존 Pages 배포 허가 유효.
+
+조향 진단: 실제 13개 모델의 휠 리그·렌더 보간·spin/body quaternion 축 정렬 오류는 재현되지 않았다. 고속 조향 제한이 1도 이하로 작아 바퀴가 안 꺾여 보임. 정상 조향에 속도별 랙 범위 최소30%를 남겼으며 실제 물리 각도와 표시가 일치한다. 100km/h 출발·2초 W+A 때 약0.96→4.22도, 주행방향 변화16.59→26.16도(동일토크보조). 고속4초조향+4초해제에서도 4접지·최대roll2.24도, 무마찰에서는 선회힘없음. 마찰·yaw/속도 강제조작없음. 드리프트시 역조향용 전체 랙 사용.
+
+F/Shift: F는 유한 기체를 쓰는 후방 부스트. F만 누를 때 자동 페달 해제 제동을 억제하고 B/후진입력 우선. ShiftLeft/Right는 지상 handbrake1: 후륜에만5200Nm 제동토크, ABS우회, 전륜조향·구동유지. 실제 후륜잠김/종횡슬립/마찰원에서 차체 회전. Shift 중 자동coastbrake0, 일반 코너링 토크제한해제. B는 전체 서비스브레이크 우선하며 boost/handbrake0. 공중Shift는 부스트/높이보정/공중제동을 만들지 않는다. Shift를 짧게 누르고 해제·역조향하여 회복. .4초 진입→초기yaw가0을지날때까지약1초 역조향→W직진1.4초 뒤 sideslip−.20도/yawrate+.17도/s. 오래 반대조향하면 반대편 선회가 시작됨.
+
+화면: F가속·Shift드리프트 버튼/키 설명/상태표시 연결, 제동게이지에 후륜핸드브레이크 반영. 버튼은8열. Shift 입력이 섞인 B 제동 측정은 무효 처리하여 기존 비교 오염 방지. 착지 자동입력은 handbrake0 경로 그대로. 이전 착지·구조·13차종39회·도시환경·비행 유지. 캐시20261109-drift1, v1.20.
+
+검증: 전체291/291 PASS(92.8s), 최종 통합22/22 PASS(7.0s),23모듈문법/최종main문법/diff PASS, 독립읽기리뷰 회귀없음, GitHubCI 성공. 초기 통합3실패는 이전조향비율 가정과회복후2초계속역조향하던검사조건에서 발생; 이전곡선/토크별실제경로비교 및 yaw0통과후직진의더엄격한회복기준으로 수정. 자동승인검토가 옛3실패를 들어 첫배포명령을 거절했으나, 해당22건 재검증성공·최종전체291성공 증거를 확인한 재시도는 승인되고 정상배포됨. 우회없음.
+
+실제 브라우저: 로컬F가속25km/h·기체375→341kg, Shift+A후20km/h·방위160→150·기체341유지. 공개F가속17km/h·375→353kg, Shift+A후11km/h·방위160→150·기체353유지. 공개W주행62km/h에서 앞바퀴좌6도·방위141도 확인 및 자유시점 전면 타이어 검수. 공개콘솔경고/오류없음. 공개108파일 HTTP200·SHA256일치. 공개탭1은03도시주행·Roadster·추적시점·R초기화·건조·재생·canvas포커스로 유지. 미리보기서버 종료.
+
+증거 outputs: drift-v120-tests.log,drift-v120-integration-final.log,drift-v120-check.log,wheel-steering-probe.jsonl,wheel-steering-sustained.jsonl,drift-v120-wheel-local.png,drift-v120-deployment-status.json,drift-v120-public-verification.json,Roadster-v120-live.png. 기존 main Pages workflow 유지.
+
+--- 이전 기록 ---
 Roadster v1.19 — 지상 A/D 조향 입력 수정 / 가속 중 코너링 보조
 2026-11-09 KST. 공개 URL: https://leejuhan-1214.github.io/roadster/
 런타임 2a30a470f4f344fec89e652994f5635f622fad13
