@@ -1,0 +1,12 @@
+Tree Small 02 — Rico Cilliers / Poly Haven
+Original asset: https://polyhaven.com/a/tree_small_02
+Source license: CC0 1.0 Universal (public domain dedication).
+https://polyhaven.com/license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Poly Haven permits copying, modifying and redistributing this asset, including commercial use, without attribution.
+The bundled tree is a modified, optimized version of the official source.
+Original bark/leaf textures are retained at 1k; leaves use an alpha mask.
+Geometry is reduced to two detail levels for real-time street rendering.
+Asset provenance, modifications and SHA-256 hashes are recorded in provenance.json.
+This model does not establish the real tree species or planting positions in Gangnam.

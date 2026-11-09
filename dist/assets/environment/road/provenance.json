@@ -1,0 +1,57 @@
+{
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "files": [
+    {
+      "publisherMd5": "fa19772d4817754c3efab708c651f5a8",
+      "modifications": "None",
+      "file": "asphalt_02_diff_1k.jpg",
+      "sha256": "1aa5ce99f58a625c71d48cfc3e68b65ca85ccb00f39e045c0a928608a0ea25ed",
+      "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+      "bytes": 731707
+    },
+    {
+      "publisherMd5": "338da8de636ea36133170578cac82e8e",
+      "modifications": "None",
+      "file": "asphalt_02_nor_gl_1k.jpg",
+      "sha256": "42a1c381b53204e83a982db2864479a30bc127bbdeebb1006f8ee51bff099df3",
+      "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+      "bytes": 1240122
+    },
+    {
+      "publisherMd5": "ec80a2929797c1b3ffc121c4f665585a",
+      "modifications": "None",
+      "file": "asphalt_02_rough_1k.jpg",
+      "sha256": "70ba3edc65525eb4dc366cf010ca7ae0bd34e0251ff0225c2dad627a873d0712",
+      "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_rough_1k.jpg",
+      "bytes": 544032
+    },
+    {
+      "publisherMd5": "bdee8d4deebb78609414453a5fb299e2",
+      "modifications": "None",
+      "file": "concrete_pavement_02_diff_1k.jpg",
+      "sha256": "e129ee6b59b6ed7f65b4c4c5ba9eb583d13d040ec26bef5d5d4e0080fe342e7a",
+      "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement_02/concrete_pavement_02_diff_1k.jpg",
+      "bytes": 1052909
+    }
+  ],
+  "assets": [
+    {
+      "sourceWidthMetres": 3,
+      "id": "asphalt_02",
+      "title": "Asphalt 02",
+      "author": "Rob Tuytel",
+      "source": "https://polyhaven.com/a/asphalt_02"
+    },
+    {
+      "sourceWidthMetres": 1.8,
+      "id": "concrete_pavement_02",
+      "title": "Concrete Pavement 02",
+      "author": "Charlotte Baglioni",
+      "source": "https://polyhaven.com/a/concrete_pavement_02"
+    }
+  ],
+  "downloaded": "2026-11-09",
+  "publisherLicenseUrl": "https://polyhaven.com/license",
+  "license": "CC0-1.0",
+  "scope": "Generic measured-scale photographed materials; not a scan of Gangnam roads."
+}

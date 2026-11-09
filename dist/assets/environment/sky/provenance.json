@@ -1,0 +1,20 @@
+{
+  "asset": "Kloppenheim 03 (Pure Sky)",
+  "assetId": "kloppenheim_03_puresky",
+  "authors": [{"name": "Greg Zaal", "role": "Original"}, {"name": "Jarod Guest", "role": "Sky Edits"}],
+  "source": "https://polyhaven.com/a/kloppenheim_03_puresky",
+  "metadata": "https://api.polyhaven.com/files/kloppenheim_03_puresky",
+  "download": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloppenheim_03_puresky_2k.hdr",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "publisherLicenseUrl": "https://polyhaven.com/license",
+  "downloaded": "2026-11-09",
+  "file": "kloppenheim_03_puresky_2k.hdr",
+  "bytes": 5324445,
+  "sha256": "cf28b37889826b2c9af5059b67110d11fff159d6cef31226ba117034e27c7287",
+  "publisherMd5": "06abf490739e537e9339d619a2a3c941",
+  "width": 2048,
+  "height": 1024,
+  "modifications": "None. Runtime PMREM filtering for roughness-dependent reflections.",
+  "scope": "Generic photographed daytime sky; not a Gangnam photograph or real-time weather."
+}

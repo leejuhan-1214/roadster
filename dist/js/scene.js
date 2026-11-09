@@ -1,5 +1,7 @@
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
-import {loadCityWorld} from './city-world.js?v=20261109-city1';
+import {loadCityWorld} from './city-world.js?v=20261109-real1';
+import {loadRealSky} from './sky-environment.js?v=20261109-real1';
+import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';
 import {sampleRoadSurface} from './road-surface.js?v=20261107-drive2';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -104,6 +106,9 @@ export class FlightScene {
     this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.clickStart=null;
     this._onDown=e=>{
       this.clickStart=[e.clientX,e.clientY];
+      // Arm OrbitControls on pointer-down so the first city drag works. A click
+      // only focuses the canvas; switching from chase waits for actual movement.
+      if(this.mode==='city'&&this.cameraName!=='orbit'){this.cityOrbitPending=true;this.controls.enabled=true;}
       if(this.mode!=='inspect'&&this.mode!=='city'&&this.cameraName!=='orbit'){this.setCamera('orbit');this.onCameraChange('orbit');}
       if(e.pointerType==='touch'){
         this.touchPointers.set(e.pointerId,new THREE.Vector2(e.clientX,e.clientY));
@@ -111,6 +116,7 @@ export class FlightScene {
       }
     };
     this._onMove=e=>{
+      if(this.cityOrbitPending&&this.clickStart&&Math.hypot(e.clientX-this.clickStart[0],e.clientY-this.clickStart[1])>4){this.cityOrbitPending=false;this.setCamera('orbit');this.onCameraChange('orbit');}
       if(!this.touchPointers.has(e.pointerId))return;
       this.touchPointers.get(e.pointerId).set(e.clientX,e.clientY);
       if(this.mode==='inspect'&&this.touchPointers.size===2){
@@ -126,8 +132,9 @@ export class FlightScene {
         this.setExplode(this.explodeTarget-clamp(pixels,-160,160)*.0015,true);
       }else if(this.cameraName!=='orbit'){this.setCamera('orbit');this.onCameraChange('orbit');}
     };
-    this._onCancel=e=>{this.touchPointers.delete(e.pointerId);this.pinchDistance=0;this.clickStart=null;};
+    this._onCancel=e=>{this.touchPointers.delete(e.pointerId);this.pinchDistance=0;this.clickStart=null;this.cityOrbitPending=false;this.controls.enabled=this.cameraName==='orbit';};
     this._onUp=e=>{
+      if(this.cityOrbitPending){this.cityOrbitPending=false;this.controls.enabled=this.cameraName==='orbit';}
       this.touchPointers.delete(e.pointerId);this.pinchDistance=0;
       if(this.mode!=='inspect'||!this.clickStart||Math.hypot(e.clientX-this.clickStart[0],e.clientY-this.clickStart[1])>6)return;
       const r=canvas.getBoundingClientRect();this.pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
@@ -141,6 +148,11 @@ export class FlightScene {
     this.createEnvironment();this.roadRelief.userData.dynamicGeometry=true;this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
     this.inspectionOccluders=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.groundSurface&&o!==this.roadRelief&&o!==this.contactShadow);
     this.labEnvironment=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.contactShadow);
+    this.skyReady=loadRealSky(this.scene,this.renderer).then(sky=>{
+      this.realSky=sky;this.sky.visible=false;this.sunDirection=sky.sunDirection;
+      this.sun.intensity=2.2;
+      for(const light of this.scene.children)if(light.isHemisphereLight)light.intensity=.5;
+    }).catch(error=>{console.warn('실사 하늘 로드 실패 · 기본 하늘 유지',error);});
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
@@ -286,16 +298,30 @@ export class FlightScene {
       for(const object of this.labEnvironment)object.visible=mode!=='city'&&(mode!=='inspect'||!this.inspectionOccluders.includes(object));
     }
     if(this.city)this.city.root.visible=mode==='city';
+    if(this.renderer){this.renderer.shadowMap.enabled=mode==='city'||this.quality==='detail';this.renderer.shadowMap.needsUpdate=true;}
     if(this.scene?.fog)this.scene.fog.density=mode==='city'?.0015:.0025;
     if(this.marks){this.marks.count=0;this.markIndex=0;}
     if(this.stageVisual)this.stageVisual.visible=mode!=='inspect';
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
     this.applyInspectorVisibility?.();
   }
-  setCamera(camera) {this.cameraName=camera;this.controls.maxPolarAngle=Math.PI*.485;this.controls.enabled=camera==='orbit';this.controls.enableZoom=this.mode!=='inspect';}
+  setCamera(camera) {
+    if(this.mode==='city'&&camera==='orbit'&&this.cameraName==='hood'&&this.vehicle){
+      const p=this.vehicle.root.position;this.controls.target.copy(p).add(new THREE.Vector3(0,.4,0));
+      this.camera.position.copy(p).add(new THREE.Vector3(-6,3.2,5).applyAxisAngle(UP,this.lastCameraHeading||0));
+      this.camera.lookAt(this.controls.target);
+    }
+    this.cameraName=camera;this.controls.maxPolarAngle=Math.PI*.485;this.controls.enabled=camera==='orbit';this.controls.enableZoom=this.mode!=='inspect';
+  }
   async loadCity(){
     if(this.city)return this.city;
-    this.cityPromise??=loadCityWorld().then(city=>{this.city=city;city.root.visible=this.mode==='city';this.scene.add(city.root);return city;}).catch(error=>{this.cityPromise=null;throw error;});
+    this.cityPromise??=loadCityWorld().then(async city=>{
+      this.city=city;city.root.visible=this.mode==='city';this.scene.add(city.root);
+      for(const name of ['OSM building facades','OSM building roofs']){const mesh=city.root.getObjectByName(name);if(mesh)mesh.castShadow=true;}
+      this.citySurfaces=await applyCitySurfaces(city,this.renderer);
+      if(!this.citySurfaces.loaded)console.warn('촬영 재질 로드 실패 · 기본 재질 유지',this.citySurfaces.error);
+      return city;
+    }).catch(error=>{this.cityPromise=null;throw error;});
     return this.cityPromise;
   }
   frameLandingStart(sim){
@@ -348,7 +374,7 @@ export class FlightScene {
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
-      if(part&&this.mode==='city'&&entry.kind==='hypothesis'){part.visible=false;continue;}
+      if(part&&this.mode==='city'&&entry.kind==='hypothesis'){part.visible=entry.id==='thrusters';continue;}
       if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId?['wing','tank','battery','suspension']:[])].includes(entry.id));
     }
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
@@ -496,6 +522,7 @@ export class FlightScene {
     for(let i=0;i<(this.vehicle.valveIndicators?.length||0);i++){const valve=this.vehicle.valveIndicators[i];valve.scale.y=.35+.65*(thrusters[i]?.opening||0);}
     const lamp=this.vehicle.tank?.userData.supplyLamp;if(lamp)lamp.scale.setScalar(.7+.3*Math.min(1,(sim.massFlowKgS||0)/50));
     if(this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
+    if(this.mode==='city')this.roadRelief.visible=false;
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
     for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
     this.vehicle.root.visible=!this.hasCustomModel||this.mode==='inspect';
@@ -524,7 +551,9 @@ export class FlightScene {
     this.contactShadow.rotation.z=-Math.atan2(tmpV.set(1,0,0).applyQuaternion(q).z,tmpV.x);
     this.contactShadow.material.opacity=.65*Math.exp(-Math.max(0,position.y-.6)*.35);
     const height=Math.max(0,position.y-.6);this.contactShadow.scale.setScalar(1+height*.065);
-    this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);this.sun.target.position.copy(position);this.sun.target.updateMatrixWorld();
+    if(this.sunDirection)this.sun.position.copy(position).addScaledVector(this.sunDirection,50);
+    else this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);
+    this.sun.target.position.copy(position);this.sun.target.updateMatrixWorld();
     this.sky.position.set(position.x,position.y,position.z);
     if(this.stageVisual){
       updateStageVisual(this.stageVisual,options.stageProgress||0,this.elapsed);
@@ -532,7 +561,7 @@ export class FlightScene {
       for(const [id,g] of this.stageVisual.userData.obstacles){const mat=g.children[0]?.material;if(mat?.emissive){mat.emissive.setHex(0xff6e34);mat.emissiveIntensity=hit?.id===id?Math.max(0,1-(sim.state.time-hit.lastTime)/1.4)*.8:0;}}
     }
     this.updateCamera(view,dt);
-    this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=1/20){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
+    this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=(this.mode==='city'?1/12:1/20)){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
     this.renderer.render(this.scene,this.camera);
   }
 
@@ -630,10 +659,11 @@ export class FlightScene {
     this.canvas.removeEventListener('pointermove',this._onMove,true);this.canvas.removeEventListener('pointercancel',this._onCancel,true);
     this.canvas.removeEventListener('wheel',this._onWheel,true);this.touchPointers.clear();this.controls.dispose();
     if(this.stageVisual){disposeStageVisual(this.stageVisual);this.stageVisual=null;}
+    this.citySurfaces?.dispose();if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}
     this.scene.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});
     for(const vehicle of this.vehicleCache?.values()||[])disposeVehicle(vehicle);this.vehicleCache?.clear();
     const environmentTextures=new Set();for(const material of Object.values(this.environmentMaterials||{})){for(const value of Object.values(material))if(value?.isTexture)environmentTextures.add(value);material.dispose();}
     for(const texture of environmentTextures)texture.dispose();
-    this.environmentTarget?.dispose();this.renderer.dispose();
+    this.realSky?.dispose();this.environmentTarget?.dispose();this.renderer.dispose();
   }
 }

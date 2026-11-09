@@ -1,0 +1,19 @@
+Photographed city surface materials from Poly Haven
+
+Asphalt 02 — Rob Tuytel
+https://polyhaven.com/a/asphalt_02
+Original sampled width: 3 metres.
+Included: unchanged 1K diffuse, OpenGL normal and roughness JPG maps.
+
+Concrete Pavement 02 — Charlotte Baglioni
+https://polyhaven.com/a/concrete_pavement_02
+Original sampled width: 1.8 metres.
+Included: unchanged 1K diffuse JPG map.
+
+All included assets: CC0 1.0 Universal (public-domain dedication).
+https://creativecommons.org/publicdomain/zero/1.0/
+https://polyhaven.com/license
+
+These are generic photographed materials, not scans of Gangnam roads. They change
+rendered surface shading only; the simulation's road height and friction model
+remain independent. See provenance.json for original URLs, sizes and hashes.

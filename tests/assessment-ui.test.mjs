@@ -8,7 +8,9 @@ const main=await readFile(new URL('../dist/js/main.js',import.meta.url),'utf8');
 test('entry exposes landing, structure and a separate city without retired demonstrations',()=>{
   assert.deepEqual([...page.matchAll(/data-mode="([^"]+)"/g)].map(m=>m[1]),['lab','inspect','city']);
   for(const id of ['level-demo','collision-demo','stage-start','coast-test','brake-test','model-file','params-open','drive-panel'])assert.ok(!page.includes('id="'+id+'"'),id+' must not remain an interactive feature');
-  assert.ok(!page.includes('data-key='),'old manual flight controls stay removed');
+  assert.ok(!page.includes('data-key='),'obsolete duplicate controls stay removed');
+  for(const key of ['KeyW','KeyA','KeyS','KeyD','KeyB','Space','ShiftLeft','KeyQ','KeyE'])assert.ok(page.includes('data-drive="'+key+'"'),'restored city control '+key);
+  assert.ok(page.includes('id="city-hover"'),'altitude hold has an on-screen control');
   for(const source of ['controls.js','flight-plan.js','friction-experiment.js','stage.js'])assert.ok(!main.includes("from './"+source),'retired controllers are not loaded by the entry');
   assert.match(main,/landingRun&&mode==='lab'/,'a landing trial stays scoped to the lab');
   assert.match(main,/sim\.step\(LANDING_STEP,landingRunInput\(landingRun,sim\)\)/,'landing trials retain controlled inputs');

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261109-realism1';
 
 const UP=new THREE.Vector3(0,1,0),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const palette=[0x9aa6ac,0xaeb9bd,0x81939d,0xc3beb3,0x8598a5,0xb8c0c3];
@@ -137,7 +138,7 @@ function labelTexture(text){
   ctx.fillStyle='#167857';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#d0f2e6';ctx.lineWidth=6;ctx.strokeRect(5,5,502,118);ctx.fillStyle='white';ctx.font='bold 45px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,63,480);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
-export function createCityWorld(data){
+export function createCityWorld(data,{treeAsset=null}={}){
   const plan=createCityPlan(data),root=new THREE.Group();root.name='Seoul Gangnam · OpenStreetMap';
   const neutral=new THREE.Color(0xffffff),asphaltColor=new THREE.Color(0xabb3b5),sidewalkColor=new THREE.Color(0xb6b4aa),white=new THREE.Color(0xd9ddda),yellow=new THREE.Color(0xe5b950);
   const asphaltTexture=cityTexture('asphalt'),wallTexture=cityTexture('wall'),concreteTexture=cityTexture('concrete');
@@ -146,7 +147,7 @@ export function createCityWorld(data){
   const base=new THREE.Mesh(new THREE.PlaneGeometry(plan.bounds.maxX-plan.bounds.minX+500,plan.bounds.maxZ-plan.bounds.minZ+500),new THREE.MeshStandardMaterial({color:0x92968a,roughness:1}));base.rotation.x=-Math.PI/2;base.position.y=-.04;root.add(base);
   const streets=accumulator(),walks=accumulator(),paint=accumulator(),walls=accumulator(),roofs=accumulator();
   const junctionByKey=new Map(plan.junctions.map(j=>[j.point.map(n=>n.toFixed(1)).join(','),j]));
-  const poles=[],arms=[],lamps=[],trunks=[],crowns=[],roofBoxes=[];
+  const poles=[],arms=[],lamps=[],trunks=[],trees=[],roofBoxes=[];
   const spatialBuildings=new Map();
   for(const b of plan.buildings){const key=Math.floor(b.center[0]/60)+','+Math.floor(b.center[1]/60);if(!spatialBuildings.has(key))spatialBuildings.set(key,[]);spatialBuildings.get(key).push(b);}
   const occupied=(x,z)=>{const gx=Math.floor(x/60),gz=Math.floor(z/60);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of spatialBuildings.get((gx+dx)+','+(gz+dz))||[])if(pointInPolygon(x,z,b.points))return true;return false;};
@@ -175,7 +176,11 @@ export function createCityWorld(data){
       const inward=-side,tip=point(t,side*(width/2+.15));
       arms.push([(p[0]+tip[0])/2,6.75,(p[1]+tip[1])/2,1.65,.12,.12,Math.atan2(-s.dx,s.dz)]);
       lamps.push([tip[0],6.7,tip[1],.75,.14,.32,Math.atan2(-s.dz,s.dx)]);
-      const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)){trunks.push([tree[0],1.4,tree[1],.19,2.8,.19]);crowns.push([tree[0],3.6,tree[1],1.7,2.1,1.7]);}
+      const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)){
+        const variation=hash(s.road.id+t*101+side*73),height=5.8+variation*1.4;
+        trunks.push([tree[0],height*.28,tree[1],.21,height*.56,.21]);
+        trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2});
+      }
     }
     if(signs<14&&s.road.name&&s.length>65&&width>=11&&hash(s.road.id)>.35){
       const texture=labelTexture(s.road.name);if(texture){const sign=new THREE.Mesh(new THREE.PlaneGeometry(5.6,1.4),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));const p=point(19,width/2+1.9);sign.position.set(p[0],5.4,p[1]);sign.rotation.y=Math.atan2(s.dx,s.dz);root.add(sign);signs++;}
@@ -198,18 +203,19 @@ export function createCityWorld(data){
     if(b.footprint>200&&pointInPolygon(b.center[0],b.center[1],points))roofBoxes.push([b.center[0],b.height+.7,b.center[1],2.7,1.4,2.1]);
   }
   root.add(mesh(walks,walkMaterial,'real road sidewalks'),mesh(streets,roadMaterial,'OSM road network'),mesh(paint,paintMaterial,'lane markings and crossings'),mesh(walls,wallMaterial,'OSM building facades'),mesh(roofs,roofMaterial,'OSM building roofs'));
-  const steel=new THREE.MeshStandardMaterial({color:0x74818a,roughness:.55,metalness:.55}),light=new THREE.MeshStandardMaterial({color:0xe0e8df,emissive:0xa9b5a3,emissiveIntensity:.25,roughness:.55}),bark=new THREE.MeshStandardMaterial({color:0x716451,roughness:1}),leaf=new THREE.MeshStandardMaterial({color:0x42734d,roughness:1});
+  const steel=new THREE.MeshStandardMaterial({color:0x74818a,roughness:.55,metalness:.55}),light=new THREE.MeshStandardMaterial({color:0xe0e8df,emissive:0xa9b5a3,emissiveIntensity:.25,roughness:.55});
   instanced(root,new THREE.CylinderGeometry(1,1,1,6),steel,poles,'streetlight poles');instanced(root,new THREE.BoxGeometry(1,1,1),steel,arms,'streetlight arms');instanced(root,new THREE.BoxGeometry(1,1,1),light,lamps,'streetlight lamps');
-  instanced(root,new THREE.CylinderGeometry(1,1,1,5),bark,trunks,'street trees');instanced(root,new THREE.IcosahedronGeometry(1,1),leaf,crowns,'tree crowns');instanced(root,new THREE.BoxGeometry(1,1,1),steel,roofBoxes,'rooftop equipment');
+  const treeGroves=createTreeGroves(treeAsset,trees);root.add(treeGroves);
+  instanced(root,new THREE.BoxGeometry(1,1,1),steel,roofBoxes,'rooftop equipment');
   for(const [kind,items]of [['lamp',poles],['tree',trunks]])items.forEach((t,i)=>plan.obstacles.push({id:kind+'-'+i,center:[t[0],t[1],t[2]],size:[t[3]*2,t[4],t[5]*2]}));
   const bins=new Map(),cell=80;
   plan.obstacles.forEach((box,index)=>{const [x,,z]=box.center,[w,,d]=box.size;for(let gx=Math.floor((x-w/2)/cell);gx<=Math.floor((x+w/2)/cell);gx++)for(let gz=Math.floor((z-d/2)/cell);gz<=Math.floor((z+d/2)/cell);gz++){const key=gx+','+gz;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(index);}});
   const obstaclesNear=(x,z,radius=80)=>{const indices=new Set();for(let gx=Math.floor((x-radius)/cell);gx<=Math.floor((x+radius)/cell);gx++)for(let gz=Math.floor((z-radius)/cell);gz<=Math.floor((z+radius)/cell);gz++)for(const index of bins.get(gx+','+gz)||[])indices.add(index);return [...indices].map(i=>plan.obstacles[i]);};
   const nearestRoadName=(x,z)=>{let best=Infinity,name='강남역 주변';for(const s of plan.segments){const t=clamp((x-s.a[0])*s.dx+(z-s.a[1])*s.dz,0,s.length),d=Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t);if(d<best&&s.road.name){best=d;name=s.road.name;}}return name;};
-  return {...plan,root,obstaclesNear,nearestRoadName,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
+  return {...plan,root,treeGroves,treePlacements:trees,obstaclesNear,nearestRoadName,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
 }
 export async function loadCityWorld(){
-  const response=await fetch(new URL('../assets/city/gangnam.json',import.meta.url));
+  const [response,treeAsset]=await Promise.all([fetch(new URL('../assets/city/gangnam.json',import.meta.url)),loadCityTreeAsset()]);
   if(!response.ok)throw new Error('강남 도로 데이터를 불러오지 못했습니다.');
-  return createCityWorld(await response.json());
+  return createCityWorld(await response.json(),{treeAsset});
 }

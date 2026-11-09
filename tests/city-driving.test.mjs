@@ -36,10 +36,60 @@ test('accelerator responds and pedal release slows with friction even at a full 
 test('city braking respects the tire surface instead of forcing velocity to zero',()=>{
   const dry=new PhysicsSim(CITY_DRIVE_PARAMS),ice=new PhysicsSim({...CITY_DRIVE_PARAMS,friction:0});
   dry.reset('rolling');ice.reset('rolling');
-  advance(dry,new DrivingController(),keys('Space'),3);
-  advance(ice,new DrivingController(),keys('Space'),3);
+  advance(dry,new DrivingController(),keys('KeyB'),3);
+  advance(ice,new DrivingController(),keys('KeyB'),3);
   assert.ok(Math.abs(dry.state.vel.x)<.02);assert.ok(ice.state.vel.x>19);
   assert.equal(ice.frictionForceN,0);assert.ok(dry.state.pos.x<24);
+});
+
+test('restored Space lift and Shift rear boost use the finite tank, with B taking brake priority',()=>{
+  const sim=new PhysicsSim(CITY_DRIVE_PARAMS),control=new DrivingController(),gas=sim.state.gas;
+  advance(sim,control,keys('Space'),1.2);
+  assert.ok(sim.state.pos.y-sim.restHeight>.5,'Space lifts the car through actual nozzle force');
+  assert.equal(sim.contactCount,0);assert.ok(sim.state.gas<gas-10);
+  const before=sim.state.vel.x;
+  advance(sim,control,keys('Space','ShiftLeft'),.6);
+  assert.ok(sim.state.vel.x>before+1,'rear boost accelerates the rigid body');
+  assert.ok(sim.thrusters[4].force>0&&sim.thrusters[5].force>0);
+  const brake=control.update(keys('ShiftRight','KeyB'),sim,STEP);
+  assert.equal(brake.boost,false);assert.equal(brake.airBrake,true);assert.ok(brake.airMoveForward<0);
+});
+
+test('H captures altitude once per press and respects Space override above the old 15 m limit',()=>{
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false}),control=new DrivingController();
+  sim.reset('flight');sim.state.pos.y=sim.restHeight+30;sim.state.vel.set(0,0,0);
+  const initial=sim.state.pos.clone(),gas=sim.state.gas;
+  const command=control.update(keys('KeyH'),sim,STEP);
+  assert.equal(control.altHold,true);assert.equal(control.targetHeight,30);assert.equal(command.verticalAcceleration,0);
+  assert.deepEqual(sim.state.pos,initial,'controller must not write pose');
+  advance(sim,control,keys('KeyH'),.3);assert.equal(control.altHold,true,'key repeat cannot toggle hold off');
+  advance(sim,control,keys(),.7);
+  assert.ok(Math.abs(sim.state.pos.y-initial.y)<.15,'hold keeps the captured 30 m target');
+  assert.ok(sim.state.gas<gas-10);
+  const lift=control.update(keys('Space'),sim,STEP);
+  assert.equal(lift.lift,1);assert.equal(lift.altHold,false);assert.equal(lift.verticalAcceleration,undefined);
+  const resumed=control.update(keys(),sim,STEP);assert.equal(resumed.altHold,true);
+  control.update(keys('KeyH'),sim,STEP);assert.equal(control.altHold,false);
+  control.reset();assert.equal(control.altHold,false);assert.equal(control.airborne,false);
+});
+
+test('air WASD steers gimbals while B slows with gas and cannot brake an empty tank in vacuum',()=>{
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false}),control=new DrivingController();
+  sim.reset('flight');sim.state.pos.y=sim.restHeight+20;sim.state.vel.set(8,0,0);
+  const request=control.update(keys('KeyW','KeyD','ArrowUp','KeyQ'),sim,STEP);
+  assert.equal(request.throttle,0);assert.equal(request.steer,0);
+  assert.equal(request.airMoveForward,1);assert.equal(request.airMoveRight,1);
+  assert.equal(request.pitch,-1);assert.equal(request.yaw,1);
+  const gas=sim.state.gas;
+  advance(sim,control,keys('KeyB'),1.5);
+  assert.ok(sim.state.vel.x<4,'air brake applies opposing nozzle force');
+  assert.ok(sim.state.gas<gas-10);assert.equal(sim.contactCount,0);
+  assert.ok(Math.abs(sim.state.q.x)<.03&&Math.abs(sim.state.q.z)<.03,'vectored braking holds the chassis level');
+  const empty=new PhysicsSim({...CITY_DRIVE_PARAMS,tankPressureMPa:.101325,aeroEnabled:false,roadRoughness:0});
+  empty.reset('flight');empty.state.pos.y=empty.restHeight+50;empty.state.vel.set(8,0,0);
+  advance(empty,new DrivingController(),keys('KeyB'),1);
+  assert.ok(Math.abs(empty.state.vel.x-8)<1e-9,'without gas or aerodynamic drag, B cannot slow airborne horizontal motion');
+  assert.equal(empty.totalThrust,0);assert.equal(empty.contactCount,0);
 });
 
 test('keyboard steering recentres and reduces high-speed steering without inventing yaw',()=>{
