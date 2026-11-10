@@ -1,3 +1,11 @@
+Roadster v1.23 — 실험 전 자유 조종 / 분사 화면 버튼 제거 / 상세 README·Claude 인계
+2026-11-10. 런타임 d47bbf3b589b9b7d043e8eed029672134cb0b334. Actions42772724037 build/deploy성공(게시약4분지연).
+freeDriving()은city 또는 lab&&!landingSession. 실험 전WASD/Space/F/Shift/B/H/QE/화살표를기존DrivingController로전달. 측정중은Space수동분사만유지. 실험start의reset/createLandingRun으로원점·설정높이·속도/각속도0·수평·탱크충전. 완료후R로자유조종복귀. Space화면버튼과참조제거,landing-controls의button은optional.
+README확장:조작,상태경계,수행평가절차,물리해석,코드구조,CSV필드,로컬실행,배포/장애대응. CLAUDE_HANDOFF_PROMPT.txt추가.
+검증299/299PASS,25모듈문법검사/diff검사통과. 구형VM입력테스트는새freeDriving의존성과lab세션상태를갱신하고lab자유/측정경계추가. 로컬CUA실험전Space상승3.88m·기체307.8kg,실험시375kg복원·3m낙하첫접촉7.67m/s. 공개파일검증outputs/free-v123-public-verification.json.
+배포사용자승인유효. 상세후속지침은README와CLAUDE_HANDOFF_PROMPT.txt.
+
+--- 이전 기록 ---
 Roadster v1.22 — 착지 실험 Space 수동 상승 분사
 2026-11-10 KST. https://leejuhan-1214.github.io/roadster/
 런타임 d28603c57d2a3181769b9e79b1b6cd92b3f731fa
