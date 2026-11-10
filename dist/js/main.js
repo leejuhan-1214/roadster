@@ -6,8 +6,8 @@ import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-seoul1';
 import {LandingUI} from './landing-ui.js?v=20261110-seoul1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees1';
-import {FlightScene} from './scene.js?v=20261111-trees1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees2';
+import {FlightScene} from './scene.js?v=20261111-trees2';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -330,7 +330,8 @@ function updateCityHUD(t){
   $('city-road').textContent=scene.city?.nearestRoadName?.(sim.state.pos.x,sim.state.pos.z)||'강남역 · 서울';
   updateCityExperiments(t);
   const b=scene.city?.bounds,p=sim.state.pos;
-  $('city-boundary').hidden=!b||(p.x>=b.minX&&p.x<=b.maxX&&p.z>=b.minZ&&p.z<=b.maxZ);
+  // The centre district and the streamed tiles are both mapped ground; warn only beyond them.
+  $('city-boundary').hidden=!b||(p.x>=b.minX&&p.x<=b.maxX&&p.z>=b.minZ&&p.z<=b.maxZ)||!!scene.city.streaming?.contains(p.x,p.z);
   drawCityMap(t);
 }
 
@@ -356,7 +357,7 @@ function updateUI(){
 }
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
-  $('guide-content').innerHTML=tab==='sources'?'<p>실차 외형 · 공통 가상 착지 장치 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">나무 모델</a> · Poly Haven CC0</p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>자유 낙하·추력 제동·완만한 하강을 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과의 그래프와 CSV로 측정값을 확인합니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 카메라 · V: 힘 벡터 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. 드래그 시점 회전, 휠 확대, C 카메라, R 복귀·재충전. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
+  $('guide-content').innerHTML=tab==='sources'?'<p>실차 외형 · 공통 가상 착지 장치 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>자유 낙하·추력 제동·완만한 하강을 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과의 그래프와 CSV로 측정값을 확인합니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 카메라 · V: 힘 벡터 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. 드래그 시점 회전, 휠 확대, C 카메라, R 복귀·재충전. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
 }
 function openGuide(tab='controls'){renderGuide(tab);$('guide-modal').showModal();}
 function focusApparatus(id){
@@ -372,6 +373,11 @@ function setupUI(){
   $('city-reset').addEventListener('click',()=>reset());
   $('city-controls').addEventListener('click',()=>{showCityExperiments(false);const shown=document.body.classList.toggle('show-drive-controls');$('city-controls').setAttribute('aria-pressed',shown);});
   $('city-camera').addEventListener('click',()=>$('camera').click());
+  $('city-season').addEventListener('click',()=>{
+    const library=scene.city?.treeAsset?.library;if(!library)return;
+    const next=library.season==='summer'?'autumn':'summer';library.setSeason(next);
+    $('city-season').textContent=next==='autumn'?'🍂 가을':'🌿 여름';$('city-season').setAttribute('aria-pressed',next==='autumn');$('world').focus({preventScroll:true});
+  });
   $('city-hover').addEventListener('click',()=>{if(mode==='city'&&!cityLoading&&!vehicleLoading){if(paused)setPaused(false);driver.toggleAltitudeHold(sim);}});
   $('city-vectors').addEventListener('click',()=>$('vectors').click());
   document.querySelectorAll('[data-paint]').forEach(button=>button.addEventListener('click',()=>{$('city-paint').value=button.dataset.paint;$('world').focus({preventScroll:true});}));
@@ -434,5 +440,7 @@ function animate(stamp){
 try{
   scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent=cameraLabel();});
   scene.setMode('lab');scene.setCamera(camera);setupUI();sim.setObstacles([]);updateUI();requestAnimationFrame(animate);selectVehicle('roadster');
+  // ?debug exposes the running objects for inspection; it changes no behaviour.
+  if(new URLSearchParams(location.search).has('debug'))window.__roadster={sim,scene,driver,driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
   $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
 }catch(error){console.error(error);$('boot-message').textContent='3D 화면을 시작하지 못했습니다. WebGL을 지원하는 브라우저에서 새로고침해 주세요.';}

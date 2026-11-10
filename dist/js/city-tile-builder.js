@@ -1,7 +1,8 @@
 // Pure CPU city construction. Native module workers cannot use the page import map.
 import {ShapeUtils,Vector2,Color} from '../vendor/three.module.js';
 import {buildingColliders} from './city-footprint.js';
-import {treeColliders} from './city-tree-collision.js?v=20261111-trees1';
+import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
+import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const hash=id=>{let seed=Number(id);if(!Number.isFinite(seed)){seed=2166136261;for(const c of String(id))seed=Math.imul(seed^c.charCodeAt(0),16777619);}return ((Math.imul(seed|0,1664525)+1013904223)>>>0)/4294967296;};
@@ -149,7 +150,7 @@ export function buildCityTile(data,options={}){
         if(t<10||t>s.length-10)continue;const p=point(t,side*(width/2+1.6)),key=p.map(n=>Math.round(n*2)).join(',');
         if(occupied(...p)||onRoad(...p)||treeKeys.has(key)||trees.length>=192)continue;
         const v=hash(String(s.road.id)+':'+Math.round(s.distance+t)+':'+side);
-        trees.push({x:p[0]-origin[0],z:p[1]-origin[1],height:5.8+v*1.4,rotation:v*Math.PI*2});treeKeys.add(key);
+        trees.push({x:p[0]-origin[0],z:p[1]-origin[1],height:5.8+v*1.4,rotation:v*Math.PI*2,species:speciesForRoad(s.road),seed:v});treeKeys.add(key);
       }
     }
   }

@@ -1,7 +1,19 @@
-Roadster v1.27 — 나무 충돌 누락 및 모델 정렬 수정
+Roadster v1.28 — 모든 수종 나무 충돌 누락 및 모델 정렬 수정
 2026-11-11 KST. 사용자: 나무 충돌이 인정되지 않는 모든 곳 수정. 기존 배포 승인 유효.
-외곽city-tile-builder의 나무 충돌 누락, 중심city-world의 고정.42m 상자 오류 수정. 공통city-tree-collision+생성프로필37프리즘(줄기/굵은가지), 렌더와 같은 회전/높이/원점. 잎/잔가지 비충돌. physics treeId로 복합 충돌 집계. 기존공중A/D수평이동 보존. 캐시20261111-trees1.
-검증: 전체346PASS,34문법검사PASS,서울400타일/외곽9030나무 충돌누락0. 로컬CUA중심·외곽·재방문 충돌1회/64.6km/h 확인. 배포 검증 진행 중. README v1.27 상세설명, scripts/build-tree-collision.mjs 재생성.
+작업중원격v1.27 수종·계절추가(873b8b8)를발견하여merge,해당기능보존. 외곽city-tile-builder의 충돌누락,중심고정.42m상자수정. 공통treeColliders,6수종x5변형10~50프리즘+스캔37프리즘. city-tree-mix공통수종/variant/height/spread/yaw/tilt로렌더와충돌일치. 잎/잔가지비충돌,static가지. physics treeId집계. 기존공중A/D수평이동보존. 캐시20261111-trees2.
+프로필 재생성: node scripts/build-tree-collision.mjs. 원본/생성31변형의주요목질정점검사및타일/충돌검사추가. 최종배포검증진행중.
+
+Roadster v1.27 — 수종별 생성 가로수와 잎 / 계절 전환 / 지도 범위 안내 수정
+2026-11-11 KST. 작업 도구: Claude Code. 기반 런타임 7470232(v1.26). 최종 배포 SHA와 Actions는 아래 "배포" 줄 참고.
+경위: 같은 요청(주변 모델링·전체 지도·건물 물리·나무 다양화)을 Claude가 v1.23 위에서 따로 구현하는 동안 원격에 v1.24–v1.26이 먼저 배포됨. 사용자 결정으로 원격 v1.26의 지도·스트리밍·충돌은 그대로 두고, 거기 없던 수종별 나무만 이식함. Claude의 별도 구현(7.1x6.2km 단일 발췌, 회전 상자 충돌, 중앙분리 포장·버스차로·신호등·지하철 출구 표지·수면 복귀 등)은 배포하지 않았고 로컬 커밋 b750266(태그 local-v124-world)에만 있음. 작업 폴더가 지워지면 사라짐.
+나무: city-tree-species.js가 은행·양버즘·느티·왕벚·메타세쿼이아·소나무를 수종별 분지 규칙+씨앗값으로 생성(수종당5변형), 잎은 수종별 잎 모양 잔가지 카드 약900–2400장, 줄기 무늬4종, 1024px 아틀라스1장. 그루마다 크기·기울기·방향·색조 다름, 96m 숲 단위에 수종별 2변형 혼합. 스캔 모델은 '소형 활엽수'로 유지해 7종. LOD 150/300/620m, 22그루 초과 숲은 한 단계 가볍게, 원거리는 숲 단위 1드로우. 변형31개는 로딩 때 한 번 생성(warm). 기존 바람 uniform 공유, 그림자에도 같은 윤곽·흔들림.
+배치: city-tree-mix.js(import 없음, 워커 사용)가 도로별 수종 결정. 한 도로 한 수종, 강남구 2023 비율(은행31/양버즘28/느티14%), 큰 도로는 은행·양버즘·느티·메타세쿼이아만. city-world.js와 city-tile-builder.js의 나무 배치에 species/seed 추가. 키는 수종별 범위. 간격48m·타일당192그루·줄기 충돌체는 v1.26 그대로.
+연결: loadCityTreeAsset()이 asset.library를 붙이고 createTreeGroves가 library 있으면 수종 경로로 위임. library 없는 호출은 이전 경로 그대로(기존 나무 테스트 유지).
+UI: 도시 패널 여름/가을 버튼(#city-season). 실제 지도 타일 범위 안에서도 "지도 구역 밖"이 계속 뜨던 것을 streaming.contains로 수정, 문구 "실제 지도 범위 밖". 모달 버전 표기 v1.21→v1.27. ?debug로 window.__roadster 노출.
+캐시20261111-species1(index→main→scene→city-world/city-streaming→tile-mesh/worker→builder, city-trees).
+검증: npm run check 통과, npm test 345/345 PASS(신규 tests/city-tree-species.test.mjs 5건). 로컬 브라우저: 도시 진입 후 중심 구역 나무347그루가 은행210/느티82/양버즘44/벚11, 강남대로=느티나무 열로 표시, 가을 전환 시 잎·원거리 수관 색 변경, 1.7km 순간이동 후 실제 서울 타일6개에 수종 나무140그루(6종) 생성, 콘솔 오류 없음(로컬 긴 경로로 인한 carbon_fibre 텍스처404 제외). 렌더는 같은 장면 반복 측정 프레임당 약7ms(이 PC). 브라우저 창이 가려져 실제 FPS는 재지 못함.
+배포: 런타임 a2fd7a9c95551d5c78c59b367b12cd5cfa5f01f9. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42865754429 build/deploy 성공. 공개 17개 파일(index/main/scene/physics/city-*/나무 gltf/서울 manifest) HTTP200·SHA256 로컬 일치. 공개 브라우저(?debug): main.js?v=20261111-species1, 모달 v1.27, 변형31개·아틀라스 생성, 중심 구역 은행210/느티82/양버즘44/벚11, 여름→가을→여름 전환, 실제 지도 스트리밍 연결, 콘솔 메시지 없음.
+미해결: 가로수 간격이 48m로 성김. 도로별 실제 수종 자료 없음. 모바일·저사양 GPU 미검증.
 
 Roadster v1.26 — 공중 A/D 기본 수평 이동
 완료: 런타임7470232978ba5537aebad8ad1d59e6ae66e3049a. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42819282512 build/deploy성공,전체340검사통과. 공개index/main/driving-input HTTP200/SHA일치. 공개브라우저H0.8m·D수평이동18km/h·기수160도유지·오류0확인.

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {createTreeGroves,TREE_TILE_SIZE} from './city-trees.js?v=20261111-trees1';
+import {createTreeGroves,TREE_TILE_SIZE} from './city-trees.js?v=20261111-trees2';
 const fallbacks={ground:{color:0xffffff,roughness:1},road:{side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4},walk:{side:THREE.DoubleSide},paint:{side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-8},wall:{roughness:.68},glass:{roughness:.24,metalness:.28,envMapIntensity:.9},roof:{roughness:.9},green:{roughness:1},water:{roughness:.3,metalness:.12},furniture:{roughness:.55,metalness:.55}};
 /** One bounded BufferGeometry or <=24 spatially grouped tree instances per step. Shared resources survive eviction. */
 export function createCityTileHydrator(payload,{materials=new Map(),treeAsset=null}={}){

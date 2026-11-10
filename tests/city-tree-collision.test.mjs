@@ -5,6 +5,9 @@ import {treeColliders} from '../dist/js/city-tree-collision.js';
 import {containsFootprint} from '../dist/js/city-footprint.js';
 import {buildCityTile} from '../dist/js/city-tile-builder.js';
 import {PhysicsSim} from '../dist/js/physics.js';
+import * as THREE from 'three';
+import {createSpeciesGroves,createTreeLibrary,generateTreeCollisionGeometry,TREE_SPECIES,TREE_VARIANTS} from '../dist/js/city-tree-species.js';
+import {resolveTreePlacement} from '../dist/js/city-tree-mix.js';
 
 const dir=new URL('../dist/assets/trees/',import.meta.url);
 const gltf=JSON.parse(await readFile(new URL('tree-small-02.gltf',dir),'utf8'));
@@ -17,6 +20,27 @@ const leaves=positions(level.find(p=>gltf.materials[p.material].alphaMode==='MAS
 const contains=(c,p)=>Math.abs(p[1]-c.center[1])<=c.size[1]/2+1e-6&&containsFootprint(c.footprint,p[0],p[2]);
 function transform(p,placement,origin=[0,0]){const s=placement.height/height,c=Math.cos(placement.rotation),sn=Math.sin(placement.rotation);return [origin[0]+placement.x+(p[0]*c+p[2]*sn)*s,.006+(p[1]-base)*s,origin[1]+placement.z+(-p[0]*sn+p[2]*c)*s];}
 const options={stabilize:false,coastRegen:false};
+
+function scannedAsset(){return {height,levels:gltf.meshes.map(mesh=>mesh.primitives.map(p=>{
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions(p).slice(),3));geometry.translate(0,-base,0);geometry.computeBoundingBox();geometry.computeBoundingSphere();
+  return {geometry,material:new THREE.MeshStandardMaterial({name:gltf.materials[p.material].name})};
+}))};}
+function libraryFixture(){
+  const asset=scannedAsset(),library=createTreeLibrary({asset}),source=new Map();
+  const geometryFor=(species,index)=>{if(species==='small')return asset.levels[0][2].geometry;const key=species+':'+index;if(!source.has(key))source.set(key,generateTreeCollisionGeometry(species,index).geometry);return source.get(key);};
+  return {library,geometryFor,dispose(){library.dispose();for(const geometry of source.values())geometry.dispose();for(const parts of asset.levels)for(const part of parts){part.geometry.dispose();part.material.dispose();}}};
+}
+function renderedStems(library,placements){
+  const root=createSpeciesGroves(library,placements);root.updateMatrixWorld(true);const stems=[];
+  root.traverse(mesh=>{
+    if(!mesh.isInstancedMesh||mesh.parent.name!=='tree LOD 0')return;
+    const match=/tree LOD 0 (\w+) (\d+) part (\d+)/.exec(mesh.name);if(!match)return;
+    const [,species,index,part]=match;if(species==='small'&&Number(part)!==2)return;
+    for(let i=0;i<mesh.count;i++){const matrix=new THREE.Matrix4();mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);stems.push({species,index:Number(index),matrix});}
+  });
+  root.traverse(mesh=>{if(mesh.isInstancedMesh)mesh.dispose();});root.clear();return stems;
+}
+
 
 // The old origin-centred .42m box missed curved trunk sections after scaling/yaw.
 test('compound collisions contain every actual trunk/fork vertex at each tested scale and rotation',()=>{
@@ -39,10 +63,16 @@ test('every streamed tree has world-space collisions across positive and negativ
     assert.ok(tile.trees.length>10);
     const groups=new Map();for(const c of tile.obstacles.filter(c=>c.treeId)){if(!groups.has(c.treeId))groups.set(c.treeId,[]);groups.get(c.treeId).push(c);}
     assert.equal(groups.size,tile.trees.length);
-    for(const placement of tile.trees){
-      const sample=transform(trunk.slice(0,3),placement,tile.origin);
-      assert.ok([...groups.values()].some(pieces=>pieces.some(c=>contains(c,sample))),'local render transform has matching world-space collision');
-    }
+    const fixture=libraryFixture();
+    try{
+      for(const rendered of renderedStems(fixture.library,tile.trees)){
+        const points=fixture.geometryFor(rendered.species,rendered.index).attributes.position;
+        for(const index of [0,Math.floor(points.count/2),points.count-1]){
+          const sample=new THREE.Vector3().fromBufferAttribute(points,index).applyMatrix4(rendered.matrix).add(new THREE.Vector3(tile.origin[0],0,tile.origin[1])).toArray();
+          assert.ok(tile.obstacles.some(c=>c.treeId&&contains(c,sample)),'actual species instance has matching world-space collision');
+        }
+      }
+    }finally{fixture.dispose();}
   }
 });
 
@@ -92,4 +122,50 @@ test('streamed tree removal and reload update collision recognition with no stal
   sim.setObstacleChunk('0_0',pieces);run();assert.equal(sim.lastObstacleImpact?.id,'tree-streamed');assert.ok(sim.collisionCount>=1);
   sim.removeObstacleChunk('0_0');run();assert.equal(sim.lastObstacleImpact,null);assert.equal(sim.collisionCount,0);assert.ok(sim.state.pos.x>10);
   sim.setObstacleChunk('0_0',pieces);run();assert.equal(sim.lastObstacleImpact?.id,'tree-streamed');assert.ok(sim.collisionCount>=1);
+});
+
+
+test('all thirty grown variants and the scanned tree match actual render scale, spread, tilt and yaw',()=>{
+  const fixture=libraryFixture(),seen=new Set();
+  try{
+    for(const species of Object.keys(TREE_SPECIES)){
+      const wanted=species==='small'?1:TREE_VARIANTS;
+      for(let gx=-12;gx<12&&[...seen].filter(key=>key.startsWith(species+':')).length<wanted;gx++)for(const seed of [.137,.713]){
+        const placement={x:gx*96+25,z:(gx%3)*96+17,species,seed,height:6,rotation:gx*.71+.3};
+        const resolved=resolveTreePlacement(placement),key=species+':'+resolved.variantIndex;if(seen.has(key))continue;
+        const origin=[1536,-2048],pieces=treeColliders(placement,{origin,id:'species-'+key});
+        assert.ok(pieces.length>1&&pieces.length<=50,key+' has a bounded woody profile');
+        const rendered=renderedStems(fixture.library,[placement]);assert.equal(rendered.length,1);
+        assert.equal(rendered[0].species,species);assert.equal(rendered[0].index,resolved.variantIndex);
+        const points=fixture.geometryFor(species,resolved.variantIndex).attributes.position;
+        for(let i=0;i<points.count;i++){
+          const p=new THREE.Vector3().fromBufferAttribute(points,i).applyMatrix4(rendered[0].matrix).add(new THREE.Vector3(origin[0],0,origin[1])).toArray();
+          assert.ok(pieces.some(c=>contains(c,p)),key+' rendered stem/fork vertex '+i+' lies in collision geometry');
+        }
+        seen.add(key);
+      }
+      assert.equal([...seen].filter(key=>key.startsWith(species+':')).length,wanted,species+' every selected variant exercised');
+    }
+    assert.equal(seen.size,31);
+  }finally{fixture.dispose();}
+});
+
+
+test('all six grown street species stop a grounded 45 m/s impact at the rendered trunk',()=>{
+  const fixture=libraryFixture();
+  try{
+    for(const species of Object.keys(TREE_SPECIES).filter(id=>!TREE_SPECIES[id].asset)){
+      const placement={x:100,z:-80,species,seed:.67,height:6,rotation:.9},id='impact-'+species;
+      const rendered=renderedStems(fixture.library,[placement])[0],resolved=resolveTreePlacement(placement);
+      const variant=fixture.library.variant(species,rendered.index),sourceY=.5/(resolved.height/variant.height);
+      const target=new THREE.Vector3(0,sourceY,0).applyMatrix4(rendered.matrix);
+      const pieces=treeColliders(placement,{id});
+      const {sim,contacted,first,before}=impact(pieces,{x:target.x,z:target.z});
+      assert.ok(contacted,species+' visible trunk is struck');assert.equal(sim.lastObstacleImpact?.id,id);
+      assert.equal(first.count,1,species+' compounds share one impact identity');
+      assert.ok(first.x<target.x,species+' registers before the car centre crosses the trunk');
+      assert.ok(sim.state.pos.x<target.x,species+' cannot continue through the trunk');
+      assert.ok(sim.state.vel.lengthSq()<before,species+' collision dissipates speed');
+    }
+  }finally{fixture.dispose();}
 });

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import {treeColliders} from './city-tree-collision.js?v=20261111-trees1';
-import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261111-trees1';
+import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261111-trees2';
+import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-seoul1';
 import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-seoul1';
 import {createStreetDetails} from './city-facades.js?v=20261110-seoul1';
@@ -188,7 +189,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
       lamps.push([tip[0],6.7,tip[1],.75,.14,.32,Math.atan2(-s.dz,s.dx)]);
       const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)&&!onRoad(...tree)){
         const variation=hash(s.road.id+t*101+side*73),height=5.8+variation*1.4;
-        trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2});
+        trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2,species:speciesForRoad(s.road),seed:variation});
       }
     }
     if(signs<14&&s.road.name&&s.length>65&&width>=11&&hash(s.road.id)>.35){
@@ -222,7 +223,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const treeGroves=createTreeGroves(treeAsset,trees);root.add(treeGroves);
   instanced(root,new THREE.BoxGeometry(1,1,1),steel,roofBoxes,'rooftop equipment');
   poles.forEach((t,i)=>plan.obstacles.push({id:'lamp-'+i,center:[t[0],t[1],t[2]],size:[t[3]*2,t[4],t[5]*2]}));
-  if(treeAsset)trees.forEach((tree,i)=>plan.obstacles.push(...treeColliders(tree,{id:'tree-core-'+i})));
+  if(treeAsset)trees.forEach((tree,i)=>plan.obstacles.push(...treeColliders(treeAsset.library?tree:{...tree,species:undefined},{id:'tree-core-'+i})));
   const bins=new Map(),cell=80;
   plan.obstacles.forEach((box,index)=>{const [x,,z]=box.center,[w,,d]=box.size;for(let gx=Math.floor((x-w/2)/cell);gx<=Math.floor((x+w/2)/cell);gx++)for(let gz=Math.floor((z-d/2)/cell);gz<=Math.floor((z+d/2)/cell);gz++){const key=gx+','+gz;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(index);}});
   const obstaclesNear=(x,z,radius=80)=>{const indices=new Set();for(let gx=Math.floor((x-radius)/cell);gx<=Math.floor((x+radius)/cell);gx++)for(let gz=Math.floor((z-radius)/cell);gz<=Math.floor((z+radius)/cell);gz++)for(const index of bins.get(gx+','+gz)||[])indices.add(index);return [...indices].map(i=>plan.obstacles[i]);};

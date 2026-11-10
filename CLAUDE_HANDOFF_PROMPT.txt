@@ -1,4 +1,4 @@
-최신 v1.27: 나무 충돌은 city-tree-collision.js와 city-tree-profile.js 공통 구현. 중심·외곽 나무마다 모델 줄기/굵은가지37프리즘 등록, 잎/잔가지는 비고체. scripts/build-tree-collision.mjs로 원본에서 재생성. treeId로 충돌 이벤트 묶음. 고정상자나 외곽나무 충돌누락으로 되돌리지 말 것. 전체346검사+400타일9030나무 누락0 확인. 기존공중A/D수평이동·지상조향 유지.
+최신 v1.28: 원격v1.27 수종·계절 기능을 보존하며 나무 충돌 수정. 공통 city-tree-collision.js,city-tree-profile.js(스캔37조각),city-species-profiles.js(6수종×5변형,10~50조각). city-tree-mix.js의 resolveTreePlacement/treeLinearTransform을 렌더와충돌양쪽이 공유. 모델수정시 scripts/build-tree-collision.mjs 재생성 및31변형인스턴스행렬/정점/충돌검사필수. 잎/잔가지비고체, treeId충돌묶음. 외곽나무충돌누락·고정상자로되돌리지말것. 기존공중A/D수평이동·지상조향·계절버튼유지.
 
 Roadster Landing Lab 작업을 이어서 수행해 주세요.
 저장소: https://github.com/leejuhan-1214/roadster
