@@ -68,7 +68,8 @@ test('real trees replace primitive crowns while retaining roadside collision tru
  try{
   assert.ok(city.treePlacements.length>100);assert.equal(city.treeGroves.userData.treeCount,city.treePlacements.length);
   assert.equal(city.root.getObjectByName('tree crowns'),undefined);
-  const colliders=city.obstacles.filter(o=>o.id.startsWith('tree-'));assert.equal(colliders.length,city.treePlacements.length);
+  const colliders=city.obstacles.filter(o=>o.treeId);assert.equal(new Set(colliders.map(o=>o.treeId)).size,city.treePlacements.length);
+  assert.ok(colliders.every(o=>o.kind==='prism'),'visible woody geometry uses scaled compound collision prisms');
   for(const t of city.treePlacements)assert.ok(t.height>=5.8&&t.height<=7.2);
  }finally{city.dispose();}
 });

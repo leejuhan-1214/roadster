@@ -6,8 +6,8 @@ import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-seoul1';
 import {LandingUI} from './landing-ui.js?v=20261110-seoul1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-seoul1';
-import {FlightScene} from './scene.js?v=20261110-seoul1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees1';
+import {FlightScene} from './scene.js?v=20261111-trees1';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

@@ -1,3 +1,8 @@
+Roadster v1.27 — 나무 충돌 누락 및 모델 정렬 수정
+2026-11-11 KST. 사용자: 나무 충돌이 인정되지 않는 모든 곳 수정. 기존 배포 승인 유효.
+외곽city-tile-builder의 나무 충돌 누락, 중심city-world의 고정.42m 상자 오류 수정. 공통city-tree-collision+생성프로필37프리즘(줄기/굵은가지), 렌더와 같은 회전/높이/원점. 잎/잔가지 비충돌. physics treeId로 복합 충돌 집계. 기존공중A/D수평이동 보존. 캐시20261111-trees1.
+검증: 전체346PASS,34문법검사PASS,서울400타일/외곽9030나무 충돌누락0. 로컬CUA중심·외곽·재방문 충돌1회/64.6km/h 확인. 배포 검증 진행 중. README v1.27 상세설명, scripts/build-tree-collision.mjs 재생성.
+
 Roadster v1.26 — 공중 A/D 기본 수평 이동
 완료: 런타임7470232978ba5537aebad8ad1d59e6ae66e3049a. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42819282512 build/deploy성공,전체340검사통과. 공개index/main/driving-input HTTP200/SHA일치. 공개브라우저H0.8m·D수평이동18km/h·기수160도유지·오류0확인.
 기본 flightSteering=strafe,설정초기화도strafe. 공중A/D좌우분사·Q/E회전,지상A/D조향유지.기존노즐/유한기체/자세안정화사용. 안내와기본선택수정. 로컬브라우저A/D각각비행19~20km/h·고도.7m·기수160도유지확인. 관련33검사통과,기존선회기대값검사도새기본수평이동규칙에맞게갱신.

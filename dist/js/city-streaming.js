@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import {createTileScheduler} from './city-tile-scheduler.js?v=20261110-seoul1';
-import {createCityTileHydrator} from './city-tile-mesh.js?v=20261110-seoul1';
+import {createCityTileHydrator} from './city-tile-mesh.js?v=20261111-trees1';
 export const CITY_CHUNK_SIZE=512;
 export const CITY_CHUNK_RADIUS=2;
 const within=(x,z,b)=>x>=b.minX&&x<b.maxX&&z>=b.minZ&&z<b.maxZ;
 function tileWorker(options){
  let worker=null,serial=0;const pending=new Map();
  function start(){
-  if(worker)return;worker=new Worker(new URL('./city-tile-worker.js?v=20261110-seoul1',import.meta.url),{type:'module'});
+  if(worker)return;worker=new Worker(new URL('./city-tile-worker.js?v=20261111-trees1',import.meta.url),{type:'module'});
   worker.postMessage({type:'init',options});
   worker.onmessage=({data})=>{const p=pending.get(data.id);if(!p)return;pending.delete(data.id);p.cleanup();data.error?p.reject(new Error(data.error)):p.resolve(data.payload);};
   worker.onerror=error=>{for(const p of pending.values()){p.cleanup();p.reject(new Error(error.message||'Map worker failed'));}pending.clear();worker?.terminate();worker=null;};

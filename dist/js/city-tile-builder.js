@@ -1,6 +1,7 @@
 // Pure CPU city construction. Native module workers cannot use the page import map.
 import {ShapeUtils,Vector2,Color} from '../vendor/three.module.js';
 import {buildingColliders} from './city-footprint.js';
+import {treeColliders} from './city-tree-collision.js?v=20261111-trees1';
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const hash=id=>{let seed=Number(id);if(!Number.isFinite(seed)){seed=2166136261;for(const c of String(id))seed=Math.imul(seed^c.charCodeAt(0),16777619);}return ((Math.imul(seed|0,1664525)+1013904223)>>>0)/4294967296;};
@@ -156,7 +157,7 @@ export function buildCityTile(data,options={}){
     if(j.point[0]<bounds.minX-j.width||j.point[0]>bounds.maxX+j.width||j.point[1]<bounds.minZ-j.width||j.point[1]>bounds.maxZ+j.width)continue;
     disk('walk',j.point,j.width/2+2.3,.004,0xb6b4aa);disk('road',j.point,j.width/2,.018,0xabb3b5);
   }
-  const obstacles=[];
+  const obstacles=trees.flatMap((tree,i)=>treeColliders(tree,{origin,id:`tree-${options.id||data.key||origin.join(',')}-${i}`}));
   for(const b of buildings){
     const tint=color(palette[Math.floor(hash(b.id)*palette.length)]),roofColor=tint.clone().multiplyScalar(.63),all=[...b.points,...b.holes.flat()];
     const faces=ShapeUtils.triangulateShape(b.points.map(a=>new Vector2(...a)),b.holes.map(h=>h.map(a=>new Vector2(...a))));

@@ -1,8 +1,8 @@
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
-import {loadCityWorld} from './city-world.js?v=20261110-seoul1';
-import {attachStreamingCity} from './city-streaming.js?v=20261110-seoul1';
-import {updateTreeWind} from './city-trees.js?v=20261110-seoul1';
+import {loadCityWorld} from './city-world.js?v=20261111-trees1';
+import {attachStreamingCity} from './city-streaming.js?v=20261111-trees1';
+import {updateTreeWind} from './city-trees.js?v=20261111-trees1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';

@@ -1,4 +1,4 @@
-import {buildCityTile,cityTileTransferables} from './city-tile-builder.js?v=20261110-seoul1';
+import {buildCityTile,cityTileTransferables} from './city-tile-builder.js?v=20261111-trees1';
 const requests=new Map();let shared={};
 self.onmessage=async({data})=>{
  if(data.type==='init'){shared=data.options;return;}

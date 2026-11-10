@@ -267,7 +267,7 @@ export class PhysicsSim {
         center.x=(Math.min(...xs)+Math.max(...xs))/2;center.z=(Math.min(...zs)+Math.max(...zs))/2;
         half.x=(Math.max(...xs)-Math.min(...xs))/2;half.z=(Math.max(...zs)-Math.min(...zs))/2;
       }
-      return {id:box.id??String(i),center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
+      return {id:box.id??String(i),treeId:box.treeId??null,center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
     });
   }
 
@@ -625,7 +625,9 @@ export class PhysicsSim {
         const contactVelocity=s.vel.clone().add(new Vector3().crossVectors(omegaWorld,r));
         const normalSpeed=contactVelocity.dot(normal);
         s.pos.addScaledVector(normal,depth+1e-6);
-        if(!this.obstacleContacts.includes(box.id))this.obstacleContacts.push(box.id);
+        // Compound trunk/branch pieces share one tree impact identity.
+        const contactId=box.treeId??box.id;
+        if(!this.obstacleContacts.includes(contactId))this.obstacleContacts.push(contactId);
         if(normalSpeed>=0)continue;
         const rn=new Vector3().crossVectors(r,normal);
         const inverseRot=rn.clone().applyQuaternion(qInv).divide(this.inertia).applyQuaternion(s.q);
@@ -649,8 +651,8 @@ export class PhysicsSim {
         this.impactImpulse+=normalImpulse;
         if(normalSpeed<-.3){
           const previous=this.lastObstacleImpact;
-          if(previous&&previous.id===box.id&&s.time-previous.lastTime<.2){previous.speed=Math.max(previous.speed,-normalSpeed);previous.impulse+=normalImpulse;previous.lastTime=s.time;}
-          else {this.collisionCount++;this.lastObstacleImpact={id:box.id,speed:-normalSpeed,time:s.time,lastTime:s.time,impulse:normalImpulse};}
+          if(previous&&previous.id===contactId&&s.time-previous.lastTime<.2){previous.speed=Math.max(previous.speed,-normalSpeed);previous.impulse+=normalImpulse;previous.lastTime=s.time;}
+          else {this.collisionCount++;this.lastObstacleImpact={id:contactId,speed:-normalSpeed,time:s.time,lastTime:s.time,impulse:normalImpulse};}
         }
       }
       if(!any)break;

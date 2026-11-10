@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {TREE_BASE_Y} from './city-tree-collision.js?v=20261111-trees1';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 export const TREE_LOD_DISTANCES=[0,85,280];
@@ -103,7 +104,7 @@ export function createTreeGroves(asset,placements){
       for(const [index,part]of parts.entries()){
         const mesh=new THREE.InstancedMesh(part.geometry,part.material,items.length);mesh.name='tree LOD '+level+' material '+index;
         if(part.depthMaterial)mesh.customDepthMaterial=part.depthMaterial;
-        items.forEach((p,i)=>{const s=p.height/asset.height;position.set(p.x-cx,.006,p.z-cz);q.setFromAxisAngle(up,p.rotation);scale.setScalar(s);matrix.compose(position,q,scale);mesh.setMatrixAt(i,matrix);
+        items.forEach((p,i)=>{const s=p.height/asset.height;position.set(p.x-cx,TREE_BASE_Y,p.z-cz);q.setFromAxisAngle(up,p.rotation);scale.setScalar(s);matrix.compose(position,q,scale);mesh.setMatrixAt(i,matrix);
           // Stable per-tree tone, shared between LODs, avoids identical repeated crowns.
           const variation=(Math.sin(p.x*12.9898+p.z*78.233)*43758.5453)%1,amount=Math.abs(variation);
           tint.setRGB(.88+.12*amount,.94+.06*amount,.84+.16*amount);mesh.setColorAt(i,tint);

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261110-seoul1';
+import {treeColliders} from './city-tree-collision.js?v=20261111-trees1';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261111-trees1';
 import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-seoul1';
 import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-seoul1';
 import {createStreetDetails} from './city-facades.js?v=20261110-seoul1';
@@ -155,7 +156,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const glassMaterial=material(0xffffff,{map:cityTexture('glass'),roughness:.24,metalness:.28,envMapIntensity:.9});
   const streets=accumulator(),walks=accumulator(),paint=accumulator(),walls=accumulator(),glassWalls=accumulator(),roofs=accumulator();
   const junctionByKey=new Map(plan.junctions.map(j=>[j.point.map(n=>n.toFixed(1)).join(','),j]));
-  const poles=[],arms=[],lamps=[],trunks=[],trees=[],roofBoxes=[];
+  const poles=[],arms=[],lamps=[],trees=[],roofBoxes=[];
   const spatialBuildings=new Map();
   for(const b of plan.buildings){const key=Math.floor(b.center[0]/60)+','+Math.floor(b.center[1]/60);if(!spatialBuildings.has(key))spatialBuildings.set(key,[]);spatialBuildings.get(key).push(b);}
   const occupied=(x,z)=>{if(x<plan.bounds.minX||x>=plan.bounds.maxX||z<plan.bounds.minZ||z>=plan.bounds.maxZ)return true;const gx=Math.floor(x/60),gz=Math.floor(z/60);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of spatialBuildings.get((gx+dx)+','+(gz+dz))||[])if(pointInPolygon(x,z,b.points))return true;return false;};
@@ -187,7 +188,6 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
       lamps.push([tip[0],6.7,tip[1],.75,.14,.32,Math.atan2(-s.dz,s.dx)]);
       const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)&&!onRoad(...tree)){
         const variation=hash(s.road.id+t*101+side*73),height=5.8+variation*1.4;
-        trunks.push([tree[0],height*.28,tree[1],.21,height*.56,.21]);
         trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2});
       }
     }
@@ -221,7 +221,8 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   instanced(root,new THREE.CylinderGeometry(1,1,1,6),steel,poles,'streetlight poles');instanced(root,new THREE.BoxGeometry(1,1,1),steel,arms,'streetlight arms');instanced(root,new THREE.BoxGeometry(1,1,1),light,lamps,'streetlight lamps');
   const treeGroves=createTreeGroves(treeAsset,trees);root.add(treeGroves);
   instanced(root,new THREE.BoxGeometry(1,1,1),steel,roofBoxes,'rooftop equipment');
-  for(const [kind,items]of [['lamp',poles],['tree',trunks]])items.forEach((t,i)=>plan.obstacles.push({id:kind+'-'+i,center:[t[0],t[1],t[2]],size:[t[3]*2,t[4],t[5]*2]}));
+  poles.forEach((t,i)=>plan.obstacles.push({id:'lamp-'+i,center:[t[0],t[1],t[2]],size:[t[3]*2,t[4],t[5]*2]}));
+  if(treeAsset)trees.forEach((tree,i)=>plan.obstacles.push(...treeColliders(tree,{id:'tree-core-'+i})));
   const bins=new Map(),cell=80;
   plan.obstacles.forEach((box,index)=>{const [x,,z]=box.center,[w,,d]=box.size;for(let gx=Math.floor((x-w/2)/cell);gx<=Math.floor((x+w/2)/cell);gx++)for(let gz=Math.floor((z-d/2)/cell);gz<=Math.floor((z+d/2)/cell);gz++){const key=gx+','+gz;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(index);}});
   const obstaclesNear=(x,z,radius=80)=>{const indices=new Set();for(let gx=Math.floor((x-radius)/cell);gx<=Math.floor((x+radius)/cell);gx++)for(let gz=Math.floor((z-radius)/cell);gz<=Math.floor((z+radius)/cell);gz++)for(const index of bins.get(gx+','+gz)||[])indices.add(index);return [...indices].map(i=>plan.obstacles[i]);};
