@@ -7,6 +7,7 @@ Roadster v1.27 — 수종별 생성 가로수와 잎 / 계절 전환 / 지도 �
 UI: 도시 패널 여름/가을 버튼(#city-season). 실제 지도 타일 범위 안에서도 "지도 구역 밖"이 계속 뜨던 것을 streaming.contains로 수정, 문구 "실제 지도 범위 밖". 모달 버전 표기 v1.21→v1.27. ?debug로 window.__roadster 노출.
 캐시20261111-species1(index→main→scene→city-world/city-streaming→tile-mesh/worker→builder, city-trees).
 검증: npm run check 통과, npm test 345/345 PASS(신규 tests/city-tree-species.test.mjs 5건). 로컬 브라우저: 도시 진입 후 중심 구역 나무347그루가 은행210/느티82/양버즘44/벚11, 강남대로=느티나무 열로 표시, 가을 전환 시 잎·원거리 수관 색 변경, 1.7km 순간이동 후 실제 서울 타일6개에 수종 나무140그루(6종) 생성, 콘솔 오류 없음(로컬 긴 경로로 인한 carbon_fibre 텍스처404 제외). 렌더는 같은 장면 반복 측정 프레임당 약7ms(이 PC). 브라우저 창이 가려져 실제 FPS는 재지 못함.
+배포: 런타임 a2fd7a9c95551d5c78c59b367b12cd5cfa5f01f9. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42865754429 build/deploy 성공. 공개 17개 파일(index/main/scene/physics/city-*/나무 gltf/서울 manifest) HTTP200·SHA256 로컬 일치. 공개 브라우저(?debug): main.js?v=20261111-species1, 모달 v1.27, 변형31개·아틀라스 생성, 중심 구역 은행210/느티82/양버즘44/벚11, 여름→가을→여름 전환, 실제 지도 스트리밍 연결, 콘솔 메시지 없음.
 미해결: 가로수 간격이 48m로 성김. 도로별 실제 수종 자료 없음. 모바일·저사양 GPU 미검증.
 
 Roadster v1.26 — 공중 A/D 기본 수평 이동
