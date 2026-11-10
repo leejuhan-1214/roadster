@@ -3,7 +3,7 @@ import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=2026
 import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive2';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
-import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-city2';
+import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -163,6 +163,9 @@ export class PhysicsSim {
     this.bodyHalf = [...BODY_ENVELOPE.half];
     this.bodyBoxCenter = new Vector3(...BODY_ENVELOPE.center);
     this.obstacles = [];
+    this.baseObstacles = this.obstacles;
+    this.obstacleChunks = new Map();
+    this.obstacleIndex = createObstacleIndex(this.obstacles);
     this.wheels = [];
     for (const x of [1.4, -1.4]) for (const z of [-.94, .94]) this.wheels.push({
       name: `${x > 0 ? '전' : '후'}${z < 0 ? '좌' : '우'}`, pos: new Vector3(x, -.31, z),
@@ -243,8 +246,17 @@ export class PhysicsSim {
 
   /** Static stage collision boxes. Reset preserves this course; [] restores the empty test pad. */
   setObstacles(boxes = []) {
+    const obstacles=this._prepareObstacles(boxes);
+    this.baseObstacles=obstacles;
+    this.obstacles=obstacles;
+    this.obstacleIndex=createObstacleIndex(obstacles);
+    this.obstacleChunks.clear();
+    this.obstacleContacts=[];this.lastObstacleImpact=null;
+  }
+
+  _prepareObstacles(boxes) {
     if(!Array.isArray(boxes))throw new TypeError('Obstacles must be an array.');
-    this.obstacles=boxes.map((box,i)=>{
+    return boxes.map((box,i)=>{
       if(!Array.isArray(box.center)||!Array.isArray(box.size)||box.center.length!==3||box.size.length!==3||
          !box.center.every(Number.isFinite)||!box.size.every(n=>Number.isFinite(n)&&n>0))
         throw new TypeError('Each obstacle needs finite center[3] and positive size[3].');
@@ -257,14 +269,52 @@ export class PhysicsSim {
       }
       return {id:box.id??String(i),center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
     });
-    this.obstacleIndex=createObstacleIndex(this.obstacles);
-    this.obstacleContacts=[];this.lastObstacleImpact=null;
+  }
+
+  /** Register one immutable streamed tile, leaving the core and other grids intact.
+   * Call before attaching the corresponding mesh. Replacement is atomic: malformed
+   * data leaves the previous tile active, and contacts/history survive streaming.
+   */
+  setObstacleChunk(key,boxes) {
+    if(typeof key!=='string'||!key)throw new TypeError('An obstacle chunk needs a nonempty string key.');
+    const previous=this.obstacleChunks.get(key);
+    if(previous&&previous.source===boxes)return false;
+    const obstacles=this._prepareObstacles(boxes),index=createObstacleIndex(obstacles);
+    const bounds={minX:Infinity,maxX:-Infinity,minZ:Infinity,maxZ:-Infinity};
+    for(const box of obstacles){
+      bounds.minX=Math.min(bounds.minX,box.min.x);bounds.maxX=Math.max(bounds.maxX,box.max.x);
+      bounds.minZ=Math.min(bounds.minZ,box.min.z);bounds.maxZ=Math.max(bounds.maxZ,box.max.z);
+    }
+    this.obstacleChunks.set(key,{source:boxes,obstacles,index,bounds});
+    this._refreshObstacleList();return true;
+  }
+
+  removeObstacleChunk(key) {
+    if(!this.obstacleChunks.delete(key))return false;
+    this._refreshObstacleList();return true;
+  }
+
+  _refreshObstacleList() {
+    // This lightweight reference list is for inspection/counts. Prepared prisms,
+    // vectors and spatial bins are retained; only the changed tile is rebuilt.
+    this.obstacles=this.baseObstacles.concat(...[...this.obstacleChunks.values()].map(chunk=>chunk.obstacles));
+  }
+
+  _obstaclesNear(x,z,radius=0) {
+    let result=queryObstacles(this.obstacleIndex,x,z,radius);
+    for(const chunk of this.obstacleChunks.values()){
+      const b=chunk.bounds;
+      if(x+radius<b.minX||x-radius>b.maxX||z+radius<b.minZ||z-radius>b.maxZ)continue;
+      const nearby=queryObstacles(chunk.index,x,z,radius);
+      if(nearby.length)result=result.concat(nearby);
+    }
+    return result;
   }
 
   /** Highest horizontal supporting surface below this wheel/fan reference point. */
   surfaceHeightAt(x,z,referenceY=Infinity) {
     let height=sampleRoadSurface(x,z,{roughness:this.params.roadRoughness}).height;
-    for(const box of this.obstacleIndex?queryObstacles(this.obstacleIndex,x,z):this.obstacles)if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
+    for(const box of this._obstaclesNear(x,z))if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
       box.max.y<=referenceY+.10&&box.max.y>height&&(!box.footprint||containsFootprint(box.footprint,x,z)))height=box.max.y;
     return height;
   }
@@ -566,7 +616,7 @@ export class PhysicsSim {
     for(let pass=0;pass<4;++pass){
       let any=false;
       const searchRadius=Math.hypot(...this.bodyHalf)+this.cg.length()+this.bodyBoxCenter.length();
-      const nearby=this.obstacleIndex?queryObstacles(this.obstacleIndex,s.pos.x,s.pos.z,searchRadius):this.obstacles;
+      const nearby=this._obstaclesNear(s.pos.x,s.pos.z,searchRadius);
       for(const box of nearby){
         const contact=boxContact(this,box);if(!contact)continue;
         any=true;const {normal,depth,point}=contact;

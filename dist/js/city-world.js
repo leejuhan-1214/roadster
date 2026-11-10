@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261110-infinite1';
-import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-infinite1';
-import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-infinite1';
-import {createStreetDetails} from './city-facades.js?v=20261110-infinite1';
-import {buildingColliders} from './city-building-collision.js?v=20261110-city2';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261110-seoul1';
+import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-seoul1';
+import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-seoul1';
+import {createStreetDetails} from './city-facades.js?v=20261110-seoul1';
+import {buildingColliders} from './city-building-collision.js?v=20261110-seoul1';
 
 const UP=new THREE.Vector3(0,1,0),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const palette=[0x9aa6ac,0xaeb9bd,0x81939d,0xc3beb3,0x8598a5,0xb8c0c3];

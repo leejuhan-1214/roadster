@@ -1,0 +1,7646 @@
+{
+  "schemaVersion": 1,
+  "name": "서울 강남역 중심 실제 도로·건물",
+  "origin": [
+    37.4979,
+    127.0276
+  ],
+  "tileSize": 512,
+  "bounds": {
+    "minX": -5120,
+    "maxX": 5120,
+    "minZ": -5120,
+    "maxZ": 5120
+  },
+  "bbox": [
+    37.45190646784046,
+    126.96962805185431,
+    37.543893532159544,
+    127.0855719481457
+  ],
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "licenseUrl": "https://www.openstreetmap.org/copyright",
+  "sourceTimestamp": null,
+  "downloadedAt": "2026-11-10T12:15:14.754Z",
+  "sourceTimestamps": {
+    "regional": null,
+    "core": "2026-11-09T00:11:56Z"
+  },
+  "coreRoadGeometryPriority": true,
+  "coverageKm": [
+    10.24,
+    10.24
+  ],
+  "counts": {
+    "uniqueRoads": 12078,
+    "uniqueBuildings": 29479,
+    "coreBuildings": 1823,
+    "water": 51,
+    "landuse": 776,
+    "tiles": 400
+  },
+  "tiles": {
+    "-10_-10": {
+      "url": "tiles/-10_-10.json",
+      "ix": -10,
+      "iz": -10,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 126073,
+      "sha256": "607adfed545c97759a7332a2370dcca29bf1520d64d43f90f3a285f6dbc4c723",
+      "counts": {
+        "roads": 78,
+        "buildings": 112,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-9_-10": {
+      "url": "tiles/-9_-10.json",
+      "ix": -9,
+      "iz": -10,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 152474,
+      "sha256": "2c2ad8f3939abfd84f42f4245296010fd01fb8c474929ccd37a740ae524b7f90",
+      "counts": {
+        "roads": 92,
+        "buildings": 138,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_-10": {
+      "url": "tiles/-8_-10.json",
+      "ix": -8,
+      "iz": -10,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 351100,
+      "sha256": "3bcc7bdd46dd6f8768cf7b2443090b4a7a2e4ed58669fae7e0e5cd1d5069682a",
+      "counts": {
+        "roads": 80,
+        "buildings": 479,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-7_-10": {
+      "url": "tiles/-7_-10.json",
+      "ix": -7,
+      "iz": -10,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 197388,
+      "sha256": "fe8a68543263fde6870f5a674af7f544f9d9438a0beee8577bf2dcc4971491b7",
+      "counts": {
+        "roads": 101,
+        "buildings": 200,
+        "water": 0,
+        "landuse": 7
+      }
+    },
+    "-6_-10": {
+      "url": "tiles/-6_-10.json",
+      "ix": -6,
+      "iz": -10,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 83562,
+      "sha256": "78fc467b3fd5f2c0f4fcc580d5b7102b0da4e5a3617ca51a6cd853a4e86b453c",
+      "counts": {
+        "roads": 54,
+        "buildings": 63,
+        "water": 0,
+        "landuse": 9
+      }
+    },
+    "-5_-10": {
+      "url": "tiles/-5_-10.json",
+      "ix": -5,
+      "iz": -10,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 74560,
+      "sha256": "483fd18184ce4bc00e85004e37df63cdcf2804d37e626ac4b89d349368a46604",
+      "counts": {
+        "roads": 67,
+        "buildings": 37,
+        "water": 1,
+        "landuse": 7
+      }
+    },
+    "-4_-10": {
+      "url": "tiles/-4_-10.json",
+      "ix": -4,
+      "iz": -10,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 57569,
+      "sha256": "9c63b4d426b63c86a53f89b9c1b14d30bf6401ec4a6204e8660487725d142e05",
+      "counts": {
+        "roads": 34,
+        "buildings": 41,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-3_-10": {
+      "url": "tiles/-3_-10.json",
+      "ix": -3,
+      "iz": -10,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 81890,
+      "sha256": "81f98221d46fe9ffac6a1eda52cd38aa497fdaa4f811cbcdd7f7e903ca4afc3b",
+      "counts": {
+        "roads": 61,
+        "buildings": 54,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-2_-10": {
+      "url": "tiles/-2_-10.json",
+      "ix": -2,
+      "iz": -10,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 52591,
+      "sha256": "2ac4d977444b02fb7deb63e41f9037529e878e401a873b1bf23dec10d80f9590",
+      "counts": {
+        "roads": 45,
+        "buildings": 28,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "-1_-10": {
+      "url": "tiles/-1_-10.json",
+      "ix": -1,
+      "iz": -10,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 12826,
+      "sha256": "aa4c80398b09cb0a97286718c1419fe1203284b6c4f0e873fc7f8a1970c77c9a",
+      "counts": {
+        "roads": 14,
+        "buildings": 1,
+        "water": 1,
+        "landuse": 2
+      }
+    },
+    "0_-10": {
+      "url": "tiles/0_-10.json",
+      "ix": 0,
+      "iz": -10,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 16555,
+      "sha256": "5423acd46111a73fc4fbed24bc918098cfbc2346bcc8ab6164890c6efaf15ec3",
+      "counts": {
+        "roads": 16,
+        "buildings": 1,
+        "water": 2,
+        "landuse": 4
+      }
+    },
+    "1_-10": {
+      "url": "tiles/1_-10.json",
+      "ix": 1,
+      "iz": -10,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 41857,
+      "sha256": "3c59e0d255e64029fc10efe833f8e793d09b3b6975ddda9e8f4bb287d49b4ba5",
+      "counts": {
+        "roads": 49,
+        "buildings": 3,
+        "water": 5,
+        "landuse": 2
+      }
+    },
+    "2_-10": {
+      "url": "tiles/2_-10.json",
+      "ix": 2,
+      "iz": -10,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 58306,
+      "sha256": "35732ff34e75531f1d382095847c48c37848e32b436f44a8bd54a652fe8c5c24",
+      "counts": {
+        "roads": 40,
+        "buildings": 14,
+        "water": 0,
+        "landuse": 24
+      }
+    },
+    "3_-10": {
+      "url": "tiles/3_-10.json",
+      "ix": 3,
+      "iz": -10,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 104400,
+      "sha256": "be6dcac2ed21ee802748500bc6480a3e29e1a25326ed7916bf05cbc03ec33353",
+      "counts": {
+        "roads": 49,
+        "buildings": 113,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_-10": {
+      "url": "tiles/4_-10.json",
+      "ix": 4,
+      "iz": -10,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 134799,
+      "sha256": "c2ccdc0363604d5d942e4102cba2a7b0a0b29c5b948a877bc1990901ec92127e",
+      "counts": {
+        "roads": 47,
+        "buildings": 162,
+        "water": 0,
+        "landuse": 8
+      }
+    },
+    "5_-10": {
+      "url": "tiles/5_-10.json",
+      "ix": 5,
+      "iz": -10,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 171247,
+      "sha256": "ad758a44fb4ae8a7f8f5688b5cb26d2e55d4644c4398da81579bb932f732fa6f",
+      "counts": {
+        "roads": 51,
+        "buildings": 222,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "6_-10": {
+      "url": "tiles/6_-10.json",
+      "ix": 6,
+      "iz": -10,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 373981,
+      "sha256": "84031c5bedec70d4e48af8a70d742b560b7218b094998beb6978e9e6f203a5a7",
+      "counts": {
+        "roads": 127,
+        "buildings": 487,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "7_-10": {
+      "url": "tiles/7_-10.json",
+      "ix": 7,
+      "iz": -10,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 394770,
+      "sha256": "2bfb83a594d7e257c346932cc956202d78c6daf58ebae992e71947e345fdaa1d",
+      "counts": {
+        "roads": 134,
+        "buildings": 506,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "8_-10": {
+      "url": "tiles/8_-10.json",
+      "ix": 8,
+      "iz": -10,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 59584,
+      "sha256": "6e97bb5af3eb7ab8c6abfebb1078a7372aa787bd32a220e0e3c533114fe2b47f",
+      "counts": {
+        "roads": 53,
+        "buildings": 22,
+        "water": 1,
+        "landuse": 5
+      }
+    },
+    "9_-10": {
+      "url": "tiles/9_-10.json",
+      "ix": 9,
+      "iz": -10,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -5120,
+        "maxZ": -4608
+      },
+      "bytes": 272036,
+      "sha256": "09f30eecaa6e02d7a49427ba9e1ff5a4563f48bc752a7f37a5f8e7c3202e31e8",
+      "counts": {
+        "roads": 86,
+        "buildings": 357,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_-9": {
+      "url": "tiles/-10_-9.json",
+      "ix": -10,
+      "iz": -9,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 122355,
+      "sha256": "2072a44095c34e769018320f26d2b80d747b2c5a95b51ddba7485cdf491abf0d",
+      "counts": {
+        "roads": 85,
+        "buildings": 99,
+        "water": 0,
+        "landuse": 7
+      }
+    },
+    "-9_-9": {
+      "url": "tiles/-9_-9.json",
+      "ix": -9,
+      "iz": -9,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 108847,
+      "sha256": "6e180135c0480f94c63ed9be233dfdc3423aab99ad4ed6785bb6be0cf8354e0c",
+      "counts": {
+        "roads": 85,
+        "buildings": 65,
+        "water": 2,
+        "landuse": 10
+      }
+    },
+    "-8_-9": {
+      "url": "tiles/-8_-9.json",
+      "ix": -8,
+      "iz": -9,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 155436,
+      "sha256": "2a6e8b48b38d4c63206202a25fd67ff01aace0a494d113f398867f32233c34c7",
+      "counts": {
+        "roads": 94,
+        "buildings": 134,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-7_-9": {
+      "url": "tiles/-7_-9.json",
+      "ix": -7,
+      "iz": -9,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 198081,
+      "sha256": "dfbf74a35fde9af787678989106303fd6f4d49066f03a6de8cf998054d686994",
+      "counts": {
+        "roads": 79,
+        "buildings": 212,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-6_-9": {
+      "url": "tiles/-6_-9.json",
+      "ix": -6,
+      "iz": -9,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 213401,
+      "sha256": "c8c0a7107a1413be1046e2050a8ac5a46f1fb73429bf89e84f0f401817e817b9",
+      "counts": {
+        "roads": 66,
+        "buildings": 246,
+        "water": 0,
+        "landuse": 11
+      }
+    },
+    "-5_-9": {
+      "url": "tiles/-5_-9.json",
+      "ix": -5,
+      "iz": -9,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 149231,
+      "sha256": "f027821183687d463488d2801d4b57848d30bb73256db31657c9c55ef9d44d6d",
+      "counts": {
+        "roads": 65,
+        "buildings": 152,
+        "water": 0,
+        "landuse": 12
+      }
+    },
+    "-4_-9": {
+      "url": "tiles/-4_-9.json",
+      "ix": -4,
+      "iz": -9,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 74784,
+      "sha256": "e178b9bdd9fffbe284e565cb92be20fae0c60c248470baf21240b66a5a1ed55c",
+      "counts": {
+        "roads": 42,
+        "buildings": 53,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-3_-9": {
+      "url": "tiles/-3_-9.json",
+      "ix": -3,
+      "iz": -9,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 103961,
+      "sha256": "769c24bc4c01bc42a2b19e026eb1d466400127e95f172c5510c4272dea7d415c",
+      "counts": {
+        "roads": 43,
+        "buildings": 102,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-2_-9": {
+      "url": "tiles/-2_-9.json",
+      "ix": -2,
+      "iz": -9,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 13103,
+      "sha256": "8ec02f4153481f5648aae26d8a6bd0ab24db7a06428a91bd3dc13b1e5d35847e",
+      "counts": {
+        "roads": 14,
+        "buildings": 2,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-1_-9": {
+      "url": "tiles/-1_-9.json",
+      "ix": -1,
+      "iz": -9,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 3678,
+      "sha256": "ea35d3baa412a58af4540e8f809798c03640678de387043e9b87278370f7cb97",
+      "counts": {
+        "roads": 4,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "0_-9": {
+      "url": "tiles/0_-9.json",
+      "ix": 0,
+      "iz": -9,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 1516,
+      "sha256": "55ebe513a125ff2f2c836c233bc03865eb086d441a12c89905459b98faa2dd9b",
+      "counts": {
+        "roads": 1,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "1_-9": {
+      "url": "tiles/1_-9.json",
+      "ix": 1,
+      "iz": -9,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 10544,
+      "sha256": "005446003834b702a95901f052c0295f0aeb8a7c0cc5791f6362ea6105a7bc8a",
+      "counts": {
+        "roads": 13,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "2_-9": {
+      "url": "tiles/2_-9.json",
+      "ix": 2,
+      "iz": -9,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 18788,
+      "sha256": "0e8f234113f103790c69f8005b174289cac3294b110812681dd903a2e4ab4992",
+      "counts": {
+        "roads": 17,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "3_-9": {
+      "url": "tiles/3_-9.json",
+      "ix": 3,
+      "iz": -9,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 26572,
+      "sha256": "a33f790cf329ae5fe7d39f32a5cc682ffbf181e2f7c9aeff6f18c472ca84b3c6",
+      "counts": {
+        "roads": 33,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "4_-9": {
+      "url": "tiles/4_-9.json",
+      "ix": 4,
+      "iz": -9,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 58504,
+      "sha256": "c536ae5ccfc7ab5a3520d2783fba315ac77b603c6252af78f9c8998ee0aac20d",
+      "counts": {
+        "roads": 80,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "5_-9": {
+      "url": "tiles/5_-9.json",
+      "ix": 5,
+      "iz": -9,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 74102,
+      "sha256": "4dee46dec94a9ce433bdd55b4b0bf95a53f391c10aa2e4c2e9495dd49facd194",
+      "counts": {
+        "roads": 87,
+        "buildings": 27,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "6_-9": {
+      "url": "tiles/6_-9.json",
+      "ix": 6,
+      "iz": -9,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 81630,
+      "sha256": "b017bf7f84a6e79feba00107767f1815b3e88610a08694d583c442db808b5e39",
+      "counts": {
+        "roads": 106,
+        "buildings": 22,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "7_-9": {
+      "url": "tiles/7_-9.json",
+      "ix": 7,
+      "iz": -9,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 75603,
+      "sha256": "f2954eeb709d32b1967212d1dda84786348567b5759d8febd78de1604e69394b",
+      "counts": {
+        "roads": 41,
+        "buildings": 70,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "8_-9": {
+      "url": "tiles/8_-9.json",
+      "ix": 8,
+      "iz": -9,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 136846,
+      "sha256": "04b3588cfc940a86590fd4ed44efede116c6af811bc2d6501c101201d85aad52",
+      "counts": {
+        "roads": 80,
+        "buildings": 138,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "9_-9": {
+      "url": "tiles/9_-9.json",
+      "ix": 9,
+      "iz": -9,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -4608,
+        "maxZ": -4096
+      },
+      "bytes": 181806,
+      "sha256": "55cfbda83241045951f73e966016f9677484682f52e7d66646b3ebe6533f403e",
+      "counts": {
+        "roads": 95,
+        "buildings": 198,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_-8": {
+      "url": "tiles/-10_-8.json",
+      "ix": -10,
+      "iz": -8,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 96883,
+      "sha256": "88d63dc14ad87de3732dacf88e0418b1b32af0661707239de5dbd51986ad6ba3",
+      "counts": {
+        "roads": 76,
+        "buildings": 69,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-9_-8": {
+      "url": "tiles/-9_-8.json",
+      "ix": -9,
+      "iz": -8,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 105843,
+      "sha256": "3ea03b86179de761ce34a00bbfcfdf86d51eb9c384fa5f4066de2a7a8a4dbfe9",
+      "counts": {
+        "roads": 86,
+        "buildings": 68,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-8_-8": {
+      "url": "tiles/-8_-8.json",
+      "ix": -8,
+      "iz": -8,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 136709,
+      "sha256": "bb7f6d15fdde9af91169e8ab3993e1af828d443c4c49401d2b12945c23c3b594",
+      "counts": {
+        "roads": 61,
+        "buildings": 128,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-7_-8": {
+      "url": "tiles/-7_-8.json",
+      "ix": -7,
+      "iz": -8,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 158832,
+      "sha256": "423dd24c4d8493d14e4f9217585e03e32ed0aeb81b246405f6b91a201e71b5b9",
+      "counts": {
+        "roads": 69,
+        "buildings": 158,
+        "water": 0,
+        "landuse": 7
+      }
+    },
+    "-6_-8": {
+      "url": "tiles/-6_-8.json",
+      "ix": -6,
+      "iz": -8,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 172532,
+      "sha256": "95ca76011abac244def249ef37d059ec6cc7be71941549663d14cb73730333ad",
+      "counts": {
+        "roads": 56,
+        "buildings": 215,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-5_-8": {
+      "url": "tiles/-5_-8.json",
+      "ix": -5,
+      "iz": -8,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 43590,
+      "sha256": "05c2358e347d7b540e82b412a33f49bb1038a8e788c2f402f091adb6e5da6fdf",
+      "counts": {
+        "roads": 30,
+        "buildings": 33,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-4_-8": {
+      "url": "tiles/-4_-8.json",
+      "ix": -4,
+      "iz": -8,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 112677,
+      "sha256": "e6b3c6f1f6c7458c88fbd31c66d7d4d492426f52365b47b475e220129fa781a6",
+      "counts": {
+        "roads": 94,
+        "buildings": 66,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-3_-8": {
+      "url": "tiles/-3_-8.json",
+      "ix": -3,
+      "iz": -8,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 86617,
+      "sha256": "645fa188319d5d36472e438ca194676765f0601f2ae3c2370a5f6bcfb4b4bcfa",
+      "counts": {
+        "roads": 35,
+        "buildings": 86,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-2_-8": {
+      "url": "tiles/-2_-8.json",
+      "ix": -2,
+      "iz": -8,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 11421,
+      "sha256": "51678cb66754ff69f0000f1adb6032d18349e7e906bbdbcc87e56c1584467739",
+      "counts": {
+        "roads": 10,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-1_-8": {
+      "url": "tiles/-1_-8.json",
+      "ix": -1,
+      "iz": -8,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 51593,
+      "sha256": "d65acc5d5500bc36287a8189408c2f56b0529c81229d942447df9aa5a213a93c",
+      "counts": {
+        "roads": 43,
+        "buildings": 23,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "0_-8": {
+      "url": "tiles/0_-8.json",
+      "ix": 0,
+      "iz": -8,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 67456,
+      "sha256": "7819eb2a1b9b20e862311fc89c286ac88775797870b11d62edb64800dd134c52",
+      "counts": {
+        "roads": 46,
+        "buildings": 42,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "1_-8": {
+      "url": "tiles/1_-8.json",
+      "ix": 1,
+      "iz": -8,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 50072,
+      "sha256": "24b3811f92f8b6253bce9225dee5d08286ec78befd180791367553daf5947bbf",
+      "counts": {
+        "roads": 49,
+        "buildings": 16,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "2_-8": {
+      "url": "tiles/2_-8.json",
+      "ix": 2,
+      "iz": -8,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 20997,
+      "sha256": "159d40151d7e4cd8f220c5a817268dbe1411d216f9f865a1c33bc0c9f1f3e537",
+      "counts": {
+        "roads": 20,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "3_-8": {
+      "url": "tiles/3_-8.json",
+      "ix": 3,
+      "iz": -8,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 7891,
+      "sha256": "4497f00b8f059438ad7403360b7c4732072730a8e57262aaf141cdf894f9acf8",
+      "counts": {
+        "roads": 5,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "4_-8": {
+      "url": "tiles/4_-8.json",
+      "ix": 4,
+      "iz": -8,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 11872,
+      "sha256": "4393b831c8e4f9b9f14bf99067d8bfb255526baa4ccbd5c466a46d7adef77116",
+      "counts": {
+        "roads": 12,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "5_-8": {
+      "url": "tiles/5_-8.json",
+      "ix": 5,
+      "iz": -8,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 44513,
+      "sha256": "4ff8c2627f8f8884181425d0732571650f44ad24016c9fd8da8aa6a72889dcd0",
+      "counts": {
+        "roads": 50,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 9
+      }
+    },
+    "6_-8": {
+      "url": "tiles/6_-8.json",
+      "ix": 6,
+      "iz": -8,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 72847,
+      "sha256": "54043842d0581951d0bcd1dfbaa8948502c2272b1eb71728efad827507f52d4d",
+      "counts": {
+        "roads": 71,
+        "buildings": 23,
+        "water": 1,
+        "landuse": 8
+      }
+    },
+    "7_-8": {
+      "url": "tiles/7_-8.json",
+      "ix": 7,
+      "iz": -8,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 75306,
+      "sha256": "f4de62526e44c51499bf2ba2995764b3b8901e75db1220c395af9a11938c5859",
+      "counts": {
+        "roads": 49,
+        "buildings": 62,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "8_-8": {
+      "url": "tiles/8_-8.json",
+      "ix": 8,
+      "iz": -8,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 78487,
+      "sha256": "1e9672df487b53db3340fbcaf5da44580899b6d35be6a09d6a213a769dc4f847",
+      "counts": {
+        "roads": 98,
+        "buildings": 20,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "9_-8": {
+      "url": "tiles/9_-8.json",
+      "ix": 9,
+      "iz": -8,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -4096,
+        "maxZ": -3584
+      },
+      "bytes": 59698,
+      "sha256": "52d643adb5a5a7374e3905452a93be0d753979b9f4b54452ac28a896df23415d",
+      "counts": {
+        "roads": 83,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-10_-7": {
+      "url": "tiles/-10_-7.json",
+      "ix": -10,
+      "iz": -7,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 96423,
+      "sha256": "7753efef993dcda4a781902f292978ebb8a4c15c4495ee198dfd34720ac9d709",
+      "counts": {
+        "roads": 41,
+        "buildings": 81,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-9_-7": {
+      "url": "tiles/-9_-7.json",
+      "ix": -9,
+      "iz": -7,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 48382,
+      "sha256": "21ed52b565f2f3943e8f5b1f7734497bd6d6910879f8df79ef7e46d6e178c10d",
+      "counts": {
+        "roads": 40,
+        "buildings": 18,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-8_-7": {
+      "url": "tiles/-8_-7.json",
+      "ix": -8,
+      "iz": -7,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 113368,
+      "sha256": "1b3cec150671d68d6fa64e09515ce7d8cc6820a1a5f4cbea7ef2f24c1f0c0a4c",
+      "counts": {
+        "roads": 64,
+        "buildings": 81,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-7_-7": {
+      "url": "tiles/-7_-7.json",
+      "ix": -7,
+      "iz": -7,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 125874,
+      "sha256": "25e57932d97809bbde0179ccf5904d70d3c7b388264f076661ec9451f9e4ca2f",
+      "counts": {
+        "roads": 81,
+        "buildings": 85,
+        "water": 0,
+        "landuse": 8
+      }
+    },
+    "-6_-7": {
+      "url": "tiles/-6_-7.json",
+      "ix": -6,
+      "iz": -7,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 110828,
+      "sha256": "2f82c0865dc47766586c6284ef917dfdf23f6edcd23d4c4031f6cb64bc1aedcb",
+      "counts": {
+        "roads": 69,
+        "buildings": 97,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_-7": {
+      "url": "tiles/-5_-7.json",
+      "ix": -5,
+      "iz": -7,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 54358,
+      "sha256": "7fc5a690b411afde0f81c5e9b7316cd7acbce57a71718c1eb1be28029c2cbde2",
+      "counts": {
+        "roads": 47,
+        "buildings": 27,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-4_-7": {
+      "url": "tiles/-4_-7.json",
+      "ix": -4,
+      "iz": -7,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 34577,
+      "sha256": "669b71f698aa8994cea88cd918e174f9b3ef07b760e18d0ccf2c21642149e9c8",
+      "counts": {
+        "roads": 38,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-3_-7": {
+      "url": "tiles/-3_-7.json",
+      "ix": -3,
+      "iz": -7,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 16017,
+      "sha256": "c17c2496ec9ade844d6e4c64bea0795f065a41946333b5d3e2cf01d99dfa046b",
+      "counts": {
+        "roads": 17,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-2_-7": {
+      "url": "tiles/-2_-7.json",
+      "ix": -2,
+      "iz": -7,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 35445,
+      "sha256": "f2647a1c8c94e11b46d78e4eed78c11cfbd34ff5d7155e535cc7d5f3a4fc2f2c",
+      "counts": {
+        "roads": 40,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-1_-7": {
+      "url": "tiles/-1_-7.json",
+      "ix": -1,
+      "iz": -7,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 82975,
+      "sha256": "0a503668e6604e174dcd3153e486e688a2ccfcafb3b9842091efa8bb08f3caf1",
+      "counts": {
+        "roads": 70,
+        "buildings": 47,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "0_-7": {
+      "url": "tiles/0_-7.json",
+      "ix": 0,
+      "iz": -7,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 150469,
+      "sha256": "1020f3bf242ac76fed433f688b218879d77f78d9dd9219031d05e5b2da37810c",
+      "counts": {
+        "roads": 67,
+        "buildings": 151,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_-7": {
+      "url": "tiles/1_-7.json",
+      "ix": 1,
+      "iz": -7,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 266220,
+      "sha256": "27de53349eac9ee0179e7c5ac5d856c7842ca067d64ce53d36d6267587e19743",
+      "counts": {
+        "roads": 79,
+        "buildings": 336,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "2_-7": {
+      "url": "tiles/2_-7.json",
+      "ix": 2,
+      "iz": -7,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 172195,
+      "sha256": "7546fb0bce2df4cc34bcd67d75e6173f15a11d676117d2cc23ce978a666b96af",
+      "counts": {
+        "roads": 63,
+        "buildings": 195,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "3_-7": {
+      "url": "tiles/3_-7.json",
+      "ix": 3,
+      "iz": -7,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 179792,
+      "sha256": "c086cbba69b76cb141aa8e8768afb744bca2f7969f47a703ec284086aa77c43d",
+      "counts": {
+        "roads": 44,
+        "buildings": 235,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "4_-7": {
+      "url": "tiles/4_-7.json",
+      "ix": 4,
+      "iz": -7,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 97996,
+      "sha256": "ee1e4e71b247e4a4b0c79ff692beef3b818d1439ad05a07b93be77cff3d3e3c6",
+      "counts": {
+        "roads": 43,
+        "buildings": 101,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "5_-7": {
+      "url": "tiles/5_-7.json",
+      "ix": 5,
+      "iz": -7,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 11188,
+      "sha256": "918e7db9e49126273b317f4e8e5cb1a0e8a70cee1e6def1d3bc3c4cdb0ae0a63",
+      "counts": {
+        "roads": 9,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "6_-7": {
+      "url": "tiles/6_-7.json",
+      "ix": 6,
+      "iz": -7,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 29129,
+      "sha256": "f245500150a02dfc712e4dfa45b361748b525bc9bd698faa13badd6bdc2e525b",
+      "counts": {
+        "roads": 11,
+        "buildings": 4,
+        "water": 4,
+        "landuse": 5
+      }
+    },
+    "7_-7": {
+      "url": "tiles/7_-7.json",
+      "ix": 7,
+      "iz": -7,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 9643,
+      "sha256": "d77a02b45e7f89ecf5392e42cdb0ad281e2f2870dc5d2093cd3a0d5f4c71f77c",
+      "counts": {
+        "roads": 8,
+        "buildings": 2,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "8_-7": {
+      "url": "tiles/8_-7.json",
+      "ix": 8,
+      "iz": -7,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 45514,
+      "sha256": "43063b4e3ab44ba8b2d078f38590d605bfbed2d9bfd6938aeb183738ed9950e0",
+      "counts": {
+        "roads": 37,
+        "buildings": 28,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "9_-7": {
+      "url": "tiles/9_-7.json",
+      "ix": 9,
+      "iz": -7,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -3584,
+        "maxZ": -3072
+      },
+      "bytes": 56444,
+      "sha256": "d586b285a6a7217a8268d150f05b4ac077d5dfe93572dc79daad4b70f726a6ce",
+      "counts": {
+        "roads": 45,
+        "buildings": 39,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_-6": {
+      "url": "tiles/-10_-6.json",
+      "ix": -10,
+      "iz": -6,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 69329,
+      "sha256": "1f5c1cfcf750274b09a07e4e2a966bdc3acb832fbaed65360170ab46242570e2",
+      "counts": {
+        "roads": 50,
+        "buildings": 48,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-9_-6": {
+      "url": "tiles/-9_-6.json",
+      "ix": -9,
+      "iz": -6,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 56209,
+      "sha256": "582b17c05e13d9c8ff63986af5c91777d8415e47878d253151380549cc6fef36",
+      "counts": {
+        "roads": 32,
+        "buildings": 25,
+        "water": 3,
+        "landuse": 16
+      }
+    },
+    "-8_-6": {
+      "url": "tiles/-8_-6.json",
+      "ix": -8,
+      "iz": -6,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 62464,
+      "sha256": "925718caee55776f46184fff64a7af4d2e7a56aefa592c299f7cd5a42e755bed",
+      "counts": {
+        "roads": 15,
+        "buildings": 52,
+        "water": 4,
+        "landuse": 7
+      }
+    },
+    "-7_-6": {
+      "url": "tiles/-7_-6.json",
+      "ix": -7,
+      "iz": -6,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 84429,
+      "sha256": "ed4c9e63134f83e609897c6b97ac580699e17b2c06a6903ffa208fc362473b27",
+      "counts": {
+        "roads": 45,
+        "buildings": 65,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_-6": {
+      "url": "tiles/-6_-6.json",
+      "ix": -6,
+      "iz": -6,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 70995,
+      "sha256": "a537c3a0be4a498d3d849801e04938a17bf65919387143443bccfffbf64015de",
+      "counts": {
+        "roads": 72,
+        "buildings": 29,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_-6": {
+      "url": "tiles/-5_-6.json",
+      "ix": -5,
+      "iz": -6,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 33770,
+      "sha256": "a8058bb2632eddf74bc41959aed1a6d9c0ce361284040821967879d547536e71",
+      "counts": {
+        "roads": 35,
+        "buildings": 8,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-4_-6": {
+      "url": "tiles/-4_-6.json",
+      "ix": -4,
+      "iz": -6,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 9636,
+      "sha256": "d042d193f3bdb93d704caaaa4b5021023fac5d26ffe994f772740a22121911cd",
+      "counts": {
+        "roads": 8,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-3_-6": {
+      "url": "tiles/-3_-6.json",
+      "ix": -3,
+      "iz": -6,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 27413,
+      "sha256": "bfd26b46e4036ba4651da369c862b212f5f0521c3636af2212e18c71998e32cd",
+      "counts": {
+        "roads": 24,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-2_-6": {
+      "url": "tiles/-2_-6.json",
+      "ix": -2,
+      "iz": -6,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 155662,
+      "sha256": "00b1c323c4250af41d79ca012cded082284e0b72b4cb4356531926c5db7afdc3",
+      "counts": {
+        "roads": 93,
+        "buildings": 138,
+        "water": 0,
+        "landuse": 7
+      }
+    },
+    "-1_-6": {
+      "url": "tiles/-1_-6.json",
+      "ix": -1,
+      "iz": -6,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 368226,
+      "sha256": "7922d795b87fbc4eb00d1e02d847583f5808fd9f7169eb5b4367817cac0eb314",
+      "counts": {
+        "roads": 73,
+        "buildings": 502,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "0_-6": {
+      "url": "tiles/0_-6.json",
+      "ix": 0,
+      "iz": -6,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 293935,
+      "sha256": "436e437f67649f2e5a99207ba216ece87777b21f3dd7d4d78c2b903f08d25dd2",
+      "counts": {
+        "roads": 67,
+        "buildings": 407,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_-6": {
+      "url": "tiles/1_-6.json",
+      "ix": 1,
+      "iz": -6,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 263300,
+      "sha256": "eec8616ab70246487db4b4b3a233408298709d7272982b31fa170c207247d864",
+      "counts": {
+        "roads": 63,
+        "buildings": 344,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_-6": {
+      "url": "tiles/2_-6.json",
+      "ix": 2,
+      "iz": -6,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 291984,
+      "sha256": "d3087c2b3036bf4839c585711aa60c7b7b5376f302e587ddd070de32cba360ad",
+      "counts": {
+        "roads": 68,
+        "buildings": 373,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "3_-6": {
+      "url": "tiles/3_-6.json",
+      "ix": 3,
+      "iz": -6,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 331249,
+      "sha256": "7ae036f1109fe1670a0a5c7e2f49eece910921a922579f196e1b9205cf52f01a",
+      "counts": {
+        "roads": 85,
+        "buildings": 400,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_-6": {
+      "url": "tiles/4_-6.json",
+      "ix": 4,
+      "iz": -6,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 188588,
+      "sha256": "c2dccc3471f5b6c352aa3b543cd9423753aa1e1f09be01de9dfe83eacd03eec1",
+      "counts": {
+        "roads": 68,
+        "buildings": 195,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "5_-6": {
+      "url": "tiles/5_-6.json",
+      "ix": 5,
+      "iz": -6,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 40548,
+      "sha256": "cf58c505c2ec41ae82dad8307b9252a84e035b4187acb32fa5f006cd2ec34680",
+      "counts": {
+        "roads": 19,
+        "buildings": 31,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "6_-6": {
+      "url": "tiles/6_-6.json",
+      "ix": 6,
+      "iz": -6,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 7851,
+      "sha256": "c0bab08a68cbd490b41688a23795964546dcba2f3ff599e6c882a429be019ec8",
+      "counts": {
+        "roads": 5,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "7_-6": {
+      "url": "tiles/7_-6.json",
+      "ix": 7,
+      "iz": -6,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 230,
+      "sha256": "ae145907789670cc91fbd327fafe0ada8eb0018aeb805f5e4ad88efaf4662fc1",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "8_-6": {
+      "url": "tiles/8_-6.json",
+      "ix": 8,
+      "iz": -6,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 230,
+      "sha256": "581b4a89986e1dc2461f3c4e4ebb25462f47069540098eb19a60a956f83ec813",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "9_-6": {
+      "url": "tiles/9_-6.json",
+      "ix": 9,
+      "iz": -6,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -3072,
+        "maxZ": -2560
+      },
+      "bytes": 230,
+      "sha256": "32ea83f28b3f8f7295e1be5b9af72221f02ab7d2b7a8142de9ffb6bac263eb9c",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-10_-5": {
+      "url": "tiles/-10_-5.json",
+      "ix": -10,
+      "iz": -5,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 69478,
+      "sha256": "3245736ae3574c4c536872a7ff355d553cb5624ad2426f53717717a7f3b5ce37",
+      "counts": {
+        "roads": 46,
+        "buildings": 56,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-9_-5": {
+      "url": "tiles/-9_-5.json",
+      "ix": -9,
+      "iz": -5,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 70451,
+      "sha256": "36db8296652ff9a79acea7b2d36d73ea07b4f6aa081bb574093fc34f8026ad60",
+      "counts": {
+        "roads": 44,
+        "buildings": 59,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-8_-5": {
+      "url": "tiles/-8_-5.json",
+      "ix": -8,
+      "iz": -5,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 71393,
+      "sha256": "f47e997e11e0f6f828d06e70c4b667098a3a8e5d336745b128f07d3489e6f2e8",
+      "counts": {
+        "roads": 77,
+        "buildings": 21,
+        "water": 2,
+        "landuse": 4
+      }
+    },
+    "-7_-5": {
+      "url": "tiles/-7_-5.json",
+      "ix": -7,
+      "iz": -5,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 55387,
+      "sha256": "7344d48a2f921ec4e15ada7618b2c9ac18fa2f222190a7649c10350952d7f222",
+      "counts": {
+        "roads": 52,
+        "buildings": 27,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-6_-5": {
+      "url": "tiles/-6_-5.json",
+      "ix": -6,
+      "iz": -5,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 32224,
+      "sha256": "2e8bddfd3f959e9500bd721c5efca72eb251eda0ba9a02f80b4577129a740d19",
+      "counts": {
+        "roads": 40,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_-5": {
+      "url": "tiles/-5_-5.json",
+      "ix": -5,
+      "iz": -5,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 7963,
+      "sha256": "4752495637396b3cb553d3e8e06ddc97ab539deccac9334ceb6b51bcf28526dc",
+      "counts": {
+        "roads": 6,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-4_-5": {
+      "url": "tiles/-4_-5.json",
+      "ix": -4,
+      "iz": -5,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 34378,
+      "sha256": "256c10a69bba3364869a9e50541617ddad27c4da90359e64209571ee33844f7f",
+      "counts": {
+        "roads": 15,
+        "buildings": 31,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-3_-5": {
+      "url": "tiles/-3_-5.json",
+      "ix": -3,
+      "iz": -5,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 78226,
+      "sha256": "ca5f013d1d7aeca570cf5b3b61e2f085399c2da52a4fc05c62952547d874549d",
+      "counts": {
+        "roads": 51,
+        "buildings": 55,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-2_-5": {
+      "url": "tiles/-2_-5.json",
+      "ix": -2,
+      "iz": -5,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 250267,
+      "sha256": "c63bf6277ac3fc88c496af1f07ec204fa1b20141e0c75ed94c711a89d4f07f19",
+      "counts": {
+        "roads": 72,
+        "buildings": 321,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-1_-5": {
+      "url": "tiles/-1_-5.json",
+      "ix": -1,
+      "iz": -5,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 310422,
+      "sha256": "86e1808551f7daeae60aa85d88104b078ce93c1c82bdd3b3a3f672d6f8eb244b",
+      "counts": {
+        "roads": 83,
+        "buildings": 407,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "0_-5": {
+      "url": "tiles/0_-5.json",
+      "ix": 0,
+      "iz": -5,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 319610,
+      "sha256": "0452b47866d8a39153925addbccac3bd6201cb435ac72a3f57b09970e40a7df4",
+      "counts": {
+        "roads": 92,
+        "buildings": 430,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "1_-5": {
+      "url": "tiles/1_-5.json",
+      "ix": 1,
+      "iz": -5,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 221134,
+      "sha256": "d0a7127edad865736d8cb1a64c838f3c31615471e868df99c1379c870563a60c",
+      "counts": {
+        "roads": 84,
+        "buildings": 267,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_-5": {
+      "url": "tiles/2_-5.json",
+      "ix": 2,
+      "iz": -5,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 248342,
+      "sha256": "9dab83546cc1df16ec90ac04ad160cd90930c75df7698c351d1ee3bb23cff3ea",
+      "counts": {
+        "roads": 76,
+        "buildings": 299,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "3_-5": {
+      "url": "tiles/3_-5.json",
+      "ix": 3,
+      "iz": -5,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 149459,
+      "sha256": "8f32c1df7938c9f306141e55b6e0fe02972fbecef49e79a082d6d877bda01f75",
+      "counts": {
+        "roads": 48,
+        "buildings": 160,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "4_-5": {
+      "url": "tiles/4_-5.json",
+      "ix": 4,
+      "iz": -5,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 165325,
+      "sha256": "86db8f3b5624515624158d2acf26f75698f1d66416b9c92c8ddbe22cee366b12",
+      "counts": {
+        "roads": 57,
+        "buildings": 192,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "5_-5": {
+      "url": "tiles/5_-5.json",
+      "ix": 5,
+      "iz": -5,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 127796,
+      "sha256": "3c2f618717106484ac3c8fbf83c230cfb1bfb8e2b4983d8f70a82b66275b19d9",
+      "counts": {
+        "roads": 52,
+        "buildings": 138,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "6_-5": {
+      "url": "tiles/6_-5.json",
+      "ix": 6,
+      "iz": -5,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 96771,
+      "sha256": "6d0208d5c50cf62b786baaaf0ef607e864472cd0144aed0ad0cb0f2c57900c3e",
+      "counts": {
+        "roads": 46,
+        "buildings": 96,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "7_-5": {
+      "url": "tiles/7_-5.json",
+      "ix": 7,
+      "iz": -5,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 13474,
+      "sha256": "0ad165147c0c0c716751b2debe896aba76f503acb1cf6d2150f3c33d0167c991",
+      "counts": {
+        "roads": 12,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "8_-5": {
+      "url": "tiles/8_-5.json",
+      "ix": 8,
+      "iz": -5,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 29144,
+      "sha256": "488eea13a2d32e5347b5920743f1a0ec0a194a041a88f5635fcc40bce5691f3b",
+      "counts": {
+        "roads": 35,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "9_-5": {
+      "url": "tiles/9_-5.json",
+      "ix": 9,
+      "iz": -5,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -2560,
+        "maxZ": -2048
+      },
+      "bytes": 13814,
+      "sha256": "fa85132210cbd4fb80728d96d1fdf3d20437ed8a7af138bd72b855a3e34f498b",
+      "counts": {
+        "roads": 7,
+        "buildings": 12,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_-4": {
+      "url": "tiles/-10_-4.json",
+      "ix": -10,
+      "iz": -4,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 10763,
+      "sha256": "1ec81774b5516e674d6622a81a29428948d415ef1f3505a86df01830c3b1dde4",
+      "counts": {
+        "roads": 10,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-9_-4": {
+      "url": "tiles/-9_-4.json",
+      "ix": -9,
+      "iz": -4,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 9360,
+      "sha256": "775d78d43e642ffa1d94be3243b96dfdb6253660de8e7bb4f54e6a999c541074",
+      "counts": {
+        "roads": 9,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-8_-4": {
+      "url": "tiles/-8_-4.json",
+      "ix": -8,
+      "iz": -4,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 14600,
+      "sha256": "4f7ae660bda43d95116aebe9c8e2f2bf96060af37d1b54c41c51f82cbc1dd031",
+      "counts": {
+        "roads": 16,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-7_-4": {
+      "url": "tiles/-7_-4.json",
+      "ix": -7,
+      "iz": -4,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 3333,
+      "sha256": "a4e1e6d849a6e80cecbe7a625c9ef9e5d7a57f7cfdd87262d80b386943928265",
+      "counts": {
+        "roads": 2,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-6_-4": {
+      "url": "tiles/-6_-4.json",
+      "ix": -6,
+      "iz": -4,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 13971,
+      "sha256": "f62f69402576123070e997bbf5cc52d292725fa4aa97e743acefda4c64180d51",
+      "counts": {
+        "roads": 7,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-5_-4": {
+      "url": "tiles/-5_-4.json",
+      "ix": -5,
+      "iz": -4,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 27441,
+      "sha256": "5dd0dc916c6919c1ccf116250484a9a9fd43d9d70deb4626fea5e405daff9776",
+      "counts": {
+        "roads": 23,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 11
+      }
+    },
+    "-4_-4": {
+      "url": "tiles/-4_-4.json",
+      "ix": -4,
+      "iz": -4,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 63174,
+      "sha256": "69f7be2fbb2b53854a415d494dbeb7e01c11ff878d987b197d4ffb367445a0ee",
+      "counts": {
+        "roads": 45,
+        "buildings": 38,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-3_-4": {
+      "url": "tiles/-3_-4.json",
+      "ix": -3,
+      "iz": -4,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 61553,
+      "sha256": "ecdb450b5462238518ff0968a2c2030bb388379f29b1715f280395558f030106",
+      "counts": {
+        "roads": 45,
+        "buildings": 35,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-2_-4": {
+      "url": "tiles/-2_-4.json",
+      "ix": -2,
+      "iz": -4,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 301351,
+      "sha256": "55113e4611b71389c431c0bf93ff898caf25026d4ff04e80c2b3ecc6ba797d4a",
+      "counts": {
+        "roads": 97,
+        "buildings": 386,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-1_-4": {
+      "url": "tiles/-1_-4.json",
+      "ix": -1,
+      "iz": -4,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 193091,
+      "sha256": "9c4b6036f52a02081aec6630f7a6643338aaf35df7bb3f7af11ee76f91a0e39b",
+      "counts": {
+        "roads": 68,
+        "buildings": 236,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "0_-4": {
+      "url": "tiles/0_-4.json",
+      "ix": 0,
+      "iz": -4,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 264258,
+      "sha256": "0098c54e3774240adf2fb3147aeb2d5a131599cd79f9cddfd11e71a40fa63d7d",
+      "counts": {
+        "roads": 82,
+        "buildings": 343,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "1_-4": {
+      "url": "tiles/1_-4.json",
+      "ix": 1,
+      "iz": -4,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 233023,
+      "sha256": "65b3d66fcb112087ff0e1289c94eb1f1568ccf616911772c54164390bea6b22a",
+      "counts": {
+        "roads": 68,
+        "buildings": 301,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "2_-4": {
+      "url": "tiles/2_-4.json",
+      "ix": 2,
+      "iz": -4,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 299727,
+      "sha256": "3fdca236c60e8f750710983ada19d46780582e038670b27b22013148c9786242",
+      "counts": {
+        "roads": 77,
+        "buildings": 400,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "3_-4": {
+      "url": "tiles/3_-4.json",
+      "ix": 3,
+      "iz": -4,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 182263,
+      "sha256": "02807043ee45690bb86affbda3e2e47a40a3e5624d7d76f01ee0d1ddba0e1c61",
+      "counts": {
+        "roads": 57,
+        "buildings": 228,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "4_-4": {
+      "url": "tiles/4_-4.json",
+      "ix": 4,
+      "iz": -4,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 165303,
+      "sha256": "6d06b51e246c0b93063f67c2e02390707740fc63575e5e53fa7a175a7bfaaf2d",
+      "counts": {
+        "roads": 48,
+        "buildings": 207,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "5_-4": {
+      "url": "tiles/5_-4.json",
+      "ix": 5,
+      "iz": -4,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 106681,
+      "sha256": "a1082b5a56c6de359fb99621a63da0d4b871aff8272f6321673218e1acd45bcd",
+      "counts": {
+        "roads": 45,
+        "buildings": 115,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_-4": {
+      "url": "tiles/6_-4.json",
+      "ix": 6,
+      "iz": -4,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 102259,
+      "sha256": "b44143c5526ee55185f882978d48e8265660e0fd05b4f8818a22282bdce45135",
+      "counts": {
+        "roads": 52,
+        "buildings": 103,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "7_-4": {
+      "url": "tiles/7_-4.json",
+      "ix": 7,
+      "iz": -4,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 20981,
+      "sha256": "ef7cb7efc907a2e976ff8281992084b043906c7944d28746d26446c76d43e9c5",
+      "counts": {
+        "roads": 16,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "8_-4": {
+      "url": "tiles/8_-4.json",
+      "ix": 8,
+      "iz": -4,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 45828,
+      "sha256": "ee164e43bbef906d6652b6977ec0ba8cff9d1b80d0d80ee178b805a1e3eefad3",
+      "counts": {
+        "roads": 32,
+        "buildings": 26,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "9_-4": {
+      "url": "tiles/9_-4.json",
+      "ix": 9,
+      "iz": -4,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -2048,
+        "maxZ": -1536
+      },
+      "bytes": 63208,
+      "sha256": "97be914d3ceb4285c611591d4c2291fc262bb636111ef96f5b99b50e3a9071ac",
+      "counts": {
+        "roads": 24,
+        "buildings": 71,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_-3": {
+      "url": "tiles/-10_-3.json",
+      "ix": -10,
+      "iz": -3,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 6543,
+      "sha256": "6cb2d6e338890af58434708e04a9ef961b31734dcc61df3579c12f70ee06780c",
+      "counts": {
+        "roads": 7,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-9_-3": {
+      "url": "tiles/-9_-3.json",
+      "ix": -9,
+      "iz": -3,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 2372,
+      "sha256": "8d1e1a939f66604c41dee14b2eac95a83c5def9c981787dbbfd6c51e285e1e48",
+      "counts": {
+        "roads": 3,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-8_-3": {
+      "url": "tiles/-8_-3.json",
+      "ix": -8,
+      "iz": -3,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 2732,
+      "sha256": "347a8d215889378b9b69d6d0403f04e36476fb2badcb109d646d4865afa71613",
+      "counts": {
+        "roads": 3,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-7_-3": {
+      "url": "tiles/-7_-3.json",
+      "ix": -7,
+      "iz": -3,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 8456,
+      "sha256": "b4f0033165b774879f40c158d1d17c877c16c6321b876c9f4741e7f0edc0a395",
+      "counts": {
+        "roads": 5,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_-3": {
+      "url": "tiles/-6_-3.json",
+      "ix": -6,
+      "iz": -3,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 56330,
+      "sha256": "3aef3bf80e9f829351ff0e02cef458fd62aa5952130475c742747bae604a8a12",
+      "counts": {
+        "roads": 55,
+        "buildings": 16,
+        "water": 0,
+        "landuse": 9
+      }
+    },
+    "-5_-3": {
+      "url": "tiles/-5_-3.json",
+      "ix": -5,
+      "iz": -3,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 62853,
+      "sha256": "d3798eeb25665120dea4f1616c7877107517b12c2c57ad9db92a0045802c58ac",
+      "counts": {
+        "roads": 47,
+        "buildings": 33,
+        "water": 0,
+        "landuse": 14
+      }
+    },
+    "-4_-3": {
+      "url": "tiles/-4_-3.json",
+      "ix": -4,
+      "iz": -3,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 76213,
+      "sha256": "a356d624f32369bd5771bdfd60f410620b74d31a6e5d53bea67451bfd39fa926",
+      "counts": {
+        "roads": 57,
+        "buildings": 51,
+        "water": 0,
+        "landuse": 7
+      }
+    },
+    "-3_-3": {
+      "url": "tiles/-3_-3.json",
+      "ix": -3,
+      "iz": -3,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 51270,
+      "sha256": "2e6f171659da8187da867e430062df40e339bec0d4e30c9761bb4076f6edb1d1",
+      "counts": {
+        "roads": 31,
+        "buildings": 30,
+        "water": 2,
+        "landuse": 7
+      }
+    },
+    "-2_-3": {
+      "url": "tiles/-2_-3.json",
+      "ix": -2,
+      "iz": -3,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 352733,
+      "sha256": "47c1bfb398fa47a061db0df9a246e2b2f486f5b9f5c9273804e4febaaeec5bd1",
+      "counts": {
+        "roads": 93,
+        "buildings": 477,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-1_-3": {
+      "url": "tiles/-1_-3.json",
+      "ix": -1,
+      "iz": -3,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 189801,
+      "sha256": "31d0931f382f96a9c1b8d33ba967d5069d4624e9035c0e279ac3fb07cca33652",
+      "counts": {
+        "roads": 82,
+        "buildings": 222,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "0_-3": {
+      "url": "tiles/0_-3.json",
+      "ix": 0,
+      "iz": -3,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 203262,
+      "sha256": "9578277777d6c06ed88eaeb5eb1fa48f830eebadb8d0231ad6b103ef8f8862d8",
+      "counts": {
+        "roads": 73,
+        "buildings": 256,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "1_-3": {
+      "url": "tiles/1_-3.json",
+      "ix": 1,
+      "iz": -3,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 264687,
+      "sha256": "8804cb4996827eaf81de82ee7588dfbb820670e69b522334996af9ecb99df4ce",
+      "counts": {
+        "roads": 65,
+        "buildings": 365,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_-3": {
+      "url": "tiles/2_-3.json",
+      "ix": 2,
+      "iz": -3,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 287081,
+      "sha256": "198a0438b125fc33f7bcdc4f326bba144ce0758259c86c8c9c6bdd73f42b3bbf",
+      "counts": {
+        "roads": 74,
+        "buildings": 391,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "3_-3": {
+      "url": "tiles/3_-3.json",
+      "ix": 3,
+      "iz": -3,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 90258,
+      "sha256": "814794e25fad6198c10c7f76572d94240787f05e001feaa3a6bc24f56550aeee",
+      "counts": {
+        "roads": 30,
+        "buildings": 103,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "4_-3": {
+      "url": "tiles/4_-3.json",
+      "ix": 4,
+      "iz": -3,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 283454,
+      "sha256": "ef3859efdad424d64b4cbbb4207572336ee5a6a01822af5a88200a8a7df98dd8",
+      "counts": {
+        "roads": 53,
+        "buildings": 400,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "5_-3": {
+      "url": "tiles/5_-3.json",
+      "ix": 5,
+      "iz": -3,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 124926,
+      "sha256": "08719db9ae15b802c803f2c3b80ddf7e204063f29b5784deb77b12a26da3314d",
+      "counts": {
+        "roads": 58,
+        "buildings": 138,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "6_-3": {
+      "url": "tiles/6_-3.json",
+      "ix": 6,
+      "iz": -3,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 117684,
+      "sha256": "08af9ebacc714cebfe51b504ccb06e049bb010883131f0db35bf7ad673549e36",
+      "counts": {
+        "roads": 75,
+        "buildings": 106,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "7_-3": {
+      "url": "tiles/7_-3.json",
+      "ix": 7,
+      "iz": -3,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 53063,
+      "sha256": "28d9290af40038329ae6032d88ec56c3c73ff7e57a350deebdfaf63a675bf0b5",
+      "counts": {
+        "roads": 60,
+        "buildings": 21,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "8_-3": {
+      "url": "tiles/8_-3.json",
+      "ix": 8,
+      "iz": -3,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 64252,
+      "sha256": "4d2c2146aa9384b517a4da24f2fc07cd450017b3597492a16bbe72ff6432bf6b",
+      "counts": {
+        "roads": 36,
+        "buildings": 52,
+        "water": 0,
+        "landuse": 8
+      }
+    },
+    "9_-3": {
+      "url": "tiles/9_-3.json",
+      "ix": 9,
+      "iz": -3,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -1536,
+        "maxZ": -1024
+      },
+      "bytes": 449672,
+      "sha256": "7b015c24226b2f5e064560ecf52b9f637b0cdffae1981e60adc345a227136c77",
+      "counts": {
+        "roads": 54,
+        "buildings": 681,
+        "water": 1,
+        "landuse": 7
+      }
+    },
+    "-10_-2": {
+      "url": "tiles/-10_-2.json",
+      "ix": -10,
+      "iz": -2,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 45304,
+      "sha256": "2efb7d6ab1f7ea5b1e72e613c6d3fce47a1c64a0ab679319c6834863c30e9b39",
+      "counts": {
+        "roads": 33,
+        "buildings": 25,
+        "water": 1,
+        "landuse": 5
+      }
+    },
+    "-9_-2": {
+      "url": "tiles/-9_-2.json",
+      "ix": -9,
+      "iz": -2,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 54266,
+      "sha256": "7520baae98b05bfe0418379a5b62ba738937ddceea9c2156b7ceef5c8fe1702e",
+      "counts": {
+        "roads": 57,
+        "buildings": 11,
+        "water": 1,
+        "landuse": 10
+      }
+    },
+    "-8_-2": {
+      "url": "tiles/-8_-2.json",
+      "ix": -8,
+      "iz": -2,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 13587,
+      "sha256": "fdde4fa1b5167a4813320708060d3fe2c8df87b2f4cb9e60d265f0dda810c7ff",
+      "counts": {
+        "roads": 18,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-7_-2": {
+      "url": "tiles/-7_-2.json",
+      "ix": -7,
+      "iz": -2,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 22001,
+      "sha256": "8a612abca8c4ae7d6fd3b7792cb4d395eb361fc8f52d3244139c2c1e86cbdb49",
+      "counts": {
+        "roads": 16,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-6_-2": {
+      "url": "tiles/-6_-2.json",
+      "ix": -6,
+      "iz": -2,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 78994,
+      "sha256": "648e6d52ba7260c74cf8a31acd08183726611f352f8ebfec83c98e69a8aa08b1",
+      "counts": {
+        "roads": 32,
+        "buildings": 65,
+        "water": 1,
+        "landuse": 7
+      }
+    },
+    "-5_-2": {
+      "url": "tiles/-5_-2.json",
+      "ix": -5,
+      "iz": -2,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 87898,
+      "sha256": "8b1c9d3c232b3f511d1132f3856f1303e4703217470e96fd6ee4a5a49efd065f",
+      "counts": {
+        "roads": 80,
+        "buildings": 45,
+        "water": 2,
+        "landuse": 1
+      }
+    },
+    "-4_-2": {
+      "url": "tiles/-4_-2.json",
+      "ix": -4,
+      "iz": -2,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 91079,
+      "sha256": "6d47709f75f49a90dd8d4bf56f753e5a124c5231a176cf472a986a2dc0969c0a",
+      "counts": {
+        "roads": 97,
+        "buildings": 34,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-3_-2": {
+      "url": "tiles/-3_-2.json",
+      "ix": -3,
+      "iz": -2,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 84352,
+      "sha256": "3cd29596f06768a111ccf9d8c2a6724eed8a8fd3ba5dc766b5468dcc057fe50a",
+      "counts": {
+        "roads": 38,
+        "buildings": 66,
+        "water": 2,
+        "landuse": 6
+      }
+    },
+    "-2_-2": {
+      "url": "tiles/-2_-2.json",
+      "ix": -2,
+      "iz": -2,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 235960,
+      "sha256": "15ca16fb8ce78622eeedfa499916a7027a1e9e26a9ea4cf4ed4719e2ac3ca5e4",
+      "counts": {
+        "roads": 78,
+        "buildings": 279,
+        "water": 1,
+        "landuse": 4
+      }
+    },
+    "-1_-2": {
+      "url": "tiles/-1_-2.json",
+      "ix": -1,
+      "iz": -2,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 142118,
+      "sha256": "8be67363978c6504b109bc0be367814d57fa5824e83585504d9001fba38e0338",
+      "counts": {
+        "roads": 67,
+        "buildings": 135,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "0_-2": {
+      "url": "tiles/0_-2.json",
+      "ix": 0,
+      "iz": -2,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 108519,
+      "sha256": "6be168f5b5ec68a6a98703ad3db601fb3cc6eb695200d00edf013234dfc9dd0c",
+      "counts": {
+        "roads": 83,
+        "buildings": 47,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_-2": {
+      "url": "tiles/1_-2.json",
+      "ix": 1,
+      "iz": -2,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 273507,
+      "sha256": "fd90ea110ac10e4f7b918ee245bb11efe7d80824753339c40e17557f8d343a97",
+      "counts": {
+        "roads": 74,
+        "buildings": 376,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_-2": {
+      "url": "tiles/2_-2.json",
+      "ix": 2,
+      "iz": -2,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 297928,
+      "sha256": "5451b8bcb5b21f6da06d93fcb126c6e8a21d1d125bd2ffe9a3802bcb066d3445",
+      "counts": {
+        "roads": 88,
+        "buildings": 397,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "3_-2": {
+      "url": "tiles/3_-2.json",
+      "ix": 3,
+      "iz": -2,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 175354,
+      "sha256": "7565e786d53f2b261c7f931501908287bce767f05f8eb466f0587f799e01551e",
+      "counts": {
+        "roads": 49,
+        "buildings": 235,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_-2": {
+      "url": "tiles/4_-2.json",
+      "ix": 4,
+      "iz": -2,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 258880,
+      "sha256": "5bb482ffb5b3336de561df7303142a9029812597742043bbd4811914986134e1",
+      "counts": {
+        "roads": 66,
+        "buildings": 359,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "5_-2": {
+      "url": "tiles/5_-2.json",
+      "ix": 5,
+      "iz": -2,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 233595,
+      "sha256": "70bbcf1a7ffbbc426ae7a5d4500b9f53b85d3cecd83af26c2889db3435b9a747",
+      "counts": {
+        "roads": 67,
+        "buildings": 315,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "6_-2": {
+      "url": "tiles/6_-2.json",
+      "ix": 6,
+      "iz": -2,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 100465,
+      "sha256": "0ccfa9f5ca3ed708dc743ddb07ac933abe2aaea945f26cbda0d0d0eb465d8ecd",
+      "counts": {
+        "roads": 66,
+        "buildings": 88,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "7_-2": {
+      "url": "tiles/7_-2.json",
+      "ix": 7,
+      "iz": -2,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 32104,
+      "sha256": "bbc0b4e70fa2e52a36e9448c2a6c3013d8e444de2130f067db62a189cb45c9f4",
+      "counts": {
+        "roads": 32,
+        "buildings": 12,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "8_-2": {
+      "url": "tiles/8_-2.json",
+      "ix": 8,
+      "iz": -2,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 99832,
+      "sha256": "2f244424d8da0b23174d3669ca958646633ee6c52b98da71ca2172425ee2ec65",
+      "counts": {
+        "roads": 49,
+        "buildings": 107,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "9_-2": {
+      "url": "tiles/9_-2.json",
+      "ix": 9,
+      "iz": -2,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -1024,
+        "maxZ": -512
+      },
+      "bytes": 241328,
+      "sha256": "0070bb3d1f3cc2dda9975cb4ef137df4fd74d9b41561aa4812bebf8b7adae994",
+      "counts": {
+        "roads": 61,
+        "buildings": 326,
+        "water": 0,
+        "landuse": 11
+      }
+    },
+    "-10_-1": {
+      "url": "tiles/-10_-1.json",
+      "ix": -10,
+      "iz": -1,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 38530,
+      "sha256": "b4bbf2dcc17506d181909ff7de563cffbad6c533e5b8fcb7c66f978248af7b51",
+      "counts": {
+        "roads": 43,
+        "buildings": 5,
+        "water": 2,
+        "landuse": 8
+      }
+    },
+    "-9_-1": {
+      "url": "tiles/-9_-1.json",
+      "ix": -9,
+      "iz": -1,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 44151,
+      "sha256": "c4bb2c71d1a6c5ed3e7a1095f0e819253204f7cd4f2051c53e686bf5d3658d8b",
+      "counts": {
+        "roads": 34,
+        "buildings": 21,
+        "water": 3,
+        "landuse": 9
+      }
+    },
+    "-8_-1": {
+      "url": "tiles/-8_-1.json",
+      "ix": -8,
+      "iz": -1,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 47501,
+      "sha256": "b96b6e4213b3c2c425545792d64674b33b7d6ca13df000ea20879ac5d0a147ad",
+      "counts": {
+        "roads": 57,
+        "buildings": 12,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "-7_-1": {
+      "url": "tiles/-7_-1.json",
+      "ix": -7,
+      "iz": -1,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 38275,
+      "sha256": "6f9b4f56dbeb259d315558c91d9dd5daef428eb8301148a09ea8f74ea4f5b732",
+      "counts": {
+        "roads": 36,
+        "buildings": 16,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "-6_-1": {
+      "url": "tiles/-6_-1.json",
+      "ix": -6,
+      "iz": -1,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 106726,
+      "sha256": "84413036544c36e306529553a3fb5c31a3ba3648b220fc8328dda004d31407da",
+      "counts": {
+        "roads": 41,
+        "buildings": 123,
+        "water": 2,
+        "landuse": 3
+      }
+    },
+    "-5_-1": {
+      "url": "tiles/-5_-1.json",
+      "ix": -5,
+      "iz": -1,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 99152,
+      "sha256": "b24f606f6705b39d30ee9e0220850eeeb7e3d146aabded25ce5369945547a1bb",
+      "counts": {
+        "roads": 67,
+        "buildings": 78,
+        "water": 2,
+        "landuse": 4
+      }
+    },
+    "-4_-1": {
+      "url": "tiles/-4_-1.json",
+      "ix": -4,
+      "iz": -1,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 57259,
+      "sha256": "e84211cd5a753f986bc40e59b28f0d33bcccd2de91ef49fe3b202d73d1ab5445",
+      "counts": {
+        "roads": 36,
+        "buildings": 37,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-3_-1": {
+      "url": "tiles/-3_-1.json",
+      "ix": -3,
+      "iz": -1,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 88811,
+      "sha256": "3a7a17981b97c8fbc6b1cd38fcebb0e47b2bd593b4a7a6673e0e3b42bd8869dd",
+      "counts": {
+        "roads": 33,
+        "buildings": 94,
+        "water": 2,
+        "landuse": 4
+      }
+    },
+    "-2_-1": {
+      "url": "tiles/-2_-1.json",
+      "ix": -2,
+      "iz": -1,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 56802,
+      "sha256": "18575ce4501331d05b370fae1e954cad07ee4828401d83330903b365bd39f65d",
+      "counts": {
+        "roads": 43,
+        "buildings": 29,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-1_-1": {
+      "url": "tiles/-1_-1.json",
+      "ix": -1,
+      "iz": -1,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 77477,
+      "sha256": "e628670ab3a33d353a26c551a1ba1ba7fd7a8bd19f48ad727f8a1fe3e22c8324",
+      "counts": {
+        "roads": 69,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "0_-1": {
+      "url": "tiles/0_-1.json",
+      "ix": 0,
+      "iz": -1,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 100713,
+      "sha256": "19fbe5b9f31c7f1e25ae97d88cfcee411c00a733cdd0742c6a344269268b87ad",
+      "counts": {
+        "roads": 79,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "1_-1": {
+      "url": "tiles/1_-1.json",
+      "ix": 1,
+      "iz": -1,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 120370,
+      "sha256": "24cba67551274f482d5881a451b3dd3e24511e6ca271ce09de09874fd06db515",
+      "counts": {
+        "roads": 71,
+        "buildings": 87,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_-1": {
+      "url": "tiles/2_-1.json",
+      "ix": 2,
+      "iz": -1,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 253213,
+      "sha256": "dccef0ed2348bfd69a5cd6c595156e4d1457be74ca3d3488090f706b2c3db738",
+      "counts": {
+        "roads": 75,
+        "buildings": 332,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "3_-1": {
+      "url": "tiles/3_-1.json",
+      "ix": 3,
+      "iz": -1,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 65800,
+      "sha256": "46e059459b23c43c564a0f49b02ea024e029189dcd7b4e8ea6c713e5b00302c9",
+      "counts": {
+        "roads": 19,
+        "buildings": 76,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "4_-1": {
+      "url": "tiles/4_-1.json",
+      "ix": 4,
+      "iz": -1,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 383284,
+      "sha256": "ad7c92fd3adfc3512b43abeed3069927360a568ec0020b062b7d370fc4a74bed",
+      "counts": {
+        "roads": 82,
+        "buildings": 547,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "5_-1": {
+      "url": "tiles/5_-1.json",
+      "ix": 5,
+      "iz": -1,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 306374,
+      "sha256": "40e5222ad771491ec227cc4294ba2f22e10e49013fec855982d4d4e590dc688a",
+      "counts": {
+        "roads": 81,
+        "buildings": 424,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_-1": {
+      "url": "tiles/6_-1.json",
+      "ix": 6,
+      "iz": -1,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 94302,
+      "sha256": "e852ad0d77da3e5101925c177b826f5698054b96bbaf5afb109c6b07c15cfdfb",
+      "counts": {
+        "roads": 62,
+        "buildings": 83,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "7_-1": {
+      "url": "tiles/7_-1.json",
+      "ix": 7,
+      "iz": -1,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 31551,
+      "sha256": "6494b9d53b916f703e5e02634fe3bdb1dc59a845454c4f374f18ae8ab6ef5368",
+      "counts": {
+        "roads": 21,
+        "buildings": 20,
+        "water": 4,
+        "landuse": 2
+      }
+    },
+    "8_-1": {
+      "url": "tiles/8_-1.json",
+      "ix": 8,
+      "iz": -1,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 22381,
+      "sha256": "0ea2d50ecc7483487027c71d8406ed97418c7c51c73bc109a266d9b2a5712392",
+      "counts": {
+        "roads": 21,
+        "buildings": 11,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "9_-1": {
+      "url": "tiles/9_-1.json",
+      "ix": 9,
+      "iz": -1,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": -512,
+        "maxZ": 0
+      },
+      "bytes": 35154,
+      "sha256": "3fe6fb54339fa9704ed438be53d363d3172c5ec0e55c04a26fdc040455ca3d94",
+      "counts": {
+        "roads": 45,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_0": {
+      "url": "tiles/-10_0.json",
+      "ix": -10,
+      "iz": 0,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 18957,
+      "sha256": "d5d72b50f0e3a63bcc93b759b6a83becbffadeae5f1ca70bfbd6710bb361628b",
+      "counts": {
+        "roads": 15,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-9_0": {
+      "url": "tiles/-9_0.json",
+      "ix": -9,
+      "iz": 0,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 33276,
+      "sha256": "1a6dbf1aedab2b35ed174488a0261af03a976745a544b5cb5e39387f372957d3",
+      "counts": {
+        "roads": 16,
+        "buildings": 28,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-8_0": {
+      "url": "tiles/-8_0.json",
+      "ix": -8,
+      "iz": 0,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 72018,
+      "sha256": "c220274becbbeefdecbb9513683c19bf34834da57b76f468d7ea1c9bdc7466ed",
+      "counts": {
+        "roads": 58,
+        "buildings": 54,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-7_0": {
+      "url": "tiles/-7_0.json",
+      "ix": -7,
+      "iz": 0,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 59972,
+      "sha256": "86875a5f41b604bb8fbb15abb7b194acf0958b669131971a74ef2d249f9c5b4b",
+      "counts": {
+        "roads": 53,
+        "buildings": 40,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-6_0": {
+      "url": "tiles/-6_0.json",
+      "ix": -6,
+      "iz": 0,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 85717,
+      "sha256": "296483fba451dc89c8be86947443c6c78651853cafb6c675af4f3e5c5760eaf2",
+      "counts": {
+        "roads": 46,
+        "buildings": 85,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-5_0": {
+      "url": "tiles/-5_0.json",
+      "ix": -5,
+      "iz": 0,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 136510,
+      "sha256": "ce39c53c55b9b257d4b9e9b33c05106eb20341596381dcdc9d3a10ad6d8f622c",
+      "counts": {
+        "roads": 48,
+        "buildings": 170,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-4_0": {
+      "url": "tiles/-4_0.json",
+      "ix": -4,
+      "iz": 0,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 36413,
+      "sha256": "c00958dde08347c087d721731847e72a65b0e46db7c1a3378520b24ecc052662",
+      "counts": {
+        "roads": 27,
+        "buildings": 26,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-3_0": {
+      "url": "tiles/-3_0.json",
+      "ix": -3,
+      "iz": 0,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 94005,
+      "sha256": "1b933dc6b000582d4ef75ec6b1112a8ba6f8305f688ca9716659b932acb8288a",
+      "counts": {
+        "roads": 57,
+        "buildings": 84,
+        "water": 1,
+        "landuse": 7
+      }
+    },
+    "-2_0": {
+      "url": "tiles/-2_0.json",
+      "ix": -2,
+      "iz": 0,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 79695,
+      "sha256": "d2539c235882d0a0233674328957d4ddff23d15ca2f50dcecc23d45df0c84a68",
+      "counts": {
+        "roads": 73,
+        "buildings": 40,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-1_0": {
+      "url": "tiles/-1_0.json",
+      "ix": -1,
+      "iz": 0,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 65429,
+      "sha256": "5b7e7370debf1514b9393a13613678d12f5571cc5c75bfcc83368ccc3c1c4e59",
+      "counts": {
+        "roads": 78,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "0_0": {
+      "url": "tiles/0_0.json",
+      "ix": 0,
+      "iz": 0,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 68582,
+      "sha256": "65e80b307338527c5df222e30612ec4867ad3218e653da187be4b88769afc821",
+      "counts": {
+        "roads": 46,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_0": {
+      "url": "tiles/1_0.json",
+      "ix": 1,
+      "iz": 0,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 254974,
+      "sha256": "cb1964a71bcfd7aa1b1f3e6436c2eedf6cfc0f44237e220e31cfc7f14b5d1706",
+      "counts": {
+        "roads": 84,
+        "buildings": 277,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_0": {
+      "url": "tiles/2_0.json",
+      "ix": 2,
+      "iz": 0,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 149580,
+      "sha256": "66cc79bd97ed15f9ba641410e6cdfc23b20b40af4cf1c24b288d894b1215f585",
+      "counts": {
+        "roads": 69,
+        "buildings": 176,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "3_0": {
+      "url": "tiles/3_0.json",
+      "ix": 3,
+      "iz": 0,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 72027,
+      "sha256": "fc23e22a53108fec780e2fe2417c668c89886d987dd5aad28d81c52ebf9d9bc6",
+      "counts": {
+        "roads": 43,
+        "buildings": 67,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "4_0": {
+      "url": "tiles/4_0.json",
+      "ix": 4,
+      "iz": 0,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 102668,
+      "sha256": "af36b3500a610710ed3a31e6f4f51e963402be78284a87172205bce56b30fb58",
+      "counts": {
+        "roads": 50,
+        "buildings": 111,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "5_0": {
+      "url": "tiles/5_0.json",
+      "ix": 5,
+      "iz": 0,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 110486,
+      "sha256": "296a7ddca7ef2bedbd999519aed814659b804e4d33a861d4120f714f748671af",
+      "counts": {
+        "roads": 63,
+        "buildings": 108,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_0": {
+      "url": "tiles/6_0.json",
+      "ix": 6,
+      "iz": 0,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 60605,
+      "sha256": "f460e5663261d3333ca353cbeaed16666614fa850fff4677926d5a5597d08587",
+      "counts": {
+        "roads": 62,
+        "buildings": 32,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "7_0": {
+      "url": "tiles/7_0.json",
+      "ix": 7,
+      "iz": 0,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 50076,
+      "sha256": "504de0c3ccbd13d8e7c0947b295a3a94817e4d9a69d00682ba1fd03a11672ae6",
+      "counts": {
+        "roads": 55,
+        "buildings": 20,
+        "water": 1,
+        "landuse": 4
+      }
+    },
+    "8_0": {
+      "url": "tiles/8_0.json",
+      "ix": 8,
+      "iz": 0,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 40609,
+      "sha256": "8874b6d83d79425eb758510b7bdc9223914c6a55ffc3a5a4f2ba211965b2a4ea",
+      "counts": {
+        "roads": 23,
+        "buildings": 38,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "9_0": {
+      "url": "tiles/9_0.json",
+      "ix": 9,
+      "iz": 0,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 0,
+        "maxZ": 512
+      },
+      "bytes": 156348,
+      "sha256": "ef98fd7e58d83dedf008d14ce8fdd6728015d9dbc1cd7d070ac4212970cd2c9c",
+      "counts": {
+        "roads": 34,
+        "buildings": 224,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-10_1": {
+      "url": "tiles/-10_1.json",
+      "ix": -10,
+      "iz": 1,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 85195,
+      "sha256": "e62a33d9169d59e9992ebc2a182026627ae57cf5a201ae256aafe723d0b10abf",
+      "counts": {
+        "roads": 68,
+        "buildings": 62,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-9_1": {
+      "url": "tiles/-9_1.json",
+      "ix": -9,
+      "iz": 1,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 76801,
+      "sha256": "1ebaa56bde5c504f763c3417aa4958280e2277cf795634ddc7fb7c616931d057",
+      "counts": {
+        "roads": 83,
+        "buildings": 32,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_1": {
+      "url": "tiles/-8_1.json",
+      "ix": -8,
+      "iz": 1,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 104115,
+      "sha256": "3d16951c6614672d8fc4a01dc10ede8b229e43366af62552c8a61e2d000801fb",
+      "counts": {
+        "roads": 73,
+        "buildings": 90,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-7_1": {
+      "url": "tiles/-7_1.json",
+      "ix": -7,
+      "iz": 1,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 42871,
+      "sha256": "812b48ea34106cdf90c46fd8353b3706b050ed01f43e27db5d17a78fc35c4345",
+      "counts": {
+        "roads": 56,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-6_1": {
+      "url": "tiles/-6_1.json",
+      "ix": -6,
+      "iz": 1,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 37000,
+      "sha256": "e9f064cb0c7364ce3e7667d37a7a6a1e39257b789aeb6964f93d3322d947b4fc",
+      "counts": {
+        "roads": 43,
+        "buildings": 10,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-5_1": {
+      "url": "tiles/-5_1.json",
+      "ix": -5,
+      "iz": 1,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 19605,
+      "sha256": "521b263a3baef6aa74a2f338e5ed95243e3e5e32d9b5110123f8a208aee7090e",
+      "counts": {
+        "roads": 16,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "-4_1": {
+      "url": "tiles/-4_1.json",
+      "ix": -4,
+      "iz": 1,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 70553,
+      "sha256": "d96c69b2a67e8095c8be60c11a669e1240b46b08e78b09ad640c49625a8db6bd",
+      "counts": {
+        "roads": 52,
+        "buildings": 37,
+        "water": 0,
+        "landuse": 13
+      }
+    },
+    "-3_1": {
+      "url": "tiles/-3_1.json",
+      "ix": -3,
+      "iz": 1,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 74907,
+      "sha256": "2f6ffb47a26ca1d960232ca5010fc50d244046f394a6c9b7fab88091a7cf9385",
+      "counts": {
+        "roads": 58,
+        "buildings": 58,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-2_1": {
+      "url": "tiles/-2_1.json",
+      "ix": -2,
+      "iz": 1,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 69468,
+      "sha256": "782498aa44f14cb6e51c17062bb53fa73d2d1c1c6682717f5ff53734aa13f815",
+      "counts": {
+        "roads": 82,
+        "buildings": 20,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-1_1": {
+      "url": "tiles/-1_1.json",
+      "ix": -1,
+      "iz": 1,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 60787,
+      "sha256": "ba0b585c717f46eedb3b11f5a5b4b7a6c713d666fbbd2fa9a65395141ac55538",
+      "counts": {
+        "roads": 60,
+        "buildings": 18,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "0_1": {
+      "url": "tiles/0_1.json",
+      "ix": 0,
+      "iz": 1,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 91111,
+      "sha256": "9d7404073bb3f4f96c14a8519dfd0b68d43658b69d118e9fdfbc05487d5071b2",
+      "counts": {
+        "roads": 43,
+        "buildings": 79,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "1_1": {
+      "url": "tiles/1_1.json",
+      "ix": 1,
+      "iz": 1,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 168512,
+      "sha256": "8c4dd4032d7fa274e6ff36d27047a44944cfa1b46303678117b9cd2fb02ca07b",
+      "counts": {
+        "roads": 64,
+        "buildings": 190,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "2_1": {
+      "url": "tiles/2_1.json",
+      "ix": 2,
+      "iz": 1,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 86313,
+      "sha256": "0dc2ee01ab6fa0390bb28b8ffc5c14d51099aadff1bfd58318abb1a40ee49a8b",
+      "counts": {
+        "roads": 51,
+        "buildings": 84,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "3_1": {
+      "url": "tiles/3_1.json",
+      "ix": 3,
+      "iz": 1,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 39340,
+      "sha256": "8ab320258b395ef1b480100d78075dd5875829d4e293cf342a3f160e06b57083",
+      "counts": {
+        "roads": 32,
+        "buildings": 21,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_1": {
+      "url": "tiles/4_1.json",
+      "ix": 4,
+      "iz": 1,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 42828,
+      "sha256": "5324c8dd7a49e24a7d47a73810fc578bf2a3882721e0edfca4ab32dbfee2d5e7",
+      "counts": {
+        "roads": 37,
+        "buildings": 25,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "5_1": {
+      "url": "tiles/5_1.json",
+      "ix": 5,
+      "iz": 1,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 40335,
+      "sha256": "7f0becf14fc7160b7e8e6a32ef917e5d2abf4eb169a3b5b876de9e2edaeae9e6",
+      "counts": {
+        "roads": 31,
+        "buildings": 28,
+        "water": 1,
+        "landuse": 2
+      }
+    },
+    "6_1": {
+      "url": "tiles/6_1.json",
+      "ix": 6,
+      "iz": 1,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 45715,
+      "sha256": "667103dc637bb1d15126f0b901f199789b0834565d4c5a7765a06ae14540ceb1",
+      "counts": {
+        "roads": 42,
+        "buildings": 24,
+        "water": 1,
+        "landuse": 4
+      }
+    },
+    "7_1": {
+      "url": "tiles/7_1.json",
+      "ix": 7,
+      "iz": 1,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 48687,
+      "sha256": "9eaf4bbdb0b9685ac279ea04063279befc939d13a197a7f082e71a2ce9b4bead",
+      "counts": {
+        "roads": 40,
+        "buildings": 32,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "8_1": {
+      "url": "tiles/8_1.json",
+      "ix": 8,
+      "iz": 1,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 66378,
+      "sha256": "17528ac96f71fa997d6ede1fb16745b8ea9e1e5b770d53ec92f92aeefbe127a1",
+      "counts": {
+        "roads": 40,
+        "buildings": 57,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "9_1": {
+      "url": "tiles/9_1.json",
+      "ix": 9,
+      "iz": 1,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 512,
+        "maxZ": 1024
+      },
+      "bytes": 266688,
+      "sha256": "ba78ab6f186b6aff80ce84e7230ae40d69183be05689e0b98e1ffcbd96fb7694",
+      "counts": {
+        "roads": 56,
+        "buildings": 388,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-10_2": {
+      "url": "tiles/-10_2.json",
+      "ix": -10,
+      "iz": 2,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 59971,
+      "sha256": "5d6723f854d8ae5e1c56477ce8ae460a9b5f05ce8aae378a5274db73c43b2339",
+      "counts": {
+        "roads": 55,
+        "buildings": 30,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-9_2": {
+      "url": "tiles/-9_2.json",
+      "ix": -9,
+      "iz": 2,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 60948,
+      "sha256": "055781dccd2d56941860c4cd9c4a6948b89a9773369645737fd3830a3aa72904",
+      "counts": {
+        "roads": 76,
+        "buildings": 15,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_2": {
+      "url": "tiles/-8_2.json",
+      "ix": -8,
+      "iz": 2,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 67175,
+      "sha256": "50dbd30450b4a2d1874249cd7c236e2278c914f1bf6a275954488fc26c74fbab",
+      "counts": {
+        "roads": 68,
+        "buildings": 32,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-7_2": {
+      "url": "tiles/-7_2.json",
+      "ix": -7,
+      "iz": 2,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 37487,
+      "sha256": "f4b4e2806aa9557e25ce964c0bf00edcaf66ca3ca4e06bb4e24e287738389572",
+      "counts": {
+        "roads": 52,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_2": {
+      "url": "tiles/-6_2.json",
+      "ix": -6,
+      "iz": 2,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 53835,
+      "sha256": "0a4566fe460b4fa888c862ab903a15cfb9f61c476d6e8fde44a8f993fc40ee93",
+      "counts": {
+        "roads": 65,
+        "buildings": 12,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-5_2": {
+      "url": "tiles/-5_2.json",
+      "ix": -5,
+      "iz": 2,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 38440,
+      "sha256": "43c8a471dddf30a39c42cc89cf84a384d9a63d5c6b99693b6324ce88005f2dd4",
+      "counts": {
+        "roads": 23,
+        "buildings": 25,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-4_2": {
+      "url": "tiles/-4_2.json",
+      "ix": -4,
+      "iz": 2,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 63428,
+      "sha256": "5169f182b1bcaa540329b6402a98fa9ff8c1e9bb3dc52447ff943dd196bc6dbd",
+      "counts": {
+        "roads": 53,
+        "buildings": 42,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-3_2": {
+      "url": "tiles/-3_2.json",
+      "ix": -3,
+      "iz": 2,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 94702,
+      "sha256": "78d7b559b3f9aa2dd12c924674aabb3693b300771e91f010673afdd17a9922c4",
+      "counts": {
+        "roads": 54,
+        "buildings": 97,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-2_2": {
+      "url": "tiles/-2_2.json",
+      "ix": -2,
+      "iz": 2,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 80818,
+      "sha256": "4739c4ce10c39cea7e1d0ec81fd698d90f7c980f4f55e1fca9e09be9006a71f3",
+      "counts": {
+        "roads": 69,
+        "buildings": 59,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-1_2": {
+      "url": "tiles/-1_2.json",
+      "ix": -1,
+      "iz": 2,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 75243,
+      "sha256": "73fdbd7cfba6938d441cbf896d8a70c2ae2e6774c09b102f32604b2e32da9ccc",
+      "counts": {
+        "roads": 70,
+        "buildings": 33,
+        "water": 0,
+        "landuse": 8
+      }
+    },
+    "0_2": {
+      "url": "tiles/0_2.json",
+      "ix": 0,
+      "iz": 2,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 240277,
+      "sha256": "7b76ccc06f16a1d3138a751a0303423a51958159cfb34692703efa0d0073631c",
+      "counts": {
+        "roads": 74,
+        "buildings": 302,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_2": {
+      "url": "tiles/1_2.json",
+      "ix": 1,
+      "iz": 2,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 115782,
+      "sha256": "0561fb774932c1ae854bef62c458a2eb271a364c34380ba7408fb6d7df04db7b",
+      "counts": {
+        "roads": 85,
+        "buildings": 92,
+        "water": 1,
+        "landuse": 0
+      }
+    },
+    "2_2": {
+      "url": "tiles/2_2.json",
+      "ix": 2,
+      "iz": 2,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 78462,
+      "sha256": "b86b0bcaad3a84ffdb955aed05000b2f571968c1571cb6dbc32ddf885fbe9cf2",
+      "counts": {
+        "roads": 53,
+        "buildings": 61,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "3_2": {
+      "url": "tiles/3_2.json",
+      "ix": 3,
+      "iz": 2,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 83638,
+      "sha256": "dbd2157fac0aeece79d722d248966c0d032666ce88b5176683694e12a2cb36e0",
+      "counts": {
+        "roads": 74,
+        "buildings": 54,
+        "water": 1,
+        "landuse": 4
+      }
+    },
+    "4_2": {
+      "url": "tiles/4_2.json",
+      "ix": 4,
+      "iz": 2,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 47586,
+      "sha256": "d0e4480e28c99455d6663ce415d74f29589aa4a16e4936dca8b6fd56c00c48b0",
+      "counts": {
+        "roads": 44,
+        "buildings": 26,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "5_2": {
+      "url": "tiles/5_2.json",
+      "ix": 5,
+      "iz": 2,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 48260,
+      "sha256": "97c38eada1ae63e10fe6e4e864d3be898d2b951d63027d1e02b42447ff611a19",
+      "counts": {
+        "roads": 34,
+        "buildings": 33,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "6_2": {
+      "url": "tiles/6_2.json",
+      "ix": 6,
+      "iz": 2,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 50974,
+      "sha256": "d969b3ad1ce774054a08afc136890f1afbfc6413db2e7e548081b0e84c084529",
+      "counts": {
+        "roads": 34,
+        "buildings": 37,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "7_2": {
+      "url": "tiles/7_2.json",
+      "ix": 7,
+      "iz": 2,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 70758,
+      "sha256": "a324063e6b3b0cb7c29e808ddc038cfde99601ad4f0b802f4fe1c9028f969550",
+      "counts": {
+        "roads": 47,
+        "buildings": 50,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "8_2": {
+      "url": "tiles/8_2.json",
+      "ix": 8,
+      "iz": 2,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 37963,
+      "sha256": "864ed21068226667f348e3e06d4d75317ada0d4600c0b7e5e805ebb6e272fc68",
+      "counts": {
+        "roads": 39,
+        "buildings": 14,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "9_2": {
+      "url": "tiles/9_2.json",
+      "ix": 9,
+      "iz": 2,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 1024,
+        "maxZ": 1536
+      },
+      "bytes": 37837,
+      "sha256": "25ebbf948a08c7e3418a22e911a10344d889e2f8979087d6ea5f89379b221206",
+      "counts": {
+        "roads": 31,
+        "buildings": 24,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-10_3": {
+      "url": "tiles/-10_3.json",
+      "ix": -10,
+      "iz": 3,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 67781,
+      "sha256": "bf6a194a7ecaad2f3e37a3c6b0a184b6afdb6f61bcdba28604ba2891c4a77736",
+      "counts": {
+        "roads": 80,
+        "buildings": 19,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-9_3": {
+      "url": "tiles/-9_3.json",
+      "ix": -9,
+      "iz": 3,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 50297,
+      "sha256": "c512a104b0cd1abb2df8d702e686d162a9cb6978f3312f5ae6ae2b1c02312c11",
+      "counts": {
+        "roads": 73,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "-8_3": {
+      "url": "tiles/-8_3.json",
+      "ix": -8,
+      "iz": 3,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 55813,
+      "sha256": "1ea318e37a3c650e2bb0b8fe023e1592bde06aee61611c5a619da9cf3506ba98",
+      "counts": {
+        "roads": 67,
+        "buildings": 17,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-7_3": {
+      "url": "tiles/-7_3.json",
+      "ix": -7,
+      "iz": 3,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 27693,
+      "sha256": "95867e3ab828d0074ee1a72bb9614a809b753ca7bd5d5a69f7bef1af26d8b192",
+      "counts": {
+        "roads": 34,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_3": {
+      "url": "tiles/-6_3.json",
+      "ix": -6,
+      "iz": 3,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 46669,
+      "sha256": "c993bbee4c784ffdd8e80692d17dadbde084d6b3c43f7152c83f4ff40001feab",
+      "counts": {
+        "roads": 45,
+        "buildings": 20,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-5_3": {
+      "url": "tiles/-5_3.json",
+      "ix": -5,
+      "iz": 3,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 46320,
+      "sha256": "465eb78577e5c1901507db7d24d7dbf07126d62f5cee2e969fb32fa14b7c1fd6",
+      "counts": {
+        "roads": 33,
+        "buildings": 31,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-4_3": {
+      "url": "tiles/-4_3.json",
+      "ix": -4,
+      "iz": 3,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 67622,
+      "sha256": "78c57d309ddc5b07f95e063ef9225e74f58199357970d754658955d98a94217b",
+      "counts": {
+        "roads": 45,
+        "buildings": 57,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-3_3": {
+      "url": "tiles/-3_3.json",
+      "ix": -3,
+      "iz": 3,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 82478,
+      "sha256": "07c920d54d4c26f2397b6a4a3e30e73b6503fdca58fd2633cdfc9007eaac44e3",
+      "counts": {
+        "roads": 59,
+        "buildings": 65,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-2_3": {
+      "url": "tiles/-2_3.json",
+      "ix": -2,
+      "iz": 3,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 36499,
+      "sha256": "d03e7bb145d618555531ed3cf947d6a0e2b29d465baf5430c72d5c434d2328c5",
+      "counts": {
+        "roads": 37,
+        "buildings": 15,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-1_3": {
+      "url": "tiles/-1_3.json",
+      "ix": -1,
+      "iz": 3,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 45733,
+      "sha256": "aa8617b9bb49da8dcdc1688b4b02db05e4d76c040c3cab7e0dcfec9e850f9c19",
+      "counts": {
+        "roads": 39,
+        "buildings": 14,
+        "water": 0,
+        "landuse": 11
+      }
+    },
+    "0_3": {
+      "url": "tiles/0_3.json",
+      "ix": 0,
+      "iz": 3,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 27511,
+      "sha256": "d70ecaea6ff59859c07436432770a8085dcf79d93ab259f8330c09e8d4af7db6",
+      "counts": {
+        "roads": 23,
+        "buildings": 11,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "1_3": {
+      "url": "tiles/1_3.json",
+      "ix": 1,
+      "iz": 3,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 66319,
+      "sha256": "46edc07ada768d3a9fdcedf6b81e592598aab350d50e31596a7e45f01e650b27",
+      "counts": {
+        "roads": 47,
+        "buildings": 53,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "2_3": {
+      "url": "tiles/2_3.json",
+      "ix": 2,
+      "iz": 3,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 74986,
+      "sha256": "d59fc3236fe9de728aa04172e96992767ee888979c14d7ef0f9106c58842a95d",
+      "counts": {
+        "roads": 56,
+        "buildings": 56,
+        "water": 1,
+        "landuse": 8
+      }
+    },
+    "3_3": {
+      "url": "tiles/3_3.json",
+      "ix": 3,
+      "iz": 3,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 40661,
+      "sha256": "4951df5d2d87544bd5fbb11fe88a0790d4c8df1c5cf456508542c43a79e1e343",
+      "counts": {
+        "roads": 49,
+        "buildings": 8,
+        "water": 1,
+        "landuse": 5
+      }
+    },
+    "4_3": {
+      "url": "tiles/4_3.json",
+      "ix": 4,
+      "iz": 3,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 57686,
+      "sha256": "cc82ad0d862985ff12f37c2a7834629e3f765b73f5a39d058ee0067a04063a7b",
+      "counts": {
+        "roads": 28,
+        "buildings": 57,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "5_3": {
+      "url": "tiles/5_3.json",
+      "ix": 5,
+      "iz": 3,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 84272,
+      "sha256": "99c2ce8b27cc21ae35345002936a98d04410667a7a1531b95ae0c68901e2ec90",
+      "counts": {
+        "roads": 33,
+        "buildings": 93,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "6_3": {
+      "url": "tiles/6_3.json",
+      "ix": 6,
+      "iz": 3,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 34463,
+      "sha256": "658847dce4cc08e2970e14bc3171bf359ce1a59e4a5b9af53f210467f9b4b65e",
+      "counts": {
+        "roads": 16,
+        "buildings": 31,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "7_3": {
+      "url": "tiles/7_3.json",
+      "ix": 7,
+      "iz": 3,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 19937,
+      "sha256": "fd6c0266abd01607579497548ab95b8fec3f54603422116604a95607a1e2937a",
+      "counts": {
+        "roads": 12,
+        "buildings": 13,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "8_3": {
+      "url": "tiles/8_3.json",
+      "ix": 8,
+      "iz": 3,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 38014,
+      "sha256": "d0c503422a328f6fd44de511c3cde8f8997b7798288c01ca62b2a8077b688499",
+      "counts": {
+        "roads": 33,
+        "buildings": 22,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "9_3": {
+      "url": "tiles/9_3.json",
+      "ix": 9,
+      "iz": 3,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 1536,
+        "maxZ": 2048
+      },
+      "bytes": 59678,
+      "sha256": "89f31c3efa6f340c12a40384b60efd28e1324d3f7ce2f24505db844041b34e91",
+      "counts": {
+        "roads": 28,
+        "buildings": 63,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-10_4": {
+      "url": "tiles/-10_4.json",
+      "ix": -10,
+      "iz": 4,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 62000,
+      "sha256": "75a024cc3c4b477b3a49f782f4611a415b713c9085dcc4a547f748f4137c1f24",
+      "counts": {
+        "roads": 64,
+        "buildings": 27,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-9_4": {
+      "url": "tiles/-9_4.json",
+      "ix": -9,
+      "iz": 4,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 129013,
+      "sha256": "5606aa4a42bfa80e4040a274eaf45e3c0cc2cfcf606879b4f93361c75773ed2b",
+      "counts": {
+        "roads": 75,
+        "buildings": 126,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-8_4": {
+      "url": "tiles/-8_4.json",
+      "ix": -8,
+      "iz": 4,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 72052,
+      "sha256": "ddb1f2c9e446ec659fe6475d5a985477c98fd8e1fcabbb5e1193d195e7cace37",
+      "counts": {
+        "roads": 89,
+        "buildings": 23,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-7_4": {
+      "url": "tiles/-7_4.json",
+      "ix": -7,
+      "iz": 4,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 25414,
+      "sha256": "b6cd5c886f2469365fa6621822d4f5b2e5b6ba65eda4785411285e753743ebd1",
+      "counts": {
+        "roads": 28,
+        "buildings": 6,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_4": {
+      "url": "tiles/-6_4.json",
+      "ix": -6,
+      "iz": 4,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 19482,
+      "sha256": "7bf67e5c47544268393bd9257f330fe591cf3f479d31d1177e0210f98d9dfbb8",
+      "counts": {
+        "roads": 21,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_4": {
+      "url": "tiles/-5_4.json",
+      "ix": -5,
+      "iz": 4,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 54553,
+      "sha256": "b0c923670479b326935f441fe17e1eddb1f85329dd92b7a1984d025b903ba474",
+      "counts": {
+        "roads": 31,
+        "buildings": 40,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-4_4": {
+      "url": "tiles/-4_4.json",
+      "ix": -4,
+      "iz": 4,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 37784,
+      "sha256": "8c937f82b3eb8ce98529c8db8b05bc562c0b7a49bf20643f3ab6b9920a36a28b",
+      "counts": {
+        "roads": 21,
+        "buildings": 33,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-3_4": {
+      "url": "tiles/-3_4.json",
+      "ix": -3,
+      "iz": 4,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 16024,
+      "sha256": "a6d20b9ad155d1f7fa74d920b935db4ab998e1a361db63a486fbde4be488ecfc",
+      "counts": {
+        "roads": 6,
+        "buildings": 10,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-2_4": {
+      "url": "tiles/-2_4.json",
+      "ix": -2,
+      "iz": 4,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 6454,
+      "sha256": "e5a325a29b6da12756e74e88b0441a09e1f9df091a223739d6fa097c2e8ea2ce",
+      "counts": {
+        "roads": 5,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-1_4": {
+      "url": "tiles/-1_4.json",
+      "ix": -1,
+      "iz": 4,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 19055,
+      "sha256": "83e00c8cb172e16ac4d88967200d7e2b5618d8abdf4a3a507ef611cadcd3ed08",
+      "counts": {
+        "roads": 23,
+        "buildings": 2,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "0_4": {
+      "url": "tiles/0_4.json",
+      "ix": 0,
+      "iz": 4,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 29710,
+      "sha256": "7fad54ca691621999fc5d9f941f2050352f923af8bcbce1b3f25120f5f81d98c",
+      "counts": {
+        "roads": 24,
+        "buildings": 16,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_4": {
+      "url": "tiles/1_4.json",
+      "ix": 1,
+      "iz": 4,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 118781,
+      "sha256": "009a1d6ce1632735069fdb4550ecf6043de70ff651a2705f5cf4362a7f21ede9",
+      "counts": {
+        "roads": 54,
+        "buildings": 133,
+        "water": 0,
+        "landuse": 8
+      }
+    },
+    "2_4": {
+      "url": "tiles/2_4.json",
+      "ix": 2,
+      "iz": 4,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 56068,
+      "sha256": "3b4c96652e52423bc721d9bf0c9fcf6674fea5bb9bdb93daed694efeac40b44f",
+      "counts": {
+        "roads": 53,
+        "buildings": 30,
+        "water": 2,
+        "landuse": 3
+      }
+    },
+    "3_4": {
+      "url": "tiles/3_4.json",
+      "ix": 3,
+      "iz": 4,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 77958,
+      "sha256": "41af34bb152acdcb6ccc51484d653e4775d7470f3ff2f2197ac48c8b61839592",
+      "counts": {
+        "roads": 88,
+        "buildings": 35,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "4_4": {
+      "url": "tiles/4_4.json",
+      "ix": 4,
+      "iz": 4,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 60229,
+      "sha256": "a19aaf560d9b9987d4bc70c2d9dba97dc4348baa8d39f014adee6531b9996f8a",
+      "counts": {
+        "roads": 40,
+        "buildings": 42,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "5_4": {
+      "url": "tiles/5_4.json",
+      "ix": 5,
+      "iz": 4,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 62782,
+      "sha256": "800f11442844f3527c94e04db16cd7d1bc07658bc7e9140941e71e3d03a9ba90",
+      "counts": {
+        "roads": 39,
+        "buildings": 57,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_4": {
+      "url": "tiles/6_4.json",
+      "ix": 6,
+      "iz": 4,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 27299,
+      "sha256": "16a00df1ebaa15d9326434e795c71d95d3ea2449232796d10f57ea6bcf5e2edd",
+      "counts": {
+        "roads": 28,
+        "buildings": 10,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "7_4": {
+      "url": "tiles/7_4.json",
+      "ix": 7,
+      "iz": 4,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 6871,
+      "sha256": "601c8a47bd868aab369221ec5a4d2fb611ccea351847b040acac2326fd98d8ea",
+      "counts": {
+        "roads": 8,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "8_4": {
+      "url": "tiles/8_4.json",
+      "ix": 8,
+      "iz": 4,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 4391,
+      "sha256": "d7e96ee0bf4f5828b2d270633c7f749a208fd072326ad5b1bf1bd9f5d8b49b0e",
+      "counts": {
+        "roads": 1,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "9_4": {
+      "url": "tiles/9_4.json",
+      "ix": 9,
+      "iz": 4,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 2048,
+        "maxZ": 2560
+      },
+      "bytes": 2607,
+      "sha256": "8ac6b7392b564f168d5a7d1ff23fd366fee9f109de2b34560206f70f71a90e66",
+      "counts": {
+        "roads": 1,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-10_5": {
+      "url": "tiles/-10_5.json",
+      "ix": -10,
+      "iz": 5,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 117356,
+      "sha256": "e2bd53efa06dcec978180d82bf4c562f552b8853c80226de8b550ce8963267e4",
+      "counts": {
+        "roads": 55,
+        "buildings": 132,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-9_5": {
+      "url": "tiles/-9_5.json",
+      "ix": -9,
+      "iz": 5,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 46990,
+      "sha256": "964eeff9d4aa4c8a7e41666faa9a93701bc69df431ea2a18b0218be9698b02ab",
+      "counts": {
+        "roads": 47,
+        "buildings": 22,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-8_5": {
+      "url": "tiles/-8_5.json",
+      "ix": -8,
+      "iz": 5,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 42116,
+      "sha256": "e5d903288c590cef89e8e2573ced95e81c015dac2152d779d1fc54f6054d1524",
+      "counts": {
+        "roads": 41,
+        "buildings": 21,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-7_5": {
+      "url": "tiles/-7_5.json",
+      "ix": -7,
+      "iz": 5,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 20337,
+      "sha256": "30d552df546033723fe9d53fa5fa90022a7a6410eec5498d6ccd895b021bb890",
+      "counts": {
+        "roads": 22,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-6_5": {
+      "url": "tiles/-6_5.json",
+      "ix": -6,
+      "iz": 5,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 23731,
+      "sha256": "b29e688c6b324c29d1d5a3ea0dc4a1e3a2577baa14bd924ad5d32c4585ac3cbc",
+      "counts": {
+        "roads": 30,
+        "buildings": 2,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-5_5": {
+      "url": "tiles/-5_5.json",
+      "ix": -5,
+      "iz": 5,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 6395,
+      "sha256": "90a80a0a95f10aa4d66602b619ff96c9e99260eb4ee59964d4217935a3ad2081",
+      "counts": {
+        "roads": 3,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-4_5": {
+      "url": "tiles/-4_5.json",
+      "ix": -4,
+      "iz": 5,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 7139,
+      "sha256": "f593e2f3bd085e5ae7e51c4a3d690b78e2d86173f7516878c25630090326a878",
+      "counts": {
+        "roads": 5,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-3_5": {
+      "url": "tiles/-3_5.json",
+      "ix": -3,
+      "iz": 5,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 4807,
+      "sha256": "c3b832e100af9acce7680f40f5a3b38f7b029dd91d774f78519f0608395ecb6b",
+      "counts": {
+        "roads": 5,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-2_5": {
+      "url": "tiles/-2_5.json",
+      "ix": -2,
+      "iz": 5,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 3698,
+      "sha256": "d80cfad1ad575491853bd9721546150fbd0e771faf5d2100c0df0dca8cd9483d",
+      "counts": {
+        "roads": 3,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-1_5": {
+      "url": "tiles/-1_5.json",
+      "ix": -1,
+      "iz": 5,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 52248,
+      "sha256": "ef26a654e4015f8e3f7ccdda4528c9cc8e56814cf059d74fdea667f2fd8688b3",
+      "counts": {
+        "roads": 49,
+        "buildings": 29,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "0_5": {
+      "url": "tiles/0_5.json",
+      "ix": 0,
+      "iz": 5,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 55719,
+      "sha256": "9cfcbd183a2881e96c8329152333a62e55cb09cb2c3d9ed27bb444ae8493195f",
+      "counts": {
+        "roads": 52,
+        "buildings": 18,
+        "water": 1,
+        "landuse": 11
+      }
+    },
+    "1_5": {
+      "url": "tiles/1_5.json",
+      "ix": 1,
+      "iz": 5,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 36645,
+      "sha256": "15e3a9186d18f1ef171fe6f1d87dae42ef7a0403781ba05ac9f5c2ff3bbf2b50",
+      "counts": {
+        "roads": 36,
+        "buildings": 13,
+        "water": 1,
+        "landuse": 5
+      }
+    },
+    "2_5": {
+      "url": "tiles/2_5.json",
+      "ix": 2,
+      "iz": 5,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 50151,
+      "sha256": "e3d2ae20d9883d391b08158b11d07bd9974665d519338c2af6ba48e2810649f5",
+      "counts": {
+        "roads": 64,
+        "buildings": 9,
+        "water": 2,
+        "landuse": 5
+      }
+    },
+    "3_5": {
+      "url": "tiles/3_5.json",
+      "ix": 3,
+      "iz": 5,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 64161,
+      "sha256": "a848a63d47a74570b56024f373a21478cf6bb23bcfa77d07191dcd8244afd238",
+      "counts": {
+        "roads": 92,
+        "buildings": 8,
+        "water": 0,
+        "landuse": 8
+      }
+    },
+    "4_5": {
+      "url": "tiles/4_5.json",
+      "ix": 4,
+      "iz": 5,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 51989,
+      "sha256": "69f208bb6baa8dc0d9f54d14046a273b2300cd6509c6f630112b7a95ca436189",
+      "counts": {
+        "roads": 50,
+        "buildings": 31,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "5_5": {
+      "url": "tiles/5_5.json",
+      "ix": 5,
+      "iz": 5,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 6848,
+      "sha256": "416485d63fdde31a3cb5cf0c6fe30b4cfcd925f09ef1a355c8130df62d21eb42",
+      "counts": {
+        "roads": 10,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "6_5": {
+      "url": "tiles/6_5.json",
+      "ix": 6,
+      "iz": 5,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 3584,
+      "sha256": "bf06605008a84974d167f3bb9a7e6a4e611d7709f1ee95ce67751c0bebb38c28",
+      "counts": {
+        "roads": 4,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "7_5": {
+      "url": "tiles/7_5.json",
+      "ix": 7,
+      "iz": 5,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 2580,
+      "sha256": "8bcbf12705e467d854d6ecbaf7703ffd880d2846ba5997a4fbc9cb326d3fb37f",
+      "counts": {
+        "roads": 2,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "8_5": {
+      "url": "tiles/8_5.json",
+      "ix": 8,
+      "iz": 5,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 644,
+      "sha256": "853b848b0ca32baa36550d57ae8900be42b917ddaf977638bdb8c192e12753b1",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "9_5": {
+      "url": "tiles/9_5.json",
+      "ix": 9,
+      "iz": 5,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 2560,
+        "maxZ": 3072
+      },
+      "bytes": 644,
+      "sha256": "5ffba970c0e724a87de762d28d88b0b0e139c0c7725201e0971cd851660afb7f",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-10_6": {
+      "url": "tiles/-10_6.json",
+      "ix": -10,
+      "iz": 6,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 19398,
+      "sha256": "02abd7c70f5d0534cf6fd47948c4e73ef4edb5adff4166e62083039ed60eb876",
+      "counts": {
+        "roads": 10,
+        "buildings": 20,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-9_6": {
+      "url": "tiles/-9_6.json",
+      "ix": -9,
+      "iz": 6,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 5777,
+      "sha256": "a834a17ba903998c6244f1ed0361e06615349218698c5bdb064af0fec2422457",
+      "counts": {
+        "roads": 4,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_6": {
+      "url": "tiles/-8_6.json",
+      "ix": -8,
+      "iz": 6,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 31215,
+      "sha256": "82618f582a9abe74d3a27a57907d3cba0a8c3a95a46a915e4e19e568b3aecc22",
+      "counts": {
+        "roads": 32,
+        "buildings": 14,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-7_6": {
+      "url": "tiles/-7_6.json",
+      "ix": -7,
+      "iz": 6,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 118568,
+      "sha256": "50976dfa5b2c4880fab745381eae34c0f4589d2e7ab06b49738673dfbef7a797",
+      "counts": {
+        "roads": 54,
+        "buildings": 136,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-6_6": {
+      "url": "tiles/-6_6.json",
+      "ix": -6,
+      "iz": 6,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 4959,
+      "sha256": "1c17ce36f547288c81d409aaf64e7a462cd6e60e58cbf1c06e974ad38ac0b5d5",
+      "counts": {
+        "roads": 4,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_6": {
+      "url": "tiles/-5_6.json",
+      "ix": -5,
+      "iz": 6,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 3859,
+      "sha256": "1a7b6e800c1a0619b22514c8115fa49824739221d5173c57d78058b7dc65e8e2",
+      "counts": {
+        "roads": 3,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-4_6": {
+      "url": "tiles/-4_6.json",
+      "ix": -4,
+      "iz": 6,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 9285,
+      "sha256": "8ca0f5eaf8764d0d05be14c46a6ae599672a53d1abba934cd240b70b23f6cb89",
+      "counts": {
+        "roads": 6,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-3_6": {
+      "url": "tiles/-3_6.json",
+      "ix": -3,
+      "iz": 6,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 7112,
+      "sha256": "be2bbff80f2387291f8c5ff8433858a04c65a93798270573d1066a0a382f1312",
+      "counts": {
+        "roads": 6,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-2_6": {
+      "url": "tiles/-2_6.json",
+      "ix": -2,
+      "iz": 6,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 24002,
+      "sha256": "9f18fb1574c5f6796169bd3f011d6f9518176e487bc7bfe1b49658429a920e66",
+      "counts": {
+        "roads": 26,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "-1_6": {
+      "url": "tiles/-1_6.json",
+      "ix": -1,
+      "iz": 6,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 28594,
+      "sha256": "d797746d0de343d12bdb3a6b904c7554edca4b2bf179b6fb5b07feb99c420a7b",
+      "counts": {
+        "roads": 28,
+        "buildings": 11,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "0_6": {
+      "url": "tiles/0_6.json",
+      "ix": 0,
+      "iz": 6,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 30936,
+      "sha256": "120513191855633602e8f11001958d1bfad29bf994aa83c106fedef356259618",
+      "counts": {
+        "roads": 32,
+        "buildings": 6,
+        "water": 1,
+        "landuse": 8
+      }
+    },
+    "1_6": {
+      "url": "tiles/1_6.json",
+      "ix": 1,
+      "iz": 6,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 40831,
+      "sha256": "f2702f27f6e26b1d12878b8ec6240d6f50082c550daa68e0e2aca1f6fe5a35e3",
+      "counts": {
+        "roads": 42,
+        "buildings": 8,
+        "water": 0,
+        "landuse": 9
+      }
+    },
+    "2_6": {
+      "url": "tiles/2_6.json",
+      "ix": 2,
+      "iz": 6,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 108059,
+      "sha256": "77f318055abbb8166ea55d4e7e15bfc1fb179e0c5f2c116b53e535d4cd52f83f",
+      "counts": {
+        "roads": 103,
+        "buildings": 68,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "3_6": {
+      "url": "tiles/3_6.json",
+      "ix": 3,
+      "iz": 6,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 29219,
+      "sha256": "93dd17c5eb4aefa67456887c5f3de425040b68d63dc97ced5f8dc500b752f04f",
+      "counts": {
+        "roads": 39,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_6": {
+      "url": "tiles/4_6.json",
+      "ix": 4,
+      "iz": 6,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 1895,
+      "sha256": "84d7da731956903c388708adef8b13467b5959ba674792fab137e2fb40899c1c",
+      "counts": {
+        "roads": 2,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "5_6": {
+      "url": "tiles/5_6.json",
+      "ix": 5,
+      "iz": 6,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 1772,
+      "sha256": "eed666b370a6e486e3f020e9c6739575af74831a615cc40faf47fdec6b659aa4",
+      "counts": {
+        "roads": 2,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "6_6": {
+      "url": "tiles/6_6.json",
+      "ix": 6,
+      "iz": 6,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 3498,
+      "sha256": "b3335cbea84e7b27473823213f134a8860bbd83b27bc3fc3eed04dceba2bee0c",
+      "counts": {
+        "roads": 4,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "7_6": {
+      "url": "tiles/7_6.json",
+      "ix": 7,
+      "iz": 6,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 64283,
+      "sha256": "ba364a5c601b27708b42cd2f7868a22f467a23f55fd793fc17a5c88401f9613a",
+      "counts": {
+        "roads": 43,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 36
+      }
+    },
+    "8_6": {
+      "url": "tiles/8_6.json",
+      "ix": 8,
+      "iz": 6,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 68474,
+      "sha256": "c8e966288a8b7e01b88b3c3163346ab486265a863c62559a2420443711cff5c7",
+      "counts": {
+        "roads": 35,
+        "buildings": 10,
+        "water": 0,
+        "landuse": 45
+      }
+    },
+    "9_6": {
+      "url": "tiles/9_6.json",
+      "ix": 9,
+      "iz": 6,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 3072,
+        "maxZ": 3584
+      },
+      "bytes": 5219,
+      "sha256": "e417fcfe52798e3a47f400c0d6bb0da961b8b673098250fb7881ce157c75e019",
+      "counts": {
+        "roads": 3,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-10_7": {
+      "url": "tiles/-10_7.json",
+      "ix": -10,
+      "iz": 7,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 656,
+      "sha256": "8fee47651da38f4ea60db13fedd47b42ac30ed4c9db9057b594fe645b93b3637",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-9_7": {
+      "url": "tiles/-9_7.json",
+      "ix": -9,
+      "iz": 7,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 10279,
+      "sha256": "57e33ef3b9f427eaa2024fcd0f35dd03a994acf8894273c27d7ba1e53be6b2b0",
+      "counts": {
+        "roads": 4,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_7": {
+      "url": "tiles/-8_7.json",
+      "ix": -8,
+      "iz": 7,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 23475,
+      "sha256": "85ea0190bcd9e04f84abe5614701dc34832fb7ad2eac860c318605d4a3c79160",
+      "counts": {
+        "roads": 14,
+        "buildings": 18,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-7_7": {
+      "url": "tiles/-7_7.json",
+      "ix": -7,
+      "iz": 7,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 68264,
+      "sha256": "1f5881b0ba3c88c790c5cacd0db76e4a698b3008f04d4f9296c5a01234f6d076",
+      "counts": {
+        "roads": 39,
+        "buildings": 70,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-6_7": {
+      "url": "tiles/-6_7.json",
+      "ix": -6,
+      "iz": 7,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 2818,
+      "sha256": "3d77d78d6ec2ceb2e8c4b4c59f1e8dc4530e5e1618a9d3d844cd64b800027766",
+      "counts": {
+        "roads": 2,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_7": {
+      "url": "tiles/-5_7.json",
+      "ix": -5,
+      "iz": 7,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 9993,
+      "sha256": "36bf526e2e7cede85a44ada7db2d7d6a73bbb306c80b122a52f91ca7d9415e7d",
+      "counts": {
+        "roads": 5,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-4_7": {
+      "url": "tiles/-4_7.json",
+      "ix": -4,
+      "iz": 7,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 6346,
+      "sha256": "843c44e7bcc9d2e04481e4e1002181415ebaf2cb6f447916bb81b3fd632e8ce2",
+      "counts": {
+        "roads": 3,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-3_7": {
+      "url": "tiles/-3_7.json",
+      "ix": -3,
+      "iz": 7,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 8912,
+      "sha256": "5b882c403282888f0a6376b050ae40d6caac03d32558f83f3d049133e5b528ce",
+      "counts": {
+        "roads": 7,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-2_7": {
+      "url": "tiles/-2_7.json",
+      "ix": -2,
+      "iz": 7,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 49711,
+      "sha256": "03571007a8f4dc451298c1c71e0a5ec4e20aa8d7760800b662387ca6e3e61d0c",
+      "counts": {
+        "roads": 45,
+        "buildings": 23,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "-1_7": {
+      "url": "tiles/-1_7.json",
+      "ix": -1,
+      "iz": 7,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 61191,
+      "sha256": "0418b77e52c7a7e5d11ada04e1aeb7cf877f8a7541c971e6785609ca90a212b8",
+      "counts": {
+        "roads": 30,
+        "buildings": 52,
+        "water": 0,
+        "landuse": 11
+      }
+    },
+    "0_7": {
+      "url": "tiles/0_7.json",
+      "ix": 0,
+      "iz": 7,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 24039,
+      "sha256": "82cd6fcb1305936775469922491cc64537cd5395a89210adc5e7fb13634f2936",
+      "counts": {
+        "roads": 15,
+        "buildings": 14,
+        "water": 2,
+        "landuse": 3
+      }
+    },
+    "1_7": {
+      "url": "tiles/1_7.json",
+      "ix": 1,
+      "iz": 7,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 48158,
+      "sha256": "589caacf0b4f4ac598b18e94838454dccfdb50c7b0eb7ad28333d89b28d6672c",
+      "counts": {
+        "roads": 53,
+        "buildings": 14,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "2_7": {
+      "url": "tiles/2_7.json",
+      "ix": 2,
+      "iz": 7,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 59563,
+      "sha256": "68c57bf90a6cafe8d301eac3c72896cb07645eadfbdd607a726a4ff797e7a6ce",
+      "counts": {
+        "roads": 78,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 0
+      }
+    },
+    "3_7": {
+      "url": "tiles/3_7.json",
+      "ix": 3,
+      "iz": 7,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 42492,
+      "sha256": "1e089c8afbe1ad18c4ffbd134d0b3d91fd1578dc9e5cf796bae5f24a3079feca",
+      "counts": {
+        "roads": 55,
+        "buildings": 6,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "4_7": {
+      "url": "tiles/4_7.json",
+      "ix": 4,
+      "iz": 7,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 34201,
+      "sha256": "5cecc5b7c924157b36a8b89514bb6ab043eb6917c89dab2b33590811ddbfa81a",
+      "counts": {
+        "roads": 29,
+        "buildings": 17,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "5_7": {
+      "url": "tiles/5_7.json",
+      "ix": 5,
+      "iz": 7,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 13418,
+      "sha256": "47c226285097d75c4390d53a124651f73d5226cf9575d15ab7a9d80d022a40a9",
+      "counts": {
+        "roads": 5,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_7": {
+      "url": "tiles/6_7.json",
+      "ix": 6,
+      "iz": 7,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 14846,
+      "sha256": "7faa06e9c17954e8bf2fdce4c194e2f1bd716358bfab4cc0d6a7e582212f6067",
+      "counts": {
+        "roads": 14,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "7_7": {
+      "url": "tiles/7_7.json",
+      "ix": 7,
+      "iz": 7,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 21925,
+      "sha256": "71987b8ab51a93cf7ee347610a516eff1bf7dfe661289da895ff515c184b2b98",
+      "counts": {
+        "roads": 21,
+        "buildings": 2,
+        "water": 0,
+        "landuse": 6
+      }
+    },
+    "8_7": {
+      "url": "tiles/8_7.json",
+      "ix": 8,
+      "iz": 7,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 69677,
+      "sha256": "008465dec1a634ce9eb84682d07e11aa2e6d53f040ec3c09f4d875e7fe16f075",
+      "counts": {
+        "roads": 41,
+        "buildings": 17,
+        "water": 0,
+        "landuse": 33
+      }
+    },
+    "9_7": {
+      "url": "tiles/9_7.json",
+      "ix": 9,
+      "iz": 7,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 3584,
+        "maxZ": 4096
+      },
+      "bytes": 38532,
+      "sha256": "1d6319efb793086f89be7876a372e5bac50e7bc0653285cb31163ea9cba70fb9",
+      "counts": {
+        "roads": 32,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 13
+      }
+    },
+    "-10_8": {
+      "url": "tiles/-10_8.json",
+      "ix": -10,
+      "iz": 8,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 656,
+      "sha256": "92618c4ee741adc2cf8eeb207cb5b70caeebd4b9e630d57c362de8969075db6f",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-9_8": {
+      "url": "tiles/-9_8.json",
+      "ix": -9,
+      "iz": 8,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 6124,
+      "sha256": "c0c69590729ad3abe6ff773ec73144d5d4b7578d33ab275cfb58a4a0a3ea64b7",
+      "counts": {
+        "roads": 9,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_8": {
+      "url": "tiles/-8_8.json",
+      "ix": -8,
+      "iz": 8,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 10362,
+      "sha256": "947c7851e77d6b9af3ca2411399515b3f2d40405ab90691c4fc230bf84f21048",
+      "counts": {
+        "roads": 6,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-7_8": {
+      "url": "tiles/-7_8.json",
+      "ix": -7,
+      "iz": 8,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 19649,
+      "sha256": "006f7b26261a02680219fe519a5e8464eaef7cd39f171f64b2e15d7dddc4de39",
+      "counts": {
+        "roads": 15,
+        "buildings": 14,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_8": {
+      "url": "tiles/-6_8.json",
+      "ix": -6,
+      "iz": 8,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 1065,
+      "sha256": "ddf177257a733cdf5f897475e1399daa0eae2d35232e2bfbf92ed26530e10e42",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-5_8": {
+      "url": "tiles/-5_8.json",
+      "ix": -5,
+      "iz": 8,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 13683,
+      "sha256": "28ada26c2def5a8b9286e77fd5d831073340c25f4df29ccaa9d04113318acb81",
+      "counts": {
+        "roads": 12,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-4_8": {
+      "url": "tiles/-4_8.json",
+      "ix": -4,
+      "iz": 8,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 5667,
+      "sha256": "b0c0834486d53849c700281709c5ee492c821e018a22100fff7445d0717b3470",
+      "counts": {
+        "roads": 4,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-3_8": {
+      "url": "tiles/-3_8.json",
+      "ix": -3,
+      "iz": 8,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 19172,
+      "sha256": "a8381a27c8f0ad98c61f28727528b2f11d74d3de9259a06020923d058bc11c58",
+      "counts": {
+        "roads": 12,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-2_8": {
+      "url": "tiles/-2_8.json",
+      "ix": -2,
+      "iz": 8,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 55610,
+      "sha256": "005e7b287dd732288f1e9e5b4d0db3fb338fc93bcd827dd620c4622fd4d5b08a",
+      "counts": {
+        "roads": 56,
+        "buildings": 11,
+        "water": 1,
+        "landuse": 9
+      }
+    },
+    "-1_8": {
+      "url": "tiles/-1_8.json",
+      "ix": -1,
+      "iz": 8,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 51549,
+      "sha256": "22fd1532c39c897cc10e78966d23cc27df2a031318ad44066995e94d65eb9045",
+      "counts": {
+        "roads": 48,
+        "buildings": 22,
+        "water": 1,
+        "landuse": 4
+      }
+    },
+    "0_8": {
+      "url": "tiles/0_8.json",
+      "ix": 0,
+      "iz": 8,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 35240,
+      "sha256": "73d2ac5e33c044e40b51fceefbb4f1b34bdc17922016457b96fdc03bb72e0b00",
+      "counts": {
+        "roads": 46,
+        "buildings": 3,
+        "water": 1,
+        "landuse": 2
+      }
+    },
+    "1_8": {
+      "url": "tiles/1_8.json",
+      "ix": 1,
+      "iz": 8,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 32914,
+      "sha256": "b89845c77af20ece8b78e4705d74f4084d12a957193ab931aa88127e8c080e0d",
+      "counts": {
+        "roads": 41,
+        "buildings": 7,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_8": {
+      "url": "tiles/2_8.json",
+      "ix": 2,
+      "iz": 8,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 46259,
+      "sha256": "3c923117438e788d124d3170ccd4f7ac4cffb009cbe44b887e651a1615eaebf7",
+      "counts": {
+        "roads": 60,
+        "buildings": 9,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "3_8": {
+      "url": "tiles/3_8.json",
+      "ix": 3,
+      "iz": 8,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 49344,
+      "sha256": "0cae6d76381a24345da7e410af4de2b40bd9a6e0b589399cda590e38359c9ca2",
+      "counts": {
+        "roads": 58,
+        "buildings": 15,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_8": {
+      "url": "tiles/4_8.json",
+      "ix": 4,
+      "iz": 8,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 20649,
+      "sha256": "19638130e0aa6712fee0efd71ae6f6a74359b8cfcbc0f648ec9eef935f939e1d",
+      "counts": {
+        "roads": 25,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "5_8": {
+      "url": "tiles/5_8.json",
+      "ix": 5,
+      "iz": 8,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 16618,
+      "sha256": "3d726c95fa49d764b800497423074ab7e6e9dd091e304c49234955f3eec0209d",
+      "counts": {
+        "roads": 17,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_8": {
+      "url": "tiles/6_8.json",
+      "ix": 6,
+      "iz": 8,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 12973,
+      "sha256": "037c1cc790bf205a6253b4380d7aa70bc82c436b19e2c50a150df45070149a4a",
+      "counts": {
+        "roads": 11,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "7_8": {
+      "url": "tiles/7_8.json",
+      "ix": 7,
+      "iz": 8,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 29931,
+      "sha256": "46ac4ef31ab07466c74b178a974060dd788e2d1814240ec475921f322bc8418f",
+      "counts": {
+        "roads": 26,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 7
+      }
+    },
+    "8_8": {
+      "url": "tiles/8_8.json",
+      "ix": 8,
+      "iz": 8,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 36005,
+      "sha256": "331d68bb8e23a828392125b2241ef1f752a935b25927997d1363d53e60c2f544",
+      "counts": {
+        "roads": 38,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 10
+      }
+    },
+    "9_8": {
+      "url": "tiles/9_8.json",
+      "ix": 9,
+      "iz": 8,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 4096,
+        "maxZ": 4608
+      },
+      "bytes": 23181,
+      "sha256": "da978e5b70b2794d18e21605d5e0d08b04961e963f7b319cae62f94f8341136e",
+      "counts": {
+        "roads": 25,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "-10_9": {
+      "url": "tiles/-10_9.json",
+      "ix": -10,
+      "iz": 9,
+      "bounds": {
+        "minX": -5120,
+        "maxX": -4608,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 656,
+      "sha256": "e14a335d6f58fc524781a8082f99c56bf926db506f232926f66250ecb43c057b",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-9_9": {
+      "url": "tiles/-9_9.json",
+      "ix": -9,
+      "iz": 9,
+      "bounds": {
+        "minX": -4608,
+        "maxX": -4096,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 654,
+      "sha256": "9aa0f86611a753cc3769727c38975278776d8fc0e04ef6064cb9d24fbffda2f3",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-8_9": {
+      "url": "tiles/-8_9.json",
+      "ix": -8,
+      "iz": 9,
+      "bounds": {
+        "minX": -4096,
+        "maxX": -3584,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 691,
+      "sha256": "76fb475f90d3d33b3b4a444ac2cd3dd0791665e00b488196047b8f9a2d29d880",
+      "counts": {
+        "roads": 0,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "-7_9": {
+      "url": "tiles/-7_9.json",
+      "ix": -7,
+      "iz": 9,
+      "bounds": {
+        "minX": -3584,
+        "maxX": -3072,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 7574,
+      "sha256": "8cd6e0943bee0d304c70e55ee1ec6668dbb3cc5c818e7c5c90e8ffc2d945619a",
+      "counts": {
+        "roads": 8,
+        "buildings": 1,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-6_9": {
+      "url": "tiles/-6_9.json",
+      "ix": -6,
+      "iz": 9,
+      "bounds": {
+        "minX": -3072,
+        "maxX": -2560,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 12296,
+      "sha256": "e9be1c2a49f1265947bdbddc332bc064456ba3ac4b2e6d2f35598fc960d5c0ce",
+      "counts": {
+        "roads": 12,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "-5_9": {
+      "url": "tiles/-5_9.json",
+      "ix": -5,
+      "iz": 9,
+      "bounds": {
+        "minX": -2560,
+        "maxX": -2048,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 21152,
+      "sha256": "a7509cbd1a8532c5a9fe2ca5e77844995f4b84562a3032315b2007833e85cc8d",
+      "counts": {
+        "roads": 23,
+        "buildings": 0,
+        "water": 1,
+        "landuse": 3
+      }
+    },
+    "-4_9": {
+      "url": "tiles/-4_9.json",
+      "ix": -4,
+      "iz": 9,
+      "bounds": {
+        "minX": -2048,
+        "maxX": -1536,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 32350,
+      "sha256": "b4f648e450a97b3359e511cfb8422ad7208dacc3779c84e40ca3707885c44f77",
+      "counts": {
+        "roads": 14,
+        "buildings": 29,
+        "water": 1,
+        "landuse": 1
+      }
+    },
+    "-3_9": {
+      "url": "tiles/-3_9.json",
+      "ix": -3,
+      "iz": 9,
+      "bounds": {
+        "minX": -1536,
+        "maxX": -1024,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 32818,
+      "sha256": "4f0ca68f63a889686d758eca7a8f0b609640a8321ec8aba6160c79cd9138e6cb",
+      "counts": {
+        "roads": 9,
+        "buildings": 32,
+        "water": 3,
+        "landuse": 2
+      }
+    },
+    "-2_9": {
+      "url": "tiles/-2_9.json",
+      "ix": -2,
+      "iz": 9,
+      "bounds": {
+        "minX": -1024,
+        "maxX": -512,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 23092,
+      "sha256": "4efb333fadda8aa7e8004291de8782c096a68ced915ac4f759f838a79c12e649",
+      "counts": {
+        "roads": 12,
+        "buildings": 15,
+        "water": 1,
+        "landuse": 2
+      }
+    },
+    "-1_9": {
+      "url": "tiles/-1_9.json",
+      "ix": -1,
+      "iz": 9,
+      "bounds": {
+        "minX": -512,
+        "maxX": 0,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 5511,
+      "sha256": "4101cad8ba30feaff8f2f914f49e218619682432ce5b327cfd32d49001132068",
+      "counts": {
+        "roads": 4,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "0_9": {
+      "url": "tiles/0_9.json",
+      "ix": 0,
+      "iz": 9,
+      "bounds": {
+        "minX": 0,
+        "maxX": 512,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 13661,
+      "sha256": "a73ea053a3f58ebc6ed97b243bd5a77155b890e9c805427b5096601d705417fe",
+      "counts": {
+        "roads": 9,
+        "buildings": 5,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "1_9": {
+      "url": "tiles/1_9.json",
+      "ix": 1,
+      "iz": 9,
+      "bounds": {
+        "minX": 512,
+        "maxX": 1024,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 6140,
+      "sha256": "05a85c9bc2816e9c4241a1bb6d142dd7593f56e87ea7f87962e51b03a0b16a0b",
+      "counts": {
+        "roads": 2,
+        "buildings": 4,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "2_9": {
+      "url": "tiles/2_9.json",
+      "ix": 2,
+      "iz": 9,
+      "bounds": {
+        "minX": 1024,
+        "maxX": 1536,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 9746,
+      "sha256": "bfaecacf185adfae7092e0b83a348eaef220a076d15508d37dc6b83b69635ea7",
+      "counts": {
+        "roads": 11,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 1
+      }
+    },
+    "3_9": {
+      "url": "tiles/3_9.json",
+      "ix": 3,
+      "iz": 9,
+      "bounds": {
+        "minX": 1536,
+        "maxX": 2048,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 25514,
+      "sha256": "6fe81999b2dc9dd96dd35bd47af9d594520d27c3bad8942063f7ee99d2ef9ed7",
+      "counts": {
+        "roads": 24,
+        "buildings": 10,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "4_9": {
+      "url": "tiles/4_9.json",
+      "ix": 4,
+      "iz": 9,
+      "bounds": {
+        "minX": 2048,
+        "maxX": 2560,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 37852,
+      "sha256": "5285d2d39fe1a5d67960bc711de52956e6d0917854a2fc947b3d7bca3110a80c",
+      "counts": {
+        "roads": 41,
+        "buildings": 11,
+        "water": 0,
+        "landuse": 5
+      }
+    },
+    "5_9": {
+      "url": "tiles/5_9.json",
+      "ix": 5,
+      "iz": 9,
+      "bounds": {
+        "minX": 2560,
+        "maxX": 3072,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 40363,
+      "sha256": "2b895334e1583c0e25d2f0aaa026d3cf75effc681d3ad6a730717c0bfed0cb5a",
+      "counts": {
+        "roads": 21,
+        "buildings": 34,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "6_9": {
+      "url": "tiles/6_9.json",
+      "ix": 6,
+      "iz": 9,
+      "bounds": {
+        "minX": 3072,
+        "maxX": 3584,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 91000,
+      "sha256": "0fb68c82a6c69baff4960c7d5fd02bf24b10a7b583e3d1d756bc2beef1f16f22",
+      "counts": {
+        "roads": 38,
+        "buildings": 103,
+        "water": 0,
+        "landuse": 3
+      }
+    },
+    "7_9": {
+      "url": "tiles/7_9.json",
+      "ix": 7,
+      "iz": 9,
+      "bounds": {
+        "minX": 3584,
+        "maxX": 4096,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 21531,
+      "sha256": "ddfca6251e3774519fa6d0c7eb2be137652d2f4ea260119ffe722df066b6cc25",
+      "counts": {
+        "roads": 16,
+        "buildings": 2,
+        "water": 0,
+        "landuse": 2
+      }
+    },
+    "8_9": {
+      "url": "tiles/8_9.json",
+      "ix": 8,
+      "iz": 9,
+      "bounds": {
+        "minX": 4096,
+        "maxX": 4608,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 28819,
+      "sha256": "81b88b31e558b61b5dde0449e69bf8ca9b6b649cb0b2b45e156a8b4444310c15",
+      "counts": {
+        "roads": 26,
+        "buildings": 3,
+        "water": 0,
+        "landuse": 4
+      }
+    },
+    "9_9": {
+      "url": "tiles/9_9.json",
+      "ix": 9,
+      "iz": 9,
+      "bounds": {
+        "minX": 4608,
+        "maxX": 5120,
+        "minZ": 4608,
+        "maxZ": 5120
+      },
+      "bytes": 27427,
+      "sha256": "bbb14ec9594933ce1dca966d57c614bf966b6c8efedb24fedeccf75153c3529b",
+      "counts": {
+        "roads": 30,
+        "buildings": 0,
+        "water": 0,
+        "landuse": 2
+      }
+    }
+  },
+  "bytesTotal": 31611502
+}

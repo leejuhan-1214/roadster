@@ -1,0 +1,117 @@
+{
+  "kind": "bbbike-geojson",
+  "endpoint": "https://download.bbbike.org/osm/bbbike/Seoul/Seoul.osm.geojson.xz",
+  "bbox": [
+    37.45190646784046,
+    126.96962805185431,
+    37.543893532159544,
+    127.0855719481457
+  ],
+  "origin": [
+    37.4979,
+    127.0276
+  ],
+  "extent": 5120,
+  "downloadedAt": "2026-11-10T12:15:14.754Z",
+  "sourceTimestamp": null,
+  "rawSha256": "ecab53b1ba3777d3a3371009adda338aa8cc93b324850db15a1d8200c5b40f9b",
+  "rawBytes": 40669897,
+  "elementCount": 44366,
+  "sources": [
+    {
+      "kind": "bbbike-geojson",
+      "url": "https://download.bbbike.org/osm/bbbike/Seoul/Seoul.osm.geojson.xz",
+      "rawSha256": "1636b1c963d8a6168ddff76d1ba5cb43470e0309b65b1090750040b1e2cee9af",
+      "rawBytes": 78378352,
+      "elementCount": 44366,
+      "sourceTimestamp": null,
+      "downloadedAt": "2026-11-10T12:15:14.754Z",
+      "lastModified": "Sun, 08 Nov 2026 04:07:00 GMT",
+      "httpMetadata": {
+        "url": "https://download.bbbike.org/osm/bbbike/Seoul/Seoul.osm.geojson.xz",
+        "downloadedAt": "2026-11-10T12:15:14.754Z",
+        "lastModified": "Sun, 08 Nov 2026 04:07:00 GMT",
+        "etag": "\"437094817\"",
+        "rawBytes": 78378352,
+        "rawSha256": "1636b1c963d8a6168ddff76d1ba5cb43470e0309b65b1090750040b1e2cee9af"
+      },
+      "sourceRegion": [
+        37.35,
+        126.58,
+        37.72,
+        127.31
+      ],
+      "bbox": [
+        37.45190646784046,
+        126.96962805185431,
+        37.543893532159544,
+        127.0855719481457
+      ],
+      "idDocumentation": "https://docs.osmcode.org/osmium/latest/osmium-export.html",
+      "snapshotNote": "HTTP Last-Modified is file publication time, not an asserted OSM replication timestamp."
+    }
+  ],
+  "sourceFeatureCount": 1437813,
+  "selectedFeatureCount": 44366,
+  "importNotes": [
+    "Filtered complete source geometries to bounded region by intersection.",
+    "Source GeoJSON omits OSM IDs. Hash-based provider feature identifiers and source ordinals are explicit; osmId is null unless an actual source ID exists or exact core geometry matches.",
+    "Multipolygon geometry and inner holes assembled by source Osmium export, preserved without fabricated members.",
+    "All selected-feature OSM tags retained; geometric clipping and ownership happen in the tile builder."
+  ],
+  "featureIdentity": {
+    "originalOsmIdsAvailable": false,
+    "providerFeatureId": "bbbike:SHA256(canonical centimetre-projected geometry + sorted OSM tags)",
+    "sourceFeatureOrdinal": "1-based position in the original source FeatureCollection",
+    "knownCoreMatching": "Known core OSM IDs are retained only after exact canonical geometry matching in the tile builder."
+  },
+  "coreRoadGeometryPriority": {
+    "source": "../gangnam.json",
+    "sourceTimestamp": "2026-11-09T00:11:56Z",
+    "roadCount": 500,
+    "rule": "For an existing core OSM way ID, retain its full core polyline, width, lanes and basic road fields in all tiles; keep additional regional bridge/tunnel/layer metadata. Also retain known core roads absent in the older regional snapshot."
+  },
+  "naturePolygonClipping": "Water, park and vegetation rings/holes are clipped to each exact tile rectangle at build time to avoid repeatedly transferring very large relation geometry.",
+  "coreGeometryMatching": {
+    "method": "Exact centimetre-projected line geometry, invariant to reversal; building rings invariant to rotation/reversal.",
+    "buildingOwnership": "Buildings with centroid inside the existing core, or exact geometry matching a building rendered by the core, are omitted from streamed ownership. Other exact matches to known core outlines retain their known OSM IDs.",
+    "sourceIds": "BBBike features lacking original OSM IDs keep osmId:null and explicit providerFeatureId/source ordinal/source URL. A content hash is never labelled as an OSM ID."
+  },
+  "counts": {
+    "uniqueRoads": 12078,
+    "uniqueBuildings": 29479,
+    "coreBuildings": 1823,
+    "water": 51,
+    "landuse": 776,
+    "tiles": 400
+  },
+  "bytesTotal": 31611502,
+  "omitted": {
+    "unclosedBuildingWays": 0,
+    "unclosedRelationOuters": 0,
+    "coreBuildings": 1873,
+    "coreGeometryMatches": 52,
+    "outsideBuildingCentroids": 152,
+    "undergroundBuildings": 9
+  },
+  "coreSource": "../provenance.json",
+  "sourceDocumentation": [
+    "https://wiki.openstreetmap.org/wiki/Overpass_API",
+    "https://dev.overpass-api.de/overpass-doc/en/preface/commons.html",
+    "https://www.openstreetmap.org/copyright",
+    "https://download.bbbike.org/osm/bbbike/Seoul/",
+    "https://docs.osmcode.org/osmium/latest/osmium-export.html"
+  ],
+  "transformations": [
+    "Coordinates projected to the existing local x/z metre origin and rounded to centimetres.",
+    "Real road geometries retained with original OSM IDs where available or explicit provider content identifiers otherwise; full road geometry is indexed into every intersected tile.",
+    "Multipolygon member ways stitched into closed outer rings; inner rings retained as holes. Incomplete rings are omitted and counted.",
+    "Buildings assigned once by polygon centroid; complete footprints retained. Existing core building IDs omitted from streamed geometry and kept as tree avoidance context.",
+    "Road bridge, tunnel, layer, access, surface, lane, width, oneway and maxspeed metadata retained.",
+    "Actual water and park/vegetation outlines retained. No synthetic roads or building footprints are introduced.",
+    "Building height and facade defaults are renderer assumptions when absent in OSM; this is not a photogrammetric or cadastral dataset."
+  ],
+  "license": "Open Database License 1.0",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors"
+}

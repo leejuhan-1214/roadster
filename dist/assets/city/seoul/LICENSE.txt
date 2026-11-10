@@ -1,0 +1,6 @@
+Contains information from OpenStreetMap, made available under the Open Database License (ODbL) 1.0.
+© OpenStreetMap contributors
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+
+The tile JSON files are an adapted database of the bounded extract described in provenance.json.

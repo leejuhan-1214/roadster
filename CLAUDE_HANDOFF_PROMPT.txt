@@ -9,3 +9,6 @@ Roadster Landing Lab 작업을 이어서 수행해 주세요.
 최종 보고에는 변경점·조작법·검증·배포 URL·미해결 사항을 간결하게 적고 LOCAL_HANDOFF.txt를 갱신하세요. 다음 사용자의 요청을 현재 우선순위로 수행하세요.
 
 최신 도시: 중심 강남역 OSM 구역과 절차 생성 외곽을 명확히 구분할 것. city-streaming.js는256m청크 최대25개, 재방문 재현·해제·충돌/미니맵 갱신. city-building-collision.js 프리즘 외곽 충돌과 city-trees.js 공유 잎 노멀/바람/그림자 자산을 보존할 것. 무한 도시를 서울 전체 실측 복제라고 표현하지 말 것.
+
+
+최신 v1.25 변경: 생성형 외곽/순환도로는 폐기했습니다. 실제 OSM 서울10.24×10.24km/512m400타일 자료만 사용합니다. README v1.25와 docs/SEOUL_MAP_DATA.md를 먼저 읽으세요. worker/scheduler/mesh로 준비작업을 분리하며 physics.setObstacleChunk/removeObstacleChunk를 사용합니다. main.animate에서 전체 setObstacles를 반복하지 마세요. reset 직후 bindPhysics로 활성충돌 복원. 원본건물 안뜰과 경계 넘어가는 전체 윤곽 보존. 자료 밖에 임의의 도시를 만들지 마세요. 데이터 시점·현장 미확인 외벽·높이·가로수 및 평면교량의 한계를 명확히 기록하세요. 기존 조작/착지실험 보존. 최종 배포 여부는 LOCAL_HANDOFF 최신SHA와 Actions를 재확인하세요.

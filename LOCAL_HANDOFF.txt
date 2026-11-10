@@ -1,3 +1,11 @@
+Roadster v1.25 — 실제 서울 외곽 지도 / 비동기 타일 전환
+작업 상태: 구현·로컬 검증 완료, 배포 준비. 런타임329+실제지도8=337검사통과,32모듈문법통과. 브라우저연속이동오류0/지도작업P95 .2ms최대1.6ms(환경별차이). 최종배포SHA/Actions는배포확인후기록.
+사용자 요청: 생성 외곽을 실제 서울 도로·건물 자료로 교체하고 맵 경계 프레임 끊김을 최적화해 기존 GitHub Pages에 배포. 기존 배포 승인 유지.
+현재 설계: 강남역 중심10.24×10.24km 실제 OSM 자료400타일(512m), 원본ID/좌표 보존, 중심코어 자료우선. 무한/서울전역 지도라고 주장하지 않음. 외곽 범위 끝은 안내/이동제한. 다운로드 원본시점과 수집일 구분.
+WebWorker에서타일fetch/JSON/도형/충돌분할,전방미리읽기,프레임별조립2단계/목표2ms,최대49타일유지,타일별충돌인덱스갱신. 가까운 이전구역 유지/먼GPU해제. 공유나무·재질보존. 안뜰구멍/내벽/옥상/충돌 일치. 기존주행·착지 기능 유지.
+README.md와 docs/SEOUL_MAP_DATA.md 참고. 새 tests/city-tile-builder.test.mjs, tests/obstacle-streaming.test.mjs, tests/seoul-data.test.mjs, city-streaming.test.mjs.
+아래는 이전 배포 이력이며 v1.24 절차 생성 외곽 설명은 v1.25에서 폐기됨.
+
 Roadster v1.24 — 연결 도시 스트리밍 / 실물 잎 / 건물 외곽 충돌
 2026-11-10 KST. 런타임1a01b310681d642f8fccc7a4710068058f0f743f. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42804657775 build/deploy 성공. 기존 배포 승인 유지.
 요청: 도시맵무한·실제자료조사·실제나무/나뭇잎·건물물리오류수정. 강남구공식자료+OSM+PolyHaven조사, docs/city-reference-update.md/docs/tree-update.md 참고. 중심500도로/1879건물기존OSM유지. 외곽은실제서울전체가아닌절차생성(위치HUD명시).

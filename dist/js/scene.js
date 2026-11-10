@@ -1,8 +1,8 @@
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
-import {loadCityWorld,createCityWorld} from './city-world.js?v=20261110-infinite1';
-import {attachStreamingCity} from './city-streaming.js?v=20261110-infinite1';
-import {updateTreeWind} from './city-trees.js?v=20261110-infinite1';
+import {loadCityWorld} from './city-world.js?v=20261110-seoul1';
+import {attachStreamingCity} from './city-streaming.js?v=20261110-seoul1';
+import {updateTreeWind} from './city-trees.js?v=20261110-seoul1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';
@@ -321,15 +321,16 @@ export class FlightScene {
     this.cameraName=camera;this.controls.maxPolarAngle=Math.PI*.485;this.controls.enabled=camera==='orbit';this.controls.enableZoom=this.mode!=='inspect';
   }
   async loadCity(){
+    if(this.cityPromise)return this.cityPromise;
     if(this.city)return this.city;
     this.cityPromise??=loadCityWorld().then(async city=>{
       this.city=city;city.root.visible=this.mode==='city';this.scene.add(city.root);
       for(const name of ['OSM building facades','OSM building roofs']){const mesh=city.root.getObjectByName(name);if(mesh)mesh.castShadow=true;}
       this.citySurfaces=await applyCitySurfaces(city,this.renderer);
       if(!this.citySurfaces.loaded)console.warn('촬영 재질 로드 실패 · 기본 재질 유지',this.citySurfaces.error);
-      attachStreamingCity(city,createCityWorld,{treeAsset:city.treeAsset});
+      await attachStreamingCity(city,{treeAsset:city.treeAsset});
       return city;
-    }).catch(error=>{this.cityPromise=null;throw error;});
+    }).catch(error=>{if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}this.cityPromise=null;throw error;});
     return this.cityPromise;
   }
   frameLandingStart(sim){

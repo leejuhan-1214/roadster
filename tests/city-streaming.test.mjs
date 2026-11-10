@@ -1,45 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {createCityWorld,createCityPlan} from '../dist/js/city-world.js';
-import {createDistrictData,createCityGateways,attachStreamingCity,CITY_CHUNK_SIZE} from '../dist/js/city-streaming.js';
-const data=JSON.parse(await readFile(new URL('../dist/assets/city/gangnam.json',import.meta.url),'utf8')),plan=createCityPlan(data);
-test('districts are deterministic in every quadrant and keep buildings off surveyed centre and roads',()=>{
-  for(const [x,z]of [[4,0],[-4,0],[0,4],[0,-4],[12345,-4200]]){
-    const a=createDistrictData(x,z,plan.bounds,createCityGateways(plan));
-    assert.deepEqual(a,createDistrictData(x,z,plan.bounds,createCityGateways(plan)));
-    assert.ok(a.roads.length&&a.buildings.length);
-    for(const b of a.buildings)for(const p of b.points){
-      assert.ok(p.every(Number.isFinite));
-      const wx=p[0]+a.chunk.cx,wz=p[1]+a.chunk.cz;
-      assert.ok(wx<plan.bounds.minX||wx>plan.bounds.maxX||wz<plan.bounds.minZ||wz>plan.bounds.maxZ);
-    }
-  }
-  assert.equal(createDistrictData(0,0,plan.bounds),null);
-});
-test('adjacent procedural chunks meet at the same road centres and widths',()=>{
-  const left=createDistrictData(5,5,plan.bounds),right=createDistrictData(6,5,plan.bounds);
-  const exits=(d,x)=>d.roads.flatMap(r=>r.points.filter(p=>Math.abs(p[0]+d.chunk.cx-x)<1e-6).map(p=>[p[1]+d.chunk.cz,r.width]));
-  assert.deepEqual(exits(left,6*CITY_CHUNK_SIZE).sort(),exits(right,6*CITY_CHUNK_SIZE).sort());
-});
-test('every clipped real road exit has a connecting street to the outer boulevard',()=>{
-  const gates=createCityGateways(plan),b=plan.bounds;
-  for(const s of plan.segments)for(const p of [s.a,s.b])if(Math.min(Math.abs(p[0]-b.minX),Math.abs(p[0]-b.maxX),Math.abs(p[1]-b.minZ),Math.abs(p[1]-b.maxZ))<.1){
-    assert.ok(gates.some(g=>g.a===p),'missing source exit');
-  }
-});
-test('streaming evicts remote chunks, preserves core, colliders and shared materials, and survives return',()=>{
-  const city=createCityWorld(data);attachStreamingCity(city,createCityWorld);
-  try{
-    const material=city.root.getObjectByName('OSM road network').material;let sharedDisposed=false;material.addEventListener('dispose',()=>sharedDisposed=true);
-    const coreCount=plan.obstacles.length;
-    city.streaming.update(2000,0);assert.ok(city.streaming.chunks.size>0&&city.streaming.chunks.size<=25);
-    const old=[...city.streaming.chunks.values()][0];let released=false;old.root.traverse(o=>o.geometry?.addEventListener('dispose',()=>released=true));
-    city.streaming.update(-2000,2000);assert.ok(released);assert.equal(sharedDisposed,false);
-    assert.ok(city.obstacles.length>coreCount);assert.ok(city.obstacles.some(o=>o.center[0]<-1500&&o.center[2]>1500));
-    assert.equal(city.nearestRoadName(-2000,2000),'확장 도시 · 절차 생성');
-    const revision=city.streaming.revision;assert.equal(city.streaming.update(-2001,2001),false);assert.equal(city.streaming.revision,revision);
-    city.streaming.update(0,0);assert.ok(city.streaming.chunks.size<=25);assert.equal(sharedDisposed,false);
-    assert.ok(city.roads.some(r=>r.name==='강남대로'));
-  }finally{city.dispose();}
-});
+import {createTileScheduler} from '../dist/js/city-tile-scheduler.js';
+const manifest={tileSize:512,bounds:{minX:-5120,maxX:5120,minZ:-5120,maxZ:5120},tiles:{}};
+for(let x=-10;x<10;x++)for(let z=-10;z<10;z++)manifest.tiles[x+'_'+z]={bounds:{minX:x*512,maxX:(x+1)*512,minZ:z*512,maxZ:(z+1)*512}};
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+function fixture(options={}){const disposed=[],activated=[],evicted=[];let steps=0;const s=createTileScheduler({manifest,load:async(e,key)=>key,hydrate:key=>{let n=0;return{key,step(){steps++;return ++n===3;},dispose(){disposed.push(key);}};},onActivate:(key,h)=>{assert.equal(s.chunks.has(key),false);activated.push(key);},onEvict:key=>evicted.push(key),...options});return{s,disposed,activated,evicted,get steps(){return steps;}};}
+async function settle(s,x=0,z=0,n=100){for(let i=0;i<n;i++){s.update(x,z);await flush();}}
+test('movement enqueues work and returns without synchronously loading or building geometry',async()=>{let calls=0;const f=fixture({load:async()=>{calls++;return'x';}});f.s.update(0,0);assert.equal(calls,0);assert.equal(f.steps,0);assert.equal(f.s.pending.size,2);await flush();assert.equal(calls,2);f.s.dispose();});
+test('per-frame hydration is bounded and collision callback precedes chunk exposure',async()=>{const f=fixture();f.s.update(0,0);await flush();for(let i=0;i<8;i++){const before=f.steps;f.s.update(0,0);assert.ok(f.steps-before<=2);await flush();}assert.ok(f.activated.length);f.s.dispose();});
+test('bounded real map has no fabricated tiles beyond its source coverage',async()=>{const f=fixture();f.s.update(800000,-900000);await flush();assert.equal(f.s.pending.size,0);assert.equal(f.s.wanted.size,0);assert.equal(f.s.contains(5120,0),false);assert.equal(f.s.contains(-5120,0),true);f.s.dispose();});
+test('negative coordinates use floor indexing and forward direction adds prefetch row',()=>{const f=fixture();assert.equal(f.s.keyAt(-.1,-.1),'-1_-1');f.s.update(0,0,40,0);assert.ok(f.s.wanted.has('3_0'));assert.ok(f.s.wanted.has('-2_0'));f.s.dispose();});
+test('stale results after movement are discarded and do not block re-request',async()=>{const tasks=[];const f=fixture({concurrency:1,load:(entry,key,signal)=>new Promise(resolve=>tasks.push({key,resolve,signal}))});f.s.update(0,0);await flush();const first=tasks[0];f.s.update(3500,3500);assert.ok(first.signal.aborted);first.resolve(first.key);await flush();assert.equal(f.s.staging.has(first.key),false);f.s.update(0,0);await flush();assert.equal(tasks.length,2);tasks[1].resolve(tasks[1].key);await flush();assert.equal(f.s.staging.size,1);f.s.dispose();});
+test('adjacent boundary crossing retains the old collision coverage while next tiles build',async()=>{const f=fixture();await settle(f.s,500,0);assert.ok(f.s.chunks.has('0_0'));f.s.update(513,0);assert.ok(f.s.chunks.has('0_0'));assert.equal(f.evicted.includes('0_0'),false);f.s.dispose();});
+test('distant travel evicts GPU resources and loaded tile count stays bounded',async()=>{const f=fixture();await settle(f.s);assert.ok(f.s.chunks.size);const old=[...f.s.chunks.keys()];await settle(f.s,3500,-3500);assert.ok(old.every(k=>f.disposed.includes(k)));assert.ok(f.s.chunks.size<=49);f.s.dispose();assert.equal(f.s.chunks.size,0);});
+test('fetch failure retries with backoff without immediate per-frame retry loop',async()=>{let time=0,calls=0;const f=fixture({radius:0,concurrency:1,now:()=>time,load:async()=>{calls++;throw new Error('network');}});f.s.update(0,0);await flush();assert.equal(calls,1);for(let i=0;i<10;i++)f.s.update(0,0);await flush();assert.equal(calls,1);time=2001;f.s.update(0,0);await flush();assert.equal(calls,2);f.s.dispose();});
+test('dispose aborts requests and a late completion cannot resurrect tiles',async()=>{let resolve,signal;const f=fixture({load:(entry,key,s)=>{signal=s;return new Promise(r=>resolve=r);},concurrency:1});f.s.update(0,0);await flush();f.s.dispose();assert.ok(signal.aborted);resolve('late');await flush();assert.equal(f.s.chunks.size,0);assert.equal(f.s.staging.size,0);});

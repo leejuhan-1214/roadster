@@ -49,7 +49,7 @@ transformed += normal*leafFlutter;`:''}`);
 }
 
 export async function loadCityTreeAsset(){
-  const gltf=await new GLTFLoader().loadAsync(new URL('../assets/trees/tree-small-02.gltf?v=20261110-infinite1',import.meta.url).href);
+  const gltf=await new GLTFLoader().loadAsync(new URL('../assets/trees/tree-small-02.gltf?v=20261110-seoul1',import.meta.url).href);
   gltf.scene.updateMatrixWorld(true);
   const levels=[0,1].map(index=>{
     const source=gltf.scene.getObjectByName('TreeSmall02_LOD'+index);

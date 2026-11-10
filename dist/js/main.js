@@ -1,13 +1,13 @@
 import {Vector3} from 'three';
-import {bindLandingLiftControls} from './landing-controls.js?v=20261110-infinite1';
-import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-infinite1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-infinite1';
+import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
+import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-seoul1';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-seoul1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261109-assessment1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-infinite1';
-import {LandingUI} from './landing-ui.js?v=20261110-infinite1';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-seoul1';
+import {LandingUI} from './landing-ui.js?v=20261110-seoul1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-infinite1';
-import {FlightScene} from './scene.js?v=20261110-infinite1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-seoul1';
+import {FlightScene} from './scene.js?v=20261110-seoul1';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -54,7 +54,7 @@ function reset({cancel=true,clearMeasurement=true}={}){
   else Object.assign(parameters,{roadRoughness:0,aeroEnabled:false});
   if(mode==='lab'&&!landingSession)parameters.friction=Number($('lab-surface').value);
   Object.assign(sim.params,parameters);
-  sim.setObstacles(mode==='city'?(scene.city?.obstacles||[]):[]);sim.reset('ground');
+  sim.setObstacles(mode==='city'?(scene.city?.obstacles||[]):[]);scene.city?.streaming?.bindPhysics(mode==='city'?sim:null);sim.reset('ground');
   if(mode==='city'&&scene.city){
     const spawn=scene.city.spawn;sim.state.pos.x=spawn.position[0];sim.state.pos.z=spawn.position[2];sim.state.q.setFromAxisAngle(worldUp,spawn.heading);
     scene.frameCityStart(sim);
@@ -98,7 +98,10 @@ function stepSimulation(){
   if(freeDriving()){
     driveInput=driver.update(driveKeys,sim,LANDING_STEP);if(driveInput.throttle)driveGear=driveInput.throttle<0?'R':'D';
     brakeTrial.sample(sim,{braking:driveKeys.has('KeyB'),drifting:driveKeys.has('ShiftLeft')||driveKeys.has('ShiftRight'),airborne:driver.airborne,settings:citySettings,vehicleId:activeVehicle.id});
-    renderStates.beforeStep();sim.step(LANDING_STEP,driveInput);renderStates.afterStep(sim);
+    const previousX=sim.state.pos.x,previousZ=sim.state.pos.z;
+    renderStates.beforeStep();sim.step(LANDING_STEP,driveInput);
+    if(mode==='city'&&scene.city?.streaming&&!scene.city.streaming.guard(sim.state,LANDING_STEP)){sim.state.pos.x=previousX;sim.state.pos.z=previousZ;}
+    renderStates.afterStep(sim);
     cityDistance+=Math.hypot(sim.state.vel.x,sim.state.vel.z)*LANDING_STEP;return;
   }
   if(!landingRun)return;
@@ -290,7 +293,9 @@ function drawCityMap(t){
   const x=sim.state.pos.x,z=sim.state.pos.z;
   ctx.clearRect(0,0,w,h);ctx.fillStyle='#142029';ctx.fillRect(0,0,w,h);ctx.save();ctx.translate(w/2,h/2);
   for(const road of city.roads||[]){
-    if(!road.points?.length)continue;ctx.beginPath();ctx.strokeStyle=road.width>14?'#839197':'#4e626d';ctx.lineWidth=Math.max(1.5,road.width*scale*.6);
+    if(!road.points?.length)continue;
+    const bounds=road.mapBounds??=(road.points.reduce((b,p)=>({minX:Math.min(b.minX,p[0]),maxX:Math.max(b.maxX,p[0]),minZ:Math.min(b.minZ,p[1]),maxZ:Math.max(b.maxZ,p[1])}),{minX:Infinity,maxX:-Infinity,minZ:Infinity,maxZ:-Infinity}));
+    if(bounds.maxX<x-w/2/scale-30||bounds.minX>x+w/2/scale+30||bounds.maxZ<z-h/2/scale-30||bounds.minZ>z+h/2/scale+30)continue;ctx.beginPath();ctx.strokeStyle=road.width>14?'#839197':'#4e626d';ctx.lineWidth=Math.max(1.5,road.width*scale*.6);
     for(let i=0;i<road.points.length;i++){const px=(road.points[i][0]-x)*scale,py=(road.points[i][1]-z)*scale;if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);}ctx.stroke();
   }
   ctx.rotate(Math.PI/2-t.attitude.yaw);ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(-6,6);ctx.lineTo(0,3);ctx.lineTo(6,6);ctx.closePath();ctx.fillStyle='#8bffe0';ctx.fill();ctx.restore();
@@ -418,7 +423,7 @@ function animate(stamp){
   const frameMs=lastStamp?stamp-lastStamp:16.67,elapsed=lastStamp?Math.min((stamp-lastStamp)/1000,.1):1/60;lastStamp=stamp;
   const blocked=!!document.querySelector('dialog[open]');
   if(blocked&&landingLiftHeld)clearLandingLift();
-  if(mode==='city'&&scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z))sim.setObstacles(scene.city.obstacles);
+  if(mode==='city')scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z,sim.state.vel.x,sim.state.vel.z);
   if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked&&!document.hidden){accumulator+=elapsed;let steps=0;while(accumulator>=LANDING_STEP&&steps<50&&!paused){stepSimulation();accumulator=Math.max(0,accumulator-LANDING_STEP);steps++;}}else accumulator=0;
   if(!document.hidden)scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,vectors:showVectors,explode:Number($('explode').value),paint:$('city-paint').value,wing:false,cutaway:false,renderState:renderStates.sample(paused||mode==='inspect'||blocked?1:accumulator/LANDING_STEP)});
