@@ -90,5 +90,5 @@ test('cornering torque priority leaves straight launch, coasting, braking, rever
   const r=reverse.driver.update(keys('KeyS','KeyA'),reverse.sim,.1);assert.equal(r.corneringAssist,false);assert.ok(r.throttle<0);
   const parking=moving({},2),p=parking.driver.update(keys('KeyW','KeyA'),parking.sim,.1);assert.equal(p.corneringAssist,false);assert.equal(p.throttle,1);
   sim.state.pos.y=sim.restHeight+5;sim.contactCount=0;
-  const flight=driver.update(keys('KeyW','KeyA'),sim,.1);assert.equal(flight.corneringAssist,false);assert.equal(flight.throttle,0);assert.equal(flight.airMoveForward,1);assert.equal(flight.yaw,1);
+  const flight=driver.update(keys('KeyW','KeyA'),sim,.1);assert.equal(flight.corneringAssist,false);assert.equal(flight.throttle,0);assert.equal(flight.airMoveForward,1);assert.equal(flight.airMoveRight,-1);assert.equal(flight.yaw,0);
 });

@@ -1,7 +1,7 @@
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-seoul1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-seoul1';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-air1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261109-assessment1';
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-seoul1';
 import {LandingUI} from './landing-ui.js?v=20261110-seoul1';
@@ -209,7 +209,7 @@ function setupCityExperiments(){
   for(const id of ['city-surface','city-crr','city-aero','city-wind-x','city-wind-z','city-roughness'])$(id).addEventListener('change',applySettings);
   const applyFlight=()=>{driver.setOptions({flightSteering:$('city-flight-steering').value,flightAssist:$('city-flight-assist').checked});$('world').focus({preventScroll:true});};
   $('city-flight-steering').addEventListener('change',applyFlight);$('city-flight-assist').addEventListener('change',applyFlight);
-  $('city-settings-reset').addEventListener('click',()=>{brakeTrial.cancel('settings-changed');citySettings=normalizeCityExperiment({});driver.setOptions({flightSteering:'turn',flightAssist:true});if(mode==='city')Object.assign(sim.params,cityExperimentParams(citySettings));syncCityExperimentInputs();});
+  $('city-settings-reset').addEventListener('click',()=>{brakeTrial.cancel('settings-changed');citySettings=normalizeCityExperiment({});driver.setOptions({flightSteering:'strafe',flightAssist:true});if(mode==='city')Object.assign(sim.params,cityExperimentParams(citySettings));syncCityExperimentInputs();});
   $('city-apply-height').addEventListener('click',()=>{
     const height=Number($('city-target-height').value);
     if(mode!=='city'||vehicleLoading||cityLoading)return;
@@ -320,7 +320,7 @@ function updateCityHUD(t){
   $('city-heading').textContent='방향 '+heading.toFixed(0)+'°';
   const left=driveKeys.has('KeyA')||driveKeys.has('ArrowLeft'),right=driveKeys.has('KeyD')||driveKeys.has('ArrowRight');
   const steeringHeld=left!==right,editing=document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]');
-  $('city-key-hint').textContent=editing?'입력 중 · Enter 운전':driver.airborne?'Q/E 회전 · H 높이 유지':steeringHeld?(left?'A ←':'D →')+' · '+(driveKeys.has('KeyB')?'B 제동':driveInput.handbrake?'Shift 드리프트':driveKeys.has('KeyF')?'F 가속':driveKeys.has('KeyW')?'W 가속':driveKeys.has('KeyS')?'S 후진':t.horizontalSpeed<.3?'W/S로 출발':'조향 중'):t.horizontalSpeed<.3?'W/S와 함께 A/D 조향':'WASD · F 가속 · Shift 드리프트';
+  $('city-key-hint').textContent=editing?'입력 중 · Enter 운전':driver.airborne?(driver.flightSteering==='strafe'?'A/D 옆이동 · Q/E 회전':'Q/E 회전 · H 높이 유지'):steeringHeld?(left?'A ←':'D →')+' · '+(driveKeys.has('KeyB')?'B 제동':driveInput.handbrake?'Shift 드리프트':driveKeys.has('KeyF')?'F 가속':driveKeys.has('KeyW')?'W 가속':driveKeys.has('KeyS')?'S 후진':t.horizontalSpeed<.3?'W/S로 출발':'조향 중'):t.horizontalSpeed<.3?'W/S와 함께 A/D 조향':'WASD · F 가속 · Shift 드리프트';
   $('city-key-hint').classList.toggle('city-key-hint-active',!editing&&steeringHeld);
   $('city-land').textContent=driver.landingAssist?'착지 중 · 취소':'착지 보조';$('city-land').setAttribute('aria-pressed',driver.landingAssist);
   $('city-hover').textContent=driver.altHold?'H 유지 '+driver.targetHeight.toFixed(1)+' m'+(t.saturation?' · 추력 한계':''):'H 고도 유지';
@@ -356,7 +356,7 @@ function updateUI(){
 }
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
-  $('guide-content').innerHTML=tab==='sources'?'<p>실차 외형 · 공통 가상 착지 장치 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">나무 모델</a> · Poly Haven CC0</p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>자유 낙하·추력 제동·완만한 하강을 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과의 그래프와 CSV로 측정값을 확인합니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 카메라 · V: 힘 벡터 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향 전환, W/S는 전후 추진입니다. 실험 패널에서 A/D를 수평 옆이동으로 바꿀 수 있습니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. 드래그 시점 회전, 휠 확대, C 카메라, R 복귀·재충전. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
+  $('guide-content').innerHTML=tab==='sources'?'<p>실차 외형 · 공통 가상 착지 장치 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">나무 모델</a> · Poly Haven CC0</p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>자유 낙하·추력 제동·완만한 하강을 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과의 그래프와 CSV로 측정값을 확인합니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 카메라 · V: 힘 벡터 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. 드래그 시점 회전, 휠 확대, C 카메라, R 복귀·재충전. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
 }
 function openGuide(tab='controls'){renderGuide(tab);$('guide-modal').showModal();}
 function focusApparatus(id){

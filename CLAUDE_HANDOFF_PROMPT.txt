@@ -12,3 +12,5 @@ Roadster Landing Lab 작업을 이어서 수행해 주세요.
 
 
 최신 v1.25 변경: 생성형 외곽/순환도로는 폐기했습니다. 실제 OSM 서울10.24×10.24km/512m400타일 자료만 사용합니다. README v1.25와 docs/SEOUL_MAP_DATA.md를 먼저 읽으세요. worker/scheduler/mesh로 준비작업을 분리하며 physics.setObstacleChunk/removeObstacleChunk를 사용합니다. main.animate에서 전체 setObstacles를 반복하지 마세요. reset 직후 bindPhysics로 활성충돌 복원. 원본건물 안뜰과 경계 넘어가는 전체 윤곽 보존. 자료 밖에 임의의 도시를 만들지 마세요. 데이터 시점·현장 미확인 외벽·높이·가로수 및 평면교량의 한계를 명확히 기록하세요. 기존 조작/착지실험 보존. 최종 배포 여부는 LOCAL_HANDOFF 최신SHA와 Actions를 재확인하세요.
+
+최신 v1.26 조작 변경: DrivingController 기본 flightSteering 및 실험 설정 초기화는 strafe입니다. 공중 A/D는 기수 방향을 유지하는 좌우 수평 분사, Q/E는 회전입니다. 지상 A/D 조향은 유지합니다. 명시적인 선회 옵션만 turn을 사용합니다. 새 tests/city-direction.test.mjs에서 실제 유한 기체·무회전 수평 이동·90도기수 좌표·빈 탱크·Q/E·지상 조향을 검증합니다.

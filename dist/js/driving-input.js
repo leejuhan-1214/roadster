@@ -12,7 +12,7 @@ const approach=(value,target,amount)=>value+clamp(target-value,-amount,amount);
 const held=(keys,...codes)=>codes.some(code=>keys.has(code));
 
 export class DrivingController {
-  constructor(options={}){this.flightSteering='turn';this.flightAssist=true;this.setOptions(options);this.reset();}
+  constructor(options={}){this.flightSteering='strafe';this.flightAssist=true;this.setOptions(options);this.reset();}
   setOptions(options={}){
     if(['turn','strafe'].includes(options.flightSteering))this.flightSteering=options.flightSteering;
     if(typeof options.flightAssist==='boolean')this.flightAssist=options.flightAssist;
