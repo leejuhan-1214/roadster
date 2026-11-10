@@ -16,15 +16,15 @@ export function bindLandingLiftControls({window,document,button,isReady,onChange
   window.addEventListener('blur',clear);
   document.addEventListener('visibilitychange',clear);
   document.addEventListener('focusin',event=>{if(editable(event.target))clear();});
-  button.addEventListener('pointerdown',event=>{
+  button?.addEventListener('pointerdown',event=>{
     if(event.button!==0||!isReady())return;
     event.preventDefault();button.setPointerCapture(event.pointerId);
     pointers.add(event.pointerId);publish();
   });
-  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,event=>{
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])button?.addEventListener(type,event=>{
     pointers.delete(event.pointerId);publish();
   });
   // Suppress the Space-generated button click: this is a momentary actuator.
-  button.addEventListener('click',event=>event.preventDefault());
+  button?.addEventListener('click',event=>event.preventDefault());
   return clear;
 }

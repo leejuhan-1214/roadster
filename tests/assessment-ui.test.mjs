@@ -34,6 +34,7 @@ test('city keyboard and touch controls ignore experiments and text fields and re
     window:{addEventListener(type,callback){listeners[type]=callback;}},
     document:{querySelector(){return context.dialogOpen?{}:null;},addEventListener(){}},
     setPaused(value){context.paused=value;},$(){return {focus(){}};},$$(selector){assert.equal(selector,'[data-drive]');return [button];},dialogOpen:false};
+  context.landingSession={};context.freeDriving=()=>context.mode==='city'||(context.mode==='lab'&&!context.landingSession);
   runInNewContext(source+'\nsetupDriveControls();',context);
   const event=(code,editing=false)=>({code,target:{matches(){return editing;}},preventDefault(){this.prevented=true;}});
   listeners.keydown(event('KeyW'));assert.equal(context.driveKeys.size,0,'lab cannot throttle');
@@ -66,6 +67,7 @@ function driveHarness(){
     document:{querySelector(){return context.dialogOpen?{}:null;},addEventListener(type,callback){documentListeners[type]=callback;}},
     setPaused(value){context.paused=value;},$(id){assert.equal(id,'world');return {focus(){context.focusCount++;}};},
     $$(selector){assert.equal(selector,'[data-drive]');return [...buttons.values()];}};
+  context.landingSession={};context.freeDriving=()=>context.mode==='city'||(context.mode==='lab'&&!context.landingSession);
   runInNewContext(source+'\nsetupDriveControls();',context);
   const event=(code,type='canvas',pointerId=1)=>({code,pointerId,target:{
     matches(selector){return selector==='input[type="number"]'?type==='number':['number','text','select','checkbox'].includes(type);}},
@@ -114,4 +116,8 @@ test('reset, pause and focus clear all input sources without stale key resurrect
   k.keydown(e('KeyD'));assert.deepEqual([...c.driveKeys],['KeyD'],'fresh input does not revive W or A');
   assert.match(main,/let clearDriveInputs=\(\)=>driveKeys\.clear\(\);/);
   assert.equal((main.match(/driveKeys\.clear\(\)/g)||[]).length,1,'every runtime clear uses the source-aware helper');
+});
+
+test('lab free driving is enabled before a trial and blocked when a controlled session starts',()=>{
+ const {context:c,keyboard:k,event:e}=driveHarness();c.mode='lab';c.landingSession=null;k.keydown(e('KeyW'));assert.ok(c.driveKeys.has('KeyW'));c.clearDriveInputs();c.landingSession={};k.keydown(e('KeyW'));assert.equal(c.driveKeys.size,0);
 });
