@@ -1,3 +1,13 @@
+Roadster v1.24 — 연결 도시 스트리밍 / 실물 잎 / 건물 외곽 충돌
+2026-11-10 KST. 런타임1a01b310681d642f8fccc7a4710068058f0f743f. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42804657775 build/deploy 성공. 기존 배포 승인 유지.
+요청: 도시맵무한·실제자료조사·실제나무/나뭇잎·건물물리오류수정. 강남구공식자료+OSM+PolyHaven조사, docs/city-reference-update.md/docs/tree-update.md 참고. 중심500도로/1879건물기존OSM유지. 외곽은실제서울전체가아닌절차생성(위치HUD명시).
+city-streaming.js:256m청크5x5최대25,좌표결정적생성,먼구역GPU/충돌해제,원본도로출구를48m외곽순환도로로연결,128m격자도로·건물·나무생성. 원본구역건물중복배제,공유도로/보도촬영재질과나무geometry/material/depthMaterial유지,도로UV절대좌표보정,등/나무는자기청크소유로경계중복방지. scene.loadCity재질적용후attach,main.animate청크변경시setObstacles.미니맵roads갱신. 인위적맵끝없음,JS유한좌표정밀도한계.
+city-building-collision.js:기존inset3m띠상자삭제,OSM윤곽삼각분할+볼록병합프리즘.physics SAT·바퀴옥상포함검사·공간인덱스bounds·기존상자호환.원본건물전체윤곽면적일치/오목부/회전벽/옥상경계/기존고속상자검사통과. city-world교차로다른차도폭안가로수/가로등배치제외.
+나무:PolyHaven원본leaves-normal681KB추가(출처hash검증),near4400leafcards기존geometry,잎맥노멀·개체별색·root고정바람·leafFlutter·동일그림자변형,시뮬시간기준일시정지동결,공유uniform/LOD. tree-small-02.gltf캐시쿼리갱신. city-facades상업패널/창틀/층띠,6배치/1만instance한도·0.1m돌출내.
+검증전체311/311PASS,최종경계12/12+tree4/4PASS,27모듈문법/diffPASS,GitHubCI성공. CUA로원본도시및별도로컬검증화면2048m/25km좌표렌더·최대25구역·콘솔오류없음확인. 실제도시직진700m후도로곡선이탈하여건물충돌정지(관통안함),전체맵통과를직진으로검증했다고말하지말것. 로컬전용stream-check.html은outputs로이동하여배포하지않음.공개113파일HTTP200/SHA256일치,새모델/노멀맵포함.공개W주행45km/h·콘솔경고/오류없음·55FPS관찰(환경의존).
+공개탭1 도시·Roadster·건조·R초기화·재생,markDeliverable.미리보기서버종료. outputs:infinite-tests.log,infinite-check.log,infinite-boundaries-final.log,infinite-deployment-status.json,infinite-public-verification.json,Roadster-v124-live.png. README/Claude프롬프트갱신.
+
+--- 이전 기록 ---
 Roadster v1.23 — 실험 전 자유 조종 / 분사 화면 버튼 제거 / 상세 README·Claude 인계
 2026-11-10. 런타임 d47bbf3b589b9b7d043e8eed029672134cb0b334. Actions42772724037 build/deploy성공(게시약4분지연).
 freeDriving()은city 또는 lab&&!landingSession. 실험 전WASD/Space/F/Shift/B/H/QE/화살표를기존DrivingController로전달. 측정중은Space수동분사만유지. 실험start의reset/createLandingRun으로원점·설정높이·속도/각속도0·수평·탱크충전. 완료후R로자유조종복귀. Space화면버튼과참조제거,landing-controls의button은optional.
