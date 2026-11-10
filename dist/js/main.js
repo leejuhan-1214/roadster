@@ -1,13 +1,13 @@
 import {Vector3} from 'three';
-import {bindLandingLiftControls} from './landing-controls.js?v=20261110-free1';
-import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-free1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-free1';
+import {bindLandingLiftControls} from './landing-controls.js?v=20261110-friction1';
+import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-friction1';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-friction1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261109-assessment1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-free1';
-import {LandingUI} from './landing-ui.js?v=20261110-free1';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-friction1';
+import {LandingUI} from './landing-ui.js?v=20261110-friction1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-free1';
-import {FlightScene} from './scene.js?v=20261110-free1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-friction1';
+import {FlightScene} from './scene.js?v=20261110-friction1';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -52,6 +52,7 @@ function reset({cancel=true,clearMeasurement=true}={}){
   const parameters=vehiclePhysics(activeVehicle,scene?.vehicle?.geometryParams,DEFAULTS);
   if(freeDriving())Object.assign(parameters,CITY_DRIVE_PARAMS,mode==='city'?cityExperimentParams(citySettings):{});
   else Object.assign(parameters,{roadRoughness:0,aeroEnabled:false});
+  if(mode==='lab'&&!landingSession)parameters.friction=Number($('lab-surface').value);
   Object.assign(sim.params,parameters);
   sim.setObstacles(mode==='city'?(scene.city?.obstacles||[]):[]);sim.reset('ground');
   if(mode==='city'&&scene.city){
@@ -342,6 +343,8 @@ function updateUI(){
   $('thrust').textContent=(t.thrustN/1000).toFixed(1)+' kN';$('gas').textContent=t.gasKg.toFixed(1)+' kg';
   $('mass').textContent=Math.round(t.totalMass).toLocaleString('en-US')+' kg';$('contact-count').textContent=t.contactCount+' / 4';
   $('sim-time').textContent=sim.state.time.toFixed(2)+' s';
+  $('lab-friction-force').textContent=(t.frictionForceN/1000).toFixed(2)+' kN';
+  $('lab-surface').disabled=!!landingSession;
   const liftReady=mode==='lab'&&!!landingRun&&!paused&&!vehicleLoading&&landingRun.touchdownTime===null;
   if(!liftReady&&landingLiftHeld)clearLandingLift();
   $('status-badge').textContent=landingRun?(paused?'일시정지':landingLiftHeld?'수동 분사':t.contactCount?'접촉':'하강'):lastResult?'측정 완료':'준비';
@@ -372,6 +375,7 @@ function setupUI(){
     isReady:()=>mode==='lab'&&!!landingRun&&!paused&&!vehicleLoading&&!document.hidden&&!document.querySelector('dialog[open]')&&landingRun.touchdownTime===null,
     onChange:held=>{landingLiftHeld=held;}
   });
+  $('lab-surface').addEventListener('change',event=>{if(mode==='lab'&&!landingSession){sim.params.friction=Number(event.target.value);$('world').focus({preventScroll:true});}});
   setupDriveControls();
   setupCityExperiments();
   $('vehicle-select').addEventListener('change',e=>selectVehicle(e.target.value));
