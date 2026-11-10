@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {createTreeLibrary,createSpeciesGroves} from './city-tree-species.js?v=20261111-species1';
 
 export const TREE_LOD_DISTANCES=[0,85,280];
 export const TREE_TILE_SIZE=96;
@@ -85,12 +86,17 @@ export async function loadCityTreeAsset(){
     part.geometry.boundingSphere.radius+=.25;
   }
   gltf.scene.traverse(mesh=>{if(mesh.geometry)mesh.geometry.dispose();});
-  return {levels,height,wind,source:'https://polyhaven.com/a/tree_small_02',license:'CC0-1.0'};
+  const asset={levels,height,wind,source:'https://polyhaven.com/a/tree_small_02',license:'CC0-1.0'};
+  // The scanned tree is one kind among seven; the other six are grown per
+  // species and share this asset's wind clock.
+  asset.library=createTreeLibrary({asset,wind}).warm();
+  return asset;
 }
 
 // Share geometry/textures inside local tiles, rather than one map-wide bound.
 // THREE.LOD updates from the camera, so distant groves stop submitting leaves.
 export function createTreeGroves(asset,placements){
+  if(asset?.library&&placements.length)return createSpeciesGroves(asset.library,placements);
   const root=new THREE.Group();root.name='Poly Haven Tree Small 02 · CC0';
   if(!asset||!placements.length)return root;
   const tiles=new Map(),matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),up=new THREE.Vector3(0,1,0),position=new THREE.Vector3(),scale=new THREE.Vector3(),tint=new THREE.Color();

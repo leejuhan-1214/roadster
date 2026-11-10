@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261110-seoul1';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261111-species1';
+import {speciesForRoad} from './city-tree-mix.js?v=20261111-species1';
 import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-seoul1';
 import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-seoul1';
 import {createStreetDetails} from './city-facades.js?v=20261110-seoul1';
@@ -188,7 +189,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
       const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)&&!onRoad(...tree)){
         const variation=hash(s.road.id+t*101+side*73),height=5.8+variation*1.4;
         trunks.push([tree[0],height*.28,tree[1],.21,height*.56,.21]);
-        trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2});
+        trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2,species:speciesForRoad(s.road),seed:variation});
       }
     }
     if(signs<14&&s.road.name&&s.length>65&&width>=11&&hash(s.road.id)>.35){
