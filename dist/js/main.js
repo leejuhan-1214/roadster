@@ -7,7 +7,7 @@ import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,land
 import {LandingUI} from './landing-ui.js?v=20261110-seoul1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees2';
-import {FlightScene} from './scene.js?v=20261111-trees2';
+import {FlightScene} from './scene.js?v=20261111-street1';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

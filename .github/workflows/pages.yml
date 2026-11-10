@@ -41,6 +41,7 @@ jobs:
           test -s dist/assets/vehicles/ferrari.glb
           test -s dist/assets/vehicles/bmw.glb
           test -s dist/assets/vehicles/ATTRIBUTION.txt
+          test -s dist/assets/city/street-points.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

@@ -1,3 +1,14 @@
+Roadster v1.29 — 대로 중앙 포장 / 신호등 / 지하철 출구 표지
+2026-11-11 KST. 작업 도구: Claude Code. 기반 런타임 537d9ab(v1.28 나무 충돌). 최종 배포 SHA와 Actions는 아래 "배포" 줄 참고.
+사용자 요청: v1.27 배포 뒤 Claude 로컬에만 남아 있던 도로 세부와 지하철 출구 표지를 현재 구조 위로 이식. 작업 중 원격에 v1.28이 올라와 그 위에 다시 적용함(v1.28 변경은 건드리지 않음).
+구조: 지도 타일 빌더와 중심 구역 코드는 건드리지 않고 dist/js/city-street-overlay.js가 차 주변 256m 칸 단위로 덧그림(560m 안 생성, 840m 밖 해제, 한 프레임에 한 칸). scene.loadCity가 attachStreamingCity 뒤에 loadStreetOverlay를 붙이고 city.streaming.bindPhysics와 city.dispose에 연결, scene.update 도시 분기에서 update 호출. 오버레이 로드 실패 시 경고만 남기고 기존 도로 그대로.
+도로: roadSegments가 중심 구역(city.source.roads)과 활성 서울 타일(chunk.roads)의 조각을 모음(onewayDirection -1은 뒤집음). 같은 이름·반대 방향 일방통행 차도를 왼쪽 3–46m에서 찾아 그 사이를 y0.0165 아스팔트(공유 도로 재질, 절대좌표 UV)로 메우고 노란 이중 중앙선은 id가 작은 쪽만 그림. 한쪽 여유 7.5m 초과는 메우지 않음. 조각 끝마다 중앙선 위에 반지름=차도축 간격/2 원판을 두어 대로 교차부의 빈 사각형을 메움(차도축 밖으로는 나가지 않음). 강남대로는 중앙에서 3.3m에 파란 실선. 정지선은 넣지 않음.
+위치 자료: scripts/fetch-street-points.mjs가 서울 타일 manifest의 bbox로 Overpass에서 subway_entrance/station/traffic_signals 노드를 받아 dist/assets/city/street-points.json(17KB, 출입구411·신호257, 스냅샷2026-11-10T22:49:51Z)과 provenance 생성. 출입구는 [x,z,번호,역이름].
+신호등: 신호 노드 9m 안에 끝이 닿는 폭8m 이상 조각의 진입 방향마다 4m 앞·오른쪽 갓길+1.1m에 기둥, 6m 안 중복·같은 방향 중복 제거. 지하철 출구: 40m 안 가장 가까운 조각 방향으로 계단실 벽3·덮개·기둥4·표지 기둥, 차도 위와 중심 구역 건물 안은 제외. 표지는 칸마다 캔버스 아틀라스 1장(번호+세로 역 이름), 양면.
+충돌: 기둥은 상자, 계단실 벽은 kind:'prism' 4점 footprint로 sim.setObstacleChunk('street:'+칸)에 메시보다 먼저 등록, 해제 시 removeObstacleChunk. reset의 setObstacles가 청크를 비우므로 bindPhysics 때 다시 등록(지도 타일과 같은 방식).
+캐시20261111-street1(index→main→scene→city-street-overlay). 모달 v1.29.
+미해결: 신호는 점등이 바뀌지 않는 모형. 스트리밍 타일 안 건물과 겹치는 출구는 걸러내지 못함(중심 구역만 건물 검사). 정지선·건물 이름판·수면 처리·산 실루엣은 이식하지 않음. 모바일·저사양 GPU 미검증.
+
 Roadster v1.28 — 모든 수종 나무 충돌 누락 및 모델 정렬 수정
 2026-11-11 KST. 사용자: 나무 충돌이 인정되지 않는 모든 곳 수정. 기존 배포 승인 유효.
 작업중원격v1.27 수종·계절추가(873b8b8)를발견하여merge,해당기능보존. 외곽city-tile-builder의 충돌누락,중심고정.42m상자수정. 공통treeColliders,6수종x5변형10~50프리즘+스캔37프리즘. city-tree-mix공통수종/variant/height/spread/yaw/tilt로렌더와충돌일치. 잎/잔가지비충돌,static가지. physics treeId집계. 기존공중A/D수평이동보존. 캐시20261111-trees2.

@@ -1,0 +1,29 @@
+{
+  "file": "street-points.json",
+  "sha256": "89bfae5e375f0ef1cbacf0aa061c6ae8ef60ea4ae4ff37f3adf5bddc69d61eb2",
+  "bytes": 17417,
+  "query": "[out:json][timeout:90];(node[\"railway\"=\"subway_entrance\"](37.45190646784046,126.96962805185431,37.543893532159544,127.0855719481457);node[\"railway\"=\"station\"](37.45190646784046,126.96962805185431,37.543893532159544,127.0855719481457);node[\"highway\"=\"traffic_signals\"](37.45190646784046,126.96962805185431,37.543893532159544,127.0855719481457););out;",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "bbox": [
+    37.45190646784046,
+    126.96962805185431,
+    37.543893532159544,
+    127.0855719481457
+  ],
+  "origin": [
+    37.4979,
+    127.0276
+  ],
+  "sourceTimestamp": "2026-11-10T22:49:51Z",
+  "downloadedAt": "2026-11-10T22:51:25.676Z",
+  "rawSha256": "ea28504f835630d81374f67ec030f06954153bd8b639465194b741b1bb4dcee7",
+  "counts": {
+    "entrances": 411,
+    "signals": 257,
+    "stations": 73
+  },
+  "license": "Open Database License 1.0",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "attribution": "© OpenStreetMap contributors",
+  "changes": "Projected to local metres around Gangnam station and rounded to 0.1 m; each subway entrance keeps its exit number and the name of the nearest mapped station within 420 m. Orientation, canopy shape, signal masts and their placement beside the carriageway are rendering assumptions."
+}

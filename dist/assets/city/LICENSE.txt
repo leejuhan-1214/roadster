@@ -13,3 +13,10 @@ assumptions, not a photogrammetric reconstruction of the city.
 See provenance.json for the bounding box, exact query, source snapshot time,
 raw response hash and transformation description. Rebuild with
 node scripts/fetch-gangnam.mjs from the project directory.
+
+street-points.json (v1.29) holds subway-entrance positions with exit numbers and
+traffic-signal positions from OpenStreetMap for the area of the streamed tiles,
+under the same ODbL 1.0 terms. See street-points.provenance.json for the query,
+snapshot time and hashes; rebuild with node scripts/fetch-street-points.mjs.
+The canopies, totems and signal masts drawn at those positions are generic
+shapes, not surveys of the real structures.
