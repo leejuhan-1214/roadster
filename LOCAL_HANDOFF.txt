@@ -1,3 +1,16 @@
+Roadster v1.22 — 착지 실험 Space 수동 상승 분사
+2026-11-10 KST. https://leejuhan-1214.github.io/roadster/
+런타임 d28603c57d2a3181769b9e79b1b6cd92b3f731fa
+Actions https://github.com/leejuhan-1214/roadster/actions/runs/42771043137 build/deploy 성공.
+사용자 최신 요청: 착지 실험에서 Space로 로드스터 작동. 기존 배포 승인 유지.
+
+실험 시작 후 첫 접촉 전 Space 또는 우측 상승 분사 버튼을 누르는 동안 lift=1·자세안정화를 기존 유한 기체/밸브 물리에 전달. 자동 verticalAcceleration을 잠시 대체하고 놓으면 원래 free/brake/gentle 제어 복귀. 속도·높이 강제 대입 없음. 첫 접촉 이후 재이륙은 막아 충격 측정 구간 유지. 별도 착지 입력 바인더 landing-controls.js: 키/포인터 입력 합성, keyup·pointerup/cancel/lostcapture·blur·visibility·편집 포커스·일시정지·reset·모드/차체전환·다음 trial·dialog 시 해제. 반복 keydown은 재시작하지 않음. 도시 Space/WASD/F/Shift 등 유지.
+manualLiftUsed·manualLiftDuration(2 ms 입력 유지시간)을 결과/요약 CSV에 추가, manualLift 플래그는 시간기록 CSV에 추가(표본 구간 중 한 번이라도 사용하면1). 수동 결과는 '수동 Space'로 표시, 자동 최소값/자유낙하 기준 및 감소율 계산에서 제외. 캐시20261110-space1.
+검증: 전체298/298PASS, focused9/9PASS,25모듈 문법/diffPASS,GitHubCI성공. 첫 전체검사의 구형2인자 소스 연결 정규식1개는 새3인자 입력에 맞게 수정하고 전체 재실행 통과. 실제 물리 분사/해제/기체/3방식 override/접촉 후 차단/기록/입력해제 테스트. 로컬CUA Space0.92초→기체322.9kg·상승0.78m/s, 해제 후추력0, 수동 결과 표기. 화면 버튼0.63초도 정상. 공개CUA 기본3m에서Space0.57초→3.12m·상승1.26m/s·기체343.6kg. 콘솔경고/오류없음. 공개110파일HTTP200/SHA256일치.
+공개탭1은착지실험·Roadster·3m·자유낙하·R초기화로사용자준비,markDeliverable유지. 로컬미리보기서버종료.
+outputs:space-v122-tests-final.log,space-v122-check.log,space-v122-deployment-status.json,space-v122-public-verification.json,Roadster-v122-live.png.
+
+--- 이전 기록 ---
 Roadster v1.21 — 타이어 연기·연속 자국·점진 드리프트·차체 색상
 2026-11-09 KST. https://leejuhan-1214.github.io/roadster/
 런타임 a745828ac8b9bfb98186339f4d3c5e38aaacdc75
