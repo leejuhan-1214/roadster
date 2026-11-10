@@ -1,5 +1,6 @@
 Roadster v1.26 — 공중 A/D 기본 수평 이동
-기본 flightSteering=strafe,설정초기화도strafe. 공중A/D좌우분사·Q/E회전,지상A/D조향유지.기존노즐/유한기체/자세안정화사용. 안내와기본선택수정. 로컬브라우저A/D각각비행19~20km/h·고도.7m·기수160도유지확인. 관련18검사통과,최종전체검사/배포확인후아래결과갱신예정.
+완료: 런타임7470232978ba5537aebad8ad1d59e6ae66e3049a. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42819282512 build/deploy성공,전체340검사통과. 공개index/main/driving-input HTTP200/SHA일치. 공개브라우저H0.8m·D수평이동18km/h·기수160도유지·오류0확인.
+기본 flightSteering=strafe,설정초기화도strafe. 공중A/D좌우분사·Q/E회전,지상A/D조향유지.기존노즐/유한기체/자세안정화사용. 안내와기본선택수정. 로컬브라우저A/D각각비행19~20km/h·고도.7m·기수160도유지확인. 관련33검사통과,기존선회기대값검사도새기본수평이동규칙에맞게갱신.
 
 Roadster v1.25 — 실제 서울 외곽 지도 / 비동기 타일 전환
 완료: 런타임36650c74937e1796eea8f06fe63133bb67f376ea. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42815888948 build/deploy 성공. 공개522파일HTTP200/SHA-256일치(지도400타일포함). 공개사이트주행/B제동/초기화동작,브라우저오류0. 로컬착지3m실험완료. 337검사통과/32모듈문법통과. 지도작업P95 .2ms/최대1.6ms 표본(기기별차이). README·출처·Claude인계문서갱신.
