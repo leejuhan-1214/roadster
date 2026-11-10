@@ -1,7 +1,7 @@
 Roadster v1.28 — 모든 수종 나무 충돌 누락 및 모델 정렬 수정
 2026-11-11 KST. 사용자: 나무 충돌이 인정되지 않는 모든 곳 수정. 기존 배포 승인 유효.
 작업중원격v1.27 수종·계절추가(873b8b8)를발견하여merge,해당기능보존. 외곽city-tile-builder의 충돌누락,중심고정.42m상자수정. 공통treeColliders,6수종x5변형10~50프리즘+스캔37프리즘. city-tree-mix공통수종/variant/height/spread/yaw/tilt로렌더와충돌일치. 잎/잔가지비충돌,static가지. physics treeId집계. 기존공중A/D수평이동보존. 캐시20261111-trees2.
-프로필 재생성: node scripts/build-tree-collision.mjs. 원본/생성31변형의주요목질정점검사및타일/충돌검사추가. 최종배포검증진행중.
+프로필 재생성: node scripts/build-tree-collision.mjs. 원본/생성31변형의주요목질정점검사및타일/충돌검사추가. 최종로컬검증353PASS/37문법PASS,31모델주요목질정점일치. 전수400타일 외곽9030나무/300407프리즘+중심347나무/9199프리즘 등록누락0. 브라우저중심·외곽·재방문충돌확인. 완료: 런타임537d9ab126bd3fc751a8eb73c3f446c20f70d4c0. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42922470401 build/deploy성공. 공개변경15파일HTTP200/SHA일치. 공개CUA trees2·도시주행/W/B·여름→가을→여름·R복귀·오류0확인. 공개탭2도시출발점유지. 로컬미리보기종료. outputs/tree-v128-tests.log,tree-v128-public-verification.json,tree-collision-species-audit.json,Roadster-v128-live.png.
 
 Roadster v1.27 — 수종별 생성 가로수와 잎 / 계절 전환 / 지도 범위 안내 수정
 2026-11-11 KST. 작업 도구: Claude Code. 기반 런타임 7470232(v1.26). 최종 배포 SHA와 Actions는 아래 "배포" 줄 참고.
