@@ -69,7 +69,8 @@ export function createLandingRun(sim,options={}){
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
     parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
-    braking:false,touchdownTime:null,touchdownSpeed:null,contactDuration:null,
+    braking:false,manualLiftActive:false,manualLiftUsed:false,manualLiftDuration:0,
+    touchdownTime:null,touchdownSpeed:null,contactDuration:null,
     peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
     groundImpulseNs:0,totalGroundImpulseNs:0,correctionImpulseNs:0,impactCorrectionImpulseNs:0,
     maxCompression:0,bottomedOut:false,bodyStrike:false,reboundHeight:0,
@@ -77,9 +78,11 @@ export function createLandingRun(sim,options={}){
 }
 
 /** Feed into PhysicsSim.step(.002, ...), then call updateLandingRun. */
-export function landingRunInput(run,sim){
+export function landingRunInput(run,sim,manualLift=false){
   const off={stabilize:false,lift:0,altHold:false,fan:false,wing:false,boost:false,
     throttle:0,brake:0,steer:0,coastRegen:false};
+  run.manualLiftActive=!!manualLift&&!run.done&&run.touchdownTime===null;
+  if(run.manualLiftActive)return {...off,stabilize:true,lift:1};
   if(run.done||run.method==='free'||run.touchdownTime!==null)return off;
   const gap=landingClearance(sim),velocity=sim.state.vel.y,g=sim.params.gravity;
   if(run.method==='brake'&&gap<=run.brakeHeight)run.braking=true;
@@ -120,6 +123,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
     Math.abs(sim.state.time-run.startTime-run.elapsed-LANDING_STEP)>1e-9)
     throw new RangeError('Landing measurements require fixed 0.002 s physics steps.');
   run.elapsed=sim.state.time-run.startTime;
+  if(run.manualLiftActive){run.manualLiftUsed=true;run.manualLiftDuration+=dt;}
   const ground=Math.max(0,sim.groundForceN),impulse=Math.max(0,sim.groundCorrectionImpulseNs);
   const equivalent=ground+impulse/dt;
   const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
@@ -156,13 +160,14 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   const sampleInterval=nearContact?.01:run.precontactSampleInterval;
   const sample={time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,groundForceN:ground,
     equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
-    compression,gasKg:sim.state.gas,correctionImpulseNs:impulse};
+    compression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0};
   const bucket=sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
   if(bucket!==run.sampleBucket){run.samples.push(sample);run.sampleBucket=bucket;}
   else{
     const last=run.samples.at(-1);
     last.groundForceN=Math.max(last.groundForceN,ground);
     last.equivalentGroundForceN=Math.max(last.equivalentGroundForceN,equivalent);
+    last.manualLift=Math.max(last.manualLift,sample.manualLift);
     last.gLoad=Math.max(last.gLoad,properG);last.correctionImpulseNs+=impulse;
   }
   if(run.touchdownTime!==null){

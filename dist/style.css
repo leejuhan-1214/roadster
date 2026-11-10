@@ -45,3 +45,5 @@ dialog.landing-results-dialog{width:min(1100px,calc(100vw - 36px));max-width:110
 .paint-swatches{display:flex;gap:6px;margin-top:5px}.city-garage .paint-swatches button{flex:none;width:24px;height:18px;padding:0;border:1px solid #9aadb4;border-radius:4px}
 
 .city-colors{flex:0 0 100%;display:flex;align-items:center;justify-content:space-between;gap:8px}.city-colors .city-paint-label,.city-colors .paint-swatches{margin:0}.city-colors input{width:32px}@media(max-width:1000px){.city-experiments{top:235px;max-height:calc(100dvh - 250px)}}
+
+.landing-lift-control button{width:100%;padding:10px 6px;border:1px solid #71dfc0;border-radius:7px;touch-action:none;user-select:none}.landing-lift-control button[aria-pressed="true"]{background:#a2f5db;color:#102d26}.landing-lift-control button:disabled{opacity:.45}.landing-lift-control .micro{margin:6px 0 0}

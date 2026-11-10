@@ -6,7 +6,7 @@ const heightNumber = value => Number.isFinite(value)?String(Number(value.toPreci
 const csvCell = value => '"'+String(value??'').replace(/"/g,'""')+'"';
 const isLanded = result => result.status==='landed'&&result.settled!==false&&Number.isFinite(result.touchdownSpeed);
 const label = result => result.vehicleTitle||result.title||result.vehicleId||'차체';
-const methodLabel = result => (METHODS[result.method]||result.method)+(result.method==='brake'?' · '+heightNumber(result.brakeHeight)+' m':'');
+const methodLabel = result => (result.manualLiftUsed?'수동 Space · ':'')+(METHODS[result.method]||result.method)+(result.method==='brake'?' · '+heightNumber(result.brakeHeight)+' m':'');
 export const LANDING_HISTORY_LIMIT=78;
 
 /** Compare only the same vehicle, release, rig and initial tank conditions.
@@ -15,10 +15,10 @@ export const LANDING_HISTORY_LIMIT=78;
  */
 export function landingBaselineComparison(result,results){
   const measured=item=>['landed','unsettled'].includes(item.status)&&Number.isFinite(item.touchdownSpeed)&&Number.isFinite(item.peakEquivalentGroundForceN)&&item.peakEquivalentGroundForceN>0;
-  if(!measured(result))return null;
+  if(result.manualLiftUsed||!measured(result))return null;
   const keys=['groupId','vehicleId','height','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature'];
   if(!result.groupId||!result.vehicleId||keys.slice(2).some(key=>!Number.isFinite(result[key])))return null;
-  const baseline=results.find(item=>item.method==='free'&&measured(item)&&keys.every(key=>item[key]===result[key]));
+  const baseline=results.find(item=>item.method==='free'&&!item.manualLiftUsed&&measured(item)&&keys.every(key=>item[key]===result[key]));
   if(!baseline)return null;
   return {baseline,reductionPercent:100*(1-result.peakEquivalentGroundForceN/baseline.peakEquivalentGroundForceN)};
 }
@@ -144,7 +144,7 @@ export class LandingUI {
     const first=rows[0];
     this.dialog.querySelector('#landing-group-conditions').textContent=allHistory?'전체 '+rows.length+'회 · 각 행의 조건을 비교하세요.':'동일 높이 '+heightNumber(first.height)+' m · 스프링 '+number(first.springK/1000,0)+' kN/m · 감쇠 '+number(first.damperC/1000,1)+' kN·s/m · 탱크 '+number(first.tankVolume*1000,0)+' L'+(first.groupKind==='brake-heights'?' · 제동 시작 높이만 변경':'');
     const complete=!allHistory&&rows.length>1&&rows.length>=Math.max(...rows.map(result=>result.groupSize||1));
-    const valid=rows.filter(result=>isLanded(result)&&!result.bodyStrike&&!result.bottomedOut);
+    const valid=rows.filter(result=>isLanded(result)&&!result.manualLiftUsed&&!result.bodyStrike&&!result.bottomedOut);
     const sorted=valid.slice().sort((a,b)=>a.peakEquivalentGroundForceN-b.peakEquivalentGroundForceN);
     const best=sorted[0];
     const bestText=this.dialog.querySelector('#landing-best');
@@ -152,7 +152,7 @@ export class LandingUI {
       const comparison=landingBaselineComparison(best,rows);
       const reduction=comparison&&comparison.baseline!==best?comparison.reductionPercent:null;
       const tied=sorted.filter(result=>Math.abs(result.peakEquivalentGroundForceN-best.peakEquivalentGroundForceN)<1).length>1;
-      bestText.textContent='이 묶음의 안정 착지 중 '+(tied?'공동 ':'')+'최소 등가반력: '+label(best)+' · '+methodLabel(best)+' · '+number(best.peakEquivalentGroundForceN/1000)+' kN'+(reduction!==null?' · 자유 낙하보다 '+number(Math.abs(reduction),1)+'% '+(reduction>=0?'감소':'증가'):'')+(valid.length<rows.length?' · 차체 접촉·진동·한계 초과 결과는 최소값 후보에서 제외':'');
+      bestText.textContent='이 묶음의 안정 착지 중 '+(tied?'공동 ':'')+'최소 등가반력: '+label(best)+' · '+methodLabel(best)+' · '+number(best.peakEquivalentGroundForceN/1000)+' kN'+(reduction!==null?' · 자유 낙하보다 '+number(Math.abs(reduction),1)+'% '+(reduction>=0?'감소':'증가'):'')+(valid.length<rows.length?' · 수동 분사·차체 접촉·진동·한계 초과 결과는 최소값 후보에서 제외':'');
     }else bestText.textContent=allHistory?'조건이 다른 전체 기록입니다. 높이·질량·스프링·감쇠를 확인하며 비교하세요. 전체 순위는 매기지 않습니다.':complete?'안정 착지 조건을 충족한 결과가 없어 최소 충격 순위를 매기지 않았습니다.':rows.length===1?'같은 조건으로 다른 차체나 착지 방식을 비교해 보세요.':'비교 실험 진행 중';
     this.dialog.querySelector('#landing-result-rows').innerHTML=rows.map((result,index)=>{
       const landed=isLanded(result),unsettled=result.status==='unsettled'||(result.settled===false&&Number.isFinite(result.touchdownSpeed));
@@ -199,11 +199,11 @@ export class LandingUI {
   }
 
   exportSummary(){
-    const keys=['id','groupId','vehicleId','vehicleTitle','method','height','brakeHeight','targetSpeed','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature','status','settled','touchdownTime','touchdownSpeed','peakGroundForceN','peakEquivalentGroundForceN','peakG','contactPeakG','groundImpulseNs','totalGroundImpulseNs','correctionImpulseNs','impactCorrectionImpulseNs','contactDuration','maxCompression','bottomedOut','bodyStrike','reboundHeight','gasUsed','elapsed','flightTimeout','precontactSampleInterval'];
+    const keys=['id','groupId','vehicleId','vehicleTitle','method','manualLiftUsed','manualLiftDuration','height','brakeHeight','targetSpeed','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature','status','settled','touchdownTime','touchdownSpeed','peakGroundForceN','peakEquivalentGroundForceN','peakG','contactPeakG','groundImpulseNs','totalGroundImpulseNs','correctionImpulseNs','impactCorrectionImpulseNs','contactDuration','maxCompression','bottomedOut','bodyStrike','reboundHeight','gasUsed','elapsed','flightTimeout','precontactSampleInterval'];
     download('landing-results.csv',[['Roadster landing model; SI units; common hypothetical suspension/rig; peak equivalent force averages corrections over 0.002 s; baseline reduction is vehicle-specific within equal release/rig/tank conditions'],[...keys,'free_baseline_id','peak_force_reduction_percent','parameters_json'],...this.results.map(result=>{const comparison=landingBaselineComparison(result,this.results);return [...keys.map(key=>result[key]),comparison?.baseline.id??'',comparison?.reductionPercent??'',JSON.stringify(result.parameters||{})];})]);
   }
   exportTraces(){
-    const keys=['time','sampleInterval','clearance','velocity','groundForceN','equivalentGroundForceN','gLoad','thrustN','compression','gasKg','correctionImpulseNs'];
+    const keys=['time','sampleInterval','clearance','velocity','groundForceN','equivalentGroundForceN','gLoad','thrustN','compression','gasKg','correctionImpulseNs','manualLift'];
     const rows=[['SI units; time since release; high-altitude approach bins may be wider; contact traces retain 0.01 s bin maxima; summary peaks measured at 0.002 s'],['id','groupId','vehicleId','method','height','time_from_touchdown_s',...keys]];
     for(const result of this.results)for(const sample of result.samples||[])rows.push([result.id,result.groupId,result.vehicleId,result.method,result.height,Number.isFinite(result.touchdownTime)?sample.time-result.touchdownTime:'',...keys.map(key=>sample[key])]);
     download('landing-timeseries.csv',rows);

@@ -1,12 +1,13 @@
 import {Vector3} from 'three';
-import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261109-smoke1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261109-smoke1';
+import {bindLandingLiftControls} from './landing-controls.js?v=20261110-space1';
+import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-space1';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-space1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261109-assessment1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261109-smoke1';
-import {LandingUI} from './landing-ui.js?v=20261109-smoke1';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-space1';
+import {LandingUI} from './landing-ui.js?v=20261110-space1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261109-smoke1';
-import {FlightScene} from './scene.js?v=20261109-smoke1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-space1';
+import {FlightScene} from './scene.js?v=20261110-space1';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -19,13 +20,14 @@ let citySettings=normalizeCityExperiment({});
 const brakeTrial=new CityBrakeTrial();
 const driveKeys=new Set(),driver=new DrivingController(),worldUp=new Vector3(0,1,0);
 let clearDriveInputs=()=>driveKeys.clear();
+let landingLiftHeld=false,clearLandingLift=()=>{landingLiftHeld=false;};
 const DRIVE_KEYS=new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowLeft','ArrowDown','ArrowRight','Space','KeyB','KeyH','KeyQ','KeyE','KeyF','ShiftLeft','ShiftRight']);
 const cameraLabel=()=>camera==='top'?'상부 카메라':camera==='chase'?'추적 카메라':camera==='hood'?'운전석 카메라':'자유 카메라';
 let landingSession=null,landingRun=null,lastResult=null,landingSerial=0;
 let lastStamp=0,accumulator=0,lastUI=0,frames=0,frameTimer=0,toastTimer;
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2800);}
 function setPaused(value){
-  paused=value;if(value){clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
+  paused=value;if(value){clearLandingLift();clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
   $('pause').textContent=paused?'▶':'Ⅱ';$('pause').disabled=!landingRun&&mode!=='city';
   $('pause').setAttribute('aria-label',(mode==='city'?'주행':'실험')+(paused?' 재생':' 일시정지'));
   $('live-label').textContent=mode==='city'?(cityLoading?'도시 불러오는 중':paused?'일시정지':'강남역 자유 주행'):landingRun?(paused?'일시정지':'측정 중'):mode==='inspect'?'구조 탐색':'실험 준비';
@@ -98,7 +100,7 @@ function stepSimulation(){
     cityDistance+=Math.hypot(sim.state.vel.x,sim.state.vel.z)*LANDING_STEP;return;
   }
   if(!landingRun)return;
-  renderStates.beforeStep();sim.step(LANDING_STEP,landingRunInput(landingRun,sim));renderStates.afterStep(sim);
+  renderStates.beforeStep();sim.step(LANDING_STEP,landingRunInput(landingRun,sim,landingLiftHeld));renderStates.afterStep(sim);
   updateLandingRun(landingRun,sim,LANDING_STEP);
   if(landingRun.done){
     const session=landingSession;
@@ -339,7 +341,11 @@ function updateUI(){
   $('thrust').textContent=(t.thrustN/1000).toFixed(1)+' kN';$('gas').textContent=t.gasKg.toFixed(1)+' kg';
   $('mass').textContent=Math.round(t.totalMass).toLocaleString('en-US')+' kg';$('contact-count').textContent=t.contactCount+' / 4';
   $('sim-time').textContent=sim.state.time.toFixed(2)+' s';
-  $('status-badge').textContent=landingRun?(paused?'일시정지':t.contactCount?'접촉':'하강'):lastResult?'측정 완료':'준비';
+  const liftReady=mode==='lab'&&!!landingRun&&!paused&&!vehicleLoading&&landingRun.touchdownTime===null;
+  $('landing-lift').disabled=!liftReady;
+  if(!liftReady&&landingLiftHeld)clearLandingLift();
+  $('landing-lift-status').textContent=landingRun?.manualLiftUsed?'수동 분사 '+landingRun.manualLiftDuration.toFixed(2)+' s · 자동 비교에서 제외':'실험 시작 후, 지면에 닿기 전 사용';
+  $('status-badge').textContent=landingRun?(paused?'일시정지':landingLiftHeld?'수동 분사':t.contactCount?'접촉':'하강'):lastResult?'측정 완료':'준비';
 }
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
@@ -363,6 +369,10 @@ function setupUI(){
   $('city-vectors').addEventListener('click',()=>$('vectors').click());
   document.querySelectorAll('[data-paint]').forEach(button=>button.addEventListener('click',()=>{$('city-paint').value=button.dataset.paint;$('world').focus({preventScroll:true});}));
   $('city-paint').addEventListener('change',()=>{$('world').focus({preventScroll:true});});
+  clearLandingLift=bindLandingLiftControls({window,document,button:$('landing-lift'),
+    isReady:()=>mode==='lab'&&!!landingRun&&!paused&&!vehicleLoading&&!document.hidden&&!document.querySelector('dialog[open]')&&landingRun.touchdownTime===null,
+    onChange:held=>{landingLiftHeld=held;$('landing-lift').setAttribute('aria-pressed',String(held));}
+  });
   setupDriveControls();
   setupCityExperiments();
   $('vehicle-select').addEventListener('change',e=>selectVehicle(e.target.value));
@@ -404,6 +414,7 @@ function setupUI(){
 function animate(stamp){
   const frameMs=lastStamp?stamp-lastStamp:16.67,elapsed=lastStamp?Math.min((stamp-lastStamp)/1000,.1):1/60;lastStamp=stamp;
   const blocked=!!document.querySelector('dialog[open]');
+  if(blocked&&landingLiftHeld)clearLandingLift();
   if(((landingRun&&mode==='lab')||mode==='city')&&!vehicleLoading&&!cityLoading&&!paused&&!blocked&&!document.hidden){accumulator+=elapsed;let steps=0;while(accumulator>=LANDING_STEP&&steps<50&&!paused){stepSimulation();accumulator=Math.max(0,accumulator-LANDING_STEP);steps++;}}else accumulator=0;
   if(!document.hidden)scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,vectors:showVectors,explode:Number($('explode').value),paint:$('city-paint').value,wing:false,cutaway:false,renderState:renderStates.sample(paused||mode==='inspect'||blocked?1:accumulator/LANDING_STEP)});
