@@ -1,13 +1,13 @@
 import {Vector3} from 'three';
-import {bindLandingLiftControls} from './landing-controls.js?v=20261110-friction1';
-import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-friction1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-friction1';
+import {bindLandingLiftControls} from './landing-controls.js?v=20261110-infinite1';
+import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-infinite1';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-infinite1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261109-assessment1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-friction1';
-import {LandingUI} from './landing-ui.js?v=20261110-friction1';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-infinite1';
+import {LandingUI} from './landing-ui.js?v=20261110-infinite1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-friction1';
-import {FlightScene} from './scene.js?v=20261110-friction1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261110-infinite1';
+import {FlightScene} from './scene.js?v=20261110-infinite1';
 
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -418,6 +418,7 @@ function animate(stamp){
   const frameMs=lastStamp?stamp-lastStamp:16.67,elapsed=lastStamp?Math.min((stamp-lastStamp)/1000,.1):1/60;lastStamp=stamp;
   const blocked=!!document.querySelector('dialog[open]');
   if(blocked&&landingLiftHeld)clearLandingLift();
+  if(mode==='city'&&scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z))sim.setObstacles(scene.city.obstacles);
   if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked&&!document.hidden){accumulator+=elapsed;let steps=0;while(accumulator>=LANDING_STEP&&steps<50&&!paused){stepSimulation();accumulator=Math.max(0,accumulator-LANDING_STEP);steps++;}}else accumulator=0;
   if(!document.hidden)scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,vectors:showVectors,explode:Number($('explode').value),paint:$('city-paint').value,wing:false,cutaway:false,renderState:renderStates.sample(paused||mode==='inspect'||blocked?1:accumulator/LANDING_STEP)});

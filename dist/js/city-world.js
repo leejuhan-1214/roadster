@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261109-realism1';
-import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261109-gangnam1';
-import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261109-gangnam1';
-import {createStreetDetails} from './city-facades.js?v=20261109-gangnam1';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261110-infinite1';
+import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-infinite1';
+import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-infinite1';
+import {createStreetDetails} from './city-facades.js?v=20261110-infinite1';
+import {buildingColliders} from './city-building-collision.js?v=20261110-city2';
 
 const UP=new THREE.Vector3(0,1,0),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const palette=[0x9aa6ac,0xaeb9bd,0x81939d,0xc3beb3,0x8598a5,0xb8c0c3];
@@ -48,24 +49,6 @@ function stripIntersections(points,z){
     if((a[1]<=z&&b[1]>z)||(b[1]<=z&&a[1]>z))values.push(a[0]+(z-a[1])*(b[0]-a[0])/(b[1]-a[1]));
   }
   return values.sort((a,b)=>a-b);
-}
-function buildingColliders(building){
-  const result=[],points=building.points;
-  const minZ=Math.min(...points.map(p=>p[1])),maxZ=Math.max(...points.map(p=>p[1]));
-  // Inside-footprint strips avoid the road-blocking corners of a rotated AABB.
-  const count=Math.max(1,Math.ceil((maxZ-minZ)/3)),depth=(maxZ-minZ)/count;
-  for(let k=0;k<count;k++){
-    const z0=minZ+k*depth+.015,z1=minZ+(k+1)*depth-.015;
-    if(z1<=z0)continue;
-    const levels=[stripIntersections(points,z0),stripIntersections(points,(z0+z1)/2),stripIntersections(points,z1)];
-    const pairs=Math.min(...levels.map(a=>a.length))/2;
-    for(let j=0;j<pairs;j++){
-      const x0=Math.max(...levels.map(a=>a[j*2]))+.015,x1=Math.min(...levels.map(a=>a[j*2+1]))-.015;
-      if(x1-x0<.18)continue;
-      result.push({id:'building-'+building.id+'-'+k+'-'+j,center:[(x0+x1)/2,building.height/2,(z0+z1)/2],size:[x1-x0,building.height,z1-z0]});
-    }
-  }
-  return result;
 }
 export function createCityPlan(data,{landmarkAssets=[]}={}){
   if(!Array.isArray(data?.roads)||!Array.isArray(data?.buildings)||!Array.isArray(data?.bbox))throw new TypeError('A bounded OSM city extract is required.');
@@ -175,7 +158,8 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const poles=[],arms=[],lamps=[],trunks=[],trees=[],roofBoxes=[];
   const spatialBuildings=new Map();
   for(const b of plan.buildings){const key=Math.floor(b.center[0]/60)+','+Math.floor(b.center[1]/60);if(!spatialBuildings.has(key))spatialBuildings.set(key,[]);spatialBuildings.get(key).push(b);}
-  const occupied=(x,z)=>{const gx=Math.floor(x/60),gz=Math.floor(z/60);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of spatialBuildings.get((gx+dx)+','+(gz+dz))||[])if(pointInPolygon(x,z,b.points))return true;return false;};
+  const occupied=(x,z)=>{if(x<plan.bounds.minX||x>=plan.bounds.maxX||z<plan.bounds.minZ||z>=plan.bounds.maxZ)return true;const gx=Math.floor(x/60),gz=Math.floor(z/60);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of spatialBuildings.get((gx+dx)+','+(gz+dz))||[])if(pointInPolygon(x,z,b.points))return true;return false;};
+  const onRoad=(x,z)=>plan.segments.some(s=>{const t=Math.max(0,Math.min(s.length,(x-s.a[0])*s.dx+(z-s.a[1])*s.dz));return Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t)<s.road.width/2+.5;});
   let signs=0;
   for(const s of plan.segments){
     const width=s.road.width;pavement(walks,s.a,s.b,width+4.6,.005,sidewalkColor);pavement(streets,s.a,s.b,width,.014,asphaltColor);
@@ -196,12 +180,12 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
       for(let offset=-width/2+1;offset<width/2-1;offset+=1.4)pavement(paint,point(t-1.8,offset),point(t+1.8,offset),.65,.029,white);
     }
     if(s.length>35&&width>=8)for(let t=15;t<s.length-10;t+=48)for(const side of [-1,1]){
-      const p=point(t,side*(width/2+1.65));if(occupied(...p))continue;
+      const p=point(t,side*(width/2+1.65));if(occupied(...p)||onRoad(...p))continue;
       poles.push([p[0],3.4,p[1],.13,6.8,.13]);
       const inward=-side,tip=point(t,side*(width/2+.15));
       arms.push([(p[0]+tip[0])/2,6.75,(p[1]+tip[1])/2,1.65,.12,.12,Math.atan2(-s.dx,s.dz)]);
       lamps.push([tip[0],6.7,tip[1],.75,.14,.32,Math.atan2(-s.dz,s.dx)]);
-      const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)){
+      const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)&&!onRoad(...tree)){
         const variation=hash(s.road.id+t*101+side*73),height=5.8+variation*1.4;
         trunks.push([tree[0],height*.28,tree[1],.21,height*.56,.21]);
         trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2});
@@ -242,7 +226,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   plan.obstacles.forEach((box,index)=>{const [x,,z]=box.center,[w,,d]=box.size;for(let gx=Math.floor((x-w/2)/cell);gx<=Math.floor((x+w/2)/cell);gx++)for(let gz=Math.floor((z-d/2)/cell);gz<=Math.floor((z+d/2)/cell);gz++){const key=gx+','+gz;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(index);}});
   const obstaclesNear=(x,z,radius=80)=>{const indices=new Set();for(let gx=Math.floor((x-radius)/cell);gx<=Math.floor((x+radius)/cell);gx++)for(let gz=Math.floor((z-radius)/cell);gz<=Math.floor((z+radius)/cell);gz++)for(const index of bins.get(gx+','+gz)||[])indices.add(index);return [...indices].map(i=>plan.obstacles[i]);};
   const nearestRoadName=(x,z)=>{let best=Infinity,name='강남역 주변';for(const s of plan.segments){const t=clamp((x-s.a[0])*s.dx+(z-s.a[1])*s.dz,0,s.length),d=Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t);if(d<best&&s.road.name){best=d;name=s.road.name;}}return name;};
-  return {...plan,root,landmarkAssets,treeGroves,treePlacements:trees,obstaclesNear,nearestRoadName,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
+  return {...plan,root,treeAsset,landmarkAssets,treeGroves,treePlacements:trees,obstaclesNear,nearestRoadName,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
 }
 export async function loadCityWorld(){
   const [response,treeAsset,landmarks,extraBuildings]=await Promise.all([fetch(new URL('../assets/city/gangnam.json',import.meta.url)),loadCityTreeAsset(),loadGangnamLandmarks(),loadExtraGangnamBuildings()]);

@@ -3,6 +3,7 @@ import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=2026
 import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive2';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
+import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-city2';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -89,6 +90,7 @@ const BOX_AXES = [new Vector3(1,0,0), new Vector3(0,1,0), new Vector3(0,0,1)];
 // Oriented chassis box versus a static axis-aligned obstacle. This is a contact
 // envelope, not the render mesh, tire deformation, or structural damage model.
 function boxContact(sim, obstacle) {
+  if(obstacle.footprint)return prismContact(sim,obstacle);
   const {pos,q}=sim.state;
   const BODY_HALF=sim.bodyHalf, BODY_BOX_CENTER=sim.bodyBoxCenter;
   const center=BODY_BOX_CENTER.clone().sub(sim.cg).applyQuaternion(q).add(pos);
@@ -247,7 +249,13 @@ export class PhysicsSim {
          !box.center.every(Number.isFinite)||!box.size.every(n=>Number.isFinite(n)&&n>0))
         throw new TypeError('Each obstacle needs finite center[3] and positive size[3].');
       const center=new Vector3(...box.center),half=new Vector3(...box.size).multiplyScalar(.5);
-      return {id:box.id??String(i),center,half,min:center.clone().sub(half),max:center.clone().add(half)};
+      const footprint=box.kind==='prism'||box.footprint?preparePrism(box):null;
+      if(footprint){
+        const xs=footprint.map(p=>p[0]),zs=footprint.map(p=>p[1]);
+        center.x=(Math.min(...xs)+Math.max(...xs))/2;center.z=(Math.min(...zs)+Math.max(...zs))/2;
+        half.x=(Math.max(...xs)-Math.min(...xs))/2;half.z=(Math.max(...zs)-Math.min(...zs))/2;
+      }
+      return {id:box.id??String(i),center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
     });
     this.obstacleIndex=createObstacleIndex(this.obstacles);
     this.obstacleContacts=[];this.lastObstacleImpact=null;
@@ -257,7 +265,7 @@ export class PhysicsSim {
   surfaceHeightAt(x,z,referenceY=Infinity) {
     let height=sampleRoadSurface(x,z,{roughness:this.params.roadRoughness}).height;
     for(const box of this.obstacleIndex?queryObstacles(this.obstacleIndex,x,z):this.obstacles)if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
-      box.max.y<=referenceY+.10&&box.max.y>height)height=box.max.y;
+      box.max.y<=referenceY+.10&&box.max.y>height&&(!box.footprint||containsFootprint(box.footprint,x,z)))height=box.max.y;
     return height;
   }
 

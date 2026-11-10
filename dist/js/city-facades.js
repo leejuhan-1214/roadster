@@ -1,12 +1,16 @@
 import * as THREE from 'three';
 
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-const hash=id=>((Math.imul(Number(id)|0,1664525)+1013904223)>>>0)/4294967296;
+const hash=id=>{
+  let value=2166136261;
+  for(const character of String(id))value=Math.imul(value^character.charCodeAt(0),16777619);
+  return (value>>>0)/4294967296;
+};
 const MAX_INSTANCES=10000;
 
 // Original, generic street-level detailing on OSM footprints. These are visual
 // inferences, not surveyed replicas or externally downloaded building assets.
-export function createStreetDetails(buildings,segments,{excludedIds=new Set()}={}){
+export function createStreetDetails(buildings,segments,{excludedIds=new Set(),detailCenter=[0,0],detailRadius=450}={}){
   const root=new THREE.Group();root.name='OSM street-front architectural details';
   const definitions=[
     ['podium-glazing',0x334a54,.24,.3],
@@ -33,10 +37,10 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set()}={
   };
   const candidates=buildings.filter(b=>{
     const c=b.center||[0,0];
-    return !excludedIds.has(b.id)&&Math.hypot(c[0],c[1])<=450&&b.height>=7&&b.points?.length>=3;
-  }).sort((a,b)=>Math.hypot(...a.center)-Math.hypot(...b.center));
+    return !excludedIds.has(b.id)&&Math.hypot(c[0]-detailCenter[0],c[1]-detailCenter[1])<=detailRadius&&b.height>=7&&b.points?.length>=3;
+  }).sort((a,b)=>Math.hypot(a.center[0]-detailCenter[0],a.center[1]-detailCenter[1])-Math.hypot(b.center[0]-detailCenter[0],b.center[1]-detailCenter[1]));
   for(const b of candidates){
-    if(instanceCount>MAX_INSTANCES-70)break;
+    if(instanceCount>MAX_INSTANCES-160)break;
     const points=b.points.slice();
     if(points.length>1&&Math.hypot(points[0][0]-points.at(-1)[0],points[0][1]-points.at(-1)[1])<.01)points.pop();
     const signed=points.reduce((sum,p,i)=>{const q=points[(i+1)%points.length];return sum+p[0]*q[1]-q[0]*p[1];},0);
@@ -72,6 +76,30 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set()}={
     at(1,doorCenter,1.23,.045,2.35,.09,.045);
     // The canopy is largely inset, preserving the real sidewalk envelope.
     at(4,doorCenter,2.72,doorWidth+.75,.17,.8,-.32,tint);
+    // Road-facing commercial plinths, separate infill panes and floor bands
+    // break up the repeated wall texture. Colours are generic, not real brands.
+    const signTint=new THREE.Color().setHSL(v,.18+v*.2,.24+v*.13);
+    const signY=podium-.28,signHeight=Math.min(.48,podium*.16);
+    if(podium>2.7){
+      for(let i=0;i<bays;i++){
+        if(i===Math.floor(bays/2))continue;
+        at(4,-usable/2+bayWidth*(i+.5),signY,bayWidth-.22,signHeight,.045,.062,signTint);
+      }
+    }
+    // Only the lower upper-storeys receive geometry. Farther/higher windows
+    // retain the base facade texture, keeping a fixed six instanced batches.
+    const upperColumns=Math.min(8,Math.max(1,Math.floor(usable/2.8))),upperBay=usable/upperColumns;
+    const upperRows=Math.min(4,Math.max(0,Math.floor((b.height-podium-1.2)/3.3)));
+    for(let row=0;row<upperRows;row++){
+      const y=podium+2+row*3.3;
+      at(2,0,y+1.1,usable,.12,.07,.045,tint);
+      for(let column=0;column<upperColumns;column++){
+        const along=-usable/2+upperBay*(column+.5),width=upperBay*.72;
+        const paneTint=new THREE.Color().setHSL(.55+v*.04,.13,.48+hash(b.id+':'+row+':'+column)*.27);
+        at(0,along,y,width,1.85,.035,.055,paneTint);
+        at(1,along,y,.045,1.88,.08,.045,tint);
+      }
+    }
     if(b.height>=30&&length>=10){
       const fins=Math.min(8,Math.floor(length/3.8)),finHeight=b.height-podium-1.8;
       for(let i=1;i<fins;i++)at(1,-usable/2+usable*i/fins,podium+.8+finHeight/2,.095,finHeight,.1,.05,tint);

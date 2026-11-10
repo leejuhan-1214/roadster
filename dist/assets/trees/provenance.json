@@ -13,7 +13,9 @@
     "Decimated original branch and trunk meshes with meshoptimizer 1.0.1.",
     "Fitted alpha-cut cards to original leaf positions, orientation and UV footprints; deterministic sampling with expanded coverage for two LODs.",
     "Combined original leaf RGB and alpha into one RGBA texture; recompressed original 1k bark maps.",
-    "Scaled and rotated this reusable asset for varied street planting; this is not a survey of actual Gangnam tree species or exact planting locations."
+    "Scaled and rotated this reusable asset for varied street planting; this is not a survey of actual Gangnam tree species or exact planting locations.",
+    "Restored the verified original leaf OpenGL normal atlas (1k) for leaf veins and surface lighting; source bytes preserved.",
+    "Runtime canopy bending, leaf flutter, matching cutout shadows and restrained per-instance coloration; illustrative foliage motion, not measured tree mechanics."
   ],
   "runtimeFiles": [
     {
@@ -38,8 +40,8 @@
     },
     {
       "file": "tree-small-02.gltf",
-      "bytes": 6827,
-      "sha256": "99605ab565778cd1e590deac9b64df12a72cbf8cfc58ed1307805b59ba399ce6"
+      "bytes": 6921,
+      "sha256": "cffe9bd0bb469b4383ae8b2c1471da92e145cd896db68556bdc1b69f742cc1e0"
     },
     {
       "file": "trunk-diff.jpg",
@@ -50,6 +52,11 @@
       "file": "trunk-normal.jpg",
       "bytes": 401986,
       "sha256": "88f2f1bf10ac1bf42cdaa67b92892b08821427bfb691c6398cb0677b81534922"
+    },
+    {
+      "file": "leaves-normal.jpg",
+      "bytes": 681604,
+      "sha256": "8c72e04fb23e16ae1df79c01385a638473d1dd4dede3d51e83d70153c129f09b"
     }
   ],
   "sourceFiles": [
@@ -137,5 +144,6 @@
       "sha256": "4f143e2dda8a6a572f427ac378b92255d21761e4611de0d26e21816c01aa533b",
       "sourceMd5": "63199ba87a9e8928424bd8c3b8017bd0"
     }
-  ]
+  ],
+  "revised": "2026-11-10"
 }

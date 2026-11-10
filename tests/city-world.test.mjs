@@ -24,14 +24,19 @@ test('city spawn is on a real road, faces its direction and clears building soli
   for(const box of plan.obstacles){const [cx,,cz]=box.center,[w,,d]=box.size;assert.ok(Math.abs(x-cx)>w/2+2.6||Math.abs(z-cz)>d/2+2.6,'spawn chassis must not intersect '+box.id);}
 });
 
-test('building collision strips stay within the original OSM footprint',()=>{
+test('building convex collision pieces retain the original OSM boundary and volume',()=>{
   const buildings=new Map(plan.buildings.map(b=>[String(b.id),b]));
+  const areas=new Map();
+  const polygonArea=p=>Math.abs(p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1];},0))/2;
   for(const box of plan.obstacles){
     const b=buildings.get(box.id.split('-')[1]),[x,y,z]=box.center,[w,h,d]=box.size;
     assert.ok([...box.center,...box.size].every(Number.isFinite));assert.ok(w>0&&h>0&&d>0);
     assert.equal(h,b.height);assert.equal(y,h/2);
-    for(const dx of [-1,1])for(const dz of [-1,1])assert.ok(pointInPolygon(x+dx*w/2,z+dz*d/2,b.points),'collision corner outside '+box.id);
+    assert.equal(box.kind,'prism');
+    for(const p of box.footprint)assert.ok(b.points.some(q=>Math.hypot(p[0]-q[0],p[1]-q[1])<1e-8),'collision vertex belongs to source boundary');
+    areas.set(b.id,(areas.get(b.id)||0)+polygonArea(box.footprint));
   }
+  for(const b of plan.buildings)assert.ok(Math.abs((areas.get(b.id)||0)-polygonArea(b.points))<1e-5,'no missing strips or filled courtyard at '+b.id);
 });
 
 test('complete city batches finite geometry and spatial lookup retains local collision shapes',()=>{

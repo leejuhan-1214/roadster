@@ -5,6 +5,7 @@ Run from the repository root after prepare-city-tree.mjs.
 """
 from pathlib import Path
 import sys
+import shutil
 from PIL import Image
 
 source = Path(sys.argv[1]) / 'textures'
@@ -20,3 +21,4 @@ leaves = Image.open(source / 'tree_small_02_leaves_diff_1k.jpg').convert('RGBA')
 alpha = Image.open(source / 'tree_small_02_leaves_alpha_1k.png').convert('L')
 leaves.putalpha(alpha)
 leaves.save(out / 'leaves-rgba.png', optimize=True)
+shutil.copyfile(source / 'tree_small_02_leaves_nor_gl_1k.jpg', out / 'leaves-normal.jpg')

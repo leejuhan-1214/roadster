@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import * as THREE from 'three';
-import {createTreeGroves,TREE_LOD_DISTANCES} from '../dist/js/city-trees.js';
+import {createTreeGroves,TREE_LOD_DISTANCES,createTreeWind,updateTreeWind,configureTreeWindMaterial} from '../dist/js/city-trees.js';
 import {createCityWorld} from '../dist/js/city-world.js';
 const dir=new URL('../dist/assets/trees/',import.meta.url);
 const gltf=JSON.parse(await readFile(new URL('tree-small-02.gltf',dir),'utf8'));
@@ -26,7 +26,29 @@ test('bundled tree is a bounded two-level model with verified original-asset pro
  const png=await readFile(new URL('leaves-rgba.png',dir));assert.equal(png[25],6,'the leaf atlas retains its RGBA cutout mask');
  let bytes=0;
  for(const file of provenance.runtimeFiles){const b=await readFile(new URL(file.file,dir));bytes+=b.length;assert.equal(createHash('sha256').update(b).digest('hex'),file.sha256);}
- assert.ok(bytes<3_000_000,'all geometry and maps must remain below the city download budget');
+ assert.ok(bytes<3_700_000,'geometry, bark, cutouts and original leaf normals stay below 3.7 MB');
+ assert.equal(gltf.images[gltf.textures[leaves.normalTexture.index].source].uri,'leaves-normal.jpg');
+ const normal=provenance.runtimeFiles.find(file=>file.file==='leaves-normal.jpg');
+ assert.equal(normal.sha256,provenance.sourceFiles.find(file=>file.file.endsWith('tree_small_02_leaves_nor_gl_1k.jpg')).sha256,'leaf relief uses the verified original normal atlas');
+});
+
+test('tree wind shares bounded uniforms and leaves use the same motion in visible and shadow shaders',()=>{
+ const wind=createTreeWind(),asset={wind};
+ updateTreeWind(asset,2,3,4);assert.equal(wind.time.value,2);assert.equal(wind.strength.value,2.5);
+ assert.ok(Math.abs(wind.direction.value.length()-1)<1e-12);
+ updateTreeWind(asset,2,0,0);assert.equal(wind.time.value,2);assert.equal(wind.strength.value,0,'still weather has no deformation');
+ updateTreeWind(asset,Infinity,NaN,0);assert.equal(wind.time.value,0);assert.ok(wind.direction.value.toArray().every(Number.isFinite));
+ const standard=configureTreeWindMaterial(new THREE.MeshStandardMaterial(),wind,4.6,true);
+ const depth=configureTreeWindMaterial(new THREE.MeshDepthMaterial(),wind,4.6,true);
+ const visibleShader={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader};
+ const depthShader={uniforms:{},vertexShader:THREE.ShaderLib.depth.vertexShader};
+ standard.onBeforeCompile(visibleShader);depth.onBeforeCompile(depthShader);
+ assert.equal(visibleShader.uniforms.uTreeTime,depthShader.uniforms.uTreeTime);
+ assert.ok(visibleShader.vertexShader.includes('float leafFlutter='));
+ const deformation=shader=>shader.vertexShader.slice(shader.vertexShader.indexOf('vec3 treeOrigin'),shader.vertexShader.indexOf('#include <morphtarget_vertex>'));
+ assert.equal(deformation(visibleShader),deformation(depthShader));
+ assert.match(deformation(visibleShader),/treeHeight\*treeHeight/,'root displacement is zero at the planted base');
+ standard.dispose();depth.dispose();
 });
 
 test('tree groves instance nearby models and stop drawing geometry beyond the far LOD',()=>{
