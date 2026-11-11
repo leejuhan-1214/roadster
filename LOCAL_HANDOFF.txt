@@ -7,7 +7,7 @@ Roadster v1.31 — 원본 실내 12종 / 공개 자료 기반 참고 운전석 /
 룸미러: cockpit-mirror.js의 별도 WebGLRenderTarget 256×128, 최대10Hz, near0.1/far350. Roadster 원본 거울면(roadster011_mirror_0)과 참고 재구성 실내 거울에 뒤쪽 도시를 렌더링. Roadster 원본 거울 프레임을 유지하며 모든 원본 차종의 거울을 동적 반사로 바꾼 것은 아님. render target/active face/mip/viewport/scissor/scissorTest/autoClear/shadow flags/숨긴 객체 가시성은 try/finally 복원. 자기 차와 실내는 반사 패스에서 숨기고 그림자는 다시 갱신하지 않음.
 화면: 도시 운전석에서 차고·긴 도움말·미니맵을 접고 속도·기체·고도/주행 상태 유지. #cockpit-toggle 차량·설정으로 다시 열고 Escape로 닫음. 작은 도구 막대에서 시점/복귀/화면 조작 접근 가능. C 추적→운전석(내부키hood)→자유, 드래그 둘러보기, 휠 FOV50–80°, 더블클릭 정면 복귀. W/S, 지상 A/D, 공중 A/D 수평 이동, Q/E, Space, F, Shift, B, H, R 유지.
 보존: 도시/구조67종, 실험5종·전체15회 비교, 기존 질량과500Hz 물리, v1.28 나무 충돌, v1.29 도로 세부, 실제 서울400타일 스트리밍. 물리/실험 범위는 변경하지 않음.
-v1.31 검증·배포 상태: 로컬 613개 테스트·45개 모듈 문법 검사 통과. Roadster/MX-5/Urus 실내, 실시간 후방 거울, 시점/HUD/W-A-B 조작 확인. GitHub Pages 최종 배포 검증 진행 중; 완료 후 런타임 SHA·Actions 링크·공개 파일 HTTP200/SHA256·브라우저 검증 기록으로 갱신할 것.
+v1.31 검증·배포 상태: 완료 (2026-11-11). 로컬 전체 테스트 613개·모듈 문법 45개 통과. 런타임 a393887df45f478ddfcee00b31a670fdae715cf6; Actions build/deploy 성공: https://github.com/leejuhan-1214/roadster/actions/runs/42937588806. 공개 배포 변경 파일 8개 HTTP 200 및 SHA256 일치. 공개 브라우저 v1.31/실험 5종/도시 67종, Roadster 원본 운전석·실시간 후방 거울·마우스 시점·간소화 HUD 확인; JavaScript 오류 0. 로컬 Roadster/MX-5/Urus 실내와 W/A/B 조작 확인.
 
 --- 이전 배포 기록 ---
 Roadster v1.30 — 운전석 시점 / 도시 차량 67종 / 질량 비교용 실험 5종

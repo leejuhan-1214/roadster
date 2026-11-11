@@ -6,7 +6,7 @@ Roadster Landing Lab 최신 v1.31 작업 인계
 
 먼저 README.md, LOCAL_HANDOFF.txt 맨 위 최신 기록, docs/cockpit-references.md, package.json, .github/workflows/pages.yml과 git status/log를 읽으세요. 로컬 변경을 보존하고 origin/main을 fetch하여 다른 작업 도구에서 추가된 변경과 합치세요. 과거 기록의 폐기된 요구를 현재 요청으로 되살리지 마세요. 기존 GitHub Pages 배포는 사용자가 추가 허락 없이 허용했습니다. 새 사용자 요청이 우선합니다.
 
-v1.31 검증·배포 상태: 로컬 613개 테스트·45개 모듈 문법 검사 통과. Roadster/MX-5/Urus 실내, 실시간 후방 거울, 시점/HUD/W-A-B 조작 확인. GitHub Pages 최종 배포 검증 진행 중; 완료 후 런타임 SHA·Actions 링크·공개 파일 HTTP200/SHA256·브라우저 검증 기록으로 갱신할 것.
+v1.31 검증·배포 상태: 완료 (2026-11-11). 로컬 전체 테스트 613개·모듈 문법 45개 통과. 런타임 a393887df45f478ddfcee00b31a670fdae715cf6; Actions build/deploy 성공: https://github.com/leejuhan-1214/roadster/actions/runs/42937588806. 공개 배포 변경 파일 8개 HTTP 200 및 SHA256 일치. 공개 브라우저 v1.31/실험 5종/도시 67종, Roadster 원본 운전석·실시간 후방 거울·마우스 시점·간소화 HUD 확인; JavaScript 오류 0. 로컬 Roadster/MX-5/Urus 실내와 W/A/B 조작 확인.
 
 현재 요청과 운전석 구조:
 - 사용자는 실제 자동차처럼 보이는 운전석을 공개 자료에서 찾아 반영하길 원합니다. v1.30의 모든 차에 공통 가상 대시보드를 쓰던 방식은 교체되었습니다. docs/cockpit-references.md에 Petersen/원본 사진/Tesla/BMW/Mazda/Toyota/Lamborghini 자료와 연식·재현 범위를 보존합니다. Roadster는 2020 콘셉트 명칭/2017 공개 프로토타입 기준을 유지하고 최신 다른 디자인과 섞지 마세요.
