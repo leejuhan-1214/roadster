@@ -1,4 +1,5 @@
-import {CockpitView} from './cockpit-view.js?v=20261111-cockpit1';
+import {CockpitView} from './cockpit-view.js?v=20261111-interior1';
+import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261111-cockpit1';
 import {loadCityWorld} from './city-world.js?v=20261111-trees2';
@@ -173,7 +174,7 @@ export class FlightScene {
       for(const light of this.scene.children)if(light.isHemisphereLight)light.intensity=.5;
     }).catch(error=>{console.warn('실사 하늘 로드 실패 · 기본 하늘 유지',error);});
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
-    this.cockpit=new CockpitView();this.scene.add(this.cockpit.root);
+    this.cockpit=new CockpitView();this.cockpitMirror=new CockpitMirror();this.cockpit.setMirrorTexture(this.cockpitMirror.texture);this.scene.add(this.cockpit.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
     this.gravityArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1.5,0xff9478,.18,.1);this.scene.add(this.gravityArrow);
@@ -568,10 +569,10 @@ export class FlightScene {
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
     for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
     const insideCockpit=this.mode==='city'&&this.cameraName==='hood';
-    // Source cabins can be opaque or absent. A common virtual cockpit provides
-    // a clear windshield without permanently editing shared exterior materials.
+    // Use the inspected original cabin, or its model-specific reference interior.
+    // Cloned inside materials preserve the shared exterior and explosion view.
     this.vehicle.root.visible=(!this.hasCustomModel||this.mode==='inspect')&&!insideCockpit;
-    this.cockpit.root.visible=insideCockpit;if(insideCockpit){this.cockpit.setVehicle(this.vehicle);if(options.paint)this.cockpit.paint.color.set(options.paint);}
+    this.cockpit.root.visible=insideCockpit;if(insideCockpit){this.cockpit.setVehicle(this.vehicle);if(options.paint)this.cockpit.setPaint(options.paint);}
     if(this.customModel){this.customModel.visible=!!this.hasCustomModel&&this.mode!=='inspect'&&!insideCockpit;this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
     for(let i=0;i<(this.vehicle.gimbalNozzles?.length||0);i++){const nozzle=this.vehicle.gimbalNozzles[i];if(thrusters[i])nozzle.quaternion.setFromUnitVectors(UP,thrusters[i].dir);}
     updateNozzleCovers(this.vehicle,thrusters,this.mode==='inspect');
@@ -607,6 +608,7 @@ export class FlightScene {
       for(const [id,g] of this.stageVisual.userData.obstacles){const mat=g.children[0]?.material;if(mat?.emissive){mat.emissive.setHex(0xff6e34);mat.emissiveIntensity=hit?.id===id?Math.max(0,1-(sim.state.time-hit.lastTime)/1.4)*.8:0;}}
     }
     this.updateCamera(view,dt);
+    if(insideCockpit&&this.cockpit.mirrorSurface)this.cockpitMirror.update(this.renderer,this.scene,{bodyPosition,quaternion:q,eye:this.cockpit.seat.eye},dt,[this.vehicle.root,this.customModel,this.cockpit.root]);
     this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=(this.mode==='city'?1/12:1/20)){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
     this.renderer.render(this.scene,this.camera);
   }
@@ -701,7 +703,7 @@ export class FlightScene {
   dispose() {
     this.canvas.removeEventListener('pointerdown',this._onDown,true);this.canvas.removeEventListener('pointerup',this._onUp,true);
     this.canvas.removeEventListener('pointermove',this._onMove,true);this.canvas.removeEventListener('pointercancel',this._onCancel,true);
-    this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();
+    this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();this.cockpitMirror?.dispose();
     this.canvas.removeEventListener('wheel',this._onWheel,true);this.touchPointers.clear();this.controls.dispose();
     if(this.stageVisual){disposeStageVisual(this.stageVisual);this.stageVisual=null;}
     this.citySurfaces?.dispose();if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}

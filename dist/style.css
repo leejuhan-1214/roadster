@@ -57,3 +57,18 @@ dialog.landing-results-dialog{width:min(1100px,calc(100vw - 36px));max-width:110
 .landing-fleet-list label{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px}.landing-fleet-list strong{font-size:11px;font-variant-numeric:tabular-nums;color:#a2f5db}.landing-fleet-list small{grid-column:2/-1;color:#8ca7b0;font-size:9px}
 
 .city-garage select{padding:4px 8px;min-height:32px;line-height:1.4}.city-garage>button{white-space:nowrap}.landing-fleet-list em{font-size:9px;font-style:normal;color:#d5b991}
+
+/* The cabin is the primary instrument panel; extra controls remain one tap away. */
+.cockpit-tools{position:fixed;z-index:7;right:24px;top:88px;display:flex;gap:4px;padding:5px;border-radius:8px;background:#101b24d9}
+.cockpit-tools button{font-size:10px;padding:7px 9px;white-space:nowrap;border-radius:4px}.cockpit-tools button[aria-expanded=true],.cockpit-tools button[aria-pressed=true]{color:#a2f5db;background:#a2f5db1a}
+.city.cockpit-view:not(.cockpit-panels-open) .city-garage,.city.cockpit-view:not(.cockpit-panels-open) .city-location,.city.cockpit-view:not(.cockpit-panels-open) .city-map-wrap{display:none}
+.city.cockpit-view.cockpit-panels-open .city-garage{top:132px}
+.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer{width:174px;right:14px;bottom:20px;padding:9px 12px;background:#101b24c9}
+.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer b{font-size:25px;letter-spacing:-1px}.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer strong{font-size:16px}
+.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer .city-drive-state,.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer .city-heading-reading,.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer .pedal-track,.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer>small{display:none}
+.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer p{margin:5px 0 0}.city.cockpit-view:not(.cockpit-panels-open) #city-acceleration{display:none}
+.city.cockpit-view:not(.cockpit-panels-open) .city-flight-readings{margin:7px 0;gap:5px}.city.cockpit-view:not(.cockpit-panels-open) .city-flight-readings dd{font-size:10px}.city.cockpit-view:not(.cockpit-panels-open) .city-flight-readings dt{font-size:8px}
+.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer #city-hover,.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer #city-land{width:49%;display:inline-block;padding:5px 1px;font-size:9px}
+.city.cockpit-view:not(.cockpit-panels-open).show-drive-controls .city-touch{bottom:166px}
+@media(max-width:1000px){.cockpit-tools{right:12px;top:84px}.city.cockpit-view.cockpit-panels-open .city-garage{top:128px}}
+@media(max-width:700px){.cockpit-tools{top:108px;right:10px;gap:1px;padding:4px}.cockpit-tools button{padding:7px 6px;font-size:9px}.city.cockpit-view.cockpit-panels-open .city-garage{top:150px}.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer{width:160px;right:10px;bottom:20px}}

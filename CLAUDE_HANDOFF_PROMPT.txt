@@ -1,20 +1,29 @@
-Roadster Landing Lab 최신 v1.30 작업 인계
+Roadster Landing Lab 최신 v1.31 작업 인계
 
 저장소: https://github.com/leejuhan-1214/roadster
 배포: https://leejuhan-1214.github.io/roadster/
 로컬: C:/Users/LEE JU HAN/Documents/Codex/2026-11-07/local-handoff-txt-roadster-github-pages-2/work/roadster
 
-먼저 README.md, LOCAL_HANDOFF.txt 맨 위 최신 기록, package.json, .github/workflows/pages.yml과 git status/log를 읽으세요. 로컬 변경을 보존하고 origin/main을 fetch하여 다른 작업 도구에서 추가된 변경과 합치세요. 과거 기록의 폐기된 요구를 현재 요청으로 되살리지 마세요. 기존 GitHub Pages 배포는 사용자가 추가 허락 없이 허용했습니다. 새 사용자 요청이 우선합니다.
+먼저 README.md, LOCAL_HANDOFF.txt 맨 위 최신 기록, docs/cockpit-references.md, package.json, .github/workflows/pages.yml과 git status/log를 읽으세요. 로컬 변경을 보존하고 origin/main을 fetch하여 다른 작업 도구에서 추가된 변경과 합치세요. 과거 기록의 폐기된 요구를 현재 요청으로 되살리지 마세요. 기존 GitHub Pages 배포는 사용자가 추가 허락 없이 허용했습니다. 새 사용자 요청이 우선합니다.
 
-최신 구조:
-- 착지 실험은 experiment-vehicles.js의 5종만 사용합니다. 초기 기체 포함 약1465/1725/2015/2275/3525kg. docs/experiment-mass-basis.md에 근거와 가정이 있습니다. Roadster/Cybertruck는 가정 질량임을 표시합니다. createLandingJobs 전체 비교는5×3=15회입니다. 도시 전용 차체로 실험에 들어가면 마지막 실험 차체를 복원합니다.
-- 도시 주행/구조 탐색은 전체 VEHICLES 목록을 씁니다. 기존 vehicle-profiles.js + fleet-profiles.js + city-fleet-profiles.js. 검색·브랜드 그룹은 vehicle-catalog.js/main.js. 신규자산은 city-fleet-provenance.json에 원본출처/허가/해시를 남기세요. 부품 없는 통합 스캔을 정상 조향 모델로 주장하지 마세요. 선택 차량만 지연 로딩하고 디코딩 캐시3대 유지합니다.
-- C: 추적→운전석(내부키hood유지)→자유. cockpit-view.js는 왼쪽 좌석 기준, 차체 자세를 따르는 공통 가상 실내와 실제 조향 연동 핸들·계기입니다. OEM 내부복제가 아닙니다. 자신의 원본 외형은 운전석에서만 숨기고 외부시점에서 복원. 드래그 둘러보기, 휠FOV50–80°, 더블클릭정면. inspect카메라와부품숨김을해치지마세요.
-- W/S주행, 지상A/D조향, 공중A/D수평이동, Q/E회전, Space상승, F유한기체부스트, Shift드리프트, B제동, H고도유지, R복귀 유지. 실험 전 자유조종, 실험시 원점·입력높이·속도0·충전탱크로 복귀. 실험 중 Space수동분사는 기록하고 자동최소값/비교에서제외. 화면Space버튼은없습니다.
-- 기존 실제서울10.24×10.24km·512m400타일, Worker준비/프레임예산/최대49활성타일, 원본건물안뜰/윤곽충돌 유지. 전체setObstacles를프레임마다호출하지마세요. reset후bindPhysics로충돌재등록.
-- v1.28: 중심/외곽나무공통treeColliders. city-tree-mix가수종·변형·크기·yaw·tilt공유. 31변형줄기/굵은가지충돌, 잎/잔가지비고체. 모델변경시scripts/build-tree-collision.mjs재생성. 외곽충돌누락으로되돌리지마세요.
-- v1.29: city-street-overlay.js의대로중앙포장·실제신호위치·지하철출구표지·street:*충돌청크보존.
+v1.31 검증·배포 상태: 로컬 613개 테스트·45개 모듈 문법 검사 통과. Roadster/MX-5/Urus 실내, 실시간 후방 거울, 시점/HUD/W-A-B 조작 확인. GitHub Pages 최종 배포 검증 진행 중; 완료 후 런타임 SHA·Actions 링크·공개 파일 HTTP200/SHA256·브라우저 검증 기록으로 갱신할 것.
 
-물리는 교육용가정이며 실제차량 OEM성능·안전성평가가 아닙니다. 고정2ms,유한기체,입력해제,초기화,바퀴축/형상/노즐맞춤과라이선스를보존하세요. 신규모델검사는 실제GLB→어댑터→4바퀴→축·풀분해·매립노즐까지 확인합니다. README와인계를현재구현에맞추고 npm run check/npm test 및CUA실제화면검증을수행하세요. 인증정보를출력하거나요구하지마세요. 배포는main push후해당SHA의Actions build/deploy성공,공개파일HTTP200·해시,공개브라우저조작까지확인하세요.
+현재 요청과 운전석 구조:
+- 사용자는 실제 자동차처럼 보이는 운전석을 공개 자료에서 찾아 반영하길 원합니다. v1.30의 모든 차에 공통 가상 대시보드를 쓰던 방식은 교체되었습니다. docs/cockpit-references.md에 Petersen/원본 사진/Tesla/BMW/Mazda/Toyota/Lamborghini 자료와 연식·재현 범위를 보존합니다. Roadster는 2020 콘셉트 명칭/2017 공개 프로토타입 기준을 유지하고 최신 다른 디자인과 섞지 마세요.
+- source-cockpit.js의 SOURCE_COCKPITS 12종은 이미 배포된 아티스트 모델의 원본 실내 메시·재질을 사용합니다: roadster, ferrari, ford-mustang, tesla-model, mazda-miata-mx-5, aston-martin-db11, audi-q7, audi-tt, hyundai-tucson, lamborghini-gallardo-lp560, mini-countryman, renault-duster. 원본 핸들 메시만 실제 조향에 연동하며 좌석은 그 핸들 위치 기준입니다. 도어까지 공유된 'steer' 재질 이름만으로 회전 부품을 고르지 마세요. 원본 계기 그림은 아티스트 자산이며 모두 실시간 계기로 바뀐 것이 아닙니다. 속도·기체 등 실제 값은 화면 HUD에서 확인합니다.
+- 나머지 차종은 reference-cockpit.js의 e30/supra/urus/model3/cybertruck/classic/electric/modern 계열 참고 재구성입니다. 개별 실차 모두의 OEM 내부 복제라고 주장하지 마세요. E30/Supra 운전자 지향 배치, Urus 다중 화면·육각 송풍구, Tesla 계열의 중앙 화면 배치 등을 구분합니다. 물리에 RPM이 없으므로 임의 엔진 RPM 대신 출력 kW를 표시합니다. 화면 지도 그림은 실제 경로 안내가 아닙니다. 새 외부 GLB/제조사 사진 텍스처는 이번 작업에 추가하지 않았습니다.
+- cockpit-view.js는 원본 우선/참고 대체, 핸들·차체 자세·좌석·시점 전환을 담당합니다. 원본 geometry/texture는 차량 디코딩 캐시 소유이며 실내가 임의로 dispose하면 안 됩니다. 실내가 복제한 재질과 생성한 참고 실내 리소스만 각각 해제합니다. 자신의 외부 차량은 운전석에서 숨기고 외부/구조 시점에서 복원합니다.
+- cockpit-mirror.js는 Roadster 원본 거울면과 참고 실내 거울에 뒤쪽 도시 영상을 제공합니다. 256×128, 최대 10Hz, near0.1/far350. 원본 Roadster 거울 프레임을 유지하며 임의의 공중 화면을 추가하지 않습니다. 모든 원본 차종의 거울이 동적 반사인 것은 아닙니다. 추가 렌더 패스는 target/active face/mip/viewport/scissor/autoClear/shadow flags/가시성을 try/finally로 복원하고 자신의 차와 실내를 숨깁니다. per-frame allocation·그림자 재계산·주 렌더 상태 누출을 막으세요.
+- C: 추적→운전석(내부키 hood 유지)→자유. 드래그 둘러보기, 휠 FOV50–80°, 더블클릭 정면. 도시 운전석에서는 차고·긴 도움말·미니맵을 접고 작은 속도/기체/높이 HUD를 유지합니다. #cockpit-toggle 차량·설정으로 전체 패널을 열고 Escape로 닫습니다. 작은 막대의 시점/복귀/화면 조작, 차 변경 시 운전석 유지, inspect 카메라와 부품 숨김을 보존하세요.
 
-최종답변은 변경점·조작·검증·공개URL·남은한계를간결하게알려주세요.
+계속 보존할 실험·주행 기능:
+- 착지 실험은 experiment-vehicles.js의 5종만 사용합니다. 초기 기체 포함 약 1465/1725/2015/2275/3525kg. docs/experiment-mass-basis.md에 근거와 가정이 있습니다. Roadster/Cybertruck는 가정 질량임을 표시합니다. createLandingJobs 전체 비교는 5×3=15회입니다. 도시 전용 차체로 실험에 들어가면 마지막 실험 차체를 복원합니다.
+- 도시 주행/구조 탐색은 전체 67종 VEHICLES를 씁니다. vehicle-profiles.js + fleet-profiles.js + city-fleet-profiles.js, 검색·브랜드 그룹은 vehicle-catalog.js/main.js입니다. 신규 자산은 city-fleet-provenance.json에 원본 출처/허가/해시를 남기세요. 부품 없는 통합 스캔을 정상 조향 모델로 주장하지 마세요. 선택 차량만 지연 로딩하고 디코딩 캐시 3대를 유지합니다.
+- W/S 주행, 지상 A/D 조향, 공중 A/D 수평 이동, Q/E 회전, Space 상승, F 유한 기체 부스트, Shift 드리프트, B 제동, H 고도 유지, R 복귀를 유지합니다. 실험 전 자유 조종, 실험 시 원점·입력 높이·속도0·충전 탱크로 복귀합니다. 실험 중 Space 수동 분사는 기록하고 자동 최소값/비교에서 제외합니다. 삭제된 착지 화면 Space 버튼을 다시 넣지 마세요.
+- 실제 서울 10.24×10.24km·512m 400타일, Worker 준비/프레임 예산/최대49활성타일, 원본 건물 안뜰/윤곽 충돌을 유지합니다. 전체 setObstacles를 프레임마다 호출하지 마세요. reset 후 bindPhysics로 충돌을 재등록합니다.
+- v1.28: 중심/외곽 나무 공통 treeColliders, city-tree-mix가 수종·변형·크기·yaw·tilt를 공유합니다. 31변형의 줄기/굵은 가지 충돌, 잎/잔가지 비고체를 유지하고 모델 변경 시 scripts/build-tree-collision.mjs를 재생성하세요. 외곽 충돌 누락으로 되돌리지 마세요.
+- v1.29: city-street-overlay.js의 대로 중앙 포장·실제 신호 위치·지하철 출구 표지·street:* 충돌 청크를 보존합니다.
+
+물리는 교육용 가정이며 실차 OEM 성능·안전성 평가가 아닙니다. 고정 2ms, 유한 기체, 입력 해제, 초기화, 바퀴 축/형상/노즐 맞춤과 라이선스를 보존하세요. 신규 모델 검사는 실제 GLB→어댑터→4바퀴→축·풀 분해·매립 노즐까지 확인합니다. 원본/참고 실내는 실제 화면에서 도로 시야·핸들 위치·유리·대시보드 가림·조향·둘러보기·차 전환·거울을 확인하세요. 좁은 714px 화면도 확인합니다.
+
+README와 인계는 현재 구현에 맞추고 npm run check/npm test 및 실제 브라우저 화면 검증을 수행하세요. 인증정보를 출력하거나 요구하지 마세요. 배포는 main push 후 해당 SHA의 Actions build/deploy 성공, 공개 파일 HTTP200·해시, 공개 브라우저 조작까지 확인한 뒤 완료라고 기록하세요. 최종 답변은 변경점·조작·검증·공개 URL·남은 한계를 간결하게 알려주세요.

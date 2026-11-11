@@ -33,7 +33,7 @@ test('cockpit has a clear windshield, actual steering response, bounded look and
   cockpit.setVehicle(car);cockpit.root.visible=true;cockpit.update(camera,view,.016,{altitude:1.2});
   assert.equal(camera.near,COCKPIT_NEAR);assert.equal(camera.fov,65);
   assert.ok(Math.abs(cockpit.steering.rotation.x+.19*14)<1e-12);
-  assert.ok(camera.position.distanceTo(cockpit.root.position)<1e-12);
+  assert.ok(cockpit.root.position.distanceTo(view.bodyPosition)<1e-12);
   cockpit.root.updateMatrixWorld(true);camera.updateMatrixWorld(true);
   const direction=new THREE.Vector3();camera.getWorldDirection(direction);
   const ray=new THREE.Raycaster(camera.position,direction,.03,30);
@@ -57,9 +57,9 @@ test('switching from cockpit restores the exterior, camera up and city clipping 
   cockpit.dispose();
 });
 
-test('changing car rebuilds only the common interior and leaves artist geometry/materials intact',()=>{
+test('changing car rebuilds only the reference interior and leaves artist geometry/materials intact',()=>{
   const a=vehicle(),b=vehicle(5.9,2.25,1.95),source=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial({opacity:.42,transparent:true}));a.root.add(source);
-  const cockpit=new CockpitView();cockpit.setVehicle(a);const old=cockpit.root.children[0].geometry;let disposed=0;old.addEventListener('dispose',()=>disposed++);
+  const cockpit=new CockpitView();cockpit.setVehicle(a);let old;cockpit.root.traverse(o=>{if(!old&&o.geometry)old=o.geometry;});let disposed=0;old.addEventListener('dispose',()=>disposed++);
   cockpit.setVehicle(b);assert.equal(disposed,1);assert.equal(source.material.opacity,.42);assert.equal(source.visible,true);assert.equal(source.parent,a.root);
   assert.ok(cockpit.seat.eye.y>cockpitSeat(a).eye.y);assert.ok(cockpit.seat.width>cockpitSeat(a).width);
   cockpit.dispose();source.geometry.dispose();source.material.dispose();
