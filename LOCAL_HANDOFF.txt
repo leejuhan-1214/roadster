@@ -6,7 +6,7 @@ Roadster v1.32 — 차량 색상 수정
 
 `vehicle-paint-profiles.js`는 검증한 차종별 연결, `vehicle-paint.js`는 색상 교체와 공유 텍스처 마스크, `tests/vehicle-paint-bindings.test.mjs`는 실제 67개 모델의 차체 범위·휠/내장 제외 검사입니다. 기존 조작·실내·물리·차량 수·실험 5종은 그대로 유지합니다.
 
-v1.32 배포 상태: 검증 후 배포 진행 중.
+v1.32 배포 상태: 완료 (2026-11-11). 실제 67종 도색 연결 검사 통과. 전체 회귀 684개, 최종 후속 변경 관련 88개, 문법 47개 검사 통과. 런타임 130613ea8d5509170b0c2058df1888bcc4f03b89. Actions build/deploy 성공: https://github.com/leejuhan-1214/roadster/actions/runs/42944069709. 공개 수정 파일 8개 HTTP200/SHA256 일치. 공개 v1.32 Beetle 흰색→파랑 반영 및 유리·램프·녹·짐 보존, JavaScript 오류 0 확인. 로컬 Urus 흰색/파랑, MINI 파랑도 확인.
 
 --- 이전 배포 기록 ---
 Roadster v1.31 — 원본 실내 12종 / 공개 자료 기반 참고 운전석 / 간결한 운전 화면
