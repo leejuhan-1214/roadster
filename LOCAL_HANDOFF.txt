@@ -5,7 +5,7 @@ Roadster v1.30 — 운전석 시점 / 도시 차량 67종 / 질량 비교용 실
 운전석: 내부키hood유지, C추적→운전석→자유. cockpit-view.js의차체내좌석/자세추적, 공통가상내장/핸들/속도·기어·고도. 드래그둘러보기/휠FOV50–80/더블클릭정면. 원본외형은자기운전석에서만숨김,외부/구조에서복원. OEM실내아님. 차변경시운전석유지.
 수정중발견: CRV뒤범퍼의빈곳을통과한ray가앞차체를잡던문제→후방영역에서다른높이/폭표면탐색. Urus차체paint의transmission을창문으로간주하던문제→도장불투명/유리투명분리. 새차종분해경로충돌은explosion-layout 수정.
 캐시20261111-cockpit1(index/main/scene/새모듈/vehicle-profiles/real-vehicle-model/assessment-vehicle/vehicle-fit/explosion-layout). README,보고서도움말,CLAUDE_HANDOFF_PROMPT최신화.
-검증: 42모듈문법통과. 전체589검사중588통과,Peugeot205의실제5메시(차체1+타이어4)를배제하던>5조건을>=5로보정후해당실자산검사통과. 네타이어축/해시/포트/분해검사는그대로유지. 배포CI전체검사와공개검증결과를아래에추가. 로컬UI15회비교완료/15행/5초기질량확인. 운전석W36km/h→A기수160→143°→B0/드래그운전석유지/더블클릭정면확인. Tiida/Camry/V40/Urus실제렌더정면방향확인,시각검사페이지는outputs로이동하여배포하지않음.
+완료: 런타임4fb21580bc82bb9f407e82e866c85f8a34c0fae3. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42931866862 build/deploy성공. CI전체589검사·42모듈문법통과. 공개70파일HTTP200·SHA256일치(신규54GLB포함). 공개브라우저cockpit1·착지목록5/도시67·Roadster3m측정완료(첫접촉7.67m/s)·Urus새차량로드/운전석24km/h/지상A기수160→144/B0/R원점·오류0확인. 공개탭1Urus운전석으로유지. outputs/Roadster-v130-live.png,v130-browser-proof.json,v130-public-verification.json 참고. 로컬UI15회비교완료/15행/5초기질량확인. 운전석W36km/h→A기수160→143°→B0/드래그운전석유지/더블클릭정면확인. Tiida/Camry/V40/Urus실제렌더정면방향확인,시각검사페이지는outputs로이동하여배포하지않음.
 
 --- 이전 배포 기록 ---
 Roadster v1.29 — 대로 중앙 포장 / 신호등 / 지하철 출구 표지
