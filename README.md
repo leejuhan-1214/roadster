@@ -12,7 +12,7 @@
 
 원본 제작자·라이선스·원저작자 추가 표기는 [차량 크레딧](dist/assets/vehicles/CITY_ATTRIBUTION.md), 검토 기록은 [스포츠카 모델 검토](docs/sports-fleet-review.md), 파일 해시는 [차량 출처 명세](dist/assets/vehicles/city-fleet-provenance.json)에 기록합니다. 신규 모델 합계는 약 31.6MB이며 선택한 차량을 필요할 때 불러오는 기존 방식과 캐시 제한을 유지합니다.
 
-배포·검증 결과는 LOCAL_HANDOFF.txt의 v1.35 기록을 확인합니다.
+[v1.35 빌드·배포](https://github.com/leejuhan-1214/roadster/actions/runs/42988917999) 완료. 전체 자동 검사 **771개**와 구문 검사 통과, 로컬 신규10종 렌더링·도색 및 주행/제동/운전석 확인, 공개 변경16파일(10GLB 포함) 해시 일치와 77종 목록·신규10종 선택지·브라우저 오류0건을 확인했습니다. 상세 기록은 LOCAL_HANDOFF.txt에 있습니다.
 ## v1.34 계측 시점과 재생 보정
 
 스프링 에너지·첫 감속 구간·분사 애니메이션의 시간 기준과 그래프 색상 연결을 재검토했습니다.

@@ -5,7 +5,7 @@ Roadster v1.35 — 도시 스포츠카 10종 / 전체 차량 77종
 각 GLB는 기존공개catalog commit2d18dfd9db96bbf0d9cffa949deaf7f571388cbf에서확보한독립모델. 10개합계31,583,760bytes. Sketchfab API CC BY와원본설명확인, One1원저작자jkazulyblanco/918원저작자DisneyCars추가표기. 원본GLB바이트보존. 자산은사용자선택시로딩,기존캐시제한유지.
 구현: city-fleet-profiles.js에차종별실제휠/타이어/캘리퍼/고정허브/도색재질/방향/시뮬질량연결. Lotus전시바닥/그림자/작은캐릭터와GT3중복blur림은adapter로제외. 충돌외곽은축척후실제메시에서산출. 치수·질량은도시주행가정이며OEM성능/실내재현주장금지. 기존참고실내fallback사용.
 검증: 새10종실제asset31검사통과, 전체회귀771개·구문검사통과. 로컬브라우저10종선택/원본외형/파랑도색/77목록확인. 새로운물리알고리즘변경없음. 캐시20261111-sports1.
-배포 상태: 최종 배포 확인 중. 완료 후 커밋/Actions/공개 검증 기록 추가.
+배포 상태: 완료. 런타임09739dd232548ad8f1f230c5b0cbc3af3f3339ef. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42988917999 build/deploy success. 공개16파일(신규10GLB포함)HTTP200/SHA256일치. 공개77차종/추가10개선택지·Revuelto파랑차체/자유시점·콘솔오류0확인. 로컬10종전부실제렌더링확인, EliseW+A로방향160→111도/이동0.01km·B정지·참고운전석확인. outputs/v135-tests.txt, v135-check.txt, v135-public-verification.json, v135-browser-proof.json, Roadster-v135-sports.jpg. 로컬서버종료/공개사이트탭유지.
 문서: README v1.35, docs/sports-fleet-review.md, dist/assets/vehicles/CITY_ATTRIBUTION.md, city-fleet-provenance.json. work/sports-fleet-assets는분석/검증작업파일이며공개물아님.
 
 --- 이전 배포 기록 ---
