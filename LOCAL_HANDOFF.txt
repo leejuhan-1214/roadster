@@ -1,3 +1,12 @@
+Roadster v1.36 — 도시 무입력 기체 소모 / 실제 바퀴 회전 수정
+2026-11-11 KST. 사용자: 도시 차량 일부가 처음부터 연료를 쓰고 전진 시 바퀴가 그대로인 오류 수정. 차종 기억 안 남 → 전체77종 검사. 기존 GitHub Pages 배포 승인 유지.
+
+원인: 기존 DB11 adapter가 Object_4001~4004 외부 타이어를 차체로 남겨 body collision이 바퀴보다 낮아짐. 5초 무입력에 약3.37kg 소모, 바퀴접지0/4, W는 공중추진이 되어 wheel omega0. 공개사이트에서도0.7kg/s·0/4 확인. 원본 tire 매핑/반지름/차체bounds 수정과 driving-input의 차체 지지·지면보정·로컬노면 기준 공중판정으로 해결.
+부품: DB11 외부타이어/disc/caliper/hub, Focus INNERW/IN_WH/LUGS, i30 wheel/disc 상세, Camaro Object16/Forester Object51 혼합휠 분리. 원본 GLB 불변. 확정된 프로필의 선택영역만 보정, 전차종 무차별 확대 금지.
+검증: tests/wheel-assets.test.mjs가 실제77종 무입력5초→W2초→가시정점 회전→기존 조향·구조복귀를 검사. tests/city-grounded-controls.test.mjs는 과거DB11 잘못된 hull 수치를 고정하여 가드회귀,20m도로,Space/H실제이륙,공중A/D를 검증. 전체검사/배포 상태는 아래 완료 기록으로 교체할 것.
+검증 완료: 전체775개 회귀검사 PASS(297초), 구문검사 PASS. 실제77종×두노면154회 무입력5초 모두기체0/최종4륜접지. 수정5종 로컬브라우저 출발·조향·B정지 확인, 콘솔오류0. 출력 outputs/v136-tests.txt, v136-check.txt, v136-idle-after.txt, v136-wheel-after.txt, v136-local-browser.json. 배포 상태: 진행 중. 캐시20261111-drivefix1.
+
+--- 이전 배포 기록 ---
 Roadster v1.35 — 도시 스포츠카 10종 / 전체 차량 77종
 2026-11-11 KST. 사용자: 스포츠카 위주 차량 약10종 추가. 기존 GitHub Pages 배포 승인 유지.
 

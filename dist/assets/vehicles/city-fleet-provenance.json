@@ -53,23 +53,27 @@
       "sha256": "4d5641e501d04967c9c3c44ed3289a4f710a8e14642717a8b90972ce02d9e8b0",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/aston-martin-db11.glb",
       "adapter": {
-        "wheelPattern": "^amdb11_wheel_03",
-        "tirePattern": "^amdb11_wheel_03.*black_ext",
+        "wheelPattern": "^(amdb11_(wheel_03|brakedisc|caliper|hub)|Object_400[1-4]_Scene)",
+        "tirePattern": "^Object_400[1-4]_Scene",
+        "brakePattern": "^amdb11_caliper",
+        "fixedWheelPattern": "^amdb11_hub",
         "splitX": -0.18310202004554044,
         "splitZ": 0.000468015660315374
       },
       "orientationEvidence": "Headlights +Z; four named wheel groups.",
       "geometry": {
         "wheelbase": 2.8,
-        "trackWidth": 1.625863944128892,
-        "wheelRadius": 0.286649633958205,
+        "trackWidth": 1.6246168508471406,
+        "wheelRadius": 0.3661982767699037,
         "bodyLength": 4.786814212799072,
         "bodyWidth": 2.1437960863113403,
-        "bodyHeight": 1.2989422678947449,
-        "bodyCenterY": 0.043977707624435425
+        "bodyHeight": 1.1403599977493286,
+        "bodyCenterY": 0.12256401777267456
       },
       "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "contributors": [],
+      "wheelMappingEvidence": "Object_4001..4004_Scene_-_Root_0 are the four complete outer tires; amdb11_wheel_03 is the smaller inner wheel. Outer tires now determine radius; discs roll, calipers and wheel hubs steer/suspend without rolling. This removes tire geometry from the body collision envelope.",
+      "wheelMappingCheckedAt": "2026-11-11"
     },
     {
       "id": "audi-q7",
@@ -438,7 +442,7 @@
       "sha256": "5fa8ef049173baacd7484a2513d208225fb8fe760e24841ee65d235e1e343124",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-focus.glb",
       "adapter": {
-        "wheelPattern": "^(TIRE_|WHEEL_|RIMLO)",
+        "wheelPattern": "^(TIRE_|WHEEL_|RIMLO|INNERW|IN_WH|LUGS)",
         "tirePattern": "^TIRE_",
         "splitX": -1.0598377997439455e-7,
         "splitZ": -8.957402541920346e-8
@@ -454,7 +458,9 @@
         "bodyCenterY": 0.2651323527097702
       },
       "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "contributors": [],
+      "wheelMappingEvidence": "INNERW*, IN_WH* inner rims and LUGS* wheel nuts now accompany the four rolling wheel pivots.",
+      "wheelMappingCheckedAt": "2026-11-11"
     },
     {
       "id": "bmw-e34",
@@ -1920,6 +1926,10 @@
       "sha256": "3bbb6244b8b7c6442a775cfceccec0212c26c57cee5fcbeab04b9d3bd59e04da",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/chevrolet-camaro.glb",
       "adapter": {
+        "wheelDetailNames": [
+          "Object_16"
+        ],
+        "wheelDetailPadding": 0.05,
         "wheelNames": [
           "Object_8",
           "Object_9",
@@ -1940,11 +1950,13 @@
         "wheelRadius": 0.33805374957883283,
         "bodyLength": 4.741733551025391,
         "bodyWidth": 1.917913019657135,
-        "bodyHeight": 1.3440225720405579,
-        "bodyCenterY": 0.08215323090553284
+        "bodyHeight": 1.1566261649131775,
+        "bodyCenterY": 0.17585143446922302
       },
       "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "contributors": [],
+      "wheelMappingEvidence": "Reviewed Object_16 Mirror1Mtl contains four wheel components plus body trim. Extract only triangles within measured tire bounds plus 0.05 tire-radius selection tolerance; preserve the remaining body trim.",
+      "wheelMappingCheckedAt": "2026-11-11"
     },
     {
       "id": "nissan-silvia-s13",
@@ -2868,6 +2880,7 @@
       "sha256": "cd2a4af01223070afab9eedb732dd3221e02888e5233aa0236503fe049b9b976",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/subaru-forester.glb",
       "adapter": {
+        "wheelDetailPadding": 0.05,
         "wheelNames": [
           "Object_42",
           "Object_55"
@@ -2888,11 +2901,13 @@
         "wheelRadius": 0.33656461207693555,
         "bodyLength": 4.59899377822876,
         "bodyWidth": 2.1276766061782837,
-        "bodyHeight": 1.6608824133872986,
-        "bodyCenterY": 0.36249998211860657
+        "bodyHeight": 1.5498238503932953,
+        "bodyCenterY": 0.4180292636156082
       },
       "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "contributors": [],
+      "wheelMappingEvidence": "Reviewed Object_51 0131_Silver contains four rims and body chrome. A 0.05 tire-radius selection tolerance includes rim edge triangles previously left on the body; preserve non-wheel chrome.",
+      "wheelMappingCheckedAt": "2026-11-11"
     },
     {
       "id": "toyota-prius",
@@ -3483,6 +3498,9 @@
         "wheelNames": [
           "Material3_45",
           "Material3_46",
+          "Material3_47",
+          "Material3_48",
+          "Material2_17",
           "Material2_19",
           "Material2_20",
           "Material3_49"
@@ -3501,11 +3519,13 @@
         "wheelRadius": 0.3069503234378479,
         "bodyLength": 4.526396751403809,
         "bodyWidth": 1.9402684569358826,
-        "bodyHeight": 1.4401975274085999,
-        "bodyCenterY": 0.17324671149253845
+        "bodyHeight": 1.4021201729774475,
+        "bodyCenterY": 0.19228538870811462
       },
       "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "contributors": [],
+      "wheelMappingEvidence": "Material2_17 detailed wheel geometry, Material3_47 brake discs and Material3_48 central wheel hardware now accompany the four rolling wheel pivots. Unidentified Material2_18 backing/caliper details remain unchanged.",
+      "wheelMappingCheckedAt": "2026-11-11"
     },
     {
       "id": "kia-picanto",

@@ -345,8 +345,10 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/aston-martin-db11.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
-      "wheelPattern": "^amdb11_wheel_03",
-      "tirePattern": "^amdb11_wheel_03.*black_ext",
+      "wheelPattern": "^(amdb11_(wheel_03|brakedisc|caliper|hub)|Object_400[1-4]_Scene)",
+      "tirePattern": "^Object_400[1-4]_Scene",
+      "brakePattern": "^amdb11_caliper",
+      "fixedWheelPattern": "^amdb11_hub",
       "splitX": -0.18310202004554044,
       "splitZ": 0.000468015660315374
     },
@@ -703,6 +705,8 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/chevrolet-camaro.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
+      "wheelDetailNames": ["Object_16"],
+      "wheelDetailPadding": 0.05,
       "wheelNames": [
         "Object_8",
         "Object_9",
@@ -1032,7 +1036,7 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/ford-focus.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
-      "wheelPattern": "^(TIRE_|WHEEL_|RIMLO)",
+      "wheelPattern": "^(TIRE_|WHEEL_|RIMLO|INNERW|IN_WH|LUGS)",
       "tirePattern": "^TIRE_",
       "splitX": -1.0598377997439455e-7,
       "splitZ": -8.957402541920346e-8
@@ -1261,6 +1265,9 @@ export const CITY_VEHICLES = [
       "wheelNames": [
         "Material3_45",
         "Material3_46",
+        "Material3_47",
+        "Material3_48",
+        "Material2_17",
         "Material2_19",
         "Material2_20",
         "Material3_49"
@@ -1988,6 +1995,7 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/subaru-forester.glb",
     "yaw": 3.141592653589793,
     "adapter": {
+      "wheelDetailPadding": 0.05,
       "wheelNames": [
         "Object_42",
         "Object_55"

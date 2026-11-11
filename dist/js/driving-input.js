@@ -10,6 +10,10 @@ export const CITY_DRIVE_PARAMS=Object.freeze({
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const approach=(value,target,amount)=>value+clamp(target-value,-amount,amount);
 const held=(keys,...codes)=>codes.some(code=>keys.has(code));
+// A grounded hull still supports the car when its tires are unloaded (for
+// example on a curb). Do not turn that contact into an unsolicited flight.
+const hasBodySupport=sim=>sim.bodyGroundContacts>0||sim.groundCorrectionImpulseNs>0;
+const hasSettledSupport=sim=>sim.contactCount===4||hasBodySupport(sim);
 
 export class DrivingController {
   constructor(options={}){this.flightSteering='strafe';this.flightAssist=true;this.setOptions(options);this.reset();}
@@ -31,7 +35,7 @@ export class DrivingController {
   toggleLandingAssist(sim){
     this.landingAssist=!this.landingAssist;this.altHold=false;
     this.landingStatus=this.landingAssist?'descending':'idle';
-    if(this.landingAssist&&sim.contactCount===4&&Math.abs(sim.state.vel.y)<.2&&Math.hypot(sim.state.vel.x,sim.state.vel.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
+    if(this.landingAssist&&hasSettledSupport(sim)&&Math.abs(sim.state.vel.y)<.2&&Math.hypot(sim.state.vel.x,sim.state.vel.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
     return this.landingAssist;
   }
   toggleAltitudeHold(sim){
@@ -44,18 +48,21 @@ export class DrivingController {
     const step=clamp(Number.isFinite(dt)?dt:0,0,.1),q=sim.state.q;
     const lift=Number(held(keys,'Space')),holdKey=held(keys,'KeyH');
     const activeManeuver=held(keys,'KeyW','KeyS','KeyA','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyF');
-    const manualFlight=activeManeuver||!!lift||held(keys,'KeyB','KeyH')||(sim.contactCount>0&&held(keys,'ShiftLeft','ShiftRight'));
+    const supported=sim.contactCount>0||hasBodySupport(sim);
+    const manualFlight=activeManeuver||!!lift||held(keys,'KeyB','KeyH')||(supported&&held(keys,'ShiftLeft','ShiftRight'));
     if(this.landingAssist&&manualFlight){this.landingAssist=false;this.landingStatus='manual';}
     if(holdKey&&!this._holdKey)this.toggleAltitudeHold(sim);
     this._holdKey=holdKey;
-    // Ignore momentary loss of one tire over road relief. Re-enter the ground
-    // controls on contact; the solver still determines all support forces.
-    if(sim.contactCount>0)this.airborne=false;
-    else if(sim.state.pos.y-sim.restHeight>.08)this.airborne=true;
+    // Re-enter ground controls on either tire or hull support. Compare clearance
+    // to the local road, so a raised road is not mistaken for free flight.
+    const surface=!supported||this.landingAssist?(sim.surfaceHeightAt?.(sim.state.pos.x,sim.state.pos.z,sim.state.pos.y-sim.restHeight)||0):0;
+    const clearance=sim.state.pos.y-sim.restHeight-surface;
+    if(supported)this.airborne=false;
+    else if(clearance>.08)this.airborne=true;
     // Quaternion-rotated local +X, projected onto actual world velocity.
     const forward={x:1-2*(q.y*q.y+q.z*q.z),y:2*(q.x*q.y+q.w*q.z),z:2*(q.x*q.z-q.w*q.y)};
     const velocity=sim.state.vel,speed=velocity.x*forward.x+velocity.y*forward.y+velocity.z*forward.z;
-    if(this.landingAssist&&sim.contactCount===4&&Math.abs(velocity.y)<.2&&Math.hypot(velocity.x,velocity.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
+    if(this.landingAssist&&hasSettledSupport(sim)&&Math.abs(velocity.y)<.2&&Math.hypot(velocity.x,velocity.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
     const go=held(keys,'KeyW',...(this.airborne?[]:['ArrowUp'])),back=held(keys,'KeyS',...(this.airborne?[]:['ArrowDown']));
     const hardBrake=held(keys,'KeyB')||(go&&back)||this.landingAssist,direction=Number(go)-Number(back);
     const turn=Number(held(keys,'KeyA',...(this.airborne?[]:['ArrowLeft'])))-Number(held(keys,'KeyD',...(this.airborne?[]:['ArrowRight'])));
@@ -117,11 +124,9 @@ export class DrivingController {
     // The existing actuator acceleration path supports a captured height above
     // 15 m as well. This is a force request, not a position/velocity assignment.
     if(this.landingAssist){
-      const surface=sim.surfaceHeightAt?.(sim.state.pos.x,sim.state.pos.z,sim.state.pos.y-sim.restHeight)||0;
-      const clearance=Math.max(0,sim.state.pos.y-sim.restHeight-surface);
       const targetVelocity=-(clearance<.35?.3:.6);
-      if(sim.contactCount===4){
-        // Once supported by all four tires, retain wheel braking without
+      if(hasSettledSupport(sim)){
+        // Once supported by all four tires or the hull, retain wheel braking without
         // unloading the suspension or spending tank gas to hover over the road.
         input.stabilize=false;input.verticalAcceleration=-sim.params.gravity;
       }else input.verticalAcceleration=clamp(8*(targetVelocity-velocity.y),-sim.params.gravity,1.1*sim.params.gravity);

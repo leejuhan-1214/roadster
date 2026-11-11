@@ -48,8 +48,12 @@ export function adaptRealVehicle(source,profile){
     records.push({geometry,original:o,materialNames:names,wheel,tire,brake:/caliper/i.test(wr?.name||'')});
   });
   if(boxes.some(b=>b.isEmpty()))throw new Error('네 바퀴의 형상을 확인하지 못했습니다.');
+  // A reviewed mixed-material mesh can have rim edges just outside the tire's
+  // sampled bounds. Expand only its selection boxes, never the tire radius or
+  // collision shape; the profile value is a fraction of the tire's radius.
+  const detailBoxes=boxes.map(box=>box.clone().expandByScalar((box.max.y-box.min.y)*.5*(profile.adapter?.wheelDetailPadding||0)));
   for(const record of mixedWheelDetails){
-    for(const piece of splitWheelGeometry(record.geometry,0,0,boxes))records.push({...record,...piece});
+    for(const piece of splitWheelGeometry(record.geometry,0,0,detailBoxes))records.push({...record,...piece});
     record.geometry.dispose();
   }
   const neutralWheelAxes=straightenWheelAxes(records,boxes);
