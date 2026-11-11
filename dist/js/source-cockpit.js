@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {copyVehiclePaint} from './vehicle-paint.js?v=20261111-paint1';
 import {tireAxle} from './wheel-alignment.js?v=20261109-wheel1';
 
 // Reviewed artist interiors already shipped with the corresponding exterior.
@@ -74,7 +75,7 @@ export function createSourceCockpit(vehicle){
   function cloneMaterial(original,mesh){
     const glass=GLASS.test(original.name+' '+mesh.name),key=original.uuid+'|'+glass;
     if(materialCache.has(key))return materialCache.get(key);
-    const material=original.clone();material.side=THREE.DoubleSide;
+    const material=copyVehiclePaint(original,original.clone());material.side=THREE.DoubleSide;
     // The Roadster artist's unmapped interior is medium-grey metal; the
     // concept reference has a dark, nonmetallic dashboard. Keep seats intact.
     if(modelId==='roadster'&&original.name==='interior'){material.color.set('#15191c');material.metalness=0;material.roughness=.86;}

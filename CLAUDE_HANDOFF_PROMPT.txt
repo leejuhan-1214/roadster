@@ -1,3 +1,5 @@
+최신 변경 v1.32: 차량 도색은 vehicle-paint.js 및 vehicle-paint-profiles.js를 사용한다. 원본 GLB 재질 이름만 믿지 말고 실제 차체 메시와 텍스처 영역을 확인해야 한다. 원본 실내 복제에는 copyVehiclePaint로 셰이더도 다시 연결한다. 검증/배포 결과는 LOCAL_HANDOFF.txt 맨 위 기록을 따른다.
+
 Roadster Landing Lab 최신 v1.31 작업 인계
 
 저장소: https://github.com/leejuhan-1214/roadster

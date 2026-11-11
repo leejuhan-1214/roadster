@@ -7,7 +7,7 @@ import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,land
 import {LandingUI} from './landing-ui.js?v=20261111-cockpit1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees2';
-import {FlightScene} from './scene.js?v=20261111-interior1';
+import {FlightScene} from './scene.js?v=20261111-paint1';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261111-cockpit1';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {vehiclePaintRule,prepareVehiclePaint} from './vehicle-paint.js?v=20261111-paint1';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
@@ -64,12 +65,13 @@ export function adaptRealVehicle(source,profile){
   const body=group(root,parts,'body',new THREE.Vector3(),[0,.7,0]);
   const cabin=group(root,parts,'cabin',new THREE.Vector3(),[0,1.5,0]);
   const wheels=anchors.map((a,i)=>{const g=group(root,parts,ids[i],a,[a.x*.3,0,Math.sign(a.z)*.9]);g.userData.spinGroup=new THREE.Group();g.add(g.userData.spinGroup);return g;});
-  function material(original,isTire=false){
+  function material(original,record){
+    const isTire=record.tire,paintRule=vehiclePaintRule(profile,record.original,original,record.wheel>=0);
     const rubber=isTire&&profile.id!=='tesla-cybertruck',cache=rubber?tireMaterials:materials;
-    if(cache.has(original))return cache.get(original);
-    const m=original.clone();
-    const paintedBody=!rubber&&(profile.paintMaterials||[profile.paint]).includes(original.name)&&!/glass|windscreen|windshield/i.test(original.name);
-    if(paintedBody){m.metalness=.65;m.roughness=.27;paintMaterials.push(m);}
+    const key=original.uuid+'|'+(paintRule?JSON.stringify(paintRule):'original');
+    if(cache.has(key))return cache.get(key);
+    const m=original.clone(),paintedBody=!!paintRule&&!rubber;
+    if(paintedBody){prepareVehiclePaint(m,paintRule);paintMaterials.push(m);}
     if(profile.id==='ferrari'){
       if(/Leather|Interior|Carpet|Carbon_Fiber|plastic_gray/.test(original.name)){m.color.set(original.name==='Leather_red'?0x552027:0x171c22);m.metalness=.12;m.roughness=.7;}
       if(original.name==='metal_chrome'||original.name==='metal_gray'){m.color.set(0x8d969c);m.metalness=.85;m.roughness=.25;}
@@ -78,14 +80,14 @@ export function adaptRealVehicle(source,profile){
     if(profile.id==='ferrari'&&original.name==='Glass_Gray'){m.color.set(0x25404b);m.metalness=.1;m.transparent=true;m.opacity=.4;m.roughness=.15;m.depthWrite=false;}
     // Some artist exports share transmission maps with body paint (e.g. Urus).
     // Body paint remains opaque; only glazing uses the cheaper alpha substitute.
-    if(m.transmission>0){m.transmission=0;m.transparent=!paintedBody;m.opacity=paintedBody?1:.38;m.depthWrite=paintedBody;}
+    if(m.transmission>0){const opaqueBody=paintedBody||(profile.id==='lamborghini-urus'&&original.name==='body');m.transmission=0;m.transparent=!opaqueBody;m.opacity=opaqueBody?1:.38;m.depthWrite=opaqueBody;}
     // The C190 source uses the uninformative name Material for its windows
     // (Object_36, alpha blend); it otherwise reflects as a white painted panel.
     const windowGlass=/glass|windscreen|windshield/i.test(original.name)||(profile.id==='mercedes-benz-amg-gt'&&original.name==='Material');
     if(windowGlass){m.color.set(0x567884);m.metalness=0;m.roughness=.12;m.transparent=true;m.opacity=.42;m.depthWrite=false;m.envMapIntensity=.6;}
     if(profile.id==='mercedes-benz-amg-gt'&&original.name==='Material'){m.color.set(0x14242d);m.opacity=.84;m.envMapIntensity=.25;}
     if(rubber){m.metalness=0;m.roughness=.88;}
-    cache.set(original,m);return m;
+    cache.set(key,m);return m;
   }
   const hullBounds=new THREE.Box3();
   records.forEach((r,index)=>{
@@ -96,7 +98,7 @@ export function adaptRealVehicle(source,profile){
     const category=r.wheel>=0?'wheels':interior?'interior':glazing?'glazing':'exterior';
     const id='model-'+String(index).padStart(3,'0');
     const title=r.wheel>=0?labels[r.wheel]+' '+(r.tire?'타이어':r.brake?'캘리퍼':r.fixed?'현가장치':'휠·브레이크'):(r.materialNames[0]===profile.paint?'차체 도장':interior?'실내':glazing?'유리·렌즈':'외장')+' '+String(index+1).padStart(2,'0');
-    const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(m=>material(m,r.tire)):material(r.original.material,r.tire));
+    const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(m=>material(m,r)):material(r.original.material,r));
     obj.name=r.original.name;obj.castShadow=true;obj.receiveShadow=true;
     obj.userData={partId:id,kind:'model',basePosition:new THREE.Vector3(),explodeOffset:new THREE.Vector3(center.x*.15,glazing?.45:.15,Math.sign(center.z)*.3),explodeStage:[.35,.9]};
     if(r.wheel>=0){r.geometry.translate(-anchors[r.wheel].x,-anchors[r.wheel].y,-anchors[r.wheel].z);(r.brake||r.fixed?wheels[r.wheel]:wheels[r.wheel].userData.spinGroup).add(obj);}

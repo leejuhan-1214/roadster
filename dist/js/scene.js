@@ -1,4 +1,4 @@
-import {CockpitView} from './cockpit-view.js?v=20261111-interior1';
+import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261111-cockpit1';
@@ -14,7 +14,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261107-drive2';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261111-cockpit1';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261111-paint1';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261111-cockpit1';
 import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
