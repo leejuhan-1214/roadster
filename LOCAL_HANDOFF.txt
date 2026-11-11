@@ -6,7 +6,7 @@ Three.js: 실제 solver 값을 읽는 공통축척 mg/T/N 벡터·1m눈금·h0/h
 조작: lab V는 물리표시, 도시 V는 기존벡터. 1/.25/.1배는 벽시계 진행률만 변경, 물리간격2ms 유지. P일시정지 뒤 +2ms 단일스텝, 묶음 경계도 정지 유지. 기존 자유조종 키 유지.
 분석: landing-analysis.js의 landingTheory/landingImpulseAudit/landingTradeoff. powered/manual trial은 고정질량 검산 제외. 전체기록/다른차체를 최적순위로 섞지 않음. sample 에너지의 중력기준은 초기 차체중심높이-출발높이; 선형스프링 에너지는 범프스톱/감쇠소산 제외. 10ms 최대값 그래프를 다시 적분하지 않음.
 문서: README v1.33, docs/landing-study-guide.md의 단일변인 설계·실현 가능한 축소 실험·출처·실제6회수치. 실물 검증/실차파손·부상 예측을 주장하지 않음.
-검증: 전체 회귀698개 통과, 후속관련130개 통과(중복 집계 아님). 최종 추가camera/live 검사는 별도 기록. 로컬6회비교, 0.1배·5번2ms→0.01s, 공중N0/T32.1kN, 콘솔오류0 확인. 런타임캐시20261111-science1. 배포 상태: 최종 점검 중; 아래 완료 기록을 확인할 것.
+검증: 전체 회귀698개 통과, 후속관련130개 통과(중복 집계 아님). 최종 추가camera/live 검사는 별도 기록. 로컬6회비교, 0.1배·5번2ms→0.01s, 공중N0/T32.1kN, 콘솔오류0 확인. 런타임캐시20261111-science1. 배포 상태: 완료. 런타임 3f3a1cafdf762f44c537053986ade72fa150b654. Actions https://github.com/leejuhan-1214/roadster/actions/runs/42979961007 build/deploy success. 공개 변경10파일 HTTP200/SHA256 일치. 공개브라우저6회비교 완료·이론속도7.671/측정7.669·안정확대3회·콘솔오류0. 로컬 SVG실제저장/XML파싱·도시67종/파랑차체/운전석 유지 확인. 마지막카메라/live관련19검사 통과. outputs/v133-public-verification.json, v133-browser-proof.json, Roadster-v133-live.jpg 참고.
 
 --- 이전 배포 기록 ---
 Roadster v1.32 — 차량 색상 수정
