@@ -1,7 +1,9 @@
+import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
+
 // The live view reads the solver; it never writes forces, velocities or time.
 const fmt=(value,digits=2)=>Number.isFinite(value)?value.toFixed(digits):'—';
 export function landingLiveReadings(sim){
-  const mass=sim.mass,vy=sim.state.vel.y;
+  const mass=sim.mass,vy=sim.state.vel.y,springState=landingSpringState(sim);
   return {mass,gravityN:mass*sim.params.gravity,velocityY:vy,
     // Read directly on a paused +2 ms step, before the next render updates its
     // smoothed diagram. clone() preserves the physical nozzle directions.
@@ -10,8 +12,8 @@ export function landingLiveReadings(sim){
     verticalKineticEnergyJ:.5*mass*vy*vy,
     // Linear spring storage only. PhysicsSim also has a nonlinear bump stop
     // beyond 0.22 m; neither that storage nor damping loss is included here.
-    springEnergyJ:sim.wheels.reduce((energy,w)=>energy+.5*sim.params.springK*Math.max(0,w.compression)**2,0),
-    compression:Math.max(0,...sim.wheels.map(w=>w.compression))};
+    springEnergyJ:springState.springEnergyJ,
+    compression:springState.stateCompression};
 }
 
 export class LandingLiveUI {

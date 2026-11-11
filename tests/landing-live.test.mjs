@@ -13,13 +13,13 @@ test('live vertical kinetic energy uses current gas-dependent mass and only vert
   sim.state.vel.set(90,0,70);assert.equal(landingLiveReadings(sim).verticalKineticEnergyJ,0);
 });
 
-test('live spring storage is the linear part of measured per-wheel compression, excluding bump stops and damping',()=>{
+test('live spring storage uses the current pose against wheel surfaces, excluding bump stops and damping',()=>{
   const sim=new PhysicsSim();const compression=[0,.1,.22,.3];
-  sim.wheels.forEach((wheel,i)=>wheel.compression=compression[i]);
+  sim.wheels.forEach((wheel,i)=>{wheel.compression=9;wheel.normalY=1;wheel.surfaceY=sim.state.pos.y+wheel.pos.y-sim.params.wheelRadius+compression[i];});
   const expected=.5*sim.params.springK*compression.reduce((sum,x)=>sum+x*x,0);
-  assert.equal(landingLiveReadings(sim).springEnergyJ,expected);assert.equal(landingLiveReadings(sim).compression,.3);
-  sim.params.damperC*=2;sim.state.vel.y=-10;assert.equal(landingLiveReadings(sim).springEnergyJ,expected);
-  sim.params.springK*=2;assert.equal(landingLiveReadings(sim).springEnergyJ,expected*2);
+  assert.ok(Math.abs(landingLiveReadings(sim).springEnergyJ-expected)<1e-8);assert.ok(Math.abs(landingLiveReadings(sim).compression-.3)<1e-12);
+  sim.params.damperC*=2;sim.state.vel.y=-10;assert.ok(Math.abs(landingLiveReadings(sim).springEnergyJ-expected)<1e-8);
+  sim.params.springK*=2;assert.ok(Math.abs(landingLiveReadings(sim).springEnergyJ-expected*2)<1e-8);
 });
 
 test('readings preserve solver state and read world-space thrust without stale diagram values',()=>{

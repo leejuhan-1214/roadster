@@ -1,3 +1,4 @@
+import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
 import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
 import {LandingVisual,landingRulerWindow} from './landing-visual.js?v=20261111-science1';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
@@ -97,7 +98,7 @@ export function inspectionDistance(box,direction,fov,aspect,availableWidth=1){
 export class FlightScene {
   constructor(canvas,onPartSelect=()=>{},onInspectExplode=()=>{},onCameraChange=()=>{}) {
     this.canvas=canvas;this.onPartSelect=onPartSelect;this.mode='drive';this.cameraName='chase';this.elapsed=0;this.lastPaint='';
-    this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;
+    this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;this.physicsVisualClock=new SimulationVisualClock();this.jetEmissionCarry=[];
     this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=true;this.touchPointers=new Map();this.pinchDistance=0;
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
@@ -326,6 +327,7 @@ export class FlightScene {
     if(shadowCamera){const extent=this.mode==='lab'?10:24;Object.assign(shadowCamera,{left:-extent,right:extent,top:extent,bottom:-extent});shadowCamera.updateProjectionMatrix();}
   }
   setMode(mode) {
+    if(mode!==this.mode)this.resetPhysicalEffects?.();
     this.mode=mode;this.cockpitDrag=null;if(mode!=='city'){if(this.cockpit)this.cockpit.root.visible=false;if(this.vehicle)this.vehicle.root.visible=true;}this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
     if(this.landingVisual)this.landingVisual.root.visible=mode==='lab'&&this.landingVisual.enabled;
@@ -346,7 +348,7 @@ export class FlightScene {
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
     this.applyInspectorVisibility?.();
   }
-  setLandingExperiment(config){this.landingVisual?.setExperiment(config);if(!config)this.landingFocusOffset=null;}
+  setLandingExperiment(config){this.resetPhysicalEffects?.();this.landingVisual?.setExperiment(config);if(!config)this.landingFocusOffset=null;}
   setLandingLearningVisible(visible){this.landingVisual?.setVisible(visible);}
   setCamera(camera) {
     if(this.mode==='city'&&camera==='orbit'&&this.cameraName==='hood'&&this.vehicle){
@@ -582,6 +584,8 @@ export class FlightScene {
     const bodyPosition=options.renderState?.bodyPosition||sim.bodyPosition||position.clone().sub(cg.clone().applyQuaternion(q));
     const thrusters=options.renderState?.thrusters||sim.thrusters;
     const view={state,bodyPosition,wheels,thrusters};
+    const visualClock=(this.physicsVisualClock??=new SimulationVisualClock()).advance(state.time,sim.state.time);
+    if(visualClock.reset)this.clearExhaustParticles();
     this.telemetry=sim.telemetry?.()||{};
     if(this.mode==='city'&&this.city?.treeAsset)updateTreeWind(this.city.treeAsset,sim.state.time,1.4+(sim.params.windX||0),.6+(sim.params.windZ||0));
     if(this.mode==='city')this.city?.streetOverlay?.update(position.x,position.z);
@@ -607,7 +611,7 @@ export class FlightScene {
     if(this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
     if(this.mode==='city')this.roadRelief.visible=false;
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
-    for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
+    for(const fan of this.vehicle.fans||[])fan.rotation.y+=visualClock.dt*((this.telemetry.fanN||0)>10?18:0);
     const insideCockpit=this.mode==='city'&&this.cameraName==='hood';
     // Use the inspected original cabin, or its model-specific reference interior.
     // Cloned inside materials preserve the shared exterior and explosion view.
@@ -622,7 +626,7 @@ export class FlightScene {
     // The landing diagram uses one shared linear force scale. Keep the older
     // driving/inspection vectors available without drawing both sets together.
     const showVectors=!!options.vectors&&!(mode==='lab'&&this.landingVisual?.enabled);
-    this.updateJets(view,dt,showVectors);
+    this.updateJets(view,visualClock.dt,showVectors,visualClock.time);
     this.gravityArrow.visible=showVectors;
     if(showVectors){
     this.gravityArrow.position.copy(position);this.gravityArrow.setLength(Math.max(.4,(this.telemetry.totalMass||2150)*9.80665/16000),.18,.1);
@@ -694,7 +698,19 @@ export class FlightScene {
     this.controls.target.copy(this.cameraTarget);
   }
 
-  updateJets(sim,dt,showVectors) {
+  clearExhaustParticles(){
+    for(const particle of this.particlesData||[])particle.life=0;
+    this.particleAlphas?.fill(0);this.particleSizes?.fill(0);this.jetEmissionCarry=[];this.particleIndex=0;
+    if(this.particlePoints)this.particlePoints.visible=false;
+    if(this.particleGeometry)this.particleGeometry.attributes.opacity.needsUpdate=true;
+    for(const plume of this.jets||[])plume.visible=false;
+  }
+  resetPhysicalEffects(){this.physicsVisualClock?.reset();this.clearExhaustParticles();}
+
+  updateJets(sim,dt,showVectors,visualTime=sim.state.time) {
+    dt=Number.isFinite(dt)?Math.max(0,dt):0;
+    const phase=Number.isFinite(visualTime)?visualTime:0;
+    this.jetEmissionCarry??=[];
     const thrusters=sim.thrusters||[];const state=sim.state;let particlesActive=false;
     for(let i=0;i<thrusters.length;i++){
       if(!this.jets[i])this.jets[i]=this.createJet();
@@ -709,10 +725,11 @@ export class FlightScene {
       plume.position.copy(worldPosition);
       // Cone extends along -Y, so local +Y is the reaction-force direction.
       plume.quaternion.setFromUnitVectors(UP,forceDir);plume.scale.set(.8+power*.7,.35+power*1.1,.8+power*.7);
-      plume.material.uniforms.power.value=power;plume.material.uniforms.time.value=this.elapsed+i;
+      plume.material.uniforms.power.value=power;plume.material.uniforms.time.value=phase+i;
       const arrow=this.forceArrows[i];arrow.visible=showVectors&&(t.force||0)>100;arrow.position.copy(worldPosition);arrow.setDirection(forceDir);arrow.setLength(.3+Math.min(3,(t.force||0)/10000),.18,.09);
-      if(power>.005&&this.mode!=='inspect'){
-        const count=Math.floor(power*100*dt+Math.random());
+      if(dt>0&&power>.005&&this.mode!=='inspect'){
+        const accumulated=(this.jetEmissionCarry[i]||0)+power*100*dt;
+        const count=Math.floor(accumulated+1e-9);this.jetEmissionCarry[i]=Math.max(0,accumulated-count);
         for(let j=0;j<count;j++){
           const k=this.particleIndex++%this.particleCount,particle=this.particlesData[k];particle.maxLife=particle.life=.32+Math.random()*.45;
           this.particlePositions[k*3]=worldPosition.x;this.particlePositions[k*3+1]=worldPosition.y;this.particlePositions[k*3+2]=worldPosition.z;
@@ -721,10 +738,11 @@ export class FlightScene {
         }
       }
     }
+    if(dt===0){this.particlePoints.visible=this.mode!=='inspect'&&this.particlesData.some(p=>p.life>0);return;}
     for(let i=0;i<this.particleCount;i++){
       const p=this.particlesData[i];if(p.life>0)particlesActive=true;p.life-=dt;if(p.life<=0){this.particleAlphas[i]=0;continue;}
       p.vel.multiplyScalar(Math.exp(-2*dt));this.particlePositions[i*3]+=p.vel.x*dt;this.particlePositions[i*3+1]+=p.vel.y*dt;this.particlePositions[i*3+2]+=p.vel.z*dt;
-      if(this.particlePositions[i*3+1]<.04){this.particlePositions[i*3+1]=.04;p.vel.y=Math.abs(p.vel.y)*.1;p.vel.x*=1.02;p.vel.z*=1.02;}
+      if(this.particlePositions[i*3+1]<.04){this.particlePositions[i*3+1]=.04;p.vel.y=Math.abs(p.vel.y)*.1;const spread=Math.pow(1.02,dt*60);p.vel.x*=spread;p.vel.z*=spread;}
       this.particleAlphas[i]=.3*(p.life/p.maxLife);this.particleSizes[i]+=dt*.9;
     }
     this.particlePoints.visible=particlesActive;

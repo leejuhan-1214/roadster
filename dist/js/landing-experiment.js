@@ -1,3 +1,5 @@
+import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
+
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
 // retain the maximum in each 10 ms chart bin; the summary never uses render rate.
@@ -76,7 +78,7 @@ export function createLandingRun(sim,options={}){
     totalGravityImpulseNs:0,constantMassAuditValid:true,freeFallConditionsValid:true,
     parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
     braking:false,manualLiftActive:false,manualLiftUsed:false,manualLiftDuration:0,
-    touchdownTime:null,touchdownSpeed:null,contactDuration:null,
+    touchdownTime:null,touchdownSpeed:null,contactDuration:null,contactEndTime:null,contactEndVelocityY:null,
     peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
     groundImpulseNs:0,totalGroundImpulseNs:0,correctionImpulseNs:0,impactCorrectionImpulseNs:0,
     maxCompression:0,bottomedOut:false,bodyStrike:false,reboundHeight:0,
@@ -162,9 +164,14 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   if(run.touchdownTime!==null&&run.contactDuration===null){
     run.groundImpulseNs+=ground*dt+impulse;run.impactCorrectionImpulseNs+=impulse;
     if(sim.state.vel.y>=0||Math.abs(sim.state.vel.y)<.01){
-      const fraction=sim.preStepVelocityY<0&&sim.state.vel.y>0?
-        clamp(-sim.preStepVelocityY/(sim.state.vel.y-sim.preStepVelocityY),0,1):1;
-      run.contactDuration=run.elapsed-dt+fraction*dt-run.touchdownTime;
+      // groundImpulseNs already integrates the entire resolved step, including
+      // any instantaneous end-of-step ground correction. Record that same
+      // endpoint instead of pretending the impulse has a fractional duration.
+      // This is the first near-stop/rebound sample at 2 ms resolution, not an
+      // analytic v=0 time. Keep its residual velocity so the interval is auditable.
+      run.contactEndTime=run.elapsed;
+      run.contactEndVelocityY=sim.state.vel.y;
+      run.contactDuration=run.contactEndTime-run.touchdownTime;
     }
   }
   const compression=Math.max(0,...sim.wheels.map(w=>w.compression));
@@ -178,18 +185,18 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   // use bounded sparse samples. Every 2 ms step still contributes to all peaks.
   const nearContact=run.touchdownTime!==null||clearance<=Math.max(2,-sim.state.vel.y*.3);
   const sampleInterval=nearContact?.01:run.precontactSampleInterval;
+  const springState=landingSpringState(sim);
   const sample={time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,groundForceN:ground,
     equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
-    compression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,
+    // compression retains the force-evaluation value for backwards compatibility;
+    // stateCompression and springEnergyJ both belong to this end-state pose.
+    compression,stateCompression:springState.stateCompression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,
     // Stored translational / gravitational / linear-spring energy only: this
     // excludes rotation, nonlinear bump stops, dissipation and expelled gas.
     // It is not a closed-system conservation sum during thrust or contact.
     massKg:sim.mass,kineticEnergyJ:.5*sim.mass*sim.state.vel.lengthSq(),
     potentialEnergyJ:sim.mass*sim.params.gravity*(sim.state.pos.y-run.energyDatumY),
-    springEnergyJ:.5*sim.params.springK*sim.wheels.reduce((sum,w)=>{
-      const gap=w.pos.clone().applyQuaternion(sim.state.q).y+sim.state.pos.y-sim.params.wheelRadius;
-      return sum+Math.max(0,-gap)**2;
-    },0)};
+    springEnergyJ:springState.springEnergyJ};
   const bucket=sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
   if(bucket!==run.sampleBucket){run.samples.push(sample);run.sampleBucket=bucket;}
   else{

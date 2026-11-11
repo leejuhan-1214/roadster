@@ -1,3 +1,14 @@
+Roadster v1.34 — 착지 계측 시점·재생·그래프 재검증
+2026-11-11 KST. 사용자: 한 번 더 확인하고 보정. 기존 GitHub Pages 배포 승인 유지.
+
+수정: landing-measurement.js의 landingSpringState가 현재 위치/자세와 바퀴 접촉면으로 선형 탄성에너지를 계산. 실시간·CSV가 동일한 상태를 사용. 기존 compression/최대압축은 힘 평가 시점 유지, stateCompression은 적분 후 상태로 별도 기록.
+첫 감속 구간: 접촉 감지 단계 시작부터 첫 근접정지/반등 검출 단계 끝까지. contactDuration과 groundImpulseNs가 같은 2ms 표본 구간 사용. contactEndTime/실제 contactEndVelocityY 추가. 정확한 v=0 순간 또는 탑승자 충격량을 뜻하지 않음.
+재생: render-state.js가 보간된 시뮬레이션 시간을 전달, simulation-visual-clock.js가 분사 입자/콘/팬의 시간을 관리. 일시정지/0.1배속/+2ms 동기화, 새 실험 잔여 입자 제거. 카메라 조작은 실제 시간 사용.
+결과: 고유 실험 ID로 표/힘 그래프/산점도/안정확대 색 통일. 전체기록 범례에 출발높이·초기질량 추가. SVG와 CSV 정의 보강.
+검증: 집중 과학25개·시각25개·결과14개 통과. 전체 회귀721개·구문검사 통과. 로컬6회비교, 0.1배/정지/+2ms, 실제CSV 저장 확인. 공개 배포 최종 확인 진행 중. 런타임 캐시 20261111-calibration1.
+배포 상태: 검증 중. 완료 시 이 기록에 커밋·Actions·공개 검증 결과를 덧붙임.
+
+--- 이전 배포 기록 ---
 Roadster v1.33 — 착지 물리 탐구·이론 검증·Three.js 계측 시각화
 2026-11-11 KST. 사용자: 수행평가 조언대로 착지 실험 보강, Three.js 사실감과 물리 개념 강조. 기존 GitHub Pages 배포 승인 유지.
 

@@ -81,15 +81,19 @@ test('CSV exports separate constant-mass audit from powered contact energy and p
     LandingUI.prototype.exportSummary.call({results:rows});
     const csv=await blob.text(),lines=csv.split('\r\n'),header=lines[1].split(',').map(cell=>cell.slice(1,-1));
     assert.ok(header.includes('touchdownMass'));assert.ok(header.includes('touchdownKineticEnergyJ'));
+    assert.ok(header.includes('contactEndTime'));assert.ok(header.includes('contactEndVelocityY'));
     assert.ok(header.includes('impulse_audit_duration_s'));assert.ok(header.includes('pareto_candidate_in_same_conditions'));
     const parsePrefix=line=>line.split(',').map(cell=>cell.slice(1,-1));
     const freeCells=parsePrefix(lines[2]),brakeCells=parsePrefix(lines[3]);
     assert.ok(Number(freeCells[header.indexOf('theory_expected_speed_m_s')])>7);
+    assert.equal(Number(freeCells[header.indexOf('contactEndTime')]),free.contactEndTime);
+    assert.equal(Number(freeCells[header.indexOf('contactEndVelocityY')]),free.contactEndVelocityY);
     assert.equal(brakeCells[header.indexOf('theory_expected_speed_m_s')],'');
     assert.equal(brakeCells[header.indexOf('impulse_audit_net_N_s')],'');
     assert.ok(Number(brakeCells[header.indexOf('touchdownMass')])<brake.initialMass);
     LandingUI.prototype.exportTraces.call({results:rows});
     const trace=await blob.text();assert.match(trace,/must not be integrated for impulse/);
+    assert.match(trace,/"compression","stateCompression"/);assert.match(trace,/compression is the pre-integration force-evaluation value/);
     assert.match(trace,/"massKg","kineticEnergyJ","potentialEnergyJ","springEnergyJ"/);
   }finally{globalThis.document=previousDocument;URL.createObjectURL=create;URL.revokeObjectURL=revoke;}
 });

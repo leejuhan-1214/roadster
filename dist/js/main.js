@@ -3,12 +3,12 @@ import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-seoul1';
 import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-air1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261111-cockpit1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261111-science1';
-import {LandingUI} from './landing-ui.js?v=20261111-science1';
-import {LandingLiveUI} from './landing-live.js?v=20261111-science1';
-import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261111-calibration1';
+import {LandingUI} from './landing-ui.js?v=20261111-calibration1';
+import {LandingLiveUI} from './landing-live.js?v=20261111-calibration1';
+import {RenderStateBuffer} from './render-state.js?v=20261111-calibration1';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees2';
-import {FlightScene} from './scene.js?v=20261111-science1';
+import {FlightScene} from './scene.js?v=20261111-calibration1';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261111-cockpit1';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
