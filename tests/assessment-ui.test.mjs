@@ -14,8 +14,8 @@ test('entry exposes landing, structure and a separate city without retired demon
   for(const source of ['controls.js','flight-plan.js','friction-experiment.js','stage.js'])assert.ok(!main.includes("from './"+source),'retired controllers are not loaded by the entry');
   assert.match(main,/landingRun&&mode==='lab'/,'a landing trial stays scoped to the lab');
   assert.match(main,/sim\.step\(LANDING_STEP,landingRunInput\(landingRun,sim,landingLiftHeld\)\)/,'landing trials retain controlled inputs');
-  assert.match(main,/createLandingJobs\(kind,VEHICLES,settings,activeVehicle\.id\)/);
-  assert.match(main,/onCompareFleetMethods:\(\)=>startLanding\('fleet-methods'\)/,'the all-fleet button reaches the 39-run job builder');
+  assert.match(main,/createLandingJobs\(kind,EXPERIMENT_VEHICLES,settings,activeVehicle\.id\)/);
+  assert.match(main,/onCompareFleetMethods:\(\)=>startLanding\('fleet-methods'\)/,'the all-fleet button reaches the 15-run experiment cohort builder');
 });
 
 test('retained static controls have unique IDs and entry bindings resolve',()=>{

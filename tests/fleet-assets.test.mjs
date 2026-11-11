@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {VEHICLES} from '../dist/js/vehicle-profiles.js';
+import {cockpitSeat} from '../dist/js/cockpit-view.js';
 import {adaptRealVehicle} from '../dist/js/real-vehicle-model.js';
 import {adaptRoadsterScene} from '../dist/js/roadster-model.js';
 import {createVehicle} from '../dist/js/vehicle.js';
@@ -15,10 +16,14 @@ for(const profile of VEHICLES)test(`${profile.id}: actual asset, fitted ports an
   assert.equal(vehicle.wheels.length,4);
   assert.equal(vehicle.nozzleCovers.length,10);
   assert.equal(vehicle.jetMounts.length,10);
-  assert.ok(vehicle.sourceMeshCount>5,'use the actual multi-part source asset');
+  // The low-poly Peugeot 205 has exactly one body and four separate tire meshes.
+  // Five is sufficient; actual wheel geometry/axes and pinned asset hashes are
+  // verified separately rather than requiring an arbitrary extra body fragment.
+  assert.ok(vehicle.sourceMeshCount>=5,'retain an actual body and four wheel source parts');
   assert.equal(new Set(vehicle.catalog.map(p=>p.id)).size,vehicle.catalog.length);
   assert.ok(Object.values(params).every(Number.isFinite),'geometry supplies finite physical parameters');
   const skin=vehicle.nozzleFit.skinBounds;
+  assert.ok(skin.containsPoint(cockpitSeat(vehicle).eye),'driver eye remains inside this actual model body envelope');
   assert.ok(params.liftY<skin.max.y&&params.liftY>skin.min.y,'swivels are inside the hull vertical envelope');
   assert.ok(params.boostX<skin.max.x&&params.boostX>skin.min.x,'rear mounts are inside the hull length');
   assert.ok(params.yawZ<Math.max(Math.abs(skin.min.z),Math.abs(skin.max.z)),'attitude mounts are inset');

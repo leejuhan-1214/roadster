@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VEHICLES,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
+import {experimentVehicles} from '../dist/js/experiment-vehicles.js';
 import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
 import {adaptRealVehicle,disposeVehicle} from '../dist/js/real-vehicle-model.js';
 import {adaptRoadsterScene} from '../dist/js/roadster-model.js';
@@ -10,12 +11,14 @@ import {configureVehicleFit} from '../dist/js/vehicle-fit.js';
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from '../dist/js/landing-experiment.js';
 import {loadModelGeometry} from './model-loader-helper.mjs';
 
-test('all 13 real asset chassis complete three same-height landing methods with finite recorded results',async t=>{
+const cohort=experimentVehicles(VEHICLES);
+
+test('the five mass-comparison chassis complete three same-height landing methods with finite recorded results',async t=>{
   const options={height:3,brakeHeight:1.5,targetSpeed:.5,springK:75000,damperC:6000};
-  const jobs=createLandingJobs('fleet-methods',VEHICLES,options,VEHICLES[0].id),results=[];
-  assert.equal(jobs.length,39);
+  const jobs=createLandingJobs('fleet-methods',cohort,options,'roadster'),results=[];
+  assert.equal(jobs.length,15);
   let initialGas;
-  for(const profile of VEHICLES){
+  for(const profile of cohort){
     const gltf=await loadModelGeometry(profile);
     const vehicle=profile.id==='roadster'?adaptRoadsterScene(gltf.scene,createVehicle(),gltf.parser):adaptRealVehicle(gltf.scene,profile);
     try{
@@ -42,9 +45,9 @@ test('all 13 real asset chassis complete three same-height landing methods with 
       }
     }finally{disposeVehicle(vehicle);}
   }
-  assert.equal(results.length,39);assert.equal(new Set(results.map(r=>r.vehicleId+'/'+r.method)).size,39);
+  assert.equal(results.length,15);assert.equal(new Set(results.map(r=>r.vehicleId+'/'+r.method)).size,15);
   const roadster=results.filter(r=>r.vehicleId==='roadster');
   assert.ok(roadster.find(r=>r.method==='gentle').speed<roadster.find(r=>r.method==='brake').speed);
   assert.ok(roadster.find(r=>r.method==='brake').speed<roadster.find(r=>r.method==='free').speed);
-  t.diagnostic('39 same-height runs completed: '+results.filter(r=>r.status==='landed').length+' settled, '+results.filter(r=>r.status==='unsettled').length+' unsettled, '+results.filter(r=>r.status==='timeout').length+' timed out.');
+  t.diagnostic('15 same-height runs completed: '+results.filter(r=>r.status==='landed').length+' settled, '+results.filter(r=>r.status==='unsettled').length+' unsettled, '+results.filter(r=>r.status==='timeout').length+' timed out.');
 });

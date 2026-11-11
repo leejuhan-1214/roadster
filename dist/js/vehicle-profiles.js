@@ -1,3 +1,4 @@
+import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261111-cockpit1';
 import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261109-assessment1';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.
@@ -19,6 +20,7 @@ export const VEHICLES = Object.freeze([
     reference:'4.345 m · 축간 2.562 m', length:4.345,width:1.680,height:1.370,wheelbase:2.562,
     dryMass:1350, referenceMass:1200, rigMass:150},
   ...EXTRA_VEHICLES,
+  ...CITY_VEHICLES,
 ]);
 export function vehicleProfile(id){const profile=VEHICLES.find(v=>v.id===id);if(!profile)throw new Error('알 수 없는 차종');return profile;}
 

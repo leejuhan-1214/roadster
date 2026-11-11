@@ -1,0 +1,746 @@
+{
+  "checkedAt": "2026-11-11",
+  "catalogCount": 532,
+  "selectedCount": 92,
+  "includedCount": 54,
+  "totalAddedModelBytes": 67963384,
+  "scope": "532 catalog entries screened for candidate selection; 92 candidates examined. Models outside the selected set were not individually license/geometry certified. Included cars are artist replicas, not OEM CAD; city masses and wheelbases are simulation assumptions. This is not a claim that every car in the source catalog is usable.",
+  "candidates": [
+    {
+      "id": "alfa-romeo-4c",
+      "title": "Alfa Romeo 4C",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/93da1386a94744c5bd8a676a09f9d4e9",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "alfa-romeo-giulia",
+      "title": "1965 Alfa Romeo Giulia Sprint",
+      "status": "excluded",
+      "reason": "Source scene contains multiple copies/cars (eight tire clusters); no reviewed single-car extraction.",
+      "source": "https://sketchfab.com/3d-models/3b30a0277a7b45a58496c843e6588212",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "aston-martin-db11",
+      "title": "Aston Martin db11",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/0ce56f01b1ff40b3a4e36bc56873dbc7",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "aston-martin-vantage",
+      "title": "Aston Martin Vantage Roadster | www.vecarz.com",
+      "status": "excluded",
+      "reason": "Uploader describes third-party Facebook/VK/MediaFire sources and conflicting noncommercial-only restrictions.",
+      "source": "https://sketchfab.com/3d-models/dbdd5aadc1d64df289f65fc0f6da3c07",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "audi-a1",
+      "title": "Audi A1 Clubsport Quattro",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/3f582a018306464ea501aaaec29efd2c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "audi-a3",
+      "title": "Audi A3 3.2 DSG Quattro (Type 8P)",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/070e6a27527a433baae83f55a40df536",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "audi-q3",
+      "title": "AUDI Q3 SPORTBACK",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/a0159b9bee094c2d8f9b9d5694c94f45",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "audi-q7",
+      "title": "2015 Audi Q7",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/65917c52e0b24f1289126128600ed7aa",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "audi-tt",
+      "title": "2015 Audi TT Convertible",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/80cc29628e1b407d8e14d5ae0710f6fe",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-320i",
+      "title": "BMW 320i E90 Low Polly",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/28f0bc2f0083417a8e521150529034d6",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-e34",
+      "title": "BMW E34 [stance style]",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/ffe1a3a1bcb34e0bb80f1aa41c9edb46",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-e39",
+      "title": "BMW E39 Free",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-531a5a93da5d493d9918eb36f011c20d",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-g82-m4",
+      "title": "BMW G82 M4 with Adro Kit 2022 | www.vecarz.com",
+      "status": "deferred",
+      "reason": "Reupload links to another model; upstream license and the complex mixed wheel subparts were not fully validated.",
+      "source": "https://sketchfab.com/3d-models/none-bdea1df6c22e4efd9b01a52034789fd7",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-serie-1",
+      "title": "BMW Serie 1",
+      "status": "deferred",
+      "reason": "Unusual transformed scene extents; no validated level four-wheel rig.",
+      "source": "https://sketchfab.com/3d-models/fddf543ea68245309379bf7336aaa7a3",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-x1",
+      "title": "BMW X1 2013",
+      "status": "excluded",
+      "reason": "Only one side tire pair has a dedicated tire mesh; remaining wheels are merged with car-wide materials.",
+      "source": "https://sketchfab.com/3d-models/302b32456b054dbdb5b72a08aca2bb80",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-x6",
+      "title": "Low Poly BMW X6M Competition",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/dbc45a151624413aac9a378b570ddd02",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "bmw-x7",
+      "title": "2022 BMW X7 M60i LCI",
+      "status": "excluded",
+      "reason": "Whole-car material partitions include body and wheels; no safe independent four-wheel extraction.",
+      "source": "https://sketchfab.com/3d-models/05fe5fcdec714aa7b23b226c0aec51ad",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "byd-dolphin",
+      "title": "2024 BYD Dolphin Premium Long Range",
+      "status": "excluded",
+      "reason": "Source says Convert from Skp without original attribution; wheels merged into whole-car textured meshes.",
+      "source": "https://sketchfab.com/3d-models/8d30880667524cf3abb9e3e66c5299b5",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "byd-seal",
+      "title": "2024 BYD Seal Performance AWD",
+      "status": "excluded",
+      "reason": "Source says Convert from Skp without original attribution; wheels merged into whole-car textured meshes.",
+      "source": "https://sketchfab.com/3d-models/96ec5c34852f4c3090a755d4445f5e98",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chery-tiggo",
+      "title": "2023 Chery Tiggo 8 Pro",
+      "status": "excluded",
+      "reason": "Whole-car material partitions include body and wheels; no safe independent four-wheel extraction.",
+      "source": "https://sketchfab.com/3d-models/b8d34fba89ca45918e851eaab3b5b679",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-camaro",
+      "title": "1970 Chevrolet Camaro",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/789b0af67d994306b967facf75ab2e01",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-cobalt",
+      "title": "2005 Chevrolet Cobalt SS Supercharged Coupe",
+      "status": "excluded",
+      "reason": "Original description explicitly says based on a Need For Speed Edge/Online 3D model.",
+      "source": "https://sketchfab.com/3d-models/02a7e3bcfc294b0fb7168f90bf3aa474",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-corvette",
+      "title": "Lucifer's Corvette - 1960 Chevrolet Corvette C1",
+      "status": "excluded",
+      "reason": "Original description explicitly says the model is from Forza Motorsport 4.",
+      "source": "https://sketchfab.com/3d-models/507ee2e6d6a34a3db7bf8373c70fecff",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-equinox",
+      "title": "Chevrolet Equinox 2020 Low-poly",
+      "status": "excluded",
+      "reason": "Uploader explicitly obtained the base from a third-party download site; original redistribution license not established.",
+      "source": "https://sketchfab.com/3d-models/ce15ce4fb4e8492fba41e148c9c1ddce",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-monza",
+      "title": "Monza SLE 2.0",
+      "status": "excluded",
+      "reason": "Only two dedicated wheel assemblies in reviewed geometry; scene also includes large surroundings.",
+      "source": "https://sketchfab.com/3d-models/77d99ee2ecaf46738f79a747f6a68d04",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-onix",
+      "title": "chevrolet onix",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/bfd798c2695847b28ab681d42abc7056",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chevrolet-opala",
+      "title": "80s/90s chevrolet opala",
+      "status": "excluded",
+      "reason": "Source combines multiple transformed cars; not a single validated four-wheel car.",
+      "source": "https://sketchfab.com/3d-models/9a54b1a9aa9a4b7b92a2b35dda15297c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "chrysler-pt-cruiser",
+      "title": "Chrysler PT Cruiser 2003",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/c1852ad519a84f638665e4b535db643e",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "dodge-challenger",
+      "title": "( FREE ) Dodge Challenger SRT",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/38a1fd572beb433fa2d26d8c1070c8fa",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "dodge-durango",
+      "title": "Dodge Durango SRT 392",
+      "status": "deferred",
+      "reason": "Mixed named materials require further wheel and caliper isolation; no final four-wheel validation.",
+      "source": "https://sketchfab.com/3d-models/ff66f958267b479ebe8fd0780277bcba",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "dodge-viper",
+      "title": "Dodge Viper SRT [Free]",
+      "status": "deferred",
+      "reason": "Wheel materials include CSR2 names; upstream origin and complete tire isolation were not validated.",
+      "source": "https://sketchfab.com/3d-models/b4234b7970fa464faaecaf637acb0912",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "ferrari-288-gto",
+      "title": "Ferrari 288 GTO",
+      "status": "deferred",
+      "reason": "Initial keyword filter matched the phrase Gran Turismo in the explanation of the GTO name. This is not evidence of game extraction; original license and geometry were not validated for this release.",
+      "source": "https://sketchfab.com/3d-models/none-e83da098149746b5a3ba6f1661645b09",
+      "license": null
+    },
+    {
+      "id": "ferrari-f40",
+      "title": "Ferrari f40",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-52a66c41cfcd4f999fb1b1c49bf24d70",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "ferrari-portofino",
+      "title": "Ferrari Portofino - Red",
+      "status": "excluded",
+      "reason": "Single whole-car mesh cannot independently steer and spin the actual four wheels.",
+      "source": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "fiat-uno",
+      "title": "fiat uno - Turbo ie 1995",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/f5e38b26c0af4ef2ab2f4c4b2e5aad5c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "fiat-palio",
+      "title": "Fiat Palio 1997",
+      "status": "deferred",
+      "reason": "No reviewed separate tire/rim assemblies; vehicle-wide material partitions need additional extraction.",
+      "source": "https://sketchfab.com/3d-models/8a3e71d4b4234110b59b09ef663e9448",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "fiat-tipo",
+      "title": "Fiat Tipo",
+      "status": "deferred",
+      "reason": "Diagonal/compound scene extents require additional orientation and assembly work.",
+      "source": "https://sketchfab.com/3d-models/7de9eb68ea394345931041ffd6b656a5",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "ford-escort",
+      "title": "1986 Ford Escort XR3",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/69eb711566834234b5dfbde3c6d4ee0a",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "ford-fiesta",
+      "title": "Ford Fiesta Mk5",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/f3a9d5d1fc9142d297f8d3c4d9b91431",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "ford-focus",
+      "title": "Ford Focus Sedan",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/ed2e9355b8a64e6a8700973df1a5b8f0",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "ford-ka",
+      "title": "Ford Ka MK2 2008-2016",
+      "status": "excluded",
+      "reason": "Reviewed source contains one loose wheel at origin rather than four placed wheel assemblies.",
+      "source": "https://sketchfab.com/3d-models/d2b74e929d9745ea9d151f8e2b195b17",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "honda-city",
+      "title": "Honda City 2017",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/75671276d4da476294202a5dc050a99e",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "honda-civic",
+      "title": "1991 Honda Civic EG6",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/f81da34570b145deb463fa091604d251",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "honda-cr-v",
+      "title": "2025 Honda CR-V 1.5 VTEC Turbo CVT",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/91c6673859444597bf006a0ef8570005",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "hyundai-azera",
+      "title": "2009 Hyundai Azera",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/711b67ea05f9441a863dce4badaca660",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "hyundai-i30",
+      "title": "2011 Hyundai i30 FD",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/036a13aefc3f48c5ba996aa2361b429e",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "hyundai-tucson",
+      "title": "2015 Hyundai Tucson",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/7674a3bd168a451daf73fc0a33d39589",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "hyundai-santa-fe",
+      "title": "2020 Hyundai Santafe",
+      "status": "excluded",
+      "reason": "Source description explicitly says model is taken from MinibusVietnamSimulator; game extraction provenance conflicts with uploader-only license.",
+      "source": "https://sketchfab.com/3d-models/97dedc4d430b47b7b61333c052a45495",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "hyundai-veloster",
+      "title": "hyundai veloster turbo",
+      "status": "excluded",
+      "reason": "Source description explicitly says model is from Asphalt7; game extraction provenance conflicts with uploader-only license.",
+      "source": "https://sketchfab.com/3d-models/ab41362f67fe4904aaff7e62882b5aec",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "kia-carnival",
+      "title": "Kia Carnival 2011",
+      "status": "excluded",
+      "reason": "Source description says Imported form Omakss without original license/source link; uncertain third-party redistribution rights.",
+      "source": "https://sketchfab.com/3d-models/855c464351f244cbaafa8269a5d472df",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "kia-picanto",
+      "title": "Kia Picanto Morning GT-Line",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/b4fd928f3e814ef29900c706bccc344d",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "kia-soul",
+      "title": "Kia Soul 2023",
+      "status": "excluded",
+      "reason": "One whole-car textured mesh includes body and tires with no separable reviewed wheel parts; cannot safely provide four independent steering/spin wheels.",
+      "source": "https://sketchfab.com/3d-models/a29232f2dcba4424a8d62e5bf1474bc1",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "kia-sportage",
+      "title": "Carro KIA Sportage Xnova360",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/212016fe1b8b47fda3d0c30e1a22af2f",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "lamborghini-countach-lp500s",
+      "title": "Lamborghini Countach lp500s - Special 500k views",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-32e9ee8d129e4c2992e1753b4fc3094c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "lamborghini-gallardo-lp560",
+      "title": "Lamborghini Gallardo lp560",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-86691e28bae34cffa896b148c895e58d",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "lamborghini-urus",
+      "title": "Lamborghini Urus 2018",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-32964087f5d24c3e90482724ddfc2fef",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "land-rover-defender",
+      "title": "Land Rover Defender 90 Lowpoly",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/88e5f30687ec4d508cebafa876e014d6",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "land-rover-range-rover-velar",
+      "title": "Land Rover Range Rover Velar",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/494c03e056674423a8ca2e2af0c01eef",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "mclaren-720s",
+      "title": "2017 Mclaren 720s",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/f7bece69400f4640a4a3be746b44998b",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "mini-countryman",
+      "title": "2017 Mini Countryman",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/8d5fd459a54d4a529c2be4c7ac444b01",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "mitsubishi-lancer",
+      "title": "Mitsubishi Lancer Evolution 6  | www.vecarz.com",
+      "status": "excluded",
+      "reason": "Reupload links to original model whose license is CC BY-NC-SA and description says Based on a Real Racing 3 3D model.",
+      "source": "https://sketchfab.com/3d-models/c3d5dcd8ff724bc88c46760d92fc5188",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "mitsubishi-outlander",
+      "title": "Mitsubishi Outlander 2022",
+      "status": "excluded",
+      "reason": "Six whole-car textured material partitions, with no reviewed independent wheel assemblies.",
+      "source": "https://sketchfab.com/3d-models/bc2dabd5a1454c9f967bdf680102352c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "mitsubishi-pajero",
+      "title": "Mitsubishi pajero 1998 4x4",
+      "status": "deferred",
+      "reason": "Mixed wheel/spare/scene geometry needs further isolation; no final adapter.",
+      "source": "https://sketchfab.com/3d-models/335c7377813a4ff682a3e5d7a676852a",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-200sx-silvia",
+      "title": "Nissan 200SX Silvia S14",
+      "status": "deferred",
+      "reason": "No final source-specific four-wheel adapter completed.",
+      "source": "https://sketchfab.com/3d-models/none-f2a917a924734a89a020e7f970e55e7c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-march",
+      "title": "Nissan Micra K13 2010-2018",
+      "status": "excluded",
+      "reason": "Reviewed source contains one loose wheel at origin rather than four placed wheel assemblies.",
+      "source": "https://sketchfab.com/3d-models/d59c474d37894f75bd74a7487215cce7",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-proto",
+      "title": "Nissan Z Proto",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-db9a5f7ae9d84a0fb01cac96afe3e69c",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-sentra",
+      "title": "Nissan Sentra B17",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/4e261bd2d93a438ebdabf8cc6b41cf58",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-silvia-s13",
+      "title": "1992 Nissan Silvia S13",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-6fa8f1948f954e3b980b5e96f203815a",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-tiida",
+      "title": "2011 Nissan Tiida Hatchback",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/c5967683515b415583e871b290c6f5b8",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "nissan-versa",
+      "title": "[FREE] Nissan Versa 1.8 SL 2010",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/3745e5e9b3ef4bacb1a9476b5f15c2c6",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "peugeot-205",
+      "title": "Vehicle - Peugeot 205",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/527949cddab34ea4b3b334b9a137d1be",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "peugeot-206",
+      "title": "Peugeot 206",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/44ac8a85939f4e3089649d4712275886",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "peugeot-208",
+      "title": "Nouvelle Peugeot 208 - lowpoly",
+      "status": "deferred",
+      "reason": "Diagonal source pose; no completed neutral wheel extraction/orientation.",
+      "source": "https://sketchfab.com/3d-models/3d4a1578573645de9a2915e93b7edcf7",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "peugeot-405",
+      "title": "1994 Peugeot 405 GLX (facelift version)",
+      "status": "excluded",
+      "reason": "Description prohibits redistributing the model as is, conflicting with the permissive API license field.",
+      "source": "https://sketchfab.com/3d-models/b9b69099434c45bdb3265417dd720752",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "renault-duster",
+      "title": "2011 Dacia (Renault) Duster",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/30bc2e09de66426bb67be72c95fa2476",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "renault-clio",
+      "title": "Renault Clio Williams",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/1dad7e4438c74f3b8bac1ab72acd78ed",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "subaru-impreza",
+      "title": "Subaru Impreza WRX STi 2004 Custom",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/08296bc950364621b6174a3078bb19e0",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "suzuki-jimny",
+      "title": "SUZUKI Jimny JA22",
+      "status": "excluded",
+      "reason": "Single whole-car mesh in diagonal pose, with no separable reviewed wheels.",
+      "source": "https://sketchfab.com/3d-models/64242f24c4bb43158cadafb616a1c979",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "toyota-ae86",
+      "title": "Toyota Corolla AE86 Trueno",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/fe02fba6302e450ea8424591493341ea",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "toyota-corolla",
+      "title": "Toyota Corolla (KE80)",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/2b30faa611e64177a94a69098d27d1fb",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "toyota-yaris",
+      "title": "2020 Toyota GR Yaris",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/44cb958908b94aa5aad0d856994f35a3",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "volkswagen-beetle",
+      "title": "1963 Volkswagen Beetle",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/none-f03e5ba5e81b4562958645fe27565f3a",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "volvo-xc90",
+      "title": "Photoscanned Volvo XC90",
+      "status": "excluded",
+      "reason": "Photogrammetry whole-car material partitions; no independent actual wheel assemblies.",
+      "source": "https://sketchfab.com/3d-models/7520f0e2faa44b21aad13e553413c566",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "subaru-brz",
+      "title": "Subaru BRZ Varis",
+      "status": "excluded",
+      "reason": "About 100 mostly whole-car mixed material meshes; no clean reviewed wheel geometry.",
+      "source": "https://sketchfab.com/3d-models/8fecd93279644ada9111c5bfa2226327",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "subaru-forester",
+      "title": "Subaru Forester 2009",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/925112ae29514dcf89ccf2fc7020338e",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "toyota-mr2-w20",
+      "title": "1996 Toyota MR2 W20",
+      "status": "deferred",
+      "reason": "Diagonal display scene; no validated axis/steering adapter in this release.",
+      "source": "https://sketchfab.com/3d-models/none-f66020ee62d741ebb0adc1ba351300db",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "toyota-prius",
+      "title": "Toyota Prius 2012",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/04eaf6b288cc466785365b7d985e3b29",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "toyota-camry",
+      "title": "Toyota Camry 40",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/560c174d073f4a10bb153ded41ada8c9",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "volkswagen-gol",
+      "title": "Volkswagen Golf mk1 [Tuning]",
+      "status": "excluded",
+      "reason": "Catalog says Gol but original is Golf Mk1 tuning; BeamNG-style etk800/hatch/chassis material names require upstream verification.",
+      "source": "https://sketchfab.com/3d-models/191d4905f1274cee8539a39a0a672fd9",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "volvo-v40",
+      "title": "1995 Volvo V40 Touring",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/6e53093cad6b462ca3fd5366c8743c67",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "volvo-v60",
+      "title": "Volvo V60 Polestar (2013)",
+      "status": "included",
+      "reason": "Original API license and description reviewed; actual geometry decoded; four real wheels, body envelope and source orientation validated.",
+      "source": "https://sketchfab.com/3d-models/504ce39150fe49c7979f702d5f0f8580",
+      "license": "CC Attribution"
+    },
+    {
+      "id": "volvo-xc60",
+      "title": "2023 Volvo XC60 Recharge",
+      "status": "excluded",
+      "reason": "Source says Convert from Skp without the original model attribution/license.",
+      "source": "https://sketchfab.com/3d-models/c35ef02fd38b48adadc17f117a4a518c",
+      "license": "CC Attribution"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import {experimentMass} from './experiment-vehicles.js?v=20261111-cockpit1';
 const METHODS = {free:'자유 낙하',brake:'지면 전 추력 제동',gentle:'완만한 하강 제어'};
 const COLORS = ['#a2f5db','#ffbe78','#8bbfff','#ef9ed4','#dfdc7d','#b5a0ff'];
 const html = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,7 +24,7 @@ export function landingBaselineComparison(result,results){
   return {baseline,reductionPercent:100*(1-result.peakEquivalentGroundForceN/baseline.peakEquivalentGroundForceN)};
 }
 
-// Never evict the first rows of an active 39-run comparison. Remove complete
+// Never evict the first rows of an active comparison. Remove complete
 // older groups together so every retained comparison remains reviewable.
 export function retainLandingGroups(results,currentGroup,limit=LANDING_HISTORY_LIMIT){
   const groups=[...new Set(results.map(result=>result.groupId))];
@@ -60,10 +61,10 @@ export class LandingUI {
         </div></details>
         <p class="landing-note">평탄면·무풍·초속도 0·공기저항 OFF<br>공통 가상 서스펜션·추진계</p>
         <button id="landing-start" class="primary-btn" type="submit">현재 차체 실험 <span>↓</span></button>
-        <details class="landing-fleet"><summary>비교할 차체 선택</summary><div class="landing-fleet-list">${vehicles.map((v,i)=>'<label><input type="checkbox" name="vehicleId" value="'+html(v.id)+'" '+(i<3?'checked':'')+'>'+html(v.title)+'</label>').join('')}</div></details>
+        <details class="landing-fleet" open><summary>비교할 5종 · 초기 총질량</summary><div class="landing-fleet-list">${vehicles.map(v=>'<label><input type="checkbox" name="vehicleId" value="'+html(v.id)+'" checked><span>'+html(v.short)+(experimentMass(v).assumed?' <em>가정</em>':'')+'</span><strong>'+Math.round(experimentMass(v).total).toLocaleString('ko-KR')+' kg</strong></label>').join('')}</div></details>
         <div class="landing-batch-buttons"><button id="landing-vehicles" type="button">선택 차체 비교</button><button id="landing-methods" type="button">착지 3방식 비교</button></div>
         <button id="landing-brake-heights" class="landing-sweep-button" type="button">제동 높이 비교 <span>5단계 · 기준 포함 6회</span></button>
-        <button id="landing-fleet-methods" class="primary-btn" type="button">모든 차체 × 3방식 <span>${vehicles.length*3}회</span></button>
+        <button id="landing-fleet-methods" class="primary-btn" type="button">실험 5종 × 3방식 <span>${vehicles.length*3}회</span></button>
       </form>
       <div class="landing-run-footer"><p id="landing-status" role="status" aria-live="polite">높이와 착지 방식을 선택하세요.</p><button id="landing-stop" type="button" hidden>중단</button></div>
       <button id="landing-results" class="text-btn" type="button" disabled>비교 결과 <span id="landing-result-count">0회</span></button>

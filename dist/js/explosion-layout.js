@@ -70,6 +70,21 @@ function candidateDirections(group,bodyBounds){
   return candidates;
 }
 
+// A source assembly may sit below another part even when its material category
+// suggests an upward detachment. Search other outward directions only when the
+// preferred anatomical rays would introduce a crossing. Keep wheels on their
+// original axle plane and every side/end component in its original quadrant.
+function clearanceDirections(group){
+  const sx=sign(group.center.x,.12),sz=sign(group.center.z,.12),wheel=group.wheelIndex>=0;
+  const xs=sx?[0,sx*.35,sx]:[-1,0,1],zs=sz?[0,sz*.35,sz]:[-1,0,1];
+  const ys=wheel?[0]:[-1,-.35,0,.35,1],directions=[];
+  for(const x of xs)for(const y of ys)for(const z of zs){
+    if(wheel&&(!z||!sz||Math.sign(z)!==sz))continue;
+    const d=new THREE.Vector3(x,y,z);if(d.lengthSq())directions.push(d.normalize());
+  }
+  return directions;
+}
+
 // Forbidden ray intervals are the Minkowski-expanded stationary boxes. Moving
 // beyond their union gives strict clearance without iteration or random jitter.
 function rayDistance(group,direction,placed,start){
@@ -111,23 +126,35 @@ export function createNaturalExplosionLayout(entries,vehicle){
   const volume=g=>g.size.x*g.size.y*g.size.z;
   const anchor=(shells.length?shells:groups).reduce((best,g)=>!best||volume(g)>volume(best)?g:best,null);
   anchor.isAnchor=true;
-  const order=[anchor,...groups.filter(g=>g!==anchor).sort((a,b)=>volume(b)-volume(a)||a.id.localeCompare(b.id))];
-  const placed=[],bounds=new THREE.Box3();
-  for(const group of order){
+  const remaining=groups.filter(g=>g!==anchor).sort((a,b)=>volume(b)-volume(a)||a.id.localeCompare(b.id));
+  // A descending underbody can block a wheel that is deliberately constrained
+  // to its axle plane. If the usual compact layout has no valid path, reserve
+  // those four wheel routes first, then route the flexible body assemblies.
+  const orders=[[anchor,...remaining],[anchor,...remaining.filter(g=>g.wheelIndex>=0),...remaining.filter(g=>g.wheelIndex<0)]];
+  let placed,bounds,blocked;
+  for(const order of orders){
+    placed=[];bounds=new THREE.Box3();blocked=null;
+    for(const group of order){
     let target=group.center.clone(),delta=new THREE.Vector3();
     if(!group.isAnchor){
       let best=Infinity;
-      for(const direction of candidateDirections(group,assemblyBounds)){
+      const consider=direction=>{
         const t=rayDistance(group,direction,placed,group.wheelIndex>=0?.55:.32),candidate=group.center.clone().addScaledVector(direction,t);
         const envelope=bounds.clone().union(boxAt(group,candidate)).getSize(new THREE.Vector3());
         const pathDelta=direction.clone().multiplyScalar(t);
-        const crossingPenalty=placed.some(other=>crossesDuringSeparation(group,pathDelta,other))?10000:0;
-        const score=crossingPenalty+t*t+envelope.x*envelope.x*.012+envelope.y*envelope.y*.05+envelope.z*envelope.z*.015;
+        if(placed.some(other=>crossesDuringSeparation(group,pathDelta,other)))return;
+        const score=t*t+envelope.x*envelope.x*.012+envelope.y*envelope.y*.05+envelope.z*envelope.z*.015;
         if(score<best){best=score;target=candidate;delta=direction.clone().multiplyScalar(t);}
-      }
+      };
+      candidateDirections(group,assemblyBounds).forEach(consider);
+      if(!Number.isFinite(best))clearanceDirections(group).forEach(consider);
+      if(!Number.isFinite(best)){blocked=group.id;break;}
     }
     group.target=target;group.delta=delta;const box=boxAt(group,target);bounds.union(box);placed.push({group,box});
+    }
+    if(!blocked)break;
   }
+  if(blocked)throw new Error('No collision-free disassembly path for '+blocked);
   const groundLift=Math.max(0,.15-bounds.min.y);
   for(const group of groups){
     group.delta.y+=groundLift;group.target.y+=groundLift;

@@ -4,16 +4,18 @@ import {readFile} from 'node:fs/promises';
 import {createLandingJobs} from '../dist/js/landing-experiment.js';
 import {retainLandingGroups,LANDING_HISTORY_LIMIT} from '../dist/js/landing-ui.js';
 import {VEHICLES} from '../dist/js/vehicle-profiles.js';
+import {experimentVehicles} from '../dist/js/experiment-vehicles.js';
+const cohort=experimentVehicles(VEHICLES);
 
 test('all-fleet comparison creates every car and method exactly once independent of selection',()=>{
-  const jobs=createLandingJobs('fleet-methods',VEHICLES,{vehicleIds:[VEHICLES[0].id],method:'gentle',height:2000},VEHICLES[0].id);
-  assert.equal(jobs.length,39);
-  assert.equal(new Set(jobs.map(job=>job.vehicleId+'/'+job.method)).size,39);
-  for(const vehicle of VEHICLES)assert.deepEqual(jobs.filter(job=>job.vehicleId===vehicle.id).map(job=>job.method),['free','brake','gentle']);
-  assert.deepEqual(createLandingJobs('vehicles',VEHICLES,{vehicleIds:[VEHICLES[2].id,VEHICLES[0].id],method:'gentle'},VEHICLES[1].id),[
-    {vehicleId:VEHICLES[0].id,method:'gentle'},{vehicleId:VEHICLES[2].id,method:'gentle'},
+  const jobs=createLandingJobs('fleet-methods',cohort,{vehicleIds:[cohort[0].id],method:'gentle',height:2000},cohort[0].id);
+  assert.equal(jobs.length,15);
+  assert.equal(new Set(jobs.map(job=>job.vehicleId+'/'+job.method)).size,15);
+  for(const vehicle of cohort)assert.deepEqual(jobs.filter(job=>job.vehicleId===vehicle.id).map(job=>job.method),['free','brake','gentle']);
+  assert.deepEqual(createLandingJobs('vehicles',cohort,{vehicleIds:[cohort[2].id,cohort[0].id],method:'gentle'},cohort[1].id),[
+    {vehicleId:cohort[0].id,method:'gentle'},{vehicleId:cohort[2].id,method:'gentle'},
   ]);
-  assert.deepEqual(createLandingJobs('methods',VEHICLES,{},VEHICLES[1].id).map(job=>job.vehicleId),Array(3).fill(VEHICLES[1].id));
+  assert.deepEqual(createLandingJobs('methods',cohort,{},cohort[1].id).map(job=>job.vehicleId),Array(3).fill(cohort[1].id));
   assert.deepEqual(createLandingJobs('fleet-methods',[],{},'missing'),[]);
 });
 

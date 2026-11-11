@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261109-assessment1';
+import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261111-cockpit1';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const Z=new THREE.Vector3(0,0,1),UP=new THREE.Vector3(0,1,0);
@@ -98,9 +98,27 @@ function fitNozzles(vehicle){
     vehicle.jetMounts[i]={pos:new THREE.Vector3(mount.position.x,exitY,mount.position.z),dir:UP.clone()};
     covers.push(hatch(rig,new THREE.Vector3(mount.position.x,bottom[i].y+.004,mount.position.z),new THREE.Vector3(0,-1,0),.30,coverMaterial,i));
   }
-  const boostY=clamp(bounds.min.y+size.y*.25,bounds.min.y+.16,bounds.max.y-.18),boostZ=clamp(halfWidth*.45,.25,.65);
-  const rear=[];
-  for(const z of [-boostZ,boostZ])rear.push(surfaceHit(meshes,new THREE.Vector3(bounds.min.x-2,boostY,z),new THREE.Vector3(1,0,0),new THREE.Vector3(bounds.min.x,boostY,z)));
+  let boostY=clamp(bounds.min.y+size.y*.25,bounds.min.y+.16,bounds.max.y-.18);
+  const nominalBoostZ=clamp(halfWidth*.45,.25,.65);
+  let boostZ=nominalBoostZ,rear=[];
+  // Open bumper meshes can let a rear ray reach the FRONT shell. Search paired
+  // ports on the actual rear section before adding the inward mount offset.
+  // The common height/spacing still matches the symmetric thrust allocator.
+  rearSearch:for(const heightFraction of [.25,.32,.4,.5,.6,.7]){
+    const y=clamp(bounds.min.y+size.y*heightFraction,bounds.min.y+.16,bounds.max.y-.18);
+    for(const widthFactor of [1,.8,.6,.4]){
+      const z=nominalBoostZ*widthFactor;
+      const points=[-z,z].map(sideZ=>surfaceHit(meshes,
+        new THREE.Vector3(bounds.min.x-2,y,sideZ),new THREE.Vector3(1,0,0),
+        new THREE.Vector3(NaN,NaN,NaN)));
+      if(points.every(p=>Number.isFinite(p.x)&&p.x<bounds.min.x+size.x*.35)){
+        boostY=y;boostZ=z;rear=points;break rearSearch;
+      }
+    }
+  }
+  // A completely open source shell has no rear surface to sample. Its rear
+  // envelope is the conservative fallback; never use the far/front ray hit.
+  if(!rear.length)rear=[-boostZ,boostZ].map(z=>new THREE.Vector3(bounds.min.x,boostY,z));
   const boostX=Math.max(...rear.map(p=>p.x))+.075;
   // Original rig's first four groups are lift mounts, followed by two boosts.
   const boosts=rig.children.filter(n=>n.isGroup&&!vehicle.gimbalNozzles?.some(p=>p.parent===n)&&!vehicle.fans?.includes(n)).slice(0,2);

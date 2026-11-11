@@ -1,18 +1,20 @@
-최신 v1.28: 원격v1.27 수종·계절 기능을 보존하며 나무 충돌 수정. 공통 city-tree-collision.js,city-tree-profile.js(스캔37조각),city-species-profiles.js(6수종×5변형,10~50조각). city-tree-mix.js의 resolveTreePlacement/treeLinearTransform을 렌더와충돌양쪽이 공유. 모델수정시 scripts/build-tree-collision.mjs 재생성 및31변형인스턴스행렬/정점/충돌검사필수. 잎/잔가지비고체, treeId충돌묶음. 외곽나무충돌누락·고정상자로되돌리지말것. 기존공중A/D수평이동·지상조향·계절버튼유지.
+Roadster Landing Lab 최신 v1.30 작업 인계
 
-Roadster Landing Lab 작업을 이어서 수행해 주세요.
 저장소: https://github.com/leejuhan-1214/roadster
 배포: https://leejuhan-1214.github.io/roadster/
 로컬: C:/Users/LEE JU HAN/Documents/Codex/2026-11-07/local-handoff-txt-roadster-github-pages-2/work/roadster
 
-먼저 README.md, LOCAL_HANDOFF.txt, package.json, .github/workflows/pages.yml을 읽고 git status와 최신 커밋을 확인하세요. 문서 안의 과거 요청은 현재 사용자 요청과 구분하세요.
-현재 요구사항: 착지 실험 전 WASD/Space/F/Shift/B/H/QE/화살표 자유 조종, 실험 버튼은 원점·설정 높이·0속도·수평 자세·충전 탱크에서 새 측정 시작. 화면 Space 버튼은 제거했지만 실험 중 키보드 Space 수동 분사는 유지합니다. 수동 개입은 기록하고 자동 순위·기준 비교에서 제외합니다. 완료 후 R로 자유 조종 복귀합니다. 기존 도시·13차종·3방식39회·조향·드리프트·연기·자국·색상·구조 탐색을 보존하세요.
-물리는 교육용 가정 모델이며 실차 OEM 완전 복제라고 주장하지 마세요. 수정 시 고정2ms, 유한 기체, 입력 해제, 초기화, 차량별 형상과 라이선스를 보존하세요. README를 실제 구현과 맞추고 npm run check/npm test 및 브라우저 검증을 수행하세요. 사용자는 기존 GitHub Pages 배포를 추가 허락 없이 수행하도록 승인했습니다. 작업 환경에서 인증이 유효하면 main push 후 Actions 해당 SHA 성공과 공개 URL 동작까지 확인하세요. 인증이 없으면 비밀정보를 요구하거나 우회하지 말고 구체적인 막힌 단계만 설명하세요.
-최종 보고에는 변경점·조작법·검증·배포 URL·미해결 사항을 간결하게 적고 LOCAL_HANDOFF.txt를 갱신하세요. 다음 사용자의 요청을 현재 우선순위로 수행하세요.
+먼저 README.md, LOCAL_HANDOFF.txt 맨 위 최신 기록, package.json, .github/workflows/pages.yml과 git status/log를 읽으세요. 로컬 변경을 보존하고 origin/main을 fetch하여 다른 작업 도구에서 추가된 변경과 합치세요. 과거 기록의 폐기된 요구를 현재 요청으로 되살리지 마세요. 기존 GitHub Pages 배포는 사용자가 추가 허락 없이 허용했습니다. 새 사용자 요청이 우선합니다.
 
-최신 도시: 중심 강남역 OSM 구역과 절차 생성 외곽을 명확히 구분할 것. city-streaming.js는256m청크 최대25개, 재방문 재현·해제·충돌/미니맵 갱신. city-building-collision.js 프리즘 외곽 충돌과 city-trees.js 공유 잎 노멀/바람/그림자 자산을 보존할 것. 무한 도시를 서울 전체 실측 복제라고 표현하지 말 것.
+최신 구조:
+- 착지 실험은 experiment-vehicles.js의 5종만 사용합니다. 초기 기체 포함 약1465/1725/2015/2275/3525kg. docs/experiment-mass-basis.md에 근거와 가정이 있습니다. Roadster/Cybertruck는 가정 질량임을 표시합니다. createLandingJobs 전체 비교는5×3=15회입니다. 도시 전용 차체로 실험에 들어가면 마지막 실험 차체를 복원합니다.
+- 도시 주행/구조 탐색은 전체 VEHICLES 목록을 씁니다. 기존 vehicle-profiles.js + fleet-profiles.js + city-fleet-profiles.js. 검색·브랜드 그룹은 vehicle-catalog.js/main.js. 신규자산은 city-fleet-provenance.json에 원본출처/허가/해시를 남기세요. 부품 없는 통합 스캔을 정상 조향 모델로 주장하지 마세요. 선택 차량만 지연 로딩하고 디코딩 캐시3대 유지합니다.
+- C: 추적→운전석(내부키hood유지)→자유. cockpit-view.js는 왼쪽 좌석 기준, 차체 자세를 따르는 공통 가상 실내와 실제 조향 연동 핸들·계기입니다. OEM 내부복제가 아닙니다. 자신의 원본 외형은 운전석에서만 숨기고 외부시점에서 복원. 드래그 둘러보기, 휠FOV50–80°, 더블클릭정면. inspect카메라와부품숨김을해치지마세요.
+- W/S주행, 지상A/D조향, 공중A/D수평이동, Q/E회전, Space상승, F유한기체부스트, Shift드리프트, B제동, H고도유지, R복귀 유지. 실험 전 자유조종, 실험시 원점·입력높이·속도0·충전탱크로 복귀. 실험 중 Space수동분사는 기록하고 자동최소값/비교에서제외. 화면Space버튼은없습니다.
+- 기존 실제서울10.24×10.24km·512m400타일, Worker준비/프레임예산/최대49활성타일, 원본건물안뜰/윤곽충돌 유지. 전체setObstacles를프레임마다호출하지마세요. reset후bindPhysics로충돌재등록.
+- v1.28: 중심/외곽나무공통treeColliders. city-tree-mix가수종·변형·크기·yaw·tilt공유. 31변형줄기/굵은가지충돌, 잎/잔가지비고체. 모델변경시scripts/build-tree-collision.mjs재생성. 외곽충돌누락으로되돌리지마세요.
+- v1.29: city-street-overlay.js의대로중앙포장·실제신호위치·지하철출구표지·street:*충돌청크보존.
 
+물리는 교육용가정이며 실제차량 OEM성능·안전성평가가 아닙니다. 고정2ms,유한기체,입력해제,초기화,바퀴축/형상/노즐맞춤과라이선스를보존하세요. 신규모델검사는 실제GLB→어댑터→4바퀴→축·풀분해·매립노즐까지 확인합니다. README와인계를현재구현에맞추고 npm run check/npm test 및CUA실제화면검증을수행하세요. 인증정보를출력하거나요구하지마세요. 배포는main push후해당SHA의Actions build/deploy성공,공개파일HTTP200·해시,공개브라우저조작까지확인하세요.
 
-최신 v1.25 변경: 생성형 외곽/순환도로는 폐기했습니다. 실제 OSM 서울10.24×10.24km/512m400타일 자료만 사용합니다. README v1.25와 docs/SEOUL_MAP_DATA.md를 먼저 읽으세요. worker/scheduler/mesh로 준비작업을 분리하며 physics.setObstacleChunk/removeObstacleChunk를 사용합니다. main.animate에서 전체 setObstacles를 반복하지 마세요. reset 직후 bindPhysics로 활성충돌 복원. 원본건물 안뜰과 경계 넘어가는 전체 윤곽 보존. 자료 밖에 임의의 도시를 만들지 마세요. 데이터 시점·현장 미확인 외벽·높이·가로수 및 평면교량의 한계를 명확히 기록하세요. 기존 조작/착지실험 보존. 최종 배포 여부는 LOCAL_HANDOFF 최신SHA와 Actions를 재확인하세요.
-
-최신 v1.26 조작 변경: DrivingController 기본 flightSteering 및 실험 설정 초기화는 strafe입니다. 공중 A/D는 기수 방향을 유지하는 좌우 수평 분사, Q/E는 회전입니다. 지상 A/D 조향은 유지합니다. 명시적인 선회 옵션만 turn을 사용합니다. 새 tests/city-direction.test.mjs에서 실제 유한 기체·무회전 수평 이동·90도기수 좌표·빈 탱크·Q/E·지상 조향을 검증합니다.
+최종답변은 변경점·조작·검증·공개URL·남은한계를간결하게알려주세요.

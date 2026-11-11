@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {disposeVehicle} from './real-vehicle-model.js?v=20261109-assessment1';
+import {disposeVehicle} from './real-vehicle-model.js?v=20261111-cockpit1';
 
 export const LANDING_APPARATUS=Object.freeze(['tank','suspension','thrusters']);
 // Keep the reference exterior, tires and the apparatus that acts during landing.

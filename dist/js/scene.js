@@ -1,5 +1,6 @@
+import {CockpitView} from './cockpit-view.js?v=20261111-cockpit1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261109-assessment1';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261111-cockpit1';
 import {loadCityWorld} from './city-world.js?v=20261111-trees2';
 import {attachStreamingCity} from './city-streaming.js?v=20261111-trees2';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261111-street1';
@@ -12,8 +13,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261107-drive2';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261109-assessment1';
-import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261109-assessment1';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261111-cockpit1';
+import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261111-cockpit1';
 import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
@@ -110,6 +111,10 @@ export class FlightScene {
     this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.clickStart=null;
     this._onDown=e=>{
       this.clickStart=[e.clientX,e.clientY];
+      if(this.mode==='city'&&this.cameraName==='hood'){
+        this.cockpitDrag={id:e.pointerId,x:e.clientX,y:e.clientY};this.controls.enabled=false;
+        this.canvas.focus?.({preventScroll:true});this.canvas.setPointerCapture?.(e.pointerId);e.preventDefault();e.stopImmediatePropagation();return;
+      }
       // Arm OrbitControls on pointer-down so the first city drag works. A click
       // only focuses the canvas; switching from chase waits for actual movement.
       if(this.mode==='city'&&this.cameraName!=='orbit'){this.cityOrbitPending=true;this.controls.enabled=true;}
@@ -120,6 +125,10 @@ export class FlightScene {
       }
     };
     this._onMove=e=>{
+      if(this.cockpitDrag?.id===e.pointerId){
+        this.cockpit.look(e.clientX-this.cockpitDrag.x,e.clientY-this.cockpitDrag.y);this.cockpitDrag.x=e.clientX;this.cockpitDrag.y=e.clientY;
+        e.preventDefault();e.stopImmediatePropagation();return;
+      }
       if(this.cityOrbitPending&&this.clickStart&&Math.hypot(e.clientX-this.clickStart[0],e.clientY-this.clickStart[1])>4){this.cityOrbitPending=false;this.setCamera('orbit');this.onCameraChange('orbit');}
       if(!this.touchPointers.has(e.pointerId))return;
       this.touchPointers.get(e.pointerId).set(e.clientX,e.clientY);
@@ -130,14 +139,16 @@ export class FlightScene {
       }
     };
     this._onWheel=e=>{
+      if(this.mode==='city'&&this.cameraName==='hood'){e.preventDefault();e.stopImmediatePropagation();this.cockpit.zoom(e.deltaY*(e.deltaMode===1?16:1));return;}
       if(this.mode==='inspect'){
         e.preventDefault();e.stopImmediatePropagation();
         const pixels=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?this.canvas.clientHeight:1);
         this.setExplode(this.explodeTarget-clamp(pixels,-160,160)*.0015,true);
       }else if(this.cameraName!=='orbit'){this.setCamera('orbit');this.onCameraChange('orbit');}
     };
-    this._onCancel=e=>{this.touchPointers.delete(e.pointerId);this.pinchDistance=0;this.clickStart=null;this.cityOrbitPending=false;this.controls.enabled=this.cameraName==='orbit';};
+    this._onCancel=e=>{this.cockpitDrag=null;this.touchPointers.delete(e.pointerId);this.pinchDistance=0;this.clickStart=null;this.cityOrbitPending=false;this.controls.enabled=this.cameraName==='orbit';};
     this._onUp=e=>{
+      if(this.cockpitDrag?.id===e.pointerId){this.cockpitDrag=null;this.clickStart=null;e.preventDefault();e.stopImmediatePropagation();return;}
       if(this.cityOrbitPending){this.cityOrbitPending=false;this.controls.enabled=this.cameraName==='orbit';}
       this.touchPointers.delete(e.pointerId);this.pinchDistance=0;
       if(this.mode!=='inspect'||!this.clickStart||Math.hypot(e.clientX-this.clickStart[0],e.clientY-this.clickStart[1])>6)return;
@@ -146,6 +157,9 @@ export class FlightScene {
       const hit=this.raycaster.intersectObject(this.vehicle.root,true).find(v=>isObjectVisible(v.object));
       if(hit){let o=hit.object;while(o&&!o.userData.partId)o=o.parent;if(o){this.focusPart(o.userData.partId);this.onPartSelect(o.userData.partId);}}
     };
+    this._onDoubleClick=e=>{if(this.mode==='city'&&this.cameraName==='hood'){this.cockpit.recenter();e.preventDefault();}};
+    this._onBlur=()=>{this.cockpitDrag=null;this.cityOrbitPending=false;this.controls.enabled=this.cameraName==='orbit';};
+    canvas.addEventListener('dblclick',this._onDoubleClick);window.addEventListener('blur',this._onBlur);
     canvas.addEventListener('pointerdown',this._onDown,true);canvas.addEventListener('pointerup',this._onUp,true);
     canvas.addEventListener('pointermove',this._onMove,{capture:true,passive:false});canvas.addEventListener('pointercancel',this._onCancel,true);
     canvas.addEventListener('wheel',this._onWheel,{capture:true,passive:false});
@@ -159,6 +173,7 @@ export class FlightScene {
       for(const light of this.scene.children)if(light.isHemisphereLight)light.intensity=.5;
     }).catch(error=>{console.warn('실사 하늘 로드 실패 · 기본 하늘 유지',error);});
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
+    this.cockpit=new CockpitView();this.scene.add(this.cockpit.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
     this.gravityArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1.5,0xff9478,.18,.1);this.scene.add(this.gravityArrow);
@@ -295,7 +310,7 @@ export class FlightScene {
   }
   observeFrame(ms){if(this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
   setMode(mode) {
-    this.mode=mode;this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
+    this.mode=mode;this.cockpitDrag=null;if(mode!=='city'){if(this.cockpit)this.cockpit.root.visible=false;if(this.vehicle)this.vehicle.root.visible=true;}this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
     // City facades need depth precision hundreds of metres away; inspection keeps its close view.
     if(this.camera){this.camera.near=mode==='city'?.25:.08;this.camera.updateProjectionMatrix?.();}
@@ -319,6 +334,10 @@ export class FlightScene {
       this.camera.position.copy(p).add(new THREE.Vector3(-6,3.2,5).applyAxisAngle(UP,this.lastCameraHeading||0));
       this.camera.lookAt(this.controls.target);
     }
+    const enteringCockpit=this.mode==='city'&&camera==='hood'&&this.cameraName!=='hood';
+    this.cockpitDrag=null;if(enteringCockpit)this.cockpit?.recenter();
+    if(this.cockpit)this.cockpit.root.visible=this.mode==='city'&&camera==='hood';
+    if(camera!=='hood'||this.mode!=='city'){this.camera.up.copy(UP);this.camera.near=this.mode==='city'?.25:.08;if(this.vehicle)this.vehicle.root.visible=true;}
     this.cameraName=camera;this.controls.maxPolarAngle=Math.PI*.485;this.controls.enabled=camera==='orbit';this.controls.enableZoom=this.mode!=='inspect';
   }
   async loadCity(){
@@ -345,6 +364,7 @@ export class FlightScene {
     this.frameStageStart(sim);
   }
   frameCityStart(sim){
+    this.cockpit?.recenter();this.cockpitDrag=null;
     this.camera.far=3500;this.camera.updateProjectionMatrix();
     const p=sim.bodyPosition||sim.state.pos;
     const heading=Math.atan2(-tmpV.set(1,0,0).applyQuaternion(sim.state.q).z,tmpV.x);
@@ -474,6 +494,7 @@ export class FlightScene {
     const previous=this.vehicle;
     vehicle.root.position.copy(previous.root.position);vehicle.root.quaternion.copy(previous.root.quaternion);
     this.scene.remove(previous.root);this.vehicle=vehicle;this.scene.add(vehicle.root);
+    this.cockpit?.setVehicle(vehicle);
     if(![...this.vehicleCache.values()].includes(previous))disposeVehicle(previous);
     this.focusPart(null);this.lastPaint='';this.lastExplosion=undefined;this.lastFitExplosion=undefined;this.hasCustomModel=false;
     // Keep only three decoded assemblies resident when comparing a large fleet.
@@ -546,8 +567,12 @@ export class FlightScene {
     if(this.mode==='city')this.roadRelief.visible=false;
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
     for(const fan of this.vehicle.fans||[])fan.rotation.y+=dt*((this.telemetry.fanN||0)>10?18:0);
-    this.vehicle.root.visible=!this.hasCustomModel||this.mode==='inspect';
-    if(this.customModel){this.customModel.visible=!!this.hasCustomModel&&this.mode!=='inspect';this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
+    const insideCockpit=this.mode==='city'&&this.cameraName==='hood';
+    // Source cabins can be opaque or absent. A common virtual cockpit provides
+    // a clear windshield without permanently editing shared exterior materials.
+    this.vehicle.root.visible=(!this.hasCustomModel||this.mode==='inspect')&&!insideCockpit;
+    this.cockpit.root.visible=insideCockpit;if(insideCockpit){this.cockpit.setVehicle(this.vehicle);if(options.paint)this.cockpit.paint.color.set(options.paint);}
+    if(this.customModel){this.customModel.visible=!!this.hasCustomModel&&this.mode!=='inspect'&&!insideCockpit;this.customModel.position.copy(bodyPosition);this.customModel.quaternion.copy(q);}
     for(let i=0;i<(this.vehicle.gimbalNozzles?.length||0);i++){const nozzle=this.vehicle.gimbalNozzles[i];if(thrusters[i])nozzle.quaternion.setFromUnitVectors(UP,thrusters[i].dir);}
     updateNozzleCovers(this.vehicle,thrusters,this.mode==='inspect');
     if(this.vehicle.fitLayout&&(this.lastFitExplosion!==explode||this.lastFitMode!==this.mode)){
@@ -589,10 +614,8 @@ export class FlightScene {
   updateCamera(sim,dt) {
     const p=sim.bodyPosition||sim.state.pos;const v=sim.state.vel;const speed=v.length();
     if(this.mode==='city'&&this.cameraName==='hood'){
-      const forward=tmpV.set(1,0,0).applyQuaternion(sim.state.q);forward.y=0;forward.normalize();
-      this.camera.position.copy(p).addScaledVector(forward,.65);this.camera.position.y+=.85;
-      this.cameraTarget.copy(this.camera.position).addScaledVector(forward,25);this.cameraTarget.y-=.35;
-      this.camera.lookAt(this.cameraTarget);this.camera.fov=65;this.camera.updateProjectionMatrix();this.controls.target.copy(this.cameraTarget);return;
+      this.cockpit.setVehicle(this.vehicle);const pose=this.cockpit.update(this.camera,sim,dt,this.telemetry);
+      this.cameraTarget.copy(pose.target);this.controls.target.copy(this.cameraTarget);return;
     }
     if(this.mode==='inspect'||this.cameraName==='orbit'){
       if(this.selectedPart&&this.mode==='inspect')new THREE.Box3().setFromObject(this.selectedPart).getCenter(this.cameraTarget);
@@ -678,6 +701,7 @@ export class FlightScene {
   dispose() {
     this.canvas.removeEventListener('pointerdown',this._onDown,true);this.canvas.removeEventListener('pointerup',this._onUp,true);
     this.canvas.removeEventListener('pointermove',this._onMove,true);this.canvas.removeEventListener('pointercancel',this._onCancel,true);
+    this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();
     this.canvas.removeEventListener('wheel',this._onWheel,true);this.touchPointers.clear();this.controls.dispose();
     if(this.stageVisual){disposeStageVisual(this.stageVisual);this.stageVisual=null;}
     this.citySurfaces?.dispose();if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}

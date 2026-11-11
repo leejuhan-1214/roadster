@@ -68,15 +68,17 @@ export function adaptRealVehicle(source,profile){
     const rubber=isTire&&profile.id!=='tesla-cybertruck',cache=rubber?tireMaterials:materials;
     if(cache.has(original))return cache.get(original);
     const m=original.clone();
-    if(!rubber&&(profile.paintMaterials||[profile.paint]).includes(original.name)){m.metalness=.65;m.roughness=.27;paintMaterials.push(m);}
+    const paintedBody=!rubber&&(profile.paintMaterials||[profile.paint]).includes(original.name)&&!/glass|windscreen|windshield/i.test(original.name);
+    if(paintedBody){m.metalness=.65;m.roughness=.27;paintMaterials.push(m);}
     if(profile.id==='ferrari'){
       if(/Leather|Interior|Carpet|Carbon_Fiber|plastic_gray/.test(original.name)){m.color.set(original.name==='Leather_red'?0x552027:0x171c22);m.metalness=.12;m.roughness=.7;}
       if(original.name==='metal_chrome'||original.name==='metal_gray'){m.color.set(0x8d969c);m.metalness=.85;m.roughness=.25;}
       if(original.name==='Tires'){m.color.set(0x111315);m.metalness=0;m.roughness=.95;}
     }
     if(profile.id==='ferrari'&&original.name==='Glass_Gray'){m.color.set(0x25404b);m.metalness=.1;m.transparent=true;m.opacity=.4;m.roughness=.15;m.depthWrite=false;}
-    // Keep the model's glass appearance without costly transmission render passes.
-    if(m.transmission>0){m.transmission=0;m.transparent=true;m.opacity=.38;m.depthWrite=false;}
+    // Some artist exports share transmission maps with body paint (e.g. Urus).
+    // Body paint remains opaque; only glazing uses the cheaper alpha substitute.
+    if(m.transmission>0){m.transmission=0;m.transparent=!paintedBody;m.opacity=paintedBody?1:.38;m.depthWrite=paintedBody;}
     // The C190 source uses the uninformative name Material for its windows
     // (Object_36, alpha blend); it otherwise reflects as a white painted panel.
     const windowGlass=/glass|windscreen|windshield/i.test(original.name)||(profile.id==='mercedes-benz-amg-gt'&&original.name==='Material');

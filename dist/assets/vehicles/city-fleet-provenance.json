@@ -1,0 +1,4064 @@
+{
+  "checkedAt": "2026-11-11",
+  "catalog": "https://github.com/pedrosoandre/carros",
+  "commit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+  "models": [
+    {
+      "id": "aston-martin-db11",
+      "brand": "Aston Martin",
+      "model": "DB11",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sports",
+      "file": "aston-martin-db11.glb",
+      "bytes": 1108192,
+      "paint": {
+        "materials": [
+          "amdb11_grey"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Black Snow",
+        "authorUrl": "https://sketchfab.com/BlackSnow02",
+        "license": "CC Attribution",
+        "sourceName": "Aston Martin db11",
+        "sourceUrl": "https://sketchfab.com/3d-models/0ce56f01b1ff40b3a4e36bc56873dbc7"
+      },
+      "uid": "0ce56f01b1ff40b3a4e36bc56873dbc7",
+      "apiStatus": 200,
+      "apiName": "Aston Martin db11",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Black Snow",
+      "apiAuthorUrl": "https://sketchfab.com/BlackSnow02",
+      "apiDescription": "",
+      "meshCount": 242,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_emissive_strength",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1108192,
+      "sha256": "4d5641e501d04967c9c3c44ed3289a4f710a8e14642717a8b90972ce02d9e8b0",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/aston-martin-db11.glb",
+      "adapter": {
+        "wheelPattern": "^amdb11_wheel_03",
+        "tirePattern": "^amdb11_wheel_03.*black_ext",
+        "splitX": -0.18310202004554044,
+        "splitZ": 0.000468015660315374
+      },
+      "orientationEvidence": "Headlights +Z; four named wheel groups.",
+      "geometry": {
+        "wheelbase": 2.8,
+        "trackWidth": 1.625863944128892,
+        "wheelRadius": 0.286649633958205,
+        "bodyLength": 4.786814212799072,
+        "bodyWidth": 2.1437960863113403,
+        "bodyHeight": 1.2989422678947449,
+        "bodyCenterY": 0.043977707624435425
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "audi-q7",
+      "brand": "Audi",
+      "model": "Q7",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "audi-q7.glb",
+      "bytes": 1315740,
+      "paint": {
+        "materials": [
+          "varnish"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "razor24",
+        "authorUrl": "https://sketchfab.com/razor24",
+        "license": "CC Attribution",
+        "sourceName": "2015 Audi Q7",
+        "sourceUrl": "https://sketchfab.com/3d-models/65917c52e0b24f1289126128600ed7aa"
+      },
+      "uid": "65917c52e0b24f1289126128600ed7aa",
+      "apiStatus": 200,
+      "apiName": "2015 Audi Q7",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "razor24",
+      "apiAuthorUrl": "https://sketchfab.com/razor24",
+      "apiDescription": "Made in Blender 2.79",
+      "meshCount": 54,
+      "extensions": [
+        "KHR_materials_clearcoat"
+      ],
+      "actualBytes": 1315740,
+      "sha256": "8f40bd0d2fc6028c8e20dc7ad23cb39084ecf97ac2d730262b95cd9518e87ec9",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-q7.glb",
+      "adapter": {
+        "wheelPattern": "^q7-15_(FR|BR|BL|FL)_wheel",
+        "tirePattern": "^q7-15_(FR|BR|BL|FL)_wheel_wheel_rubber",
+        "brakePattern": "^q7-15_(FR|BR|BL|FL)_wheel_brakes",
+        "splitX": 14.149681046119921,
+        "splitZ": 0.0542831420898473
+      },
+      "orientationEvidence": "FR/FL named source assemblies at +Z; four tire envelopes.",
+      "geometry": {
+        "wheelbase": 3,
+        "trackWidth": 1.6520945922415642,
+        "wheelRadius": 0.39434003118929556,
+        "bodyLength": 5.166919708251953,
+        "bodyWidth": 2.249906897544861,
+        "bodyHeight": 1.4845826029777527,
+        "bodyCenterY": 0.37520232796669006
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "audi-tt",
+      "brand": "Audi",
+      "model": "TT",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sports",
+      "file": "audi-tt.glb",
+      "bytes": 1123224,
+      "paint": {
+        "materials": [
+          "metal"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "razor24",
+        "authorUrl": "https://sketchfab.com/razor24",
+        "license": "CC Attribution",
+        "sourceName": "2015 Audi TT Convertible",
+        "sourceUrl": "https://sketchfab.com/3d-models/80cc29628e1b407d8e14d5ae0710f6fe"
+      },
+      "uid": "80cc29628e1b407d8e14d5ae0710f6fe",
+      "apiStatus": 200,
+      "apiName": "2015 Audi TT Convertible",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "razor24",
+      "apiAuthorUrl": "https://sketchfab.com/razor24",
+      "apiDescription": "Blender 2.79",
+      "meshCount": 49,
+      "actualBytes": 1123224,
+      "sha256": "26f659935f925c8b06b280e348edca1c3b65436d335b249fe6dc29cbe7eb0468",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-tt.glb",
+      "adapter": {
+        "wheelPattern": "^tt_cc15_(FR|BR|BL|FL)_wheel",
+        "tirePattern": "^tt_cc15_(FR|BR|BL|FL)_wheel_wheel_rubber",
+        "brakePattern": "^tt_cc15_(FR|BR|BL|FL)_wheel_brakes",
+        "splitX": -7.291961750395728,
+        "splitZ": -8.881784197001252e-16
+      },
+      "orientationEvidence": "FR/FL named source assemblies at +Z; four tire envelopes.",
+      "geometry": {
+        "wheelbase": 2.5,
+        "trackWidth": 1.573162352163918,
+        "wheelRadius": 0.328829499894462,
+        "bodyLength": 4.261905193328857,
+        "bodyWidth": 1.9763741493225098,
+        "bodyHeight": 1.1529091894626617,
+        "bodyCenterY": 0.1784335821866989
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "hyundai-tucson",
+      "brand": "Hyundai",
+      "model": "Tucson",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "hyundai-tucson.glb",
+      "bytes": 1152688,
+      "paint": {
+        "materials": [
+          "varnish"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "razor24",
+        "authorUrl": "https://sketchfab.com/razor24",
+        "license": "CC Attribution",
+        "sourceName": "2015 Hyundai Tucson",
+        "sourceUrl": "https://sketchfab.com/3d-models/7674a3bd168a451daf73fc0a33d39589"
+      },
+      "uid": "7674a3bd168a451daf73fc0a33d39589",
+      "apiStatus": 200,
+      "apiName": "2015 Hyundai Tucson",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "razor24",
+      "apiAuthorUrl": "https://sketchfab.com/razor24",
+      "apiDescription": "Made in Blender 2.79",
+      "meshCount": 54,
+      "actualBytes": 1152688,
+      "sha256": "4011dfd49efe2735387b66d131975488b936a4f241c1bbfb621a685ec8fa16f7",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/hyundai-tucson.glb",
+      "adapter": {
+        "wheelPattern": "^tucson-15_(FR|BR|BL|FL)_wheel",
+        "tirePattern": "^tucson-15_(FR|BR|BL|FL)_wheel_wheel_rubber",
+        "brakePattern": "^tucson-15_(FR|BR|BL|FL)_wheel_brakes",
+        "splitX": 0.37670674046428587,
+        "splitZ": 5.551115123125783e-17
+      },
+      "orientationEvidence": "FR/FL named source assemblies at +Z; four tire envelopes.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.5581364048119608,
+        "wheelRadius": 0.3607041324144214,
+        "bodyLength": 4.682703018188477,
+        "bodyWidth": 2.1005239486694336,
+        "bodyHeight": 1.4088558852672577,
+        "bodyCenterY": 0.3720787912607193
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "mini-countryman",
+      "brand": "Mini",
+      "model": "Countryman",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "mini-countryman.glb",
+      "bytes": 1183804,
+      "paint": {
+        "materials": [
+          "metal"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "razor24",
+        "authorUrl": "https://sketchfab.com/razor24",
+        "license": "CC Attribution",
+        "sourceName": "2017 Mini Countryman",
+        "sourceUrl": "https://sketchfab.com/3d-models/8d5fd459a54d4a529c2be4c7ac444b01"
+      },
+      "uid": "8d5fd459a54d4a529c2be4c7ac444b01",
+      "apiStatus": 200,
+      "apiName": "2017 Mini Countryman",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "razor24",
+      "apiAuthorUrl": "https://sketchfab.com/razor24",
+      "apiDescription": "Made in Blender 2.79",
+      "meshCount": 53,
+      "actualBytes": 1183804,
+      "sha256": "4c023839ba9948707a9c294e48ba039ea488e02de8570ea8b4da2dcf127d6b5b",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mini-countryman.glb",
+      "adapter": {
+        "wheelPattern": "^countryman-17_(FR|BR|BL|FL)_wheel",
+        "tirePattern": "^countryman-17_(FR|BR|BL|FL)_wheel_wheel_rubber",
+        "brakePattern": "^countryman-17_(FR|BR|BL|FL)_wheel_brakes",
+        "splitX": 0.10863519094725405,
+        "splitZ": 1.3877787807814457e-17
+      },
+      "orientationEvidence": "FR/FL named source assemblies at +Z; four tire envelopes.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.5287314132896954,
+        "wheelRadius": 0.34455175433554125,
+        "bodyLength": 4.369400978088379,
+        "bodyWidth": 1.993355631828308,
+        "bodyHeight": 1.3968434631824493,
+        "bodyCenterY": 0.3187757581472397
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "renault-duster",
+      "brand": "Renault",
+      "model": "Duster",
+      "years": [
+        2011,
+        2024
+      ],
+      "category": "suv",
+      "file": "renault-duster.glb",
+      "bytes": 1330200,
+      "paint": {
+        "materials": [
+          "metal"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "razor24",
+        "authorUrl": "https://sketchfab.com/razor24",
+        "license": "CC Attribution",
+        "sourceName": "2011 Dacia (Renault) Duster",
+        "sourceUrl": "https://sketchfab.com/3d-models/30bc2e09de66426bb67be72c95fa2476"
+      },
+      "uid": "30bc2e09de66426bb67be72c95fa2476",
+      "apiStatus": 200,
+      "apiName": "2011 Dacia (Renault) Duster",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "razor24",
+      "apiAuthorUrl": "https://sketchfab.com/razor24",
+      "apiDescription": "Made in Blender 2.79",
+      "meshCount": 44,
+      "actualBytes": 1330200,
+      "sha256": "96253aa272e8c20965400ddbe99608ec3ecc8268f63a2810197c0f1be891247b",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/renault-duster.glb",
+      "adapter": {
+        "wheelPattern": "^duster-11_(FR|BR|BL|FL)_wheel",
+        "tirePattern": "^duster-11_(FR|BR|BL|FL)_wheel_wheel_rubber",
+        "brakePattern": "^duster-11_(FR|BR|BL|FL)_wheel_brakes",
+        "splitX": 9.682621423169635,
+        "splitZ": 1.7763568394002505e-15
+      },
+      "orientationEvidence": "FR/FL named source assemblies at +Z; four tire envelopes.",
+      "geometry": {
+        "wheelbase": 2.65,
+        "trackWidth": 1.5430437040311242,
+        "wheelRadius": 0.33571254480462553,
+        "bodyLength": 4.290753364562988,
+        "bodyWidth": 1.983672320842743,
+        "bodyHeight": 1.4115272462368011,
+        "bodyCenterY": 0.3844681531190872
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "ford-focus",
+      "brand": "Ford",
+      "model": "Focus",
+      "years": [
+        2000,
+        2019
+      ],
+      "category": "sedan",
+      "file": "ford-focus.glb",
+      "bytes": 298796,
+      "paint": {
+        "materials": [
+          "bluteal"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Luquita",
+        "authorUrl": "https://sketchfab.com/speedmodel",
+        "license": "CC Attribution",
+        "sourceName": "Ford Focus Sedan",
+        "sourceUrl": "https://sketchfab.com/3d-models/ed2e9355b8a64e6a8700973df1a5b8f0"
+      },
+      "uid": "ed2e9355b8a64e6a8700973df1a5b8f0",
+      "apiStatus": 200,
+      "apiName": "Ford Focus Sedan",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Luquita",
+      "apiAuthorUrl": "https://sketchfab.com/speedmodel",
+      "apiDescription": "This a old model around the google",
+      "meshCount": 71,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 298796,
+      "sha256": "5fa8ef049173baacd7484a2513d208225fb8fe760e24841ee65d235e1e343124",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-focus.glb",
+      "adapter": {
+        "wheelPattern": "^(TIRE_|WHEEL_|RIMLO)",
+        "tirePattern": "^TIRE_",
+        "splitX": -1.0598377997439455e-7,
+        "splitZ": -8.957402541920346e-8
+      },
+      "orientationEvidence": "LF/RF tires +Z; separate tire/chrome rim/emblem meshes.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.4573458101002759,
+        "wheelRadius": 0.3069806845527691,
+        "bodyLength": 4.48688268661499,
+        "bodyWidth": 1.9732986688613892,
+        "bodyHeight": 1.4225575029850006,
+        "bodyCenterY": 0.2651323527097702
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "bmw-e34",
+      "brand": "BMW",
+      "model": "E34",
+      "years": [
+        1988,
+        1996
+      ],
+      "category": "sedan",
+      "file": "bmw-e34.glb",
+      "bytes": 1606776,
+      "paint": {
+        "materials": [
+          "body_paint"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Myedsu",
+        "authorUrl": "https://sketchfab.com/myedsu",
+        "license": "CC Attribution",
+        "sourceName": "BMW E34 [stance style]",
+        "sourceUrl": "https://sketchfab.com/3d-models/ffe1a3a1bcb34e0bb80f1aa41c9edb46"
+      },
+      "uid": "ffe1a3a1bcb34e0bb80f1aa41c9edb46",
+      "apiStatus": 200,
+      "apiName": "BMW E34 [stance style]",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Myedsu",
+      "apiAuthorUrl": "https://sketchfab.com/myedsu",
+      "apiDescription": "* **BMW E34** - the third generation of the BMW fifth series, produced from 1987 to 1995 with a sedan body and 1996 with a station wagon body. The car was designed in the style of a traditional BMW, but at the same time contained modern technology.\n* **Wikipedia** - https://en.wikipedia.org/wiki/BMW_5_Series_(E34).\n* **Wheel model by Lexyc16** - https://sketchfab.com/Lexyc16 (disk -https://sketchfab.com/3d-models/bbs-lm-93fbcf56ebab4be99f00b8b1246b6010)\n\nI made in Blender (2.92).",
+      "meshCount": 52,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1606776,
+      "sha256": "50e5ae89e35c2b82e548c5efbbf7d6cd156ce4033baee52e7c923a760fef9da1",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bmw-e34.glb",
+      "adapter": {
+        "wheelPattern": "^(wheel|brake)_(FL|FR|RL|RR)",
+        "tirePattern": "^wheel_(FL|FR|RL|RR)_tire",
+        "brakePattern": "^brake_(FL|FR|RL|RR)_disk_brake_tr",
+        "splitX": -0.12297525969079248,
+        "splitZ": -0.012290686094223985
+      },
+      "orientationEvidence": "Headlight geometry at -Z and tail lights at +Z; source FL labels reversed.",
+      "geometry": {
+        "wheelbase": 2.8,
+        "trackWidth": 1.498495515738184,
+        "wheelRadius": 0.3259543954974041,
+        "bodyLength": 5.004598140716553,
+        "bodyWidth": 1.876945674419403,
+        "bodyHeight": 1.2816954255104065,
+        "bodyCenterY": 0.21145150065422058
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": [
+        {
+          "author": "Lexyc16",
+          "title": "BBS LM",
+          "source": "https://sketchfab.com/3d-models/bbs-lm-93fbcf56ebab4be99f00b8b1246b6010",
+          "license": "CC BY 4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        }
+      ]
+    },
+    {
+      "id": "bmw-e39",
+      "brand": "BMW",
+      "model": "E39",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "bmw-e39.glb",
+      "bytes": 1521176,
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Black Snow",
+        "authorUrl": "https://sketchfab.com/BlackSnow02",
+        "license": "CC Attribution",
+        "sourceName": "BMW E39 Free",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-531a5a93da5d493d9918eb36f011c20d"
+      },
+      "uid": "531a5a93da5d493d9918eb36f011c20d",
+      "apiStatus": 200,
+      "apiName": "BMW E39 Free",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Black Snow",
+      "apiAuthorUrl": "https://sketchfab.com/BlackSnow02",
+      "apiDescription": "",
+      "meshCount": 75,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1521176,
+      "sha256": "984a9daab49b5a31c45bbc284c657fa5898a010f2201c003358cb6b6f411751d",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bmw-e39.glb",
+      "adapter": {
+        "wheelPattern": "^Object_(3900[1345]|400[1234]|2400[1234])_",
+        "tirePattern": "^Object_3900[1345]_tire",
+        "brakePattern": "texture_2_suports",
+        "splitX": -0.013137767403910594,
+        "splitZ": -0.0027846693370192615
+      },
+      "orientationEvidence": "head_light mesh -Z; tail_light_lod0 +Z.",
+      "geometry": {
+        "wheelbase": 2.85,
+        "trackWidth": 1.516753433932556,
+        "wheelRadius": 0.335162982927484,
+        "bodyLength": 5.032064437866211,
+        "bodyWidth": 2.0105905532836914,
+        "bodyHeight": 1.3063132166862488,
+        "bodyCenterY": 0.2112380564212799
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "bmw-320i",
+      "brand": "BMW",
+      "model": "320i",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sedan",
+      "file": "bmw-320i.glb",
+      "bytes": 1300148,
+      "paint": {
+        "materials": [
+          "material_0"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "rifdanzz",
+        "authorUrl": "https://sketchfab.com/rifdanzz",
+        "license": "CC Attribution",
+        "sourceName": "BMW 320i E90 Low Polly",
+        "sourceUrl": "https://sketchfab.com/3d-models/28f0bc2f0083417a8e521150529034d6"
+      },
+      "uid": "28f0bc2f0083417a8e521150529034d6",
+      "apiStatus": 200,
+      "apiName": "BMW 320i E90 Low Polly",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "rifdanzz",
+      "apiAuthorUrl": "https://sketchfab.com/rifdanzz",
+      "apiDescription": "5th Generation of BMW 3 Series\nSedan\n4 Doors\nGreat for traffic etc. on your scene",
+      "meshCount": 49,
+      "actualBytes": 1300148,
+      "sha256": "a1764d5ab2148790c50f9ca13a76ce8ed08a91295238772f2012603dad9da026",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bmw-320i.glb",
+      "adapter": {
+        "wheelPattern": "^Circle00[2345]_",
+        "tirePattern": "^Circle00[2345]_Material001",
+        "splitX": -12.329359060600297,
+        "splitZ": -1.7763568394002505e-15
+      },
+      "orientationEvidence": "lampudepan and Kapdepan (front lamp/hood) at +Z; four wheel circles.",
+      "geometry": {
+        "wheelbase": 2.8,
+        "trackWidth": 1.5556483822793257,
+        "wheelRadius": 0.32078245055834564,
+        "bodyLength": 4.8001251220703125,
+        "bodyWidth": 2.0278240442276,
+        "bodyHeight": 1.2626056969165802,
+        "bodyCenterY": 0.24579451978206635
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "audi-a1",
+      "brand": "Audi",
+      "model": "A1",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "audi-a1.glb",
+      "bytes": 1139732,
+      "paint": {
+        "materials": [
+          "body1"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Mona x Supercars",
+        "authorUrl": "https://sketchfab.com/Car2022",
+        "license": "CC Attribution",
+        "sourceName": "Audi A1 Clubsport Quattro",
+        "sourceUrl": "https://sketchfab.com/3d-models/3f582a018306464ea501aaaec29efd2c"
+      },
+      "uid": "3f582a018306464ea501aaaec29efd2c",
+      "apiStatus": 200,
+      "apiName": "Audi A1 Clubsport Quattro",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Mona x Supercars",
+      "apiAuthorUrl": "https://sketchfab.com/Car2022",
+      "apiDescription": "Color: Ibis White\nSeating Capacity: 2\nGearbox: Manual\nDriver: LHD\nFuel: Petrol\nProduction: 2013\nOrigin: 🇩🇪 Germany",
+      "meshCount": 55,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1139732,
+      "sha256": "a770c5719a1ea0ea486561fe7dc3549982fa3c158fb5af82a61d96667f2a9776",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-a1.glb",
+      "adapter": {
+        "wheelNames": [
+          "Material2_8",
+          "Material2_9",
+          "Material3_18",
+          "Material3_19"
+        ],
+        "tireNames": [
+          "Material2_8"
+        ],
+        "splitX": -80.93055737018585,
+        "splitZ": -39.65064156055452
+      },
+      "orientationEvidence": "head_lamp near +Z; rear_lamp near -Z.",
+      "geometry": {
+        "wheelbase": 2.5,
+        "trackWidth": 1.5528634200431566,
+        "wheelRadius": 0.31218413240821724,
+        "bodyLength": 4.175139427185059,
+        "bodyWidth": 1.9543554782867432,
+        "bodyHeight": 1.3727385699748993,
+        "bodyCenterY": 0.2134222537279129
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "audi-a3",
+      "brand": "Audi",
+      "model": "A3",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sedan",
+      "file": "audi-a3.glb",
+      "bytes": 910804,
+      "paint": {
+        "materials": [
+          "Material__392"
+        ],
+        "textured": true,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Mona x Supercars",
+        "authorUrl": "https://sketchfab.com/Car2022",
+        "license": "CC Attribution",
+        "sourceName": "Audi A3 3.2 DSG Quattro (Type 8P)",
+        "sourceUrl": "https://sketchfab.com/3d-models/070e6a27527a433baae83f55a40df536"
+      },
+      "uid": "070e6a27527a433baae83f55a40df536",
+      "apiStatus": 200,
+      "apiName": "Audi A3 3.2 DSG Quattro (Type 8P)",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Mona x Supercars",
+      "apiAuthorUrl": "https://sketchfab.com/Car2022",
+      "apiDescription": "Color: Panther Black Crystal\nSeating Capacity: 4\nGearbox: Manual\nDriver: LHD\nFuel: Petrol\nProduction: 2005\nOrigin: 🇩🇪 Germany",
+      "meshCount": 54,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 910804,
+      "sha256": "520d96c323f61d6cee52964b986310933e82a62634c036d8d4f241b340d93d17",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-a3.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_51",
+          "Object_52",
+          "Object_53",
+          "Object_54"
+        ],
+        "tireNames": [
+          "Object_53"
+        ],
+        "splitX": -0.06705999374389604,
+        "splitZ": -2.3592239273284576e-16
+      },
+      "orientationEvidence": "Front windscreen/engine hood positive Z; four combined low circular wheel meshes.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.5018728162127242,
+        "wheelRadius": 0.33446986940041545,
+        "bodyLength": 4.337042808532715,
+        "bodyWidth": 1.9667085409164429,
+        "bodyHeight": 1.256704568862915,
+        "bodyCenterY": 0.2220250964164734
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "audi-q3",
+      "brand": "Audi",
+      "model": "Q3",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "audi-q3.glb",
+      "bytes": 822332,
+      "paint": {
+        "materials": [
+          "Carpaint_Pearl_Orange"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "3DCars4U",
+        "authorUrl": "https://sketchfab.com/3dcarsforyou",
+        "license": "CC Attribution",
+        "sourceName": "AUDI Q3 SPORTBACK",
+        "sourceUrl": "https://sketchfab.com/3d-models/a0159b9bee094c2d8f9b9d5694c94f45"
+      },
+      "uid": "a0159b9bee094c2d8f9b9d5694c94f45",
+      "apiStatus": 200,
+      "apiName": "AUDI Q3 SPORTBACK",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "3DCars4U",
+      "apiAuthorUrl": "https://sketchfab.com/3dcarsforyou",
+      "apiDescription": "- detailed exterior, simple interior.\n- every object has material's name, you can easily change or apply materials\n- fbx format:\nRar archive contains model exported after appllying mesh smooth. Just import, apply materials and render.\nSimple materials, textures may have to be added manually. Enjoy!",
+      "meshCount": 32,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 822332,
+      "sha256": "387ef357dda5a8f723cd5ca4610374b63ebda1f46884744df6194608d5a3ca5b",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-q3.glb",
+      "adapter": {
+        "wheelPattern": "^desirefxme_008_",
+        "tirePattern": "^desirefxme_008_Rubber_Rough",
+        "brakePattern": "^desirefxme_008_Red_Light",
+        "splitX": 0.07505475000168937,
+        "splitZ": -0.01380414695913034
+      },
+      "orientationEvidence": "Red tail lamps and Back_light_Glass +X; front -X.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.6010496561290748,
+        "wheelRadius": 0.37464137899397365,
+        "bodyLength": 4.590137958526611,
+        "bodyWidth": 2.0437012910842896,
+        "bodyHeight": 1.3356913626194,
+        "bodyCenterY": 0.31399278342723846
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "bmw-x6",
+      "brand": "BMW",
+      "model": "X6",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "bmw-x6.glb",
+      "bytes": 366008,
+      "paint": {
+        "materials": [
+          "Material.001"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "SharkyStudios",
+        "authorUrl": "https://sketchfab.com/sharkycat109",
+        "license": "CC Attribution",
+        "sourceName": "Low Poly BMW X6M Competition",
+        "sourceUrl": "https://sketchfab.com/3d-models/dbc45a151624413aac9a378b570ddd02"
+      },
+      "uid": "dbc45a151624413aac9a378b570ddd02",
+      "apiStatus": 200,
+      "apiName": "Low Poly BMW X6M Competition",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "SharkyStudios",
+      "apiAuthorUrl": "https://sketchfab.com/sharkycat109",
+      "apiDescription": "A 2020 BMW X6M Super SUV in a low-poly style, ready for use in games, animations, renders, and more!",
+      "meshCount": 14,
+      "extensions": [
+        "KHR_materials_emissive_strength",
+        "KHR_materials_specular"
+      ],
+      "actualBytes": 366008,
+      "sha256": "17b043d4e1b1c263d4128ffa68c3011223e65f9629a70501ef5b076dc4ae822e",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bmw-x6.glb",
+      "adapter": {
+        "wheelPattern": "^Cube00[2345]_",
+        "tirePattern": "^Cube00[2345]_Material006",
+        "splitX": -0.008875474687011336,
+        "splitZ": -6.303284097029794
+      },
+      "orientationEvidence": "Roof/windscreen cabin aft of long negative-X hood; four explicit wheel submeshes.",
+      "geometry": {
+        "wheelbase": 3,
+        "trackWidth": 1.6239057508867845,
+        "wheelRadius": 0.41501154008626884,
+        "bodyLength": 5.126127243041992,
+        "bodyWidth": 2.2559808492660522,
+        "bodyHeight": 1.4399633705615997,
+        "bodyCenterY": 0.3841731399297714
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "chrysler-pt-cruiser",
+      "brand": "Chrysler",
+      "model": "PT Cruiser",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "chrysler-pt-cruiser.glb",
+      "bytes": 1422100,
+      "paint": {
+        "materials": [
+          "Paint1Mtl.001"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Doz3",
+        "authorUrl": "https://sketchfab.com/Doz3",
+        "license": "CC Attribution",
+        "sourceName": "Chrysler PT Cruiser 2003",
+        "sourceUrl": "https://sketchfab.com/3d-models/c1852ad519a84f638665e4b535db643e"
+      },
+      "uid": "c1852ad519a84f638665e4b535db643e",
+      "apiStatus": 200,
+      "apiName": "Chrysler PT Cruiser 2003",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Doz3",
+      "apiAuthorUrl": "https://sketchfab.com/Doz3",
+      "apiDescription": "The Chrysler PT Cruiser is cmopact car that was built by the American company Chrysler from 2001 until 2010",
+      "meshCount": 10,
+      "actualBytes": 1422100,
+      "sha256": "86057d697fe54127b964971761d2bb0e96933202e8da721e912a225e06c380ec",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/chrysler-pt-cruiser.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_10",
+          "Object_11"
+        ],
+        "tireNames": [
+          "Object_11"
+        ],
+        "splitX": 0.2824287414550781,
+        "splitZ": 0.021763563156127874
+      },
+      "orientationEvidence": "HeadlightGlass1Mtl geometry at -Z.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.3994306142594986,
+        "wheelRadius": 0.3258983040403186,
+        "bodyLength": 4.192028522491455,
+        "bodyWidth": 1.8510828614234924,
+        "bodyHeight": 1.3977540731430054,
+        "bodyCenterY": 0.3452534079551697
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "dodge-challenger",
+      "brand": "Dodge",
+      "model": "Challenger",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "coupe",
+      "file": "dodge-challenger.glb",
+      "bytes": 1632772,
+      "paint": {
+        "materials": [
+          "visse.001"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "SDC PERFORMANCE™️",
+        "authorUrl": "https://sketchfab.com/Lambo_SC04",
+        "license": "CC Attribution",
+        "sourceName": "( FREE ) Dodge Challenger SRT",
+        "sourceUrl": "https://sketchfab.com/3d-models/38a1fd572beb433fa2d26d8c1070c8fa"
+      },
+      "uid": "38a1fd572beb433fa2d26d8c1070c8fa",
+      "apiStatus": 200,
+      "apiName": "( FREE ) Dodge Challenger SRT",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "SDC PERFORMANCE™️",
+      "apiAuthorUrl": "https://sketchfab.com/Lambo_SC04",
+      "apiDescription": "**The world's fastest and most powerful Dodge Challenger and the Muscle car.**\n\nThe model was made with a LowPoly design, you can use it for your entire project, download it for free ;)\n\n*We are working on several projects that will appear on sketchfab, all of which will be free, please support; )*",
+      "meshCount": 30,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_emissive_strength",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1632772,
+      "sha256": "fd952e4323c88dd6db5b2b50d283742e53968ab8e9dabb6595f471d71b351f30",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/dodge-challenger.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_41",
+          "Object_42",
+          "Object_43",
+          "Object_44",
+          "Object_45",
+          "Object_46",
+          "Object_47"
+        ],
+        "tireNames": [
+          "Object_42"
+        ],
+        "brakeNames": [
+          "Object_44"
+        ],
+        "splitX": -3.0542051332460574e-8,
+        "splitZ": -6.617444900424222e-24
+      },
+      "orientationEvidence": "Mirrors at +Z ahead of cabin; rear spoiler and exhaust at -Z. Light_RED is a front grille accent, not a rear lamp.",
+      "geometry": {
+        "wheelbase": 2.95,
+        "trackWidth": 1.467096862260705,
+        "wheelRadius": 0.3692964789473214,
+        "bodyLength": 5.137903213500977,
+        "bodyWidth": 2.13422691822052,
+        "bodyHeight": 1.2924982905387878,
+        "bodyCenterY": 0.16088220477104187
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "chevrolet-onix",
+      "brand": "Chevrolet",
+      "model": "Onix",
+      "years": [
+        2012,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "chevrolet-onix.glb",
+      "bytes": 1290676,
+      "paint": {
+        "materials": [
+          "primary"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "uzb_rx7",
+        "authorUrl": "https://sketchfab.com/uzbek_supra",
+        "license": "CC Attribution",
+        "sourceName": "chevrolet onix",
+        "sourceUrl": "https://sketchfab.com/3d-models/bfd798c2695847b28ab681d42abc7056"
+      },
+      "uid": "bfd798c2695847b28ab681d42abc7056",
+      "apiStatus": 200,
+      "apiName": "chevrolet onix",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "uzb_rx7",
+      "apiAuthorUrl": "https://sketchfab.com/uzbek_supra",
+      "apiDescription": "",
+      "meshCount": 126,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization",
+        "KHR_texture_transform"
+      ],
+      "actualBytes": 1290676,
+      "sha256": "8faed44393614842117e5bbab1b2510252a86dd8fb756066e97e4d550a001086",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/chevrolet-onix.glb",
+      "adapter": {
+        "wheelPattern": "^wheel(00[123])?_wheel",
+        "tireNames": [
+          "wheel_wheel2_0",
+          "wheel001_wheel006_0",
+          "wheel002_wheel010_0",
+          "wheel003_wheel014_0"
+        ],
+        "splitX": -0.023009791331103147,
+        "splitZ": -0.0002034115558311421
+      },
+      "orientationEvidence": "Explicit right_front_light at -Z, front hood there.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.5327472131082551,
+        "wheelRadius": 0.3148825669952402,
+        "bodyLength": 4.681260585784912,
+        "bodyWidth": 2.061927914619446,
+        "bodyHeight": 1.5127235352993011,
+        "bodyCenterY": 0.39400894939899445
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "fiat-uno",
+      "brand": "Fiat",
+      "model": "Uno",
+      "years": [
+        1984,
+        2013
+      ],
+      "category": "hatchback",
+      "file": "fiat-uno.glb",
+      "bytes": 290120,
+      "paint": {
+        "materials": [
+          "Scene_-_Root"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "subishi",
+        "authorUrl": "https://sketchfab.com/subishi",
+        "license": "CC Attribution",
+        "sourceName": "fiat uno - Turbo ie 1995",
+        "sourceUrl": "https://sketchfab.com/3d-models/f5e38b26c0af4ef2ab2f4c4b2e5aad5c"
+      },
+      "uid": "f5e38b26c0af4ef2ab2f4c4b2e5aad5c",
+      "apiStatus": 200,
+      "apiName": "fiat uno - Turbo ie 1995",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "subishi",
+      "apiAuthorUrl": "https://sketchfab.com/subishi",
+      "apiDescription": "An iconic and cheap Brazilian car in its rarest version - Turbo ie 1995. This vehicle is a true war tank, built to withstand the hot Brazilian climate without complaining!",
+      "meshCount": 50,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 290120,
+      "sha256": "fdbcb7f46e0f8677e9fc29cf60cc4067ec0a94b726c1749e47e7c640fd6614a0",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/fiat-uno.glb",
+      "adapter": {
+        "wheelPattern": "^(aros?_dianteiro|aro_traseiros|parafusos_(dianteiro|traseiros)|pneus_)",
+        "tirePattern": "^pneus_",
+        "splitX": 0.2841459489086773,
+        "splitZ": 0.000011533498506521855
+      },
+      "orientationEvidence": "grade_frontal/farol_frontal and pneus_dianteiros +Z.",
+      "geometry": {
+        "wheelbase": 2.35,
+        "trackWidth": 1.389340380905209,
+        "wheelRadius": 0.28496585808490904,
+        "bodyLength": 3.827174425125122,
+        "bodyWidth": 1.7898823022842407,
+        "bodyHeight": 1.2046575546264648,
+        "bodyCenterY": 0.3062937259674072
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "ford-fiesta",
+      "brand": "Ford",
+      "model": "Fiesta",
+      "years": [
+        1996,
+        2019
+      ],
+      "category": "hatchback",
+      "file": "ford-fiesta.glb",
+      "bytes": 1378468,
+      "paint": {
+        "materials": [
+          "primary"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "🇷🇴シRuletăシ🇷🇴",
+        "authorUrl": "https://sketchfab.com/nebunu.de.ruleta",
+        "license": "CC Attribution",
+        "sourceName": "Ford Fiesta Mk5",
+        "sourceUrl": "https://sketchfab.com/3d-models/f3a9d5d1fc9142d297f8d3c4d9b91431"
+      },
+      "uid": "f3a9d5d1fc9142d297f8d3c4d9b91431",
+      "apiStatus": 200,
+      "apiName": "Ford Fiesta Mk5",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "シRuletăシ",
+      "apiAuthorUrl": "https://sketchfab.com/romanian_guy_0069",
+      "apiDescription": "",
+      "meshCount": 31,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1378468,
+      "sha256": "c2bf5f20ad7a0437dcc0fa42be6b8b408a32b7f1716fd76f9dbdca9a3af41d36",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-fiesta.glb",
+      "adapter": {
+        "wheelNames": [
+          "WHEEL_teker005_0",
+          "FR_teker0_0",
+          "RL_teker006_0",
+          "wheel_teker004_0"
+        ],
+        "tireNames": [
+          "WHEEL_teker005_0",
+          "FR_teker0_0",
+          "RL_teker006_0",
+          "wheel_teker004_0"
+        ],
+        "splitX": 0.2162891083118077,
+        "splitZ": -0.014927143195727383
+      },
+      "orientationEvidence": "FR and kaput hood +Z; RL rear -Z.",
+      "geometry": {
+        "wheelbase": 2.5,
+        "trackWidth": 1.375318033269099,
+        "wheelRadius": 0.31060889660585167,
+        "bodyLength": 4.212430953979492,
+        "bodyWidth": 1.9479540586471558,
+        "bodyHeight": 1.3329308331012726,
+        "bodyCenterY": 0.2683597654104233
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "alfa-romeo-4c",
+      "brand": "Alfa Romeo",
+      "model": "4C",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sports",
+      "file": "alfa-romeo-4c.glb",
+      "bytes": 1392352,
+      "paint": {
+        "materials": [
+          "CAR_BODY_PAINT"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Mona x Supercars",
+        "authorUrl": "https://sketchfab.com/Car2022",
+        "license": "CC Attribution",
+        "sourceName": "Alfa Romeo 4C",
+        "sourceUrl": "https://sketchfab.com/3d-models/93da1386a94744c5bd8a676a09f9d4e9"
+      },
+      "uid": "93da1386a94744c5bd8a676a09f9d4e9",
+      "apiStatus": 200,
+      "apiName": "Alfa Romeo 4C",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Mona x Supercars",
+      "apiAuthorUrl": "https://sketchfab.com/Car2022",
+      "apiDescription": "Biturbo TBI I4 Engine.",
+      "meshCount": 16,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1392352,
+      "sha256": "aea86499c89b9d585ce0d24a36f6c5b69b24f37679ac02e1188b404af759dd57",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/alfa-romeo-4c.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_3",
+          "Object_6",
+          "Object_13",
+          "Object_14",
+          "Object_15",
+          "Object_16"
+        ],
+        "tireNames": [
+          "Object_14",
+          "Object_15"
+        ],
+        "brakeNames": [
+          "Object_3"
+        ],
+        "fixedWheelNames": [
+          "Object_13"
+        ],
+        "splitX": -0.000059485435485839844,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Rear engine vent GRILLS at -X; 4C rear glass engine cover there, forward cabin and nose +X.",
+      "geometry": {
+        "wheelbase": 2.4,
+        "trackWidth": 1.52921326299749,
+        "wheelRadius": 0.3252992845201113,
+        "bodyLength": 4.143154621124268,
+        "bodyWidth": 2.065889835357666,
+        "bodyHeight": 1.0983355343341827,
+        "bodyCenterY": 0.09788475930690765
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "ferrari-f40",
+      "brand": "Ferrari",
+      "model": "F40",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "ferrari-f40.glb",
+      "bytes": 1348936,
+      "paint": null,
+      "credit": {
+        "author": "Black Snow",
+        "authorUrl": "https://sketchfab.com/BlackSnow02",
+        "license": "CC Attribution",
+        "sourceName": "Ferrari f40",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-52a66c41cfcd4f999fb1b1c49bf24d70"
+      },
+      "uid": "52a66c41cfcd4f999fb1b1c49bf24d70",
+      "apiStatus": 200,
+      "apiName": "Ferrari f40",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Black Snow",
+      "apiAuthorUrl": "https://sketchfab.com/BlackSnow02",
+      "apiDescription": "",
+      "meshCount": 42,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1348936,
+      "sha256": "19905f10db330363ed966f8cabbdbed1bc1fc8574edaff6b8e5a24016b16ebca",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ferrari-f40.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_11",
+          "Object_30",
+          "Object_31",
+          "Object_37",
+          "Object_38",
+          "Object_39",
+          "Object_40"
+        ],
+        "tireNames": [
+          "Object_37",
+          "Object_38",
+          "Object_39",
+          "Object_40"
+        ],
+        "brakeNames": [
+          "Object_11"
+        ],
+        "splitX": 0.10885906219482422,
+        "splitZ": -0.00024002790451048417
+      },
+      "orientationEvidence": "F40_Headlights +Z; four Scene_-_Root.002 tire meshes.",
+      "geometry": {
+        "wheelbase": 2.45,
+        "trackWidth": 1.564165225346663,
+        "wheelRadius": 0.32490843748701986,
+        "bodyLength": 4.572024345397949,
+        "bodyWidth": 2.049537777900696,
+        "bodyHeight": 1.0263287425041199,
+        "bodyCenterY": 0.05901339650154114
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "ford-escort",
+      "brand": "Ford",
+      "model": "Escort",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "ford-escort.glb",
+      "bytes": 489428,
+      "paint": {
+        "materials": [
+          "material"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Ezo",
+        "authorUrl": "https://sketchfab.com/EzoYEAHH",
+        "license": "CC Attribution",
+        "sourceName": "1986 Ford Escort XR3",
+        "sourceUrl": "https://sketchfab.com/3d-models/69eb711566834234b5dfbde3c6d4ee0a"
+      },
+      "uid": "69eb711566834234b5dfbde3c6d4ee0a",
+      "apiStatus": 200,
+      "apiName": "1986 Ford Escort XR3",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Ezo",
+      "apiAuthorUrl": "https://sketchfab.com/EzoYEAHH",
+      "apiDescription": "The XR3 is to escorts what GTi was for Golfs. It was *the* model to have. Altho the great looks, the pre facelift XR3 featured ford's CHT 1.6 inline-4 and... well, it was anemic, to put it lightly. Both GM's and VW's enterings in the South American hothatch market, the VW Gol GTi and Chevrolet Astra GSi completely dominated the poor XR3. However, due to a partnership with VW of all things, the XR3i released the next year, featuring the facelifted parts and a 1.8 SPFI VW engine. However, even still, it wasn't faster than the competition. The facelifted XR3 remains one of the few affordable hothatches in 2022. This model is based on the South American XR3. It is low-poly, game ready and features fully skinnable, UV-Mapped body.",
+      "meshCount": 44,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 489428,
+      "sha256": "d73de07e86990d029fde31d7d509e8527a726674be423fe0d0138c6faa97caf1",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-escort.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_55",
+          "Object_56",
+          "Object_57",
+          "Object_59",
+          "Object_60",
+          "Object_61"
+        ],
+        "tireNames": [
+          "Object_56",
+          "Object_60"
+        ],
+        "splitX": -0.026110347419832532,
+        "splitZ": 0.0001003628535709497
+      },
+      "orientationEvidence": "GLASS_shader_headlight +Z, GLASS_red rear -Z.",
+      "geometry": {
+        "wheelbase": 2.4,
+        "trackWidth": 1.487075927511557,
+        "wheelRadius": 0.29463225601060417,
+        "bodyLength": 4.273927688598633,
+        "bodyWidth": 1.8644825220108032,
+        "bodyHeight": 1.3910896182060242,
+        "bodyCenterY": 0.29800155758857727
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "mclaren-720s",
+      "brand": "McLaren",
+      "model": "720S",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sports",
+      "file": "mclaren-720s.glb",
+      "bytes": 1390584,
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "_shobh19",
+        "authorUrl": "https://sketchfab.com/s0h1o9b",
+        "license": "CC Attribution",
+        "sourceName": "2017 Mclaren 720s",
+        "sourceUrl": "https://sketchfab.com/3d-models/f7bece69400f4640a4a3be746b44998b"
+      },
+      "uid": "f7bece69400f4640a4a3be746b44998b",
+      "apiStatus": 200,
+      "apiName": "2017 Mclaren 720s",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "_shobh19",
+      "apiAuthorUrl": "https://sketchfab.com/s0h1o9b",
+      "apiDescription": "I decided to remodel my earlier mclaren model and made it even more lowpoly.\n\n - Modelled in Blender\n - Textures made in Photoshop \n \n Hope you like it!",
+      "meshCount": 25,
+      "extensions": [
+        "KHR_materials_clearcoat"
+      ],
+      "actualBytes": 1390584,
+      "sha256": "156805e5d8a69c3048bd76f7408937a4260bee2aeb30d30c27327d728a3f79ef",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mclaren-720s.glb",
+      "adapter": {
+        "wheelPattern": "^(tyres|brake_dics)",
+        "tirePattern": "^tyres.*_tyres_",
+        "brakePattern": "^brake_dics",
+        "splitX": 0.00003379583283225074,
+        "splitZ": 7.739791985095638e-8
+      },
+      "orientationEvidence": "Rear spoiler +X; front wipers and mirrors -X.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.6677646638509478,
+        "wheelRadius": 0.3369149805106224,
+        "bodyLength": 4.851113796234131,
+        "bodyWidth": 2.1773141622543335,
+        "bodyHeight": 1.1126580238342285,
+        "bodyCenterY": 0.0722615122795105
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "nissan-sentra",
+      "brand": "Nissan",
+      "model": "Sentra",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sedan",
+      "file": "nissan-sentra.glb",
+      "bytes": 963232,
+      "paint": {
+        "materials": [
+          "wire_143224087_2"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Davidson",
+        "authorUrl": "https://sketchfab.com/a0930582398",
+        "license": "CC Attribution",
+        "sourceName": "Nissan Sentra B17",
+        "sourceUrl": "https://sketchfab.com/3d-models/4e261bd2d93a438ebdabf8cc6b41cf58"
+      },
+      "uid": "4e261bd2d93a438ebdabf8cc6b41cf58",
+      "apiStatus": 200,
+      "apiName": "Nissan Sentra B17",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Davidson",
+      "apiAuthorUrl": "https://sketchfab.com/Davidson741",
+      "apiDescription": "",
+      "meshCount": 172,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 963232,
+      "sha256": "fce78f045356b597862464515c755e1245e20a1db7ffab5b3403eda06761cfff",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-sentra.glb",
+      "adapter": {
+        "wheelNames": [
+          "mmGroup114_wire_028089177_#1_0",
+          "mmGroup115_wire_028089177_#1_0",
+          "mmGroup119_wire_028089177_#1_0",
+          "mmGroup123_wire_028089177_#1_0",
+          "mmGroup124_wire_028089177_#1_0",
+          "mmGroup127_wire_028089177_#1_0",
+          "mmGroup128_wire_028089177_#1_0",
+          "mmGroup132_wire_028089177_#1_0",
+          "mmGroup133_wire_028089177_#1_0",
+          "mmGroup137_wire_028089177_#1_0",
+          "mmGroup141_wire_028089177_#1_0",
+          "mmGroup142_wire_028089177_#1_0",
+          "mmGroup146_wire_028089177_#1_0",
+          "mmGroup086_sentra_wheel_test_default_#1_0",
+          "mmGroup074_sentra_wheel_test_default_#2_0",
+          "mmGroup168_sentra_wheel_test_default_#3_0",
+          "mmGroup169_sentra_wheel_test_default_#4_0",
+          "mmGroup170_sentra_wheel_test_default_#5_0",
+          "mmGroup171_sentra_wheel_test_default_#6_0",
+          "mmGroup172_sentra_wheel_test_default_#7_0",
+          "mmGroup190_sentra_wheel_test_default_#8_0",
+          "mmGroup191_sentra_wheel_test_default_#9_0",
+          "mmGroup192_sentra_wheel_test_default_#10_0",
+          "mmGroup193_sentra_wheel_test_default_#11_0",
+          "mmGroup194_sentra_wheel_test_default_#12_0",
+          "mmGroup195_sentra_wheel_test_default_#13_0",
+          "mmGroup196_sentra_wheel_test_default_#14_0",
+          "mmGroup197_sentra_wheel_test_default_#15_0",
+          "mmGroup198_sentra_wheel_test_default_#16_0",
+          "mmGroup199_sentra_wheel_test_default_#17_0",
+          "mmGroup200_sentra_wheel_test_default_#18_0",
+          "mmGroup201_sentra_wheel_test_default_#19_0",
+          "mmGroup202_sentra_wheel_test_default_#20_0",
+          "mmGroup203_sentra_wheel_test_default_#21_0",
+          "mmGroup211_sentra_wheel_test_default_#22_0",
+          "mmGroup212_sentra_wheel_test_default_#23_0",
+          "mmGroup213_sentra_wheel_test_default_#24_0",
+          "mmGroup214_sentra_wheel_test_default_#25_0",
+          "mmGroup215_sentra_wheel_test_default_#26_0",
+          "mmGroup216_sentra_wheel_test_default_#27_0",
+          "mmGroup217_sentra_wheel_test_default_#28_0"
+        ],
+        "tireNames": [
+          "mmGroup115_wire_028089177_#1_0",
+          "mmGroup124_wire_028089177_#1_0",
+          "mmGroup133_wire_028089177_#1_0",
+          "mmGroup142_wire_028089177_#1_0"
+        ],
+        "splitX": -0.000010354291073211286,
+        "splitZ": -2.3841857910156377e-7
+      },
+      "orientationEvidence": "Explicit taillight_7/8/009/010 at +X; geometry clusters contain four complete wheel/tire sets.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.5173851969563756,
+        "wheelRadius": 0.342346607402458,
+        "bodyLength": 4.7747578620910645,
+        "bodyWidth": 2.0571659803390503,
+        "bodyHeight": 1.3923700749874115,
+        "bodyCenterY": 0.2109900265932083
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "honda-city",
+      "brand": "Honda",
+      "model": "City",
+      "years": [
+        2009,
+        2024
+      ],
+      "category": "sedan",
+      "file": "honda-city.glb",
+      "bytes": 787708,
+      "paint": {
+        "materials": [
+          "Body"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "dewa",
+        "authorUrl": "https://sketchfab.com/dewa",
+        "license": "CC Attribution",
+        "sourceName": "Honda City 2017",
+        "sourceUrl": "https://sketchfab.com/3d-models/75671276d4da476294202a5dc050a99e"
+      },
+      "uid": "75671276d4da476294202a5dc050a99e",
+      "apiStatus": 200,
+      "apiName": "Honda City 2017",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "dewa",
+      "apiAuthorUrl": "https://sketchfab.com/dewa",
+      "apiDescription": "",
+      "meshCount": 36,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 787708,
+      "sha256": "d6c72cf628f4d3853802f300dab5e3983211d0e32410e21d948d04ba65e7c48d",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/honda-city.glb",
+      "adapter": {
+        "wheelNames": [
+          "tyre_ban_Material_0"
+        ],
+        "tireNames": [
+          "tyre_ban_Material_0"
+        ],
+        "excludeNames": [
+          "shadow_shadow_1Material_0"
+        ],
+        "splitX": -1.7455539151912944,
+        "splitZ": 0.18125720082150543
+      },
+      "orientationEvidence": "frontLamp and grilleEmblem +Z, rearLamp/rearSpoiler -Z. Complete four textured wheels in tyre mesh. Ground shadow plane excluded.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.4106920682209685,
+        "wheelRadius": 0.3058700142876373,
+        "bodyLength": 4.410900115966797,
+        "bodyWidth": 1.811995029449463,
+        "bodyHeight": 1.2655398547649384,
+        "bodyCenterY": 0.26479025185108185
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "nissan-proto",
+      "brand": "Nissan",
+      "model": "Proto",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "nissan-proto.glb",
+      "bytes": 649144,
+      "paint": null,
+      "credit": {
+        "author": "Lexyc16",
+        "authorUrl": "https://sketchfab.com/Lexyc16",
+        "license": "CC Attribution",
+        "sourceName": "Nissan Z Proto",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-db9a5f7ae9d84a0fb01cac96afe3e69c"
+      },
+      "uid": "db9a5f7ae9d84a0fb01cac96afe3e69c",
+      "apiStatus": 200,
+      "apiName": "Nissan Z Proto",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Lexyc16",
+      "apiAuthorUrl": "https://sketchfab.com/Lexyc16",
+      "apiDescription": "New 2021 Nissan Fairlady Z prototype i made in blender 2.82a \n-----------\nModelled in about 15 hours",
+      "meshCount": 14,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_emissive_strength",
+        "KHR_materials_specular",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 649144,
+      "sha256": "4d93ca9750f4a50852f29628deeca691a5e7fed48dacaf7ddfa4b814642574f3",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-proto.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_8",
+          "Object_9",
+          "Object_11"
+        ],
+        "tireNames": [
+          "Object_11"
+        ],
+        "brakeNames": [
+          "Object_8"
+        ],
+        "splitX": 0.00834095478057862,
+        "splitZ": -0.05760997533798218
+      },
+      "orientationEvidence": "Cabin glass center -Z, long front hood +Z; taillamp narrow horizontal clusters at -Z. Distinct combined tire/rim/disc meshes.",
+      "geometry": {
+        "wheelbase": 2.55,
+        "trackWidth": 1.5477792841843407,
+        "wheelRadius": 0.3539940244412208,
+        "bodyLength": 4.228641033172607,
+        "bodyWidth": 1.91842782497406,
+        "bodyHeight": 1.1466119289398193,
+        "bodyCenterY": 0.1524970531463623
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "chevrolet-camaro",
+      "brand": "Chevrolet",
+      "model": "Camaro",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "coupe",
+      "file": "chevrolet-camaro.glb",
+      "bytes": 2199028,
+      "paint": {
+        "materials": [
+          "Meshpart1Mtl"
+        ],
+        "textured": true,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "DisneyCars",
+        "authorUrl": "https://sketchfab.com/supercarmodels",
+        "license": "CC Attribution",
+        "sourceName": "1970 Chevrolet Camaro",
+        "sourceUrl": "https://sketchfab.com/3d-models/789b0af67d994306b967facf75ab2e01"
+      },
+      "uid": "789b0af67d994306b967facf75ab2e01",
+      "apiStatus": 200,
+      "apiName": "1970 Chevrolet Camaro",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "DisneyCars",
+      "apiAuthorUrl": "https://sketchfab.com/supercarmodels",
+      "apiDescription": "",
+      "meshCount": 20,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 2199028,
+      "sha256": "3bbb6244b8b7c6442a775cfceccec0212c26c57cee5fcbeab04b9d3bd59e04da",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/chevrolet-camaro.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_8",
+          "Object_9",
+          "Object_10",
+          "Object_11"
+        ],
+        "tireNames": [
+          "Object_9",
+          "Object_10"
+        ],
+        "splitX": -56.32829856872557,
+        "splitZ": -53.328775914663375
+      },
+      "orientationEvidence": "Roof1Mtl and Windows1Mtl center -58 aft of wheel center -56; bonnet forward +Z. Four-wheel low ring clusters in Meshpart53/56/57/58.",
+      "geometry": {
+        "wheelbase": 2.75,
+        "trackWidth": 1.5557976304164756,
+        "wheelRadius": 0.33805374957883283,
+        "bodyLength": 4.741733551025391,
+        "bodyWidth": 1.917913019657135,
+        "bodyHeight": 1.3440225720405579,
+        "bodyCenterY": 0.08215323090553284
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "nissan-silvia-s13",
+      "brand": "Nissan",
+      "model": "Silvia S13",
+      "years": [
+        1992,
+        1992
+      ],
+      "category": "coupe",
+      "file": "nissan-silvia-s13.glb",
+      "bytes": 1621824,
+      "paint": {
+        "materials": [
+          "CarPaint"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "bagged_ls",
+        "authorUrl": "https://sketchfab.com/lstance",
+        "license": "CC Attribution",
+        "sourceName": "1992 Nissan Silvia S13",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-6fa8f1948f954e3b980b5e96f203815a"
+      },
+      "uid": "6fa8f1948f954e3b980b5e96f203815a",
+      "apiStatus": 200,
+      "apiName": "1992 Nissan Silvia S13",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "bagged_ls",
+      "apiAuthorUrl": "https://sketchfab.com/lstance",
+      "apiDescription": "* **1992 Nissan Silvia S13 sports car**\n* *Model updated, whole model edited*\n* Made in Blender,\nHas few textures,\nOrganized blend-file\n* **Delete cube empties to straighten the wheels**\n* **Like for more cars :)**\n* Interior is work in progress, stay tuned!!",
+      "meshCount": 54,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1621824,
+      "sha256": "eca302a5b116a8f752e364c08e06e0398937dc6e4d8a6a2292433c6e4fcf1d73",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-silvia-s13.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_47",
+          "Object_49",
+          "Object_50",
+          "Object_51",
+          "Object_53",
+          "Object_54",
+          "Object_55",
+          "Object_57",
+          "Object_59",
+          "Object_61",
+          "Object_64",
+          "Object_66",
+          "Object_67",
+          "Object_68",
+          "Object_70",
+          "Object_71",
+          "Object_72",
+          "Object_74",
+          "Object_76",
+          "Object_78",
+          "Object_81",
+          "Object_83",
+          "Object_84",
+          "Object_85",
+          "Object_87",
+          "Object_88",
+          "Object_89",
+          "Object_91",
+          "Object_93",
+          "Object_95",
+          "Object_98",
+          "Object_100",
+          "Object_101",
+          "Object_102",
+          "Object_104",
+          "Object_105",
+          "Object_106",
+          "Object_108",
+          "Object_110",
+          "Object_112"
+        ],
+        "tireNames": [
+          "Object_61",
+          "Object_78",
+          "Object_95",
+          "Object_112"
+        ],
+        "brakeNames": [
+          "Object_47",
+          "Object_64",
+          "Object_81",
+          "Object_98"
+        ],
+        "splitX": -0.05975981668844299,
+        "splitZ": -6.938893903907228e-18
+      },
+      "orientationEvidence": "HeadAlpha and Grille are +Z; TailAlpha and exhaust are -Z. Four separate Tyre objects and their rim/disc/caliper assemblies; parked front steering corrected by neutral-wheel-axis adapter.",
+      "geometry": {
+        "wheelbase": 2.475,
+        "trackWidth": 1.4403527060479666,
+        "wheelRadius": 0.30905576269047463,
+        "bodyLength": 4.588548183441162,
+        "bodyWidth": 1.8925817608833313,
+        "bodyHeight": 1.089228868484497,
+        "bodyCenterY": 0.18258726596832275
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "nissan-tiida",
+      "brand": "Nissan",
+      "model": "Tiida",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sedan",
+      "file": "nissan-tiida.glb",
+      "bytes": 1902816,
+      "paint": {
+        "materials": [
+          "carpaint"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Jean Wally's™",
+        "authorUrl": "https://sketchfab.com/JeanWallace10",
+        "license": "CC Attribution",
+        "sourceName": "2011 Nissan Tiida Hatchback",
+        "sourceUrl": "https://sketchfab.com/3d-models/c5967683515b415583e871b290c6f5b8"
+      },
+      "uid": "c5967683515b415583e871b290c6f5b8",
+      "apiStatus": 200,
+      "apiName": "2011 Nissan Tiida Hatchback",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Jean Wally's™",
+      "apiAuthorUrl": "https://sketchfab.com/JeanWallace10",
+      "apiDescription": "There is also a nother version of this car called the versa.Uses manual transmition.v",
+      "meshCount": 17,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1902816,
+      "sha256": "7403e64dfbc5e6db87db923c7422d239fbd8b01ce1469f1b7fd3ec1cd27beee4",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-tiida.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_11",
+          "Object_23",
+          "Object_26",
+          "Object_41"
+        ],
+        "tireNames": [
+          "Object_11"
+        ],
+        "brakeNames": [
+          "Object_26"
+        ],
+        "splitX": 0.0005468749877763912,
+        "splitZ": 1.0842021724855044e-19
+      },
+      "orientationEvidence": "Source GlassSurround cabin center is rearward (-Z), longer front hood toward +Z. Tire, Rim, BrakeDisc and Caliper source meshes contain four disconnected wheel assemblies. Tiny source scale normalized by wheelbase.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.4847032255140775,
+        "wheelRadius": 0.2814382696304837,
+        "bodyLength": 4.387186050415039,
+        "bodyWidth": 1.9496467113494873,
+        "bodyHeight": 1.4806809723377228,
+        "bodyCenterY": 0.33215878903865814
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "nissan-versa",
+      "brand": "Nissan",
+      "model": "Versa",
+      "years": [
+        2010,
+        2024
+      ],
+      "category": "sedan",
+      "file": "nissan-versa.glb",
+      "bytes": 618516,
+      "paint": {
+        "materials": [
+          "Material.003"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Velrifea",
+        "authorUrl": "https://sketchfab.com/Velrifea",
+        "license": "CC Attribution",
+        "sourceName": "[FREE] Nissan Versa 1.8 SL 2010",
+        "sourceUrl": "https://sketchfab.com/3d-models/3745e5e9b3ef4bacb1a9476b5f15c2c6"
+      },
+      "uid": "3745e5e9b3ef4bacb1a9476b5f15c2c6",
+      "apiStatus": 200,
+      "apiName": "[FREE] Nissan Versa 1.8 SL 2010",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Velrifea",
+      "apiAuthorUrl": "https://sketchfab.com/Velrifea",
+      "apiDescription": "The 2010 Nissan Versa 1.8 SL is a compact car (often offered as a hatchback, but also as a sedan), which was the American market version of the Nissan Tiida. It belonged to the first generation (C11) and was focused on providing maximum interior space and comfort within the small car segment. The 1.8 SL trim was equipped with a 1.8-liter four-cylinder engine producing around 122–126 horsepower and featured front-wheel drive. A key feature of the Versa, especially in the SL trim, was the use of a Continuously Variable Transmission (CVT), which helped boost fuel economy. The SL version was the top trim, including amenities like alloy wheels, upgraded interior materials, and cruise control, making it one of the most spacious and well-equipped vehicles in the subcompact class.\n\n![](https://picolio.auto123.com/10photo/nissan/versahatchback5dr-18sl.jpg)",
+      "meshCount": 36,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 618516,
+      "sha256": "72a9aa938271a913b68d2017b47cbe928c3bfec6741b430d74bb79eecccce50e",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-versa.glb",
+      "adapter": {
+        "wheelNames": [
+          "Plane069_Material022_0",
+          "Plane064_Material022_0",
+          "Plane066_Material022_0",
+          "Plane068_Material022_0",
+          "Plane047_Material037_0",
+          "Plane065_Material037_0",
+          "Plane067_Material037_0",
+          "Plane070_Material037_0"
+        ],
+        "tireNames": [
+          "Plane069_Material022_0",
+          "Plane064_Material022_0",
+          "Plane066_Material022_0",
+          "Plane068_Material022_0"
+        ],
+        "splitX": -0.004434622950853839,
+        "splitZ": 8.673617379884035e-19
+      },
+      "orientationEvidence": "Front wipers and steering pose at -Z; exhaust Circle007 at +Z. Four distinct Material022 tires and Material037 rims, with parked front steering neutralized.",
+      "geometry": {
+        "wheelbase": 2.6,
+        "trackWidth": 1.4533789966682353,
+        "wheelRadius": 0.3287350192179844,
+        "bodyLength": 4.412327289581299,
+        "bodyWidth": 2.0083093643188477,
+        "bodyHeight": 1.4892843961715698,
+        "bodyCenterY": 0.3454015851020813
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "peugeot-205",
+      "brand": "Peugeot",
+      "model": "205",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "peugeot-205.glb",
+      "bytes": 159728,
+      "paint": {
+        "materials": [
+          "Vehicle"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Thcyrax",
+        "authorUrl": "https://sketchfab.com/thcyrax",
+        "license": "CC Attribution",
+        "sourceName": "Vehicle - Peugeot 205",
+        "sourceUrl": "https://sketchfab.com/3d-models/527949cddab34ea4b3b334b9a137d1be"
+      },
+      "uid": "527949cddab34ea4b3b334b9a137d1be",
+      "apiStatus": 200,
+      "apiName": "Vehicle - Peugeot 205",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Thcyrax",
+      "apiAuthorUrl": "https://sketchfab.com/thcyrax",
+      "apiDescription": "# Vehicle - Peugeot 205   \n   \n**Follow me on ArtStation:**   \nhttps://www.artstation.com/kitsunegraphics   \n   \n**Follow me on Instagram:**   \nhttps://www.instagram.com/kitsune.graphics/   \n   \nCheck another vehicle: https://skfb.ly/6PWT7",
+      "meshCount": 5,
+      "actualBytes": 159728,
+      "sha256": "bece1665032e1db92b4c876cb45697b239990000a6e63fb4a856a2de0d7c1fbd",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/peugeot-205.glb",
+      "adapter": {
+        "wheelPattern": "^(FLW|FRW|RLW|RRW)_",
+        "tirePattern": "^(FLW|FRW|RLW|RRW)_",
+        "splitX": 0.02462959693913003,
+        "splitZ": 3.469446951953614e-18
+      },
+      "orientationEvidence": "Named FLW/FRW source front wheels at +Z, RLW/RRW at -Z; four complete wheel meshes retain their source textured rims.",
+      "geometry": {
+        "wheelbase": 2.42,
+        "trackWidth": 1.4220614699950327,
+        "wheelRadius": 0.2972015271017223,
+        "bodyLength": 3.635746955871582,
+        "bodyWidth": 1.8546844124794006,
+        "bodyHeight": 1.224423885345459,
+        "bodyCenterY": 0.2213330864906311
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "peugeot-206",
+      "brand": "Peugeot",
+      "model": "206",
+      "years": [
+        1998,
+        2010
+      ],
+      "category": "hatchback",
+      "file": "peugeot-206.glb",
+      "bytes": 714772,
+      "paint": {
+        "materials": [
+          "Matte__FF828282__env_15_spec"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Mona x Supercars",
+        "authorUrl": "https://sketchfab.com/Car2022",
+        "license": "CC Attribution",
+        "sourceName": "Peugeot 206",
+        "sourceUrl": "https://sketchfab.com/3d-models/44ac8a85939f4e3089649d4712275886"
+      },
+      "uid": "44ac8a85939f4e3089649d4712275886",
+      "apiStatus": 200,
+      "apiName": "Peugeot 206",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Mona x Supercars",
+      "apiAuthorUrl": "https://sketchfab.com/Car2022",
+      "apiDescription": "",
+      "meshCount": 118,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 714772,
+      "sha256": "c6f017d9f06115110932dc4269243aaee6c947a08897528cdd25b4b1f1fba2eb",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/peugeot-206.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_224",
+          "Object_226",
+          "Object_228",
+          "Object_230",
+          "Object_232",
+          "Object_235",
+          "Object_237",
+          "Object_239",
+          "Object_241",
+          "Object_243",
+          "Object_246",
+          "Object_248",
+          "Object_250",
+          "Object_252",
+          "Object_254",
+          "Object_257",
+          "Object_259",
+          "Object_261",
+          "Object_263",
+          "Object_265"
+        ],
+        "tireNames": [
+          "Object_226",
+          "Object_232",
+          "Object_237",
+          "Object_243",
+          "Object_248",
+          "Object_254",
+          "Object_259",
+          "Object_265"
+        ],
+        "splitX": 0.0839083931259682,
+        "splitZ": 0.003904816313526363
+      },
+      "orientationEvidence": "Front vehiclelights128 FR meshes at +Z; boot and RR lights at -Z. Explicit reviewed four rim, SIDEWALL, TREAD, disk and hub object sets.",
+      "geometry": {
+        "wheelbase": 2.44,
+        "trackWidth": 1.3785509559494962,
+        "wheelRadius": 0.2904799146712324,
+        "bodyLength": 3.9762885570526123,
+        "bodyWidth": 1.914930284023285,
+        "bodyHeight": 1.264857143163681,
+        "bodyCenterY": 0.25531454384326935
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "renault-clio",
+      "brand": "Renault",
+      "model": "Clio",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "renault-clio.glb",
+      "bytes": 5092540,
+      "paint": {
+        "materials": [
+          "jante"
+        ],
+        "textured": true,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Mona x Supercars",
+        "authorUrl": "https://sketchfab.com/Car2022",
+        "license": "CC Attribution",
+        "sourceName": "Renault Clio Williams",
+        "sourceUrl": "https://sketchfab.com/3d-models/1dad7e4438c74f3b8bac1ab72acd78ed"
+      },
+      "uid": "1dad7e4438c74f3b8bac1ab72acd78ed",
+      "apiStatus": 200,
+      "apiName": "Renault Clio Williams",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Mona x Supercars",
+      "apiAuthorUrl": "https://sketchfab.com/Car2022",
+      "apiDescription": "Years: 1993\nClass: C\nWeight: Light\nBody Style: Hatchback\nSize: Compact",
+      "meshCount": 14,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 5092540,
+      "sha256": "1a307643dccc44b4fa5217143477487952b00ea94ca4fce664ebf42bc25255f1",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/renault-clio.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_8",
+          "Object_11",
+          "Object_14"
+        ],
+        "tireNames": [
+          "Object_8"
+        ],
+        "splitX": 0.021519686257362336,
+        "splitZ": 2.2888183082506175e-7
+      },
+      "orientationEvidence": "Phares_AV front lights at +Z and exhaust at -Z; four disconnected tires in M_Tire with separate jante rims and frein discs.",
+      "geometry": {
+        "wheelbase": 2.47,
+        "trackWidth": 1.3977231800011918,
+        "wheelRadius": 0.2851025700792288,
+        "bodyLength": 3.80550479888916,
+        "bodyWidth": 1.8370704054832458,
+        "bodyHeight": 1.3943643271923065,
+        "bodyCenterY": 0.33268381655216217
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "subaru-impreza",
+      "brand": "Subaru",
+      "model": "Impreza",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "coupe",
+      "file": "subaru-impreza.glb",
+      "bytes": 669040,
+      "paint": {
+        "materials": [
+          "Car_Paint"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "MAC ULT ARTS",
+        "authorUrl": "https://sketchfab.com/MACULTARTS",
+        "license": "CC Attribution",
+        "sourceName": "Subaru Impreza WRX STi 2004 Custom",
+        "sourceUrl": "https://sketchfab.com/3d-models/08296bc950364621b6174a3078bb19e0"
+      },
+      "uid": "08296bc950364621b6174a3078bb19e0",
+      "apiStatus": 200,
+      "apiName": "Subaru Impreza WRX STi 2004 Custom",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "MAC ULT ARTS",
+      "apiAuthorUrl": "https://sketchfab.com/MACULTARTS",
+      "apiDescription": "Had this model laying in the drive abandoned, decided to free it. Enjoy.\n\nSubaru Impreza WRX STI 2004 Tuned.\n\nUsed in the latest animation of mine:\nhttps://www.youtube.com/watch?v=30JkFBpyaQM",
+      "meshCount": 80,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 669040,
+      "sha256": "de862ee6809ce35a1adadbf8350be239b89561e35f0f0f67b963bc5c3c236cab",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/subaru-impreza.glb",
+      "adapter": {
+        "wheelPattern": "^(Tire|Rim)[0-9]*_",
+        "tirePattern": "^Tire[0-9]*_",
+        "splitX": 0.1701463182951548,
+        "splitZ": 2.7755575615628914e-17
+      },
+      "orientationEvidence": "Front HoodBonnet and headlights are +Z, trunk and exhaust -Z. Four explicit Tire/Tire001/002/003 and corresponding Rim objects.",
+      "geometry": {
+        "wheelbase": 2.525,
+        "trackWidth": 1.4910418245573747,
+        "wheelRadius": 0.30609123354008183,
+        "bodyLength": 4.677231788635254,
+        "bodyWidth": 2.040588617324829,
+        "bodyHeight": 1.3233763575553894,
+        "bodyCenterY": 0.24596914649009705
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "toyota-corolla",
+      "brand": "Toyota",
+      "model": "Corolla",
+      "years": [
+        1990,
+        2024
+      ],
+      "category": "sedan",
+      "file": "toyota-corolla.glb",
+      "bytes": 375872,
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "PHAC",
+        "authorUrl": "https://sketchfab.com/phac",
+        "license": "CC Attribution",
+        "sourceName": "Toyota Corolla (KE80)",
+        "sourceUrl": "https://sketchfab.com/3d-models/2b30faa611e64177a94a69098d27d1fb"
+      },
+      "uid": "2b30faa611e64177a94a69098d27d1fb",
+      "apiStatus": 200,
+      "apiName": "Toyota Corolla (KE80)",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "PHAC",
+      "apiAuthorUrl": "https://sketchfab.com/phac",
+      "apiDescription": "Toyota Corolla 1983-1987 (KE80)",
+      "meshCount": 19,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 375872,
+      "sha256": "c1563ab62fc8855fbc5f2bd5e7a5296f72ca8992ada0b441cbf48c95fda70cc1",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-corolla.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_16",
+          "Object_17",
+          "Object_19",
+          "Object_20",
+          "Object_22",
+          "Object_23",
+          "Object_25",
+          "Object_26"
+        ],
+        "tireNames": [
+          "Object_17",
+          "Object_20",
+          "Object_23",
+          "Object_26"
+        ],
+        "splitX": -0.10353171825408934,
+        "splitZ": -2.7755575615628914e-17
+      },
+      "orientationEvidence": "Named corolla-wheelFtL/FtR at +Z; rear stoplamp at -Z. Four separate tires (material) and rims (velg).",
+      "geometry": {
+        "wheelbase": 2.43,
+        "trackWidth": 1.3659550564957044,
+        "wheelRadius": 0.29320147420088877,
+        "bodyLength": 4.299773693084717,
+        "bodyWidth": 1.793373703956604,
+        "bodyHeight": 1.0593803226947784,
+        "bodyCenterY": 0.20580492913722992
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "toyota-ae86",
+      "brand": "Toyota",
+      "model": "Corolla AE86",
+      "years": [
+        1983,
+        1987
+      ],
+      "category": "coupe",
+      "file": "toyota-ae86.glb",
+      "bytes": 1520588,
+      "paint": {
+        "materials": [
+          "Material.002"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Lexyc16",
+        "authorUrl": "https://sketchfab.com/Lexyc16",
+        "license": "CC Attribution",
+        "sourceName": "Toyota Corolla AE86 Trueno",
+        "sourceUrl": "https://sketchfab.com/3d-models/fe02fba6302e450ea8424591493341ea"
+      },
+      "uid": "fe02fba6302e450ea8424591493341ea",
+      "apiStatus": 200,
+      "apiName": "Toyota Corolla AE86 Trueno",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Lexyc16",
+      "apiAuthorUrl": "https://sketchfab.com/Lexyc16",
+      "apiDescription": "Toyota Corolla AE86 Trueno from anime called \"Initial D\", i made in blender 2.82a\n\n***Update 26.04.21:*** Okay, a lot of you guys have complained that the music is too loud. I made it quieter.\n\n***Eurobeat intensifies***",
+      "meshCount": 28,
+      "extensions": [
+        "KHR_materials_specular",
+        "KHR_materials_emissive_strength"
+      ],
+      "actualBytes": 1520588,
+      "sha256": "cb8ec8e32fdb46d54b5bc7e4a8b2b0be57a68c06ef96c49ca004300fd1055d3c",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-ae86.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_14",
+          "Object_15",
+          "Object_16",
+          "Object_18",
+          "Object_19",
+          "Object_20",
+          "Object_22",
+          "Object_23",
+          "Object_24",
+          "Object_26",
+          "Object_27",
+          "Object_28"
+        ],
+        "tireNames": [
+          "Object_15",
+          "Object_19",
+          "Object_23",
+          "Object_27"
+        ],
+        "splitX": -0.3642174947071908,
+        "splitZ": -0.035142201930284556
+      },
+      "orientationEvidence": "Rear exhaust Object36 and rear plate at -Z; windshield/cabin glass rearward of front hood, front plate +Z. Four Circle wheel groups with Material004 full tire envelopes and separate rims/details.",
+      "geometry": {
+        "wheelbase": 2.4,
+        "trackWidth": 1.4029674500135232,
+        "wheelRadius": 0.29450429007319195,
+        "bodyLength": 4.31662654876709,
+        "bodyWidth": 1.844721794128418,
+        "bodyHeight": 1.1386691331863403,
+        "bodyCenterY": 0.15099430084228516
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "toyota-yaris",
+      "brand": "Toyota",
+      "model": "Yaris",
+      "years": [
+        2018,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "toyota-yaris.glb",
+      "bytes": 1305384,
+      "paint": {
+        "materials": [
+          "Intbodyunrefunblendbodyunrefunblend1Mtl"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "DisneyCars",
+        "authorUrl": "https://sketchfab.com/supercarmodels",
+        "license": "CC Attribution",
+        "sourceName": "2020 Toyota GR Yaris",
+        "sourceUrl": "https://sketchfab.com/3d-models/44cb958908b94aa5aad0d856994f35a3"
+      },
+      "uid": "44cb958908b94aa5aad0d856994f35a3",
+      "apiStatus": 200,
+      "apiName": "2020 Toyota GR Yaris",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "DisneyCars",
+      "apiAuthorUrl": "https://sketchfab.com/supercarmodels",
+      "apiDescription": "",
+      "meshCount": 8,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1305384,
+      "sha256": "72950d75629e230a5ed96f0bd0a995888c3a0ab6cc75729e2b64520628b2171f",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-yaris.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_9"
+        ],
+        "tireNames": [
+          "Object_9"
+        ],
+        "splitX": 38.33475017547606,
+        "splitZ": -74.98061767306811
+      },
+      "orientationEvidence": "Bonnet at source -Z and rear hatch plate at +Z. Whbody source is four complete disconnected wheel assemblies, split about the translated vehicle center.",
+      "geometry": {
+        "wheelbase": 2.56,
+        "trackWidth": 1.5385346125061101,
+        "wheelRadius": 0.2991508142437852,
+        "bodyLength": 4.204254150390625,
+        "bodyWidth": 1.97735196352005,
+        "bodyHeight": 1.296326756477356,
+        "bodyCenterY": 0.23808258771896362
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "volkswagen-beetle",
+      "brand": "Volkswagen",
+      "model": "Beetle",
+      "years": [
+        1963,
+        1963
+      ],
+      "category": "coupe",
+      "file": "volkswagen-beetle.glb",
+      "bytes": 5085596,
+      "paint": null,
+      "credit": {
+        "author": "aleksey.matveenko",
+        "authorUrl": "https://sketchfab.com/aleksey.matveenko",
+        "license": "CC Attribution",
+        "sourceName": "1963 Volkswagen Beetle",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-f03e5ba5e81b4562958645fe27565f3a"
+      },
+      "uid": "f03e5ba5e81b4562958645fe27565f3a",
+      "apiStatus": 200,
+      "apiName": "1963 Volkswagen Beetle",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "aleksey.matveenko",
+      "apiAuthorUrl": "https://sketchfab.com/aleksey.matveenko",
+      "apiDescription": "This is my diploma project on the course of texturing at the CG Academy ArtClub (Kiev)",
+      "meshCount": 39,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 5085596,
+      "sha256": "575314d4c6de953aac4e18a0cd08787a1e18ee634d647b7613e18becfaa12b80",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/volkswagen-beetle.glb",
+      "adapter": {
+        "wheelPattern": "^wheel_lp[1-4]_",
+        "tirePattern": "^wheel_lp[1-4]_",
+        "splitX": 1.981302284810937,
+        "splitZ": 0.01312637329105848
+      },
+      "orientationEvidence": "Steering wheel and front seat face +Z; rear seat at -Z. Four wheel_lp1-4 complete textured wheel meshes; st_wheel is deliberately excluded.",
+      "geometry": {
+        "wheelbase": 2.4,
+        "trackWidth": 1.312427767339118,
+        "wheelRadius": 0.34504887873754186,
+        "bodyLength": 4.353937149047852,
+        "bodyWidth": 1.5641518831253052,
+        "bodyHeight": 1.8476173877716064,
+        "bodyCenterY": 0.43735694885253906
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "subaru-forester",
+      "brand": "Subaru",
+      "model": "Forester",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "subaru-forester.glb",
+      "bytes": 973976,
+      "paint": {
+        "materials": [
+          "Body_Color"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Nieve5677",
+        "authorUrl": "https://sketchfab.com/niev",
+        "license": "CC Attribution",
+        "sourceName": "Subaru Forester 2009",
+        "sourceUrl": "https://sketchfab.com/3d-models/925112ae29514dcf89ccf2fc7020338e"
+      },
+      "uid": "925112ae29514dcf89ccf2fc7020338e",
+      "apiStatus": 200,
+      "apiName": "Subaru Forester 2009",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Nieve5677",
+      "apiAuthorUrl": "https://sketchfab.com/niev",
+      "apiDescription": "",
+      "meshCount": 70,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 973976,
+      "sha256": "cd2a4af01223070afab9eedb732dd3221e02888e5233aa0236503fe049b9b976",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/subaru-forester.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_42",
+          "Object_55"
+        ],
+        "tireNames": [
+          "Object_42"
+        ],
+        "wheelDetailNames": [
+          "Object_51"
+        ],
+        "splitX": -3.7850579023361206,
+        "splitZ": 1.062489053496392
+      },
+      "orientationEvidence": "Taillight_Glass source +X, dashboard/front lamps toward -X. Tires Object42 contains four disconnected tires; Object55 contains four discs. Mixed silver Object51 is clipped to existing tire bounds for rim details only.",
+      "geometry": {
+        "wheelbase": 2.62,
+        "trackWidth": 1.5390222624471823,
+        "wheelRadius": 0.33656461207693555,
+        "bodyLength": 4.59899377822876,
+        "bodyWidth": 2.1276766061782837,
+        "bodyHeight": 1.6608824133872986,
+        "bodyCenterY": 0.36249998211860657
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "toyota-prius",
+      "brand": "Toyota",
+      "model": "Prius",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "toyota-prius.glb",
+      "bytes": 2507052,
+      "paint": {
+        "materials": [
+          "Fwiperay95s41Mtl.002"
+        ],
+        "textured": true,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Doz3",
+        "authorUrl": "https://sketchfab.com/Doz3",
+        "license": "CC Attribution",
+        "sourceName": "Toyota Prius 2012",
+        "sourceUrl": "https://sketchfab.com/3d-models/04eaf6b288cc466785365b7d985e3b29"
+      },
+      "uid": "04eaf6b288cc466785365b7d985e3b29",
+      "apiStatus": 200,
+      "apiName": "Toyota Prius 2012",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Doz3",
+      "apiAuthorUrl": "https://sketchfab.com/Doz3",
+      "apiDescription": "The Toyota Prius (/ˈpriːəs/ PREE-əss) (Japanese: トヨタ・プリウス, Hepburn: Toyota Puriusu) is a compact/small family liftback (supermini/subcompact sedan until 2003[1]) produced by Toyota. The Prius ha",
+      "meshCount": 25,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 2507052,
+      "sha256": "9095a5576b159f1798167217950600c6775997521e2f0e8a6c40039612db32c2",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-prius.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_23",
+          "Object_24"
+        ],
+        "tireNames": [
+          "Object_24"
+        ],
+        "splitX": 1.5063953399658185,
+        "splitZ": 0.26447606086730935
+      },
+      "orientationEvidence": "Headlight and Head_light source -Z, high-mounted brake light +Z. Rims Object23 and Wheel0021Mtl Object24 are four-wheel meshes; elevated Wheel1Mtl Object25 stays on body.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.4980178040984358,
+        "wheelRadius": 0.3263271290067713,
+        "bodyLength": 4.507471084594727,
+        "bodyWidth": 1.9982591271400452,
+        "bodyHeight": 1.4750405848026276,
+        "bodyCenterY": 0.31757931411266327
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "toyota-camry",
+      "brand": "Toyota",
+      "model": "Camry",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sedan",
+      "file": "toyota-camry.glb",
+      "bytes": 399908,
+      "paint": {
+        "materials": [
+          "CAMRY"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Ford mondeo",
+        "authorUrl": "https://sketchfab.com/tnikita",
+        "license": "CC Attribution",
+        "sourceName": "Toyota Camry 40",
+        "sourceUrl": "https://sketchfab.com/3d-models/560c174d073f4a10bb153ded41ada8c9"
+      },
+      "uid": "560c174d073f4a10bb153ded41ada8c9",
+      "apiStatus": 200,
+      "apiName": "Toyota Camry 40",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Ford mondeo",
+      "apiAuthorUrl": "https://sketchfab.com/tnikita",
+      "apiDescription": "",
+      "meshCount": 11,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 399908,
+      "sha256": "1693b0965296df75697fab3034d3f630e036ed09bf4e29a23847b6eab258a3cb",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-camry.glb",
+      "adapter": {
+        "wheelNames": [
+          "Toyota_Camry_3D_model_Mold-Tech-8017_0",
+          "Toyota_Camry_3D_model_CAMRY_rin_0",
+          "Toyota_Camry_3D_model_disk_0"
+        ],
+        "tireNames": [
+          "Toyota_Camry_3D_model_Mold-Tech-8017_0"
+        ],
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Four disconnected Mold-Tech-8017 tires with separate CAMRY_rin rims and disk brakes; rear light CAMRY_luz2 at -Z, front hood +Z.",
+      "geometry": {
+        "wheelbase": 2.775,
+        "trackWidth": 1.6227656420685792,
+        "wheelRadius": 0.3287912151658214,
+        "bodyLength": 4.903503894805908,
+        "bodyWidth": 2.0372767448425293,
+        "bodyHeight": 1.3559391796588898,
+        "bodyCenterY": 0.21955393254756927
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "volvo-v40",
+      "brand": "Volvo",
+      "model": "V40",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "wagon",
+      "file": "volvo-v40.glb",
+      "bytes": 622864,
+      "paint": {
+        "materials": [
+          "DimGray"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "tonielpro520",
+        "authorUrl": "https://sketchfab.com/tonielpro520",
+        "license": "CC Attribution",
+        "sourceName": "1995 Volvo V40 Touring",
+        "sourceUrl": "https://sketchfab.com/3d-models/6e53093cad6b462ca3fd5366c8743c67"
+      },
+      "uid": "6e53093cad6b462ca3fd5366c8743c67",
+      "apiStatus": 200,
+      "apiName": "1995 Volvo V40 Touring",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "tonielpro520",
+      "apiAuthorUrl": "https://sketchfab.com/tonielpro520",
+      "apiDescription": "1995 Volvo V40 Touring\n![](https://zeperfs.com/photos/8478-f.jpg)\nFree",
+      "meshCount": 19,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 622864,
+      "sha256": "819c085180fb7270060cbc54272f08c45f1ecece0d73fcb60449cbd109061a85",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/volvo-v40.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_2",
+          "Object_5"
+        ],
+        "tireNames": [
+          "Object_5"
+        ],
+        "splitX": 1.51012510061264,
+        "splitZ": -0.5419420003890996
+      },
+      "orientationEvidence": "Rear lamps Color_A01 at +Z and rear-shifted Charcoal cabin; source front -Z. Color009 Object5 contains four tire envelopes; Color002 Object2 four separate rims. Source center is offset, so both split axes are translated.",
+      "geometry": {
+        "wheelbase": 2.55,
+        "trackWidth": 1.4489018968184821,
+        "wheelRadius": 0.30041318588997085,
+        "bodyLength": 4.55573034286499,
+        "bodyWidth": 1.887744665145874,
+        "bodyHeight": 1.397166669368744,
+        "bodyCenterY": 0.19287261366844177
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "volvo-v60",
+      "brand": "Volvo",
+      "model": "V60",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "wagon",
+      "file": "volvo-v60.glb",
+      "bytes": 918168,
+      "paint": {
+        "materials": [
+          "body_paint"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Myedsu",
+        "authorUrl": "https://sketchfab.com/myedsu",
+        "license": "CC Attribution",
+        "sourceName": "Volvo V60 Polestar (2013)",
+        "sourceUrl": "https://sketchfab.com/3d-models/504ce39150fe49c7979f702d5f0f8580"
+      },
+      "uid": "504ce39150fe49c7979f702d5f0f8580",
+      "apiStatus": 200,
+      "apiName": "Volvo V60 Polestar (2013)",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Myedsu",
+      "apiAuthorUrl": "https://sketchfab.com/myedsu",
+      "apiDescription": "* **Volvo V60 Polestar** - Volvo introduced a modification of Polestar, created by a tuning studio called Polestar Performance, later the studio was completely absorbed by Volvo.  In addition to the new engine, the car received an updated suspension, which includes new shock absorbers from Öhlins, new brake discs from Brembo and new stabilizer bars. In addition, the car received new 20-inch wheels, a new spoiler and a modified interior trim. \n* **Wikipedia** - https://en.wikipedia.org/wiki/Volvo_V60.\n\nI made in Blender (3).",
+      "meshCount": 46,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 918168,
+      "sha256": "2808e756b72a5af76cdc25a6144d73f3488bd6e79b08ea8485c37dcb814d8676",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/volvo-v60.glb",
+      "adapter": {
+        "wheelPattern": "^wheel_(FL|RL)[0-9]*_",
+        "tirePattern": "^wheel_(FL|RL)[0-9]*_wheel_tire_",
+        "brakePattern": "^wheel_(FL|RL)[0-9]*_disk_brake_tr_",
+        "splitX": 0.0069602290348886875,
+        "splitZ": -1.734723475976807e-18
+      },
+      "orientationEvidence": "hl_front and two named FL source wheels at -Z; rear glass/lights +Z. Four actual wheel_tire meshes plus rim/disc details; fixed caliper disk_brake_tr does not spin.",
+      "geometry": {
+        "wheelbase": 2.776,
+        "trackWidth": 1.5764491236598779,
+        "wheelRadius": 0.31658952624042175,
+        "bodyLength": 4.688627243041992,
+        "bodyWidth": 2.0780200958251953,
+        "bodyHeight": 1.3366000950336456,
+        "bodyCenterY": 0.26284264028072357
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "honda-civic",
+      "brand": "Honda",
+      "model": "Civic",
+      "years": [
+        1991,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "honda-civic.glb",
+      "bytes": 331484,
+      "paint": {
+        "materials": [
+          "Car_Paint"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "rifdanzz",
+        "authorUrl": "https://sketchfab.com/rifdanzz",
+        "license": "CC Attribution",
+        "sourceName": "1991 Honda Civic EG6",
+        "sourceUrl": "https://sketchfab.com/3d-models/f81da34570b145deb463fa091604d251"
+      },
+      "uid": "f81da34570b145deb463fa091604d251",
+      "apiStatus": 200,
+      "apiName": "1991 Honda Civic EG6",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "rifdanzz",
+      "apiAuthorUrl": "https://sketchfab.com/rifdanzz",
+      "apiDescription": "5th Gen Honda Civic\nHatchback\n2 doors",
+      "meshCount": 39,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 331484,
+      "sha256": "b7f985bcb06d98291561392b1c8b8e355a62d536752a4084b756328c183a6725",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/honda-civic.glb",
+      "adapter": {
+        "wheelNames": [
+          "Circle_Material005_0",
+          "Circle_velg_0",
+          "Circle001_Material005_0",
+          "Circle001_velg_0",
+          "Circle002_Material005_0",
+          "Circle002_velg_0",
+          "Circle003_Material005_0",
+          "Circle003_velg_0"
+        ],
+        "tireNames": [
+          "Circle_Material005_0",
+          "Circle001_Material005_0",
+          "Circle002_Material005_0",
+          "Circle003_Material005_0"
+        ],
+        "splitX": -3.4683271015972537,
+        "splitZ": -0.6575931310653691
+      },
+      "orientationEvidence": "frontbumper and front_fender on +Z; Circle groups are four separate tires and rims.",
+      "geometry": {
+        "wheelbase": 2.57,
+        "trackWidth": 1.4613539557161879,
+        "wheelRadius": 0.28762127236595936,
+        "bodyLength": 4.1550822257995605,
+        "bodyWidth": 1.7949398159980774,
+        "bodyHeight": 1.175902009010315,
+        "bodyCenterY": 0.20753371715545654
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "honda-cr-v",
+      "brand": "Honda",
+      "model": "CR-V",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "honda-cr-v.glb",
+      "bytes": 1610228,
+      "paint": {
+        "materials": [
+          "blackRim"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Palma123 JAAT",
+        "authorUrl": "https://sketchfab.com/palma123.jaat",
+        "license": "CC Attribution",
+        "sourceName": "2025 Honda CR-V 1.5 VTEC Turbo CVT",
+        "sourceUrl": "https://sketchfab.com/3d-models/91c6673859444597bf006a0ef8570005"
+      },
+      "uid": "91c6673859444597bf006a0ef8570005",
+      "apiStatus": 200,
+      "apiName": "2025 Honda CR-V 1.5 VTEC Turbo CVT",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Palma123 JAAT",
+      "apiAuthorUrl": "https://sketchfab.com/palma123.jaat",
+      "apiDescription": "The sixth-generation Honda CR-V is a compact crossover SUV manufactured by Honda since 2022, replacing the fifth-generation CR-V. Like its predecessor, the sixth-generation CR-V is available in 5-seater and 7-seater configurations. The sixth-generation CR-V is based on the Honda Architecture (HA) platform shared with the eleventh-generation Civic.\n\nSource: Wikipedia",
+      "meshCount": 44,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1610228,
+      "sha256": "891c4d543d4ab53da52ce7d556aa033f7ee6eafe6f568a102dc634f108aa8777",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/honda-cr-v.glb",
+      "adapter": {
+        "wheelNames": [
+          "rim001_Material005_0",
+          "turbo-type_chromeRimTurbo_0",
+          "turbo-type007_blackRim_0",
+          "tyre001_Tyre001_0",
+          "tyre002_Tyre003_0",
+          "tyre003_Tyre004_0"
+        ],
+        "tireNames": [
+          "tyre001_Tyre001_0"
+        ],
+        "brakeNames": [
+          "tyre003_Tyre004_0"
+        ],
+        "splitX": -0.00172694227985426,
+        "splitZ": 0.00002495222669196529
+      },
+      "orientationEvidence": "headLampturbo +Z and realLamp/redLamp -Z. Dedicated combined four-tire mesh is split into axle/side quadrants.",
+      "geometry": {
+        "wheelbase": 2.7,
+        "trackWidth": 1.5572866415712634,
+        "wheelRadius": 0.3672969956095234,
+        "bodyLength": 4.651874542236328,
+        "bodyWidth": 2.0372318029403687,
+        "bodyHeight": 1.4662676751613617,
+        "bodyCenterY": 0.33671458065509796
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "hyundai-azera",
+      "brand": "Hyundai",
+      "model": "Azera",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sedan",
+      "file": "hyundai-azera.glb",
+      "bytes": 1452700,
+      "paint": {
+        "materials": [
+          "tail"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Nieve5677",
+        "authorUrl": "https://sketchfab.com/niev",
+        "license": "CC Attribution",
+        "sourceName": "2009 Hyundai Azera",
+        "sourceUrl": "https://sketchfab.com/3d-models/711b67ea05f9441a863dce4badaca660"
+      },
+      "uid": "711b67ea05f9441a863dce4badaca660",
+      "apiStatus": 200,
+      "apiName": "2009 Hyundai Azera",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Nieve5677",
+      "apiAuthorUrl": "https://sketchfab.com/niev",
+      "apiDescription": "",
+      "meshCount": 77,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1452700,
+      "sha256": "d3155d48de8634a7bc149249794f225d107654b1177ae438eeaa1a521e19f3ca",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/hyundai-azera.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_5",
+          "Object_6",
+          "Object_7",
+          "Object_8",
+          "Object_9",
+          "Object_10",
+          "Object_11",
+          "Object_12",
+          "Object_72",
+          "Object_73",
+          "Object_74",
+          "Object_75",
+          "Object_76",
+          "Object_77",
+          "Object_78",
+          "Object_79"
+        ],
+        "tireNames": [
+          "Object_76",
+          "Object_77",
+          "Object_78",
+          "Object_79"
+        ],
+        "brakeNames": [
+          "Object_7",
+          "Object_8",
+          "Object_11",
+          "Object_12"
+        ],
+        "splitX": 5.917596552134555,
+        "splitZ": 0.18413203416987134
+      },
+      "orientationEvidence": "front_bum/head_ligh +Z and tail_ligh/exhust -Z. tyre002/003/004/01 are independent tires.",
+      "geometry": {
+        "wheelbase": 2.845,
+        "trackWidth": 1.5798773064946698,
+        "wheelRadius": 0.35115235616623053,
+        "bodyLength": 5.212426662445068,
+        "bodyWidth": 2.169756770133972,
+        "bodyHeight": 1.3146949112415314,
+        "bodyCenterY": 0.27896277606487274
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "hyundai-i30",
+      "brand": "Hyundai",
+      "model": "i30",
+      "years": [
+        2009,
+        2016
+      ],
+      "category": "hatchback",
+      "file": "hyundai-i30.glb",
+      "bytes": 1380712,
+      "paint": {
+        "materials": [
+          "black_1"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "D3NK",
+        "authorUrl": "https://sketchfab.com/leeyunhe902",
+        "license": "CC Attribution",
+        "sourceName": "2011 Hyundai i30 FD",
+        "sourceUrl": "https://sketchfab.com/3d-models/036a13aefc3f48c5ba996aa2361b429e"
+      },
+      "uid": "036a13aefc3f48c5ba996aa2361b429e",
+      "apiStatus": 200,
+      "apiName": "2011 Hyundai i30 FD",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "D3NK",
+      "apiAuthorUrl": "https://sketchfab.com/leeyunhe902",
+      "apiDescription": "안녕하세요  D3NK입니다. \n첫 업로드로 현대 i30 FD 업로드합니다.\n\ninstagram\nhttps://www.instagram.com/d3nk_gns/\n\nsketchup warehous\nhttps://3dwarehouse.sketchup.com/user/1349924019842761442505933/D3NK",
+      "meshCount": 98,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1380712,
+      "sha256": "2af16308feb8ac02f3f6dd2045737a7ca59ce5f4b705b2ff0bb13b67d58c94ff",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/hyundai-i30.glb",
+      "adapter": {
+        "wheelNames": [
+          "Material3_45",
+          "Material3_46",
+          "Material2_19",
+          "Material2_20",
+          "Material3_49"
+        ],
+        "tireNames": [
+          "Material3_45",
+          "Material3_46"
+        ],
+        "splitX": 962237.3437499995,
+        "splitZ": 2806631.6283088746
+      },
+      "orientationEvidence": "headlamp geometry +Z and rear lamps -Z. Tyre_Side and tire_1 dedicated meshes, with four wheel quadrants.",
+      "geometry": {
+        "wheelbase": 2.65,
+        "trackWidth": 1.4496652419833023,
+        "wheelRadius": 0.3069503234378479,
+        "bodyLength": 4.526396751403809,
+        "bodyWidth": 1.9402684569358826,
+        "bodyHeight": 1.4401975274085999,
+        "bodyCenterY": 0.17324671149253845
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "kia-picanto",
+      "brand": "Kia",
+      "model": "Picanto",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "hatchback",
+      "file": "kia-picanto.glb",
+      "bytes": 1346180,
+      "paint": {
+        "materials": [
+          "2021_Kia_Picanto_GT-Line_Titanium_Grey"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Nieve5677",
+        "authorUrl": "https://sketchfab.com/niev",
+        "license": "CC Attribution",
+        "sourceName": "Kia Picanto Morning GT-Line",
+        "sourceUrl": "https://sketchfab.com/3d-models/b4fd928f3e814ef29900c706bccc344d"
+      },
+      "uid": "b4fd928f3e814ef29900c706bccc344d",
+      "apiStatus": 200,
+      "apiName": "Kia Picanto Morning GT-Line",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Nieve5677",
+      "apiAuthorUrl": "https://sketchfab.com/niev",
+      "apiDescription": "",
+      "meshCount": 50,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1346180,
+      "sha256": "ce36a31c0f875e4cb1faeb898a5d2028686b826bbe8b6ea8bf88cbf29793cc3a",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/kia-picanto.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_11",
+          "Object_12",
+          "Object_13",
+          "Object_37",
+          "Object_38",
+          "Object_39",
+          "Object_40",
+          "Object_41",
+          "Object_42"
+        ],
+        "tireNames": [
+          "Object_42"
+        ],
+        "brakeNames": [
+          "Object_13"
+        ],
+        "splitX": -2.056747568771243,
+        "splitZ": -1.0867352721499302
+      },
+      "orientationEvidence": "Headlights +Z relative model center; rear brake lights -Z. Tires mesh dedicated to four corners.",
+      "geometry": {
+        "wheelbase": 2.4,
+        "trackWidth": 1.4053215457497394,
+        "wheelRadius": 0.29354451779641993,
+        "bodyLength": 3.755661725997925,
+        "bodyWidth": 1.9039278626441956,
+        "bodyHeight": 1.3624113202095032,
+        "bodyCenterY": 0.28185150027275085
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "kia-sportage",
+      "brand": "Kia",
+      "model": "Sportage",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "kia-sportage.glb",
+      "bytes": 1151244,
+      "paint": {
+        "materials": [
+          "Bestune_B70_mat_74"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "xnova360",
+        "authorUrl": "https://sketchfab.com/xnova360",
+        "license": "CC Attribution",
+        "sourceName": "Carro KIA Sportage Xnova360",
+        "sourceUrl": "https://sketchfab.com/3d-models/212016fe1b8b47fda3d0c30e1a22af2f"
+      },
+      "uid": "212016fe1b8b47fda3d0c30e1a22af2f",
+      "apiStatus": 200,
+      "apiName": "Carro KIA Sportage Xnova360",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "xnova360",
+      "apiAuthorUrl": "https://sketchfab.com/xnova360",
+      "apiDescription": "Find out moreinformation xnova360.com\nAugmented reality filters",
+      "meshCount": 54,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1151244,
+      "sha256": "3aa6ad1fa25290df7acd24a6226bc5bbb847fe5c0b622371ae30683eb2e21b46",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/kia-sportage.glb",
+      "adapter": {
+        "wheelNames": [
+          "CAR_Bestune_B70_mat_74_0",
+          "CAR_Bestune_B70_mat_74_0_1"
+        ],
+        "tireNames": [
+          "CAR_Bestune_B70_mat_74_0",
+          "CAR_Bestune_B70_mat_74_0_1"
+        ],
+        "splitX": 0.06818488955616651,
+        "splitZ": 0.08716313193741022
+      },
+      "orientationEvidence": "Roof centered +X and front windshield -X. Two dedicated complete-wheel material meshes occupy four low outboard corners; body remains separate.",
+      "geometry": {
+        "wheelbase": 2.67,
+        "trackWidth": 1.6069639588265774,
+        "wheelRadius": 0.35399758503360557,
+        "bodyLength": 4.557644844055176,
+        "bodyWidth": 2.123294949531555,
+        "bodyHeight": 1.547728717327118,
+        "bodyCenterY": 0.2648684084415436
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "lamborghini-countach-lp500s",
+      "brand": "Lamborghini",
+      "model": "Countach Lp500s",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "lamborghini-countach-lp500s.glb",
+      "bytes": 684556,
+      "paint": null,
+      "credit": {
+        "author": "SDC PERFORMANCE™️",
+        "authorUrl": "https://sketchfab.com/Lambo_SC04",
+        "license": "CC Attribution",
+        "sourceName": "Lamborghini Countach lp500s - Special 500k views",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-32e9ee8d129e4c2992e1753b4fc3094c"
+      },
+      "uid": "32e9ee8d129e4c2992e1753b4fc3094c",
+      "apiStatus": 200,
+      "apiName": "Lamborghini Countach lp500s - Special 500k views",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "SDC PERFORMANCE™️",
+      "apiAuthorUrl": "https://sketchfab.com/Lambo_SC04",
+      "apiDescription": "**Lamborghini Countach**\n\nThe Lamborghini Countach was made as a reaction to the Lamborghini \nJarama, which engineer Paolo Stanzani considered a mistake because it was too wise for Lamborghini. Paolo Stanzani then asked Marcello Gandini to design the most extravagant car possible1.\n\nThe Lamborghini Countach is, along with the Ferrari 512 Berlinetta Boxer, the most important model on the sports car market of the 1970s.\n\nAt the Geneva International Motor Show in March 1971, Lamborghini presented a concept study named \"LP500\". A mass production of the vehicle was not sensitive, but the study is popular, so much so that Lamborghini decides to produce and market a model resembling it. However, many details are changed. The 5-liter V12 engine of the LP500 prototype became in 1974, with the LP400, a 4-liter that was not to become famous. The name “LP” stands for “Longitudinale Posteriore” in reference to the position of the engine\n\nBlender 3.0 - By SDC - Rims realised by Lexyc16",
+      "meshCount": 24,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 684556,
+      "sha256": "af5341d7598ea9b9bbf7c9794cbf8e0b62b6e31ea26483366218daba89fdd2fd",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-countach-lp500s.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_26",
+          "Object_27",
+          "Object_28",
+          "Object_29",
+          "Object_30"
+        ],
+        "tireNames": [
+          "Object_29"
+        ],
+        "splitX": -0.10020268535709587,
+        "splitZ": 1.3877787807814457e-17
+      },
+      "orientationEvidence": "Front pop-up headlight assemblies at -Z; rear lamps +Z. Dedicated combined rims/tires Object26-30. Source credits rims by Lexyc16; contributor credit requires inclusion.",
+      "geometry": {
+        "wheelbase": 2.45,
+        "trackWidth": 1.5635194604512057,
+        "wheelRadius": 0.30272170668492193,
+        "bodyLength": 4.256695747375488,
+        "bodyWidth": 1.9514376521110535,
+        "bodyHeight": 0.9090576469898224,
+        "bodyCenterY": 0.0682903379201889
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": [
+        {
+          "author": "Lexyc16",
+          "title": "Wheel rims",
+          "source": "https://sketchfab.com/Lexyc16",
+          "note": "The Countach publisher names Lexyc16 as the rim contributor but does not identify a particular rim asset; this is an author profile link, not an asserted original rim model link."
+        }
+      ]
+    },
+    {
+      "id": "lamborghini-gallardo-lp560",
+      "brand": "Lamborghini",
+      "model": "Gallardo Lp560",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "lamborghini-gallardo-lp560.glb",
+      "bytes": 2273548,
+      "paint": null,
+      "credit": {
+        "author": "Black Snow",
+        "authorUrl": "https://sketchfab.com/BlackSnow02",
+        "license": "CC Attribution",
+        "sourceName": "Lamborghini Gallardo lp560",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-86691e28bae34cffa896b148c895e58d"
+      },
+      "uid": "86691e28bae34cffa896b148c895e58d",
+      "apiStatus": 200,
+      "apiName": "Lamborghini Gallardo lp560",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Black Snow",
+      "apiAuthorUrl": "https://sketchfab.com/BlackSnow02",
+      "apiDescription": "",
+      "meshCount": 163,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 2273548,
+      "sha256": "ef7aaab5bc1ee39b8f3a34926994922a5e0056179bd233514b3db8803aa80498",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-gallardo-lp560.glb",
+      "adapter": {
+        "wheelNames": [
+          "gallardo_wheel_02a_19x11_gallardo_wheel_01a_0",
+          "3_Wheel_Scene_-_Root001_0",
+          "3_Wheel_amdb11_brake001_0",
+          "3_Wheel_amdb11_misc_chrome001_0",
+          "3_Wheel_amdb11_misc001_0",
+          "3_Wheel_amdb11_caliper001_0",
+          "gallardo_wheel_02a_19x11001_gallardo_wheel_01a_0",
+          "3_Wheel001_Scene_-_Root001_0",
+          "3_Wheel001_amdb11_brake001_0",
+          "3_Wheel001_amdb11_misc_chrome001_0",
+          "3_Wheel001_amdb11_misc001_0",
+          "3_Wheel001_amdb11_caliper001_0",
+          "gallardo_wheel_02a_19x11002_gallardo_wheel_01a_0",
+          "3_Wheel002_Scene_-_Root001_0",
+          "3_Wheel002_amdb11_brake001_0",
+          "3_Wheel002_amdb11_misc_chrome001_0",
+          "3_Wheel002_amdb11_misc001_0",
+          "3_Wheel002_amdb11_caliper001_0",
+          "gallardo_wheel_02a_19x11003_gallardo_wheel_01a_0",
+          "3_Wheel003_Scene_-_Root001_0",
+          "3_Wheel003_amdb11_brake001_0",
+          "3_Wheel003_amdb11_misc_chrome001_0",
+          "3_Wheel003_amdb11_misc001_0",
+          "3_Wheel003_amdb11_caliper001_0"
+        ],
+        "tireNames": [
+          "3_Wheel_Scene_-_Root001_0",
+          "3_Wheel001_Scene_-_Root001_0",
+          "3_Wheel002_Scene_-_Root001_0",
+          "3_Wheel003_Scene_-_Root001_0"
+        ],
+        "brakeNames": [
+          "3_Wheel_amdb11_caliper001_0",
+          "3_Wheel001_amdb11_caliper001_0",
+          "3_Wheel002_amdb11_caliper001_0",
+          "3_Wheel003_amdb11_caliper001_0"
+        ],
+        "splitX": 0.09221880161108853,
+        "splitZ": 1.3877787807814457e-17
+      },
+      "orientationEvidence": "Headlights +Z and taillights -Z. Four named 3_Wheel tire groups and gallardo_wheel rims; calipers do not spin.",
+      "geometry": {
+        "wheelbase": 2.56,
+        "trackWidth": 1.7082079208616516,
+        "wheelRadius": 0.34455552881012086,
+        "bodyLength": 4.896107196807861,
+        "bodyWidth": 2.1824575662612915,
+        "bodyHeight": 1.0666106939315796,
+        "bodyCenterY": 0.02366507053375244
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "lamborghini-urus",
+      "brand": "Lamborghini",
+      "model": "Urus",
+      "years": [
+        2018,
+        2018
+      ],
+      "category": "suv",
+      "file": "lamborghini-urus.glb",
+      "bytes": 1072284,
+      "paint": {
+        "materials": [
+          "body"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "Kai Xiang",
+        "authorUrl": "https://sketchfab.com/kirikom9000",
+        "license": "CC Attribution",
+        "sourceName": "Lamborghini Urus 2018",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-32964087f5d24c3e90482724ddfc2fef"
+      },
+      "uid": "32964087f5d24c3e90482724ddfc2fef",
+      "apiStatus": 200,
+      "apiName": "Lamborghini Urus 2018",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Kai Xiang",
+      "apiAuthorUrl": "https://sketchfab.com/kirikom9000",
+      "apiDescription": "- update with a more refined texture in the future? before the Sun dies I guess",
+      "meshCount": 8,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1072284,
+      "sha256": "37feeafb2c3dddcb32c5cdf6fbb9c31cb5cca03917a6ae74227bf1ada3738eb3",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-urus.glb",
+      "adapter": {
+        "wheelNames": [
+          "wheel_wheellight_0",
+          "wheel001_wheellight_0",
+          "wheel002_wheellight_0",
+          "wheel003_wheellight_0"
+        ],
+        "tireNames": [
+          "wheel_wheellight_0",
+          "wheel001_wheellight_0",
+          "wheel002_wheellight_0",
+          "wheel003_wheellight_0"
+        ],
+        "splitX": -31.286094665527344,
+        "splitZ": 0.004417419433597303
+      },
+      "orientationEvidence": "High roof/cabin geometry spans mostly +Z (yellow roof high-point meanZ88.9 vs whole-car center31.3), leaving long low bonnet at -Z; front is -Z. Four complete separate wheel meshes exclude lights_wheellight body lights.",
+      "geometry": {
+        "wheelbase": 3.003,
+        "trackWidth": 1.7200030191408477,
+        "wheelRadius": 0.4004461802171393,
+        "bodyLength": 5.126887798309326,
+        "bodyWidth": 2.247600793838501,
+        "bodyHeight": 1.4332972764968872,
+        "bodyCenterY": 0.2857295870780945
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "land-rover-defender",
+      "brand": "Land Rover",
+      "model": "Defender",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "land-rover-defender.glb",
+      "bytes": 378644,
+      "paint": {
+        "materials": [
+          "Material"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "kekomag",
+        "authorUrl": "https://sketchfab.com/kekomag",
+        "license": "CC Attribution",
+        "sourceName": "Land Rover Defender 90 Lowpoly",
+        "sourceUrl": "https://sketchfab.com/3d-models/88e5f30687ec4d508cebafa876e014d6"
+      },
+      "uid": "88e5f30687ec4d508cebafa876e014d6",
+      "apiStatus": 200,
+      "apiName": "Land Rover Defender 90 Lowpoly",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "kekomag",
+      "apiAuthorUrl": "https://sketchfab.com/kekomag",
+      "apiDescription": "Please feel free to use this  model in your projects! I would be grateful for any attribution and likes.\nThanks!",
+      "meshCount": 51,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_emissive_strength",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 378644,
+      "sha256": "ce436b17c528fbbe88c57dc2ede8bf818ce5caa573635888bc4e350a40912451",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/land-rover-defender.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_66",
+          "Object_67",
+          "Object_68",
+          "Object_70",
+          "Object_71",
+          "Object_72",
+          "Object_74",
+          "Object_75",
+          "Object_76",
+          "Object_78",
+          "Object_79",
+          "Object_80"
+        ],
+        "tireNames": [
+          "Object_68",
+          "Object_72",
+          "Object_76",
+          "Object_80"
+        ],
+        "splitX": 0.2619034534524811,
+        "splitZ": 4.842757701873779
+      },
+      "orientationEvidence": "Front grille and bonnet +Z; vertical rear lamps -Z. Four separate rubber tires Object68/72/76/80.",
+      "geometry": {
+        "wheelbase": 2.36,
+        "trackWidth": 1.4036334935752013,
+        "wheelRadius": 0.38544180559421787,
+        "bodyLength": 3.825122594833374,
+        "bodyWidth": 1.7895821928977966,
+        "bodyHeight": 1.6825115978717804,
+        "bodyCenterY": 0.45090387761592865
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    },
+    {
+      "id": "land-rover-range-rover-velar",
+      "brand": "Land Rover",
+      "model": "Range Rover Velar",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "suv",
+      "file": "land-rover-range-rover-velar.glb",
+      "bytes": 1378992,
+      "paint": null,
+      "credit": {
+        "author": "Mona x Supercars",
+        "authorUrl": "https://sketchfab.com/Car2022",
+        "license": "CC Attribution",
+        "sourceName": "Land Rover Range Rover Velar",
+        "sourceUrl": "https://sketchfab.com/3d-models/494c03e056674423a8ca2e2af0c01eef"
+      },
+      "uid": "494c03e056674423a8ca2e2af0c01eef",
+      "apiStatus": 200,
+      "apiName": "Land Rover Range Rover Velar",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Mona x Supercars",
+      "apiAuthorUrl": "https://sketchfab.com/Car2022",
+      "apiDescription": "![](https://media.cdn-jaguarlandrover.com/api/v2/images/102858/w/640.jpg)\n\n3.8L V6 Engine.",
+      "meshCount": 11,
+      "extensions": [
+        "KHR_materials_clearcoat",
+        "KHR_materials_emissive_strength"
+      ],
+      "actualBytes": 1378992,
+      "sha256": "7540a43571fe19bc7cb6b351b23dcf0e48f38f39321de3e8492cde4fc69d5bdc",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/land-rover-range-rover-velar.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_12"
+        ],
+        "tireNames": [
+          "Object_12"
+        ],
+        "splitX": 0.3934898376464808,
+        "splitZ": -18.561399936676025
+      },
+      "orientationEvidence": "Cabin glass centered +Z; front lamp/bonnet geometry -Z and rear plate +Z. Dedicated combined four complete wheels Object12.",
+      "geometry": {
+        "wheelbase": 2.874,
+        "trackWidth": 1.5302201755720999,
+        "wheelRadius": 0.4014948641377192,
+        "bodyLength": 5.073244571685791,
+        "bodyWidth": 2.052336812019348,
+        "bodyHeight": 1.3961378931999207,
+        "bodyCenterY": 0.3220703899860382
+      },
+      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "contributors": []
+    }
+  ]
+}
