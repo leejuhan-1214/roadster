@@ -1,3 +1,7 @@
+최신 작업 v1.33 (2026-11-11): 착지실험의 수행평가 탐구 기능과 Three.js 계측을 강화했다. 먼저 LOCAL_HANDOFF.txt 맨 위와 README의 v1.33, docs/landing-study-guide.md를 읽고 아래 과거 프롬프트보다 최신 사용자의 요구/구현을 우선한다.
+추가 모듈 landing-analysis.js/landing-live.js/landing-visual.js와 연구 UI를 보존한다. 자동 비교는 같은 초기 조건과 차종으로 묶는다. 기체배출 중 고정질량충격량 검산 금지, 선형스프링Σ½kx²와 범프스톱/감쇠소산 구별, 연속N과2ms등가반력 구별. force chart10ms최댓값으로 충격량 재계산 금지. +2ms는 배치 다음실험으로 넘어갈때도 paused유지. 슬로재생은 물리dt를 바꾸지 않는다. 가정모델이며 실차충돌 안전예측이 아니다. 배포상태는 최신handoff와Actions를 확인한다.
+
+--- 이전 인계 프롬프트 ---
 최신 변경 v1.32: 차량 도색은 vehicle-paint.js 및 vehicle-paint-profiles.js를 사용한다. 원본 GLB 재질 이름만 믿지 말고 실제 차체 메시와 텍스처 영역을 확인해야 한다. 원본 실내 복제에는 copyVehiclePaint로 셰이더도 다시 연결한다. 검증/배포 결과는 LOCAL_HANDOFF.txt 맨 위 기록을 따른다.
 
 Roadster Landing Lab 최신 v1.31 작업 인계

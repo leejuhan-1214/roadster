@@ -1,4 +1,5 @@
 import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
+import {LandingVisual,landingRulerWindow} from './landing-visual.js?v=20261111-science1';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261111-cockpit1';
@@ -181,12 +182,13 @@ export class FlightScene {
     this.fanArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1,0xf6c75f,.18,.1);this.scene.add(this.fanArrow);
     this.contactArrows=Array.from({length:4},()=>{const a=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0x6bb7ff,.15,.07);this.scene.add(a);return a;});
     this.frictionArrows=Array.from({length:4},()=>{const a=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0xffb052,.14,.07);a.visible=false;this.scene.add(a);return a;});
+    this.landingVisual=new LandingVisual();this.scene.add(this.landingVisual.root);
     this.resize();
   }
 
   setQuality(quality) {
     this.quality=quality==='detail'?'detail':'smooth';
-    this.renderer.shadowMap.enabled=this.mode==='city'||this.quality==='detail';
+    this.renderer.shadowMap.enabled=this.mode==='city'||this.mode==='lab'||this.quality==='detail';
     this.renderer.shadowMap.needsUpdate=true;this.resize();
     const materials=new Set();this.scene.traverse(o=>{if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
     for(const m of materials){
@@ -310,9 +312,23 @@ export class FlightScene {
     a.needsUpdate=true;this.roadRelief.geometry.computeVertexNormals();
   }
   observeFrame(ms){if(this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
+  configureLandingShadows(){
+    // r180 selects shadow casters using the view camera's layers, so changing
+    // shadow.camera.layers alone cannot isolate the car. Cache only the fixed
+    // lab's caster flags and restore them when leaving; never touch car/city
+    // meshes. One existing shadow map supplies a genuine moving silhouette.
+    if(!this.labShadowCasters){
+      this.labShadowCasters=new Map();
+      for(const root of this.labEnvironment||[])root.traverse?.(object=>{if(object.castShadow)this.labShadowCasters.set(object,true);});
+    }
+    for(const [object,original]of this.labShadowCasters)object.castShadow=this.mode==='lab'?false:original;
+    const shadowCamera=this.sun?.shadow?.camera;
+    if(shadowCamera){const extent=this.mode==='lab'?10:24;Object.assign(shadowCamera,{left:-extent,right:extent,top:extent,bottom:-extent});shadowCamera.updateProjectionMatrix();}
+  }
   setMode(mode) {
     this.mode=mode;this.cockpitDrag=null;if(mode!=='city'){if(this.cockpit)this.cockpit.root.visible=false;if(this.vehicle)this.vehicle.root.visible=true;}this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
+    if(this.landingVisual)this.landingVisual.root.visible=mode==='lab'&&this.landingVisual.enabled;
     // City facades need depth precision hundreds of metres away; inspection keeps its close view.
     if(this.camera){this.camera.near=mode==='city'?.25:.08;this.camera.updateProjectionMatrix?.();}
     if(mode!=='inspect')this.camera.clearViewOffset();
@@ -321,14 +337,17 @@ export class FlightScene {
       for(const object of this.labEnvironment)object.visible=mode!=='city'&&(mode!=='inspect'||!this.inspectionOccluders.includes(object));
     }
     if(this.city)this.city.root.visible=mode==='city';
-    if(this.renderer){this.renderer.shadowMap.enabled=mode==='city'||this.quality==='detail';this.renderer.shadowMap.needsUpdate=true;}
+    if(this.renderer){this.renderer.shadowMap.enabled=mode==='city'||mode==='lab'||this.quality==='detail';this.renderer.shadowMap.needsUpdate=true;}
     if(this.sun?.shadow){this.sun.shadow.camera.far=mode==='city'?650:150;this.sun.shadow.camera.updateProjectionMatrix();}
+    this.configureLandingShadows?.();
     if(this.scene?.fog)this.scene.fog.density=mode==='city'?.0015:.0025;
     if(this.marks){this.marks.count=0;this.markIndex=0;}
     if(this.stageVisual)this.stageVisual.visible=mode!=='inspect';
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;}
     this.applyInspectorVisibility?.();
   }
+  setLandingExperiment(config){this.landingVisual?.setExperiment(config);if(!config)this.landingFocusOffset=null;}
+  setLandingLearningVisible(visible){this.landingVisual?.setVisible(visible);}
   setCamera(camera) {
     if(this.mode==='city'&&camera==='orbit'&&this.cameraName==='hood'&&this.vehicle){
       const p=this.vehicle.root.position;this.controls.target.copy(p).add(new THREE.Vector3(0,.4,0));
@@ -362,7 +381,20 @@ export class FlightScene {
   frameLandingStart(sim){
     const height=Math.abs(sim.state.pos.y);
     this.camera.far=Math.max(1500,Math.min(1e12,height*2+1000));this.camera.updateProjectionMatrix();
-    this.frameStageStart(sim);
+    const p=sim.bodyPosition||sim.state.pos,release=this.landingVisual?.config?.height??Math.max(0,p.y-.67);
+    const ruler=landingRulerWindow(release,release);
+    // Fit the local measuring window, not the entire path of a high drop.
+    // Include displaced force arrows and the ruler left of the car, and use
+    // the canvas space left after the actual telemetry panel is accounted for.
+    const low=Math.min(p.y-.75,ruler.start),high=Math.max(p.y+3.1,ruler.end);
+    const box=new THREE.Box3(new THREE.Vector3(p.x-4.8,low,p.z-2.7),new THREE.Vector3(p.x+3.2,high,p.z+2.7));
+    const center=box.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(-8,3.8,4.2).normalize();
+    const available=this.inspectionViewport();
+    const distance=inspectionDistance(box,direction,43,this.camera.aspect,available);
+    this.landingFocusOffset=center.clone().sub(p);this.camera.fov=43;
+    this.cameraTarget.copy(center);this.controls.target.copy(center);this.controls.maxDistance=Math.max(55,distance*1.4);
+    this.camera.position.copy(center).addScaledVector(direction,distance);this.cameraPosition.copy(this.camera.position);
+    this.camera.lookAt(center);this.camera.updateProjectionMatrix();this.controls.update();this.chaseBlend=1;this.lastCameraHeading=0;
   }
   frameCityStart(sim){
     this.cockpit?.recenter();this.cockpitDrag=null;
@@ -460,6 +492,14 @@ export class FlightScene {
   }
   inspectionViewport() {
     const w=this.canvas?.clientWidth||1280,h=this.canvas?.clientHeight||720;
+    if(this.mode==='lab'){
+      const getRect=id=>typeof document!=='undefined'?document.getElementById(id)?.getBoundingClientRect():null;
+      const rightPanel=getRect('telemetry'),leftPanel=w>1000?getRect('left-panel'):null;
+      const right=Math.min(w*.4,rightPanel?.width?Math.max(0,w-rightPanel.left):w<=700?197:w<=1000?182:272);
+      const left=w>1000?Math.min(w*.36,leftPanel?.right||334):0;
+      this.camera.setViewOffset(w,h,(right-left)/2,0,w,h);
+      return Math.max(.25,1-(left+right)/w);
+    }
     const panel=this.mode==='inspect'&&w>1000?Math.min(360,w*.36):0;
     if(panel)this.camera.setViewOffset(w,h,-panel/2,0,w,h);else this.camera.clearViewOffset();
     return 1-panel/w;
@@ -579,24 +619,27 @@ export class FlightScene {
     if(this.vehicle.fitLayout&&(this.lastFitExplosion!==explode||this.lastFitMode!==this.mode)){
       updateVehicleExplosion(this.vehicle,explode,{inspect:this.mode==='inspect'});this.lastFitExplosion=explode;this.lastFitMode=this.mode;
     }
-    this.updateJets(view,dt,!!options.vectors);
-    this.gravityArrow.visible=!!options.vectors;
-    if(options.vectors){
+    // The landing diagram uses one shared linear force scale. Keep the older
+    // driving/inspection vectors available without drawing both sets together.
+    const showVectors=!!options.vectors&&!(mode==='lab'&&this.landingVisual?.enabled);
+    this.updateJets(view,dt,showVectors);
+    this.gravityArrow.visible=showVectors;
+    if(showVectors){
     this.gravityArrow.position.copy(position);this.gravityArrow.setLength(Math.max(.4,(this.telemetry.totalMass||2150)*9.80665/16000),.18,.1);
-    this.fanArrow.visible=!!options.vectors&&(this.telemetry.fanN||0)>100;
+    this.fanArrow.visible=showVectors&&(this.telemetry.fanN||0)>100;
     this.fanArrow.position.copy(bodyPosition).add(new THREE.Vector3(-.1,-.25,0).applyQuaternion(q));this.fanArrow.setDirection(tmpV.set(0,-1,0).applyQuaternion(q));this.fanArrow.setLength(Math.max(.3,(this.telemetry.fanN||0)/16000),.16,.09);
-    for(let i=0;i<4;i++){const a=this.contactArrows[i],w=wheels?.[i];a.visible=!!options.vectors&&(w?.load||0)>100;if(w){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=.06+(w.surfaceY||0);a.setLength(.25+(w.load||0)/10000,.15,.07);}}
+    for(let i=0;i<4;i++){const a=this.contactArrows[i],w=wheels?.[i];a.visible=showVectors&&(w?.load||0)>100;if(w){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=.06+(w.surfaceY||0);a.setLength(.25+(w.load||0)/10000,.15,.07);}}
     }else{this.fanArrow.visible=false;for(const a of this.contactArrows)a.visible=false;}
     for(let i=0;i<4;i++){
       const a=this.frictionArrows[i],w=wheels[i],force=Math.hypot(w?.forceX||0,w?.forceY||0,w?.forceZ||0);
-      a.visible=!!options.vectors&&mode!=='inspect'&&force>10;
+      a.visible=showVectors&&mode!=='inspect'&&force>10;
       if(a.visible){a.position.copy(w.pos).applyQuaternion(q).add(position);a.position.y=(w.surfaceY||0)+.09;a.setDirection(tmpV.set(w.forceX,w.forceY||0,w.forceZ).normalize());a.setLength(.15+Math.min(2.5,force/4500),.14,.07);}
     }
     if(this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
     this.tireEffects.update(sim,view,this.mode==='city');
     this.contactShadow.position.set(position.x,.016,position.z);
     this.contactShadow.rotation.z=-Math.atan2(tmpV.set(1,0,0).applyQuaternion(q).z,tmpV.x);
-    this.contactShadow.material.opacity=.65*Math.exp(-Math.max(0,position.y-.6)*.35);
+    this.contactShadow.material.opacity=(mode==='lab'?.28:.65)*Math.exp(-Math.max(0,position.y-.6)*.35);
     const height=Math.max(0,position.y-.6);this.contactShadow.scale.setScalar(1+height*.065);
     if(this.sunDirection)this.sun.position.copy(position).addScaledVector(this.sunDirection,this.mode==='city'?300:50);
     else this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);
@@ -608,8 +651,9 @@ export class FlightScene {
       for(const [id,g] of this.stageVisual.userData.obstacles){const mat=g.children[0]?.material;if(mat?.emissive){mat.emissive.setHex(0xff6e34);mat.emissiveIntensity=hit?.id===id?Math.max(0,1-(sim.state.time-hit.lastTime)/1.4)*.8:0;}}
     }
     this.updateCamera(view,dt);
+    this.landingVisual?.update(sim,view,this.camera,mode);
     if(insideCockpit&&this.cockpit.mirrorSurface)this.cockpitMirror.update(this.renderer,this.scene,{bodyPosition,quaternion:q,eye:this.cockpit.seat.eye},dt,[this.vehicle.root,this.customModel,this.cockpit.root]);
-    this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=(this.mode==='city'?1/12:1/20)){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
+    this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=(this.mode==='city'||this.mode==='lab'?1/12:1/20)){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
     this.renderer.render(this.scene,this.camera);
   }
 
@@ -623,7 +667,7 @@ export class FlightScene {
       if(this.selectedPart&&this.mode==='inspect')new THREE.Box3().setFromObject(this.selectedPart).getCenter(this.cameraTarget);
       else if(this.mode==='inspect'&&this.vehicle.fitLayout){
         this.inspectionBounds(this.explodeProgress).getCenter(this.cameraTarget).applyMatrix4(this.vehicle.root.matrixWorld);
-      }else{this.cameraTarget.copy(p);this.cameraTarget.y+=.15;}
+      }else{this.cameraTarget.copy(p);if(this.mode==='lab'&&this.landingFocusOffset)this.cameraTarget.add(this.landingFocusOffset);else this.cameraTarget.y+=.15;}
       // Translate eye and pivot equally: driving follows without resetting the user's orbit.
       this.camera.position.add(tmpV.copy(this.cameraTarget).sub(this.controls.target));
       this.controls.target.copy(this.cameraTarget);this.camera.fov=43;this.camera.updateProjectionMatrix();
@@ -701,6 +745,7 @@ export class FlightScene {
     this.marks.instanceMatrix.needsUpdate=true;
   }
   dispose() {
+    this.landingVisual?.dispose();
     this.canvas.removeEventListener('pointerdown',this._onDown,true);this.canvas.removeEventListener('pointerup',this._onUp,true);
     this.canvas.removeEventListener('pointermove',this._onMove,true);this.canvas.removeEventListener('pointercancel',this._onCancel,true);
     this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();this.cockpitMirror?.dispose();

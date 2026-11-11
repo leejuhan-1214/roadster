@@ -68,6 +68,12 @@ export function createLandingRun(sim,options={}){
   return {...config,config:Object.freeze({...config}),startTime:sim.state.time,
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
+    // The energy datum is the CG height at level, unloaded tire contact.
+    // After compression, gravitational energy relative to this datum can be negative.
+    energyDatumY:sim.state.pos.y-config.height,initialPotentialEnergyJ:sim.mass*sim.params.gravity*config.height,
+    previousMass:sim.mass,previousGas:sim.state.gas,finalMass:sim.mass,finalVelocityY:0,
+    touchdownMass:null,touchdownKineticEnergyJ:null,touchdownGasUsed:null,
+    totalGravityImpulseNs:0,constantMassAuditValid:true,freeFallConditionsValid:true,
     parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
     braking:false,manualLiftActive:false,manualLiftUsed:false,manualLiftDuration:0,
     touchdownTime:null,touchdownSpeed:null,contactDuration:null,
@@ -108,7 +114,7 @@ export function landingRunInput(run,sim,manualLift=false){
 
 function complete(run,status){
   run.done=true;run.status=status;
-  const {config,startTime,done,result,sampleBucket,settledFor,braking,...data}=run;
+  const {config,startTime,done,result,sampleBucket,settledFor,braking,previousMass,previousGas,...data}=run;
   run.result={...data,samples:run.samples.map(s=>({...s})),config:{...config}};
 }
 
@@ -126,12 +132,26 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   if(run.manualLiftActive){run.manualLiftUsed=true;run.manualLiftDuration+=dt;}
   const ground=Math.max(0,sim.groundForceN),impulse=Math.max(0,sim.groundCorrectionImpulseNs);
   const equivalent=ground+impulse/dt;
+  // Match the integrator's midpoint mass for gravity, and retain the actual
+  // endpoint velocity. A constant-mass impulse audit uses this whole interval,
+  // never the 10 ms peak-envelope chart or the fractionally timed first stop.
+  const massBefore=run.previousMass,gasBefore=run.previousGas;
+  run.totalGravityImpulseNs-=(massBefore+sim.mass)*.5*Math.max(0,sim.params.gravity)*dt;
+  run.finalMass=sim.mass;run.finalVelocityY=sim.state.vel.y;
+  const noExtraVerticalForce=sim.totalThrust<1e-9&&Math.abs(sim.fanForce)<1e-9&&sim.airDragN<1e-9&&
+    sim.params.roadRoughness===0&&sim.obstacles.length===0;
+  run.constantMassAuditValid &&= noExtraVerticalForce&&Math.abs(sim.mass-run.initialMass)<1e-9;
+  if(run.touchdownTime===null)run.freeFallConditionsValid &&= noExtraVerticalForce&&
+    Math.abs(sim.params.gravity-run.parameters.gravity)<1e-12&&Math.abs(sim.mass-run.initialMass)<1e-9;
   const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
   const properG=acceleration.length()/Math.max(.001,sim.params.gravity);
   const touching=ground>0||impulse>0;
   if(touching&&run.touchdownTime===null){
     run.touchdownTime=run.elapsed-dt;
     run.touchdownSpeed=Math.max(0,-sim.preStepVelocityY);
+    run.touchdownMass=massBefore;
+    run.touchdownKineticEnergyJ=.5*massBefore*run.touchdownSpeed**2;
+    run.touchdownGasUsed=run.initialGas-gasBefore;
   }
   run.peakGroundForceN=Math.max(run.peakGroundForceN,ground);
   run.peakEquivalentGroundForceN=Math.max(run.peakEquivalentGroundForceN,equivalent);
@@ -160,7 +180,16 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   const sampleInterval=nearContact?.01:run.precontactSampleInterval;
   const sample={time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,groundForceN:ground,
     equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
-    compression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0};
+    compression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,
+    // Stored translational / gravitational / linear-spring energy only: this
+    // excludes rotation, nonlinear bump stops, dissipation and expelled gas.
+    // It is not a closed-system conservation sum during thrust or contact.
+    massKg:sim.mass,kineticEnergyJ:.5*sim.mass*sim.state.vel.lengthSq(),
+    potentialEnergyJ:sim.mass*sim.params.gravity*(sim.state.pos.y-run.energyDatumY),
+    springEnergyJ:.5*sim.params.springK*sim.wheels.reduce((sum,w)=>{
+      const gap=w.pos.clone().applyQuaternion(sim.state.q).y+sim.state.pos.y-sim.params.wheelRadius;
+      return sum+Math.max(0,-gap)**2;
+    },0)};
   const bucket=sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
   if(bucket!==run.sampleBucket){run.samples.push(sample);run.sampleBucket=bucket;}
   else{
@@ -170,6 +199,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
     last.manualLift=Math.max(last.manualLift,sample.manualLift);
     last.gLoad=Math.max(last.gLoad,properG);last.correctionImpulseNs+=impulse;
   }
+  run.previousMass=sim.mass;run.previousGas=sim.state.gas;
   if(run.touchdownTime!==null){
     const settled=Math.abs(sim.state.vel.y)<.025&&sim.state.omega.length()<.03&&sim.contactCount>=3;
     run.settledFor=settled?run.settledFor+dt:0;

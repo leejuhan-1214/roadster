@@ -3,11 +3,12 @@ import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261110-seoul1';
 import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261110-air1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261111-cockpit1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261110-seoul1';
-import {LandingUI} from './landing-ui.js?v=20261111-cockpit1';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261111-science1';
+import {LandingUI} from './landing-ui.js?v=20261111-science1';
+import {LandingLiveUI} from './landing-live.js?v=20261111-science1';
 import {RenderStateBuffer} from './render-state.js?v=20261107-drive2';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261111-trees2';
-import {FlightScene} from './scene.js?v=20261111-paint1';
+import {FlightScene} from './scene.js?v=20261111-science1';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261111-cockpit1';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -18,6 +19,7 @@ const $=id=>document.getElementById(id), $$=selector=>[...document.querySelector
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sim=new PhysicsSim({roadRoughness:0,aeroEnabled:false});
 const renderStates=new RenderStateBuffer(sim);
+let landingLiveUI,landingLearningVisible=true,landingPlaybackRate=1;
 let scene,landingUI,selectedPartId=null,activeVehicle=vehicleProfile('roadster'),vehicleLoading=false;
 let mode='lab',camera='orbit',paused=true,showVectors=false;
 let cockpitPanelsOpen=false,lastCockpitView=false;
@@ -34,7 +36,7 @@ const freeDriving=()=>mode==='city'||(mode==='lab'&&!landingSession);
 let lastStamp=0,accumulator=0,lastUI=0,frames=0,frameTimer=0,toastTimer;
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2800);}
 function setPaused(value){
-  paused=value;if(value){clearLandingLift();clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
+  paused=value;if(!value&&landingSession)landingSession.singleStepping=false;if(value){clearLandingLift();clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
   $('pause').textContent=paused?'▶':'Ⅱ';$('pause').disabled=!landingRun&&!freeDriving();
   $('pause').setAttribute('aria-label',(mode==='city'?'주행':'실험')+(paused?' 재생':' 일시정지'));
   $('live-label').textContent=mode==='city'?(cityLoading?'도시 불러오는 중':paused?'일시정지':'강남역 자유 주행'):landingRun?(paused?'일시정지':'측정 중'):mode==='inspect'?'구조 탐색':freeDriving()?'자유 조종':'실험 준비';
@@ -66,7 +68,8 @@ function reset({cancel=true,clearMeasurement=true}={}){
     scene.frameCityStart(sim);
   }
   if(clearMeasurement)lastResult=null;
-  renderStates.reset(sim);accumulator=0;setPaused(mode==='inspect'||cityLoading);
+  scene?.setLandingExperiment(null);
+  renderStates.reset(sim);accumulator=0;setPaused(mode==='inspect'||cityLoading||!!landingSession?.singleStepping);
 }
 function stopLanding(){cancelLanding();reset({cancel:false});}
 async function startLanding(kind){
@@ -93,11 +96,12 @@ async function nextLanding(session){
       tankVolume:session.originalParams.tankVolume,tankPressureMPa:session.originalParams.tankPressureMPa,initialTemperature:session.originalParams.initialTemperature});
     const trialSettings={...session.settings,...job,brakeHeight:job.brakeHeight??session.settings.brakeHeight,vehicleId:activeVehicle.id,title:activeVehicle.title};
     landingRun=createLandingRun(sim,trialSettings);
+    scene.setLandingExperiment(trialSettings);
     lastResult=null;
     session.metadata={...session.settings,...job,method:job.method,brakeHeight:job.brakeHeight??session.settings.brakeHeight,groupId:session.groupId,groupSize:session.jobs.length,groupKind:session.kind,vehicleId:activeVehicle.id,vehicleTitle:activeVehicle.title,id:session.groupId+'-'+session.index,initialMass:sim.mass,initialGas:sim.initialGas,tankVolume:sim.params.tankVolume,tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature};
     scene.setExplode(0,true);scene.restoreParts();scene.focusPart(null);
     camera='orbit';scene.setCamera(camera);scene.frameLandingStart(sim);$('camera-label').textContent='자유 카메라';
-    renderStates.reset(sim);setPaused(false);$('vehicle-select').disabled=true;
+    renderStates.reset(sim);setPaused(!!session.singleStepping);$('vehicle-select').disabled=true;
     landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · '+activeVehicle.title+' · 착지 중');
     if(matchMedia('(max-width:1000px)').matches)$('left-panel').classList.remove('open');
   }catch(error){if(landingSession===session){cancelLanding('실험 중단 · '+error.message);reset({cancel:false});}console.error(error);}
@@ -391,7 +395,13 @@ function toggleCockpitPanels(open=!cockpitPanelsOpen){
 function updateUI(){
   syncCockpitHUD();
   const t=sim.telemetry(),run=landingRun||lastResult;
+  $('landing-playback').hidden=mode!=='lab';
+  $('landing-step').disabled=!(mode==='lab'&&landingRun&&paused&&!vehicleLoading);
+  $('vectors').textContent=mode==='lab'?'∑ 물리 표시':'↗ 힘 벡터';
+  $('vectors').setAttribute('aria-pressed',mode==='lab'?landingLearningVisible:showVectors);
   if(mode==='city'){updateCityHUD(t);return;}
+  landingLiveUI?.setVisible(mode==='lab'&&landingLearningVisible);
+  landingLiveUI?.update(sim,scene.landingVisual,run,{active:!!landingRun,paused});
   $('altitude').innerHTML=Math.max(0,landingClearance(sim)).toFixed(2)+' <small>m</small>';
   $('vertical').innerHTML=(t.verticalSpeed>=0?'+':'')+t.verticalSpeed.toFixed(2)+' <small>m/s</small>';
   const force=Math.max(0,sim.groundForceN)+Math.max(0,sim.groundCorrectionImpulseNs)/LANDING_STEP;
@@ -411,7 +421,7 @@ function updateUI(){
 }
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
-  $('guide-content').innerHTML=tab==='sources'?'<p>실차 외형 · 공통 가상 착지 장치 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>자유 낙하·추력 제동·완만한 하강을 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과의 그래프와 CSV로 측정값을 확인합니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 카메라 · V: 힘 벡터 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. R 복귀·재충전. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
+  $('guide-content').innerHTML=tab==='sources'?'<p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>실차 외형 · 공통 가상 착지 장치 · <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>자유 낙하·추력 제동·완만한 하강을 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 카메라 · V: 힘 벡터 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. R 복귀·재충전. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
 }
 function openGuide(tab='controls'){renderGuide(tab);$('guide-modal').showModal();}
 function focusApparatus(id){
@@ -422,6 +432,10 @@ function focusApparatus(id){
 function setupUI(){
   refreshVehiclePicker();
   landingUI=new LandingUI({vehicles:EXPERIMENT_VEHICLES,onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onCompareFleetMethods:()=>startLanding('fleet-methods'),onCompareBrakeHeights:()=>startLanding('brake-heights'),onStop:stopLanding});
+  landingLiveUI=new LandingLiveUI($('telemetry'));
+  scene.setLandingLearningVisible(landingLearningVisible);
+  $('landing-speed').addEventListener('change',event=>{landingPlaybackRate=Number(event.target.value)||1;accumulator=0;});
+  $('landing-step').addEventListener('click',()=>{if(mode==='lab'&&landingRun&&paused&&!vehicleLoading){landingSession.singleStepping=true;stepSimulation();renderStates.reset(sim);updateUI();}});
   renderCityVehicleOptions();
   $('city-vehicle-search').addEventListener('input',()=>{clearDriveInputs();renderCityVehicleOptions();});
   $('city-vehicle-select').addEventListener('change',e=>selectVehicle(e.target.value));
@@ -457,7 +471,7 @@ function setupUI(){
   $$('.close-dialog').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
   $$('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
   $('panel-toggle').addEventListener('click',()=>$('left-panel').classList.toggle('open'));
-  $('vectors').addEventListener('click',()=>{showVectors=!showVectors;$('vectors').setAttribute('aria-pressed',showVectors);$('city-vectors').setAttribute('aria-pressed',showVectors);});
+  $('vectors').addEventListener('click',()=>{if(mode==='lab'){landingLearningVisible=!landingLearningVisible;scene.setLandingLearningVisible(landingLearningVisible);updateUI();return;}showVectors=!showVectors;$('vectors').setAttribute('aria-pressed',showVectors);$('city-vectors').setAttribute('aria-pressed',showVectors);});
   $('camera').addEventListener('click',()=>{if(mode==='inspect'){camera='orbit';scene.frameWholeVehicle({resetView:true});}else if(mode==='city')camera=camera==='chase'?'hood':camera==='hood'?'orbit':'chase';else camera=camera==='orbit'?'top':'orbit';scene.setCamera(camera);$('camera-label').textContent=cameraLabel();});
   $('explode').addEventListener('input',()=>{const value=Number($('explode').value);scene.setExplode(value);$('explode-value').textContent=Math.round(value*100)+'%';});
   $('tank-focus').addEventListener('click',()=>focusApparatus('tank'));
@@ -489,7 +503,7 @@ function animate(stamp){
   const blocked=!!document.querySelector('dialog[open]');
   if(blocked&&landingLiftHeld)clearLandingLift();
   if(mode==='city')scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z,sim.state.vel.x,sim.state.vel.z);
-  if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked&&!document.hidden){accumulator+=elapsed;let steps=0;while(accumulator>=LANDING_STEP&&steps<50&&!paused){stepSimulation();accumulator=Math.max(0,accumulator-LANDING_STEP);steps++;}}else accumulator=0;
+  if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked&&!document.hidden){accumulator+=elapsed*(landingRun?landingPlaybackRate:1);let steps=0;while(accumulator>=LANDING_STEP&&steps<50&&!paused){stepSimulation();accumulator=Math.max(0,accumulator-LANDING_STEP);steps++;}}else accumulator=0;
   if(!document.hidden)scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,vectors:showVectors,explode:Number($('explode').value),paint:$('city-paint').value,wing:false,cutaway:false,renderState:renderStates.sample(paused||mode==='inspect'||blocked?1:accumulator/LANDING_STEP)});
   if(stamp-lastUI>80){updateUI();lastUI=stamp;}frames++;frameTimer+=elapsed;
