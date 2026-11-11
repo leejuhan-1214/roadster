@@ -4059,6 +4059,872 @@
       },
       "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
       "contributors": []
+    },
+    {
+      "id": "bugatti-chiron",
+      "brand": "Bugatti",
+      "model": "Chiron",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sports",
+      "file": "bugatti-chiron.glb",
+      "bytes": 2989204,
+      "paint": {
+        "materials": [
+          "Meshpart128Mtl"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "DisneyCars",
+        "authorUrl": "https://sketchfab.com/supercarmodels",
+        "license": "CC Attribution",
+        "sourceName": "2023 Bugatti Chiron Profilee",
+        "sourceUrl": "https://sketchfab.com/3d-models/6da5092ee455446cb050e4c6b4a3ac05"
+      },
+      "uid": "6da5092ee455446cb050e4c6b4a3ac05",
+      "apiStatus": 200,
+      "apiName": "2023 Bugatti Chiron Profilee",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "DisneyCars",
+      "apiAuthorUrl": "https://sketchfab.com/supercarmodels",
+      "apiDescription": "",
+      "meshCount": 47,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_emissive_strength",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 2989204,
+      "sha256": "2d73cf6197a785367076d02aef5bf8e1ebc583d6e9085e83887f32c2765ba508",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bugatti-chiron.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_9",
+          "Object_45",
+          "Object_46",
+          "Object_47",
+          "Object_48"
+        ],
+        "tireNames": [
+          "Object_45"
+        ],
+        "splitX": 67.01725,
+        "splitZ": -3.39673
+      },
+      "orientationEvidence": "Original red emissive rear strip Object_2 / Meshpart182Mtl at X=-58.032 and white emissive front lamp Object_34 / Meshpart256Mtl at X=-75.065 identify forward=-X; rotate pi about Y. Neumatico1Mtl four-tire combined mesh and wheel-only Color1/Rin1/Sombra groups are spatially partitioned at the original axle/side midpoints.",
+      "geometry": {
+        "wheelbase": 2.71,
+        "trackWidth": 1.6839943890109876,
+        "wheelRadius": 0.3361197088917878,
+        "bodyLength": 4.684121131896973,
+        "bodyWidth": 2.186630368232727,
+        "bodyHeight": 1.1044539213180542,
+        "bodyCenterY": 0.06658458709716797,
+        "liftX": 0.7858999999999999,
+        "liftY": -0.3946533954495734,
+        "liftZ": 0.677784571647644,
+        "boostX": -2.1283735293081962,
+        "boostY": -0.20952889323234558,
+        "boostZ": 0.49194041490554813,
+        "yawX": 1.3271448802947998,
+        "yawY": -0.20952889323234558,
+        "yawZ": 0.8709277439117431
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "bugatti-veyron",
+      "brand": "Bugatti",
+      "model": "Veyron",
+      "years": [
+        2000,
+        2024
+      ],
+      "category": "sports",
+      "file": "bugatti-veyron.glb",
+      "bytes": 3967440,
+      "paint": {
+        "materials": [
+          "M_Metalic_Orange"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "andikapratamaw",
+        "authorUrl": "https://sketchfab.com/andikapratamaw",
+        "license": "CC Attribution",
+        "sourceName": "Bugatti Veyron 16.4 Super Sport - Lowpoly",
+        "sourceUrl": "https://sketchfab.com/3d-models/0ee4c65face949efa4500deb17c79150"
+      },
+      "uid": "0ee4c65face949efa4500deb17c79150",
+      "apiStatus": 200,
+      "apiName": "Bugatti Veyron 16.4 Super Sport - Lowpoly",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "andikapratamaw",
+      "apiAuthorUrl": "https://sketchfab.com/andikapratamaw",
+      "apiDescription": "I dedicated to make this cars look awesome, but still in lowpoly, make it to be free! If you take any render from this, mention me! i will support you by reupload your work on this page! So you can get free engagement too :)\n\nVideo preview available here : https://www.youtube.com/watch?v=u-e3NFirEbY\n\n* This is the model of Bugatti Veyron 16.4 Super Sport, with custom paintjob..\n* This model doesn't include interior\n* Can be used for your game or anything else\n* Please to leave the credit on your project if using this model.\n* Available on blender format\n* 75K of total tris\n\n\nWant to make custom car? you contact me on :\n\n* Website : andika.pw\n* email : pw.andikapratama@gmail.com",
+      "meshCount": 23,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 3967440,
+      "sha256": "083b52fdcbb7b54f4bdc5a59c0d3773797d859545a43fb10d7dd8416a37923b6",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bugatti-veyron.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_12",
+          "Object_13",
+          "Object_14",
+          "Object_15",
+          "Object_17",
+          "Object_18",
+          "Object_19",
+          "Object_20",
+          "Object_22",
+          "Object_23",
+          "Object_24",
+          "Object_25",
+          "Object_27",
+          "Object_28",
+          "Object_29",
+          "Object_30"
+        ],
+        "tireNames": [
+          "Object_15",
+          "Object_20",
+          "Object_25",
+          "Object_30"
+        ],
+        "brakeNames": [
+          "Object_12",
+          "Object_17",
+          "Object_22",
+          "Object_27"
+        ],
+        "splitX": -0.082,
+        "splitZ": 0.01
+      },
+      "orientationEvidence": "Exterior mirror glass Object_9 at Z=+0.534 is beside the forward windshield and ahead of body center; front axle Z=+1.272, rear axle Z=-1.435. Forward=+Z is rotated +pi/2 to +X. Dedicated tire, rim and orange caliper meshes are identified separately per wheel; body Object_4 keeps editable main paint while white/black trim stays original.",
+      "geometry": {
+        "wheelbase": 2.71,
+        "trackWidth": 1.669462827592989,
+        "wheelRadius": 0.35355106674086506,
+        "bodyLength": 4.5374274253845215,
+        "bodyWidth": 1.9775766730308533,
+        "bodyHeight": 1.0968422591686249,
+        "bodyCenterY": 0.08554370701313019,
+        "liftX": 0.7858999999999999,
+        "liftY": -0.37118000373983623,
+        "liftZ": 0.607516382932663,
+        "boostX": -2.070279630027551,
+        "boostY": -0.18866685777902603,
+        "boostZ": 0.4409393101930618,
+        "yawX": 0.8966823253631591,
+        "yawY": -0.18866685777902603,
+        "yawZ": 0.8767607797986756
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "koenigsegg-one",
+      "brand": "Koenigsegg",
+      "model": "One",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "koenigsegg-one.glb",
+      "bytes": 1721852,
+      "paint": null,
+      "credit": {
+        "author": "iSteven",
+        "authorUrl": "https://sketchfab.com/OneSteven",
+        "license": "CC Attribution",
+        "sourceName": "Koenigsegg One:1",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-b4e5a4c5fa5d4d45acd6715d3325254f"
+      },
+      "uid": "b4e5a4c5fa5d4d45acd6715d3325254f",
+      "apiStatus": 200,
+      "apiName": "Koenigsegg One:1",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "iSteven",
+      "apiAuthorUrl": "https://sketchfab.com/OneSteven",
+      "apiDescription": "The Koenigsegg One:1 was presented at the 2014 Geneva Motor Show held in March. Koenigsegg built six cars apart from the car presented at the Geneva Motor Show. All of which were already sold. Koenigsegg took two cars to the 2014 Goodwood Festival of Speed, where they were displayed alongside other sports cars such as the McLaren P1, the Ferrari LaFerrari, the Porsche 918 Spyder and the Pagani Huayra.\n\nThe name One:1 comes from the power-to-weight ratio (1,360 PS to 1360 kg) giving the car 1 PS per 1 kg mass. The 1,360 PS power output is the equivalent of one megawatt, which Koenigsegg claims makes the One:1 the 'world's first megacar'. The car is track focused as opposed to the previous cars made by Koenigsegg. Koenigsegg had to sacrifice a few things to be able to achieve their goal with the car. There is an airscoop on the removable roof and an extra set of radiators in the front compartment, due to this reason it is not possible to store the roof in the boot like previous models.\n\nCredits:\n@jkazulyblanco",
+      "meshCount": 20,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_emissive_strength",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1721852,
+      "sha256": "b0cb81dcbd43813022b5f982d74b0de9252aece876e6bcaa76891330b7f1789c",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/koenigsegg-one.glb",
+      "contributors": [
+        {
+          "uid": "8d253a7f43404113838d72c7fc9cfa94",
+          "source": "https://sketchfab.com/3d-models/8d253a7f43404113838d72c7fc9cfa94",
+          "title": "Koenigsegg One1 low poly",
+          "author": "jkazulyblanco",
+          "authorUrl": "https://sketchfab.com/jkazulyblanco",
+          "license": {
+            "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+            "label": "CC Attribution",
+            "fullName": "Creative Commons Attribution",
+            "requirements": "Author must be credited. Commercial use is allowed.",
+            "url": "http://creativecommons.org/licenses/by/4.0/",
+            "slug": "by"
+          },
+          "description": "Koenisegg One1 low poly,\nmade in maya and substance painter",
+          "status": 200
+        }
+      ],
+      "adapter": {
+        "wheelPattern": "^(wheel|cal)",
+        "tirePattern": "^wheel.*_Material014_0",
+        "brakePattern": "^cal",
+        "splitX": -0.07,
+        "splitZ": 0
+      },
+      "orientationEvidence": "White emissive headlights object011_emit at Z=+1.175 and red emissive taillights object008_remit at Z=-1.309 identify forward=+Z. Four wheel Material014 tire meshes, Material013 discs and cb rims are separate from four caliper meshes. Runtime covariance neutralization removes the artist front-wheel steering before applying simulated steer/spin.",
+      "geometry": {
+        "wheelbase": 2.66,
+        "trackWidth": 1.77235526899338,
+        "wheelRadius": 0.3385410895804756,
+        "bodyLength": 4.561331748962402,
+        "bodyWidth": 2.2022682428359985,
+        "bodyHeight": 1.0719016790390015,
+        "bodyCenterY": 0.06182974576950073,
+        "liftX": 0.7714,
+        "liftY": -0.3873114184589452,
+        "liftZ": 0.6827030444145202,
+        "boostX": -1.9589279515079718,
+        "boostY": -0.20614567399024963,
+        "boostZ": 0.49551027417182925,
+        "yawX": 0.904123957633972,
+        "yawY": -0.20614567399024963,
+        "yawZ": 0.8685088670174841
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model."
+    },
+    {
+      "id": "mclaren-p1",
+      "brand": "McLaren",
+      "model": "P1",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "mclaren-p1.glb",
+      "bytes": 4407404,
+      "paint": {
+        "materials": [
+          "Carpaint"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "vecarz",
+        "authorUrl": "https://sketchfab.com/heynic",
+        "license": "CC Attribution",
+        "sourceName": "Mclaren P1 | www.vecarz.com",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-adae2edc721e4ce7b31c1d06a581e30a"
+      },
+      "uid": "adae2edc721e4ce7b31c1d06a581e30a",
+      "apiStatus": 200,
+      "apiName": "Mclaren P1 | www.vecarz.com",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "vecarz",
+      "apiAuthorUrl": "https://sketchfab.com/heynic",
+      "apiDescription": "www.vecarz.com\n showcase room: https://www.vecarz.com/cars/mclaren-p1",
+      "meshCount": 195,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_emissive_strength",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization",
+        "KHR_texture_transform"
+      ],
+      "actualBytes": 4407404,
+      "sha256": "5a9361ee8e81c3d1cb120a80b361e05f7ddddeae7c33cf277aaf0bc4548b5b30",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mclaren-p1.glb",
+      "adapter": {
+        "wheelPattern": "^(Rim_|Tyre_|Brake_Disk_|g_Susp_Hub_)",
+        "tirePattern": "^Tyre_",
+        "brakePattern": "^g_Susp_Hub_.*Brake_Caliper",
+        "fixedWheelPattern": "^g_Susp_Hub_",
+        "splitX": -0.059,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Named Headlights geometry around Z=+0.78 and Taillights around Z=-0.9 establish forward=+Z; rotate +pi/2. Four named Tyre and Rim assemblies plus Brake_Disk rotate, named hub/caliper assemblies steer without spinning. Main Carpaint panels are separate from Carpaint_Black carbon/trim and interior materials.",
+      "geometry": {
+        "wheelbase": 2.67,
+        "trackWidth": 1.6152114517921188,
+        "wheelRadius": 0.3361911190412407,
+        "bodyLength": 4.852444648742676,
+        "bodyWidth": 2.144630789756775,
+        "bodyHeight": 1.099641889333725,
+        "bodyCenterY": 0.05720408260822296,
+        "liftX": 0.7742999999999999,
+        "liftY": -0.36523587700318577,
+        "liftZ": 0.6647440814971923,
+        "boostX": -1.837443579598913,
+        "boostY": -0.21770638972520828,
+        "boostZ": 0.4824755430221558,
+        "yawX": 0.8783064942359923,
+        "yawY": -0.21770638972520828,
+        "yawZ": 0.8291003495442901
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "lamborghini-revuelto",
+      "brand": "Lamborghini",
+      "model": "Revuelto",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "lamborghini-revuelto.glb",
+      "bytes": 2955328,
+      "paint": {
+        "materials": [
+          "Body"
+        ],
+        "textured": false,
+        "confidence": "média"
+      },
+      "credit": {
+        "author": "ALIEEEN",
+        "authorUrl": "https://sketchfab.com/ALIEEEN",
+        "license": "CC Attribution",
+        "sourceName": "Free Lamborghini Revuelto",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-cf52245eb68f48daa909c7ad2a8deaa3"
+      },
+      "uid": "cf52245eb68f48daa909c7ad2a8deaa3",
+      "apiStatus": 200,
+      "apiName": "Free Lamborghini Revuelto",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "ALIEEEN",
+      "apiAuthorUrl": "https://sketchfab.com/ALIEEEN",
+      "apiDescription": "***Lamborghini Revuelto***\n\n\nCheck out my Youtube channel for my future rigging tutorial: https://www.youtube.com/@ALIEEEN_3D\n\n![](https://i.imgur.com/1CD2exZ.jpg)\n\nYou can use this model in your projects, commercial or personal. Attribution is not required but is greatly appreciated.\n\nYou can’t sell this model alone (or in a pack).",
+      "meshCount": 103,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_emissive_strength",
+        "KHR_mesh_quantization",
+        "KHR_texture_transform"
+      ],
+      "actualBytes": 2955328,
+      "sha256": "47f148ba4efb0b9bb7c7b7e810f2e0557a616bd33bbbe1381a6015fe12b79809",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-revuelto.glb",
+      "adapter": {
+        "wheelPattern": "^Wheel_(FR|FL|BR|BL)",
+        "tirePattern": "^Wheel_(FR|FL|BR|BL)_Tire_0",
+        "brakePattern": "^Wheel_(FR|FL|BR|BL)_Caliper_0",
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Named headlights/daylights are +Z (z 1.7–1.9), named taillights/exhaust are -Z (z -1.9); four named Wheel_FR/FL/BR/BL assemblies with Tire/Rim/Caliper/Brake_rotor. Dedicated Body material covers shell/mirrors, not glass/interior.",
+      "geometry": {
+        "wheelbase": 2.8,
+        "trackWidth": 1.7621046682219388,
+        "wheelRadius": 0.35722791314052293,
+        "bodyLength": 5.026242256164551,
+        "bodyWidth": 2.198453664779663,
+        "bodyHeight": 1.0669751167297363,
+        "bodyCenterY": 0.05659079551696777
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "honda-nsx",
+      "brand": "Honda",
+      "model": "NSX",
+      "years": [
+        1990,
+        2005
+      ],
+      "category": "sports",
+      "file": "honda-nsx.glb",
+      "bytes": 3097524,
+      "paint": {
+        "materials": [
+          "Material.003"
+        ],
+        "textured": false,
+        "confidence": "alta"
+      },
+      "credit": {
+        "author": "Lexyc16",
+        "authorUrl": "https://sketchfab.com/Lexyc16",
+        "license": "CC Attribution",
+        "sourceName": "Honda NSX 1990",
+        "sourceUrl": "https://sketchfab.com/3d-models/1cc15628a00a4739a6b6c01128927c8d"
+      },
+      "uid": "1cc15628a00a4739a6b6c01128927c8d",
+      "apiStatus": 200,
+      "apiName": "Honda NSX 1990",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Lexyc16",
+      "apiAuthorUrl": "https://sketchfab.com/Lexyc16",
+      "apiDescription": "The Honda NSX, marketed in North America as the Acura NSX, is a two-seat, mid-engine coupe sports car manufactured by Honda.\nModel made in Blender 2.90\n\n**I don't always have the opportunity to read your comments, so if you have any questions or suggestions - feel free to dm me on twitter @Lexyc20\n**",
+      "meshCount": 38,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_transmission",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 3097524,
+      "sha256": "23c6ffa73b82a686a83239b3560ca3b1be22836629798c2cd99a5f492e37487e",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/honda-nsx.glb",
+      "adapter": {
+        "wheelNames": [
+          "Circle001_9",
+          "Circle002_19",
+          "Circle003_20",
+          "Circle004_21"
+        ],
+        "tireNames": [
+          "Object_17",
+          "Object_41",
+          "Object_46",
+          "Object_51"
+        ],
+        "splitX": 0.89,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Four Circle001–004 wheel groups have cylindrical Material.011 tire meshes at z1.748/0.035 and x ±0.53; Material.023 rims and Material.018 caps retained. Body Material.003 covers main shell, nose and side mirrors; +Z has popup-headlight/turn-signal assembly, -Z has exhaust at z -0.415.",
+      "geometry": {
+        "wheelbase": 2.53,
+        "trackWidth": 1.5586556659645132,
+        "wheelRadius": 0.2967046621678596,
+        "bodyLength": 4.473010063171387,
+        "bodyWidth": 1.9546347260475159,
+        "bodyHeight": 1.0558926165103912,
+        "bodyCenterY": 0.09626846015453339
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "pagani-huayra",
+      "brand": "Pagani",
+      "model": "Huayra",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "pagani-huayra.glb",
+      "bytes": 2118084,
+      "paint": null,
+      "credit": {
+        "author": "Black Snow",
+        "authorUrl": "https://sketchfab.com/BlackSnow02",
+        "license": "CC Attribution",
+        "sourceName": "Pagani Huayra [Free]",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-c2d61a9f53a54a229547bb76e4b71e25"
+      },
+      "uid": "c2d61a9f53a54a229547bb76e4b71e25",
+      "apiStatus": 200,
+      "apiName": "Pagani Huayra [Free]",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Black Snow",
+      "apiAuthorUrl": "https://sketchfab.com/BlackSnow02",
+      "apiDescription": "",
+      "meshCount": 63,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_emissive_strength",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 2118084,
+      "sha256": "c4adce3c2a91854794f6e17f566ea3521d50cc3f81ef82ba7035fdd16c848dc2",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/pagani-huayra.glb",
+      "adapter": {
+        "wheelNames": [
+          "Object_46",
+          "Object_48",
+          "Object_49",
+          "Object_50",
+          "Object_51",
+          "Object_52",
+          "Object_53",
+          "Object_56",
+          "Object_57",
+          "Object_58",
+          "Object_62"
+        ],
+        "tireNames": [
+          "Object_50",
+          "Object_51",
+          "Object_52",
+          "Object_53"
+        ],
+        "brakeNames": [
+          "Object_48",
+          "Object_49"
+        ],
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "orientationEvidence": "pag_runninglight is +Z (2.249), pag_taillight_L/pag_lights are -Z (-1.935/-2.015). Four explicit cylindrical tire meshes Object_50–53; original wheel/rim/disc/cap meshes have four-wheel spans at tire height. amdb11_caliper meshes remain fixed with steering. Dedicated PAG_HUAYRA_PAINT and PAINT_2 are exterior only.",
+      "geometry": {
+        "wheelbase": 2.8,
+        "trackWidth": 1.6803718591803345,
+        "wheelRadius": 0.3577584481863531,
+        "bodyLength": 5.032257556915283,
+        "bodyWidth": 2.3055604696273804,
+        "bodyHeight": 1.0955233573913574,
+        "bodyCenterY": 0.022363364696502686
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "porsche-918-spyder",
+      "brand": "Porsche",
+      "model": "918 Spyder",
+      "years": [
+        2015,
+        2015
+      ],
+      "category": "sports",
+      "file": "porsche-918-spyder.glb",
+      "bytes": 4343032,
+      "paint": null,
+      "credit": {
+        "author": "vecarz",
+        "authorUrl": "https://sketchfab.com/heynic",
+        "license": "CC Attribution",
+        "sourceName": "Porsche 918 Spyder 2015 | www.vecarz.com",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-9fb9a088d0704a06ba69a8a6de100f10"
+      },
+      "uid": "9fb9a088d0704a06ba69a8a6de100f10",
+      "apiStatus": 200,
+      "apiName": "Porsche 918 Spyder 2015 | www.vecarz.com",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "vecarz",
+      "apiAuthorUrl": "https://sketchfab.com/heynic",
+      "apiDescription": "Showcase Website: www.vecarz.com\nShowcase Room: https://www.vecarz.com/cars/porsche-918-spyder-2015\n\n=======================\n\nThanks for [DisneyCars] sharing this mod!\nDisneyCars: https://sketchfab.com/3d-models/2015-porsche-918-spyder-e98b813802aa4658a54953ca8fa0d604",
+      "meshCount": 341,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization",
+        "KHR_texture_transform"
+      ],
+      "actualBytes": 4343032,
+      "sha256": "1020d512bf738acbb631bdb68fb2a19e66708481282b788f8f2970c1ce5f2ab9",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/porsche-918-spyder.glb",
+      "contributors": [
+        {
+          "uid": "e98b813802aa4658a54953ca8fa0d604",
+          "source": "https://sketchfab.com/3d-models/e98b813802aa4658a54953ca8fa0d604",
+          "title": "2015 Porsche 918 Spyder",
+          "author": "DisneyCars",
+          "authorUrl": "https://sketchfab.com/supercarmodels",
+          "license": {
+            "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+            "label": "CC Attribution",
+            "fullName": "Creative Commons Attribution",
+            "requirements": "Author must be credited. Commercial use is allowed.",
+            "url": "http://creativecommons.org/licenses/by/4.0/",
+            "slug": "by"
+          },
+          "description": "",
+          "status": 200
+        }
+      ],
+      "adapter": {
+        "wheelNames": [
+          "Object_950",
+          "Object_953",
+          "Object_956",
+          "Object_959",
+          "Object_962",
+          "Object_965",
+          "Object_969",
+          "Object_972",
+          "Object_975",
+          "Object_978",
+          "Object_981",
+          "Object_984",
+          "Object_988",
+          "Object_991",
+          "Object_994",
+          "Object_997",
+          "Object_1000",
+          "Object_1003",
+          "Object_1007",
+          "Object_1010",
+          "Object_1013",
+          "Object_1016",
+          "Object_1019",
+          "Object_1022",
+          "Object_1026",
+          "Object_1030",
+          "Object_1034",
+          "Object_1038"
+        ],
+        "tireNames": [
+          "Object_950",
+          "Object_969",
+          "Object_988",
+          "Object_1007"
+        ],
+        "brakeNames": [
+          "Object_953",
+          "Object_956",
+          "Object_972",
+          "Object_975",
+          "Object_991",
+          "Object_994",
+          "Object_1010",
+          "Object_1013"
+        ],
+        "splitX": 0.29,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Front light lenses at +Z (z2.2) and Tail_Light_Base at -Z (z-1.63). Four Tyre__Dirt_Version meshes at z1.656/-1.076; four rims material_42, rim screws, caps and Disc meshes rotate; named Caliper and adjacent decal Detail meshes steer without spinning. Dedicated Body_Paint_-_GT_Silver_Metalic covers shell/bumpers/door outer panels only.",
+      "geometry": {
+        "wheelbase": 2.73,
+        "trackWidth": 1.6240103415358136,
+        "wheelRadius": 0.35737381206586966,
+        "bodyLength": 4.820008754730225,
+        "bodyWidth": 2.053900957107544,
+        "bodyHeight": 1.06048783659935,
+        "bodyCenterY": 0.05132807791233063
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model."
+    },
+    {
+      "id": "porsche-911-gt3",
+      "brand": "Porsche",
+      "model": "911 GT3",
+      "years": [
+        0,
+        0
+      ],
+      "category": "sports",
+      "file": "porsche-911-gt3.glb",
+      "bytes": 1310556,
+      "paint": null,
+      "credit": {
+        "author": "ChevroletSS",
+        "authorUrl": "https://sketchfab.com/ChevroletSS",
+        "license": "CC Attribution",
+        "sourceName": "Porsche 911 GT3",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-78d5c47ab2554c2592b7e499179a0792"
+      },
+      "uid": "78d5c47ab2554c2592b7e499179a0792",
+      "apiStatus": 200,
+      "apiName": "Porsche 911 GT3",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "ChevroletSS",
+      "apiAuthorUrl": "https://sketchfab.com/ChevroletSS",
+      "apiDescription": "The Porsche 911 GT3 is a high-performance homologation model of the Porsche 911 sports car. It is a line of high-performance models, which began with the 1973 911 Carrera RS. The GT3 has had a successful racing career in the one-make national and regional Porsche Carrera Cup and GT3 Cup Challenge series, as well as the international Porsche Supercup supporting the FIA Formula 1 World Championship.\n\n This is my first model on sketchfab, so the materials are not as good as they should be.\n \n The car comes with an interior and a detailed body.",
+      "meshCount": 227,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 1310556,
+      "sha256": "4058dc7aa3c2ad27f230c1ac77fe4bc253930aeacffeab48371360c557456718",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/porsche-911-gt3.glb",
+      "adapter": {
+        "wheelPattern": "Tyre|GEO_rim_|Wheel_Hub_|g_Brake_Caliper|A_DISC_",
+        "tirePattern": "EXT_Tyre",
+        "brakePattern": "g_Brake_Caliper",
+        "fixedWheelPattern": "Wheel_Hub_",
+        "excludeNames": [
+          "Object_20"
+        ],
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "orientationEvidence": "Named FrontLight/front bumper at source +Z and RearLight/rear spoiler at -Z. Four distinct EXT_Tyre meshes; separate rims, discs, calipers and fixed hubs. Duplicate blurred front rim Object_20 omitted.",
+      "geometry": {
+        "wheelbase": 2.45,
+        "trackWidth": 1.534820959676224,
+        "wheelRadius": 0.35506915507348297,
+        "bodyLength": 4.548948764801025,
+        "bodyWidth": 1.978351354598999,
+        "bodyHeight": 1.1969938278198242,
+        "bodyCenterY": 0.1071057915687561,
+        "liftX": 0.7105,
+        "liftY": -0.34611697564020755,
+        "liftZ": 0.6132599472999573,
+        "boostX": -2.1290015325306926,
+        "boostY": -0.19214266538619995,
+        "boostZ": 0.445108026266098,
+        "yawX": 0.7908082752227782,
+        "yawY": -0.19214266538619995,
+        "yawZ": 0.818444139664779
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
+    },
+    {
+      "id": "lotus-elise",
+      "brand": "Lotus",
+      "model": "ÉLISE",
+      "years": [
+        0,
+        0
+      ],
+      "category": "coupe",
+      "file": "lotus-elise.glb",
+      "bytes": 4673336,
+      "paint": null,
+      "credit": {
+        "author": "Stéphane Agullo",
+        "authorUrl": "https://sketchfab.com/sa3d",
+        "license": "CC Attribution",
+        "sourceName": "LOTUS ÉLISE",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-75e9045ac1af4cdbb69318108c81edfd"
+      },
+      "uid": "75e9045ac1af4cdbb69318108c81edfd",
+      "apiStatus": 200,
+      "apiName": "LOTUS ÉLISE",
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "apiAuthor": "Stéphane Agullo",
+      "apiAuthorUrl": "https://sketchfab.com/sa3d",
+      "apiDescription": "**Thank you all for your comments !**\n\nModel + .zip *(297MB)* now available in Royalty Free !\n\nDesigned on blueprint, bake sim, free for pro use, do what you want !\n\n*Study | Modeling | Surfacing | Lighting | Setup | Simulation | Animation | Sound | Web*\n___\n**SKETCHFAB FBX / gLTF  **+**  LIGHTWAVE 3D PROJECT  **+**  DAE / OBJ / FBX EXPORTS  **+**  LOW / HIGH POLYGONS  **+**  BASE / FIXE / ANIM / SWITCH SCENES**\n___\n![](http://www.stephane-agullo.fr/files/sketchfab/LOTUS_01.jpg)\n![](http://www.stephane-agullo.fr/files/sketchfab/LOTUS_02.jpg)\n![](http://www.stephane-agullo.fr/files/sketchfab/LOTUS_03.jpg)\n___\n[** ✓ **] *Free for commercial use.*\n\n[** ✓ **] *No attribution required.*\n\n[** ✓ **] *Copyright-free.*\n___",
+      "meshCount": 53,
+      "extensions": [
+        "EXT_meshopt_compression",
+        "KHR_materials_clearcoat",
+        "KHR_mesh_quantization"
+      ],
+      "actualBytes": 4673336,
+      "sha256": "4cf5f0d9f51a2e3ed864a3a16c93beff53cd70736e6956204e5061a4cd93d9e5",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lotus-elise.glb",
+      "adapter": {
+        "wheelPattern": "^LOTUS-def3Layer(2|16|17|18)_",
+        "tireNames": [
+          "LOTUS-def3Layer2_CARblack_0",
+          "LOTUS-def3Layer16_CARblack_0",
+          "LOTUS-def3Layer17_CARblack_0",
+          "LOTUS-def3Layer18_CARblack_0"
+        ],
+        "excludePattern": "^SOL01_|SHADE|NANA-",
+        "splitX": 0,
+        "splitZ": 0
+      },
+      "orientationEvidence": "CAR.lamp-avant-* front lamps at source -Z and CAR.lamp-arr-* rear lamps at +Z. Four explicit wheel Layers 2/16/17/18 with CAR.black tires and CAR.chrome rims; source studio floor, shadow plane and tiny animated character excluded.",
+      "geometry": {
+        "wheelbase": 2.3,
+        "trackWidth": 1.4062162428582217,
+        "wheelRadius": 0.3364909149327617,
+        "bodyLength": 3.7658421993255615,
+        "bodyWidth": 1.8874688148498535,
+        "bodyHeight": 1.1274766027927399,
+        "bodyCenterY": 0.1241144984960556,
+        "liftX": 0.6669999999999999,
+        "liftY": -0.3373981706640938,
+        "liftZ": 0.5850544679164886,
+        "boostX": -1.6686403923669155,
+        "boostY": -0.15775465220212936,
+        "boostZ": 0.42463630735874175,
+        "yawX": 0.7508164885044097,
+        "yawY": -0.15775465220212936,
+        "yawZ": 0.7569650799127114
+      },
+      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
+      "contributors": []
     }
   ]
 }

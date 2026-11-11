@@ -1,3 +1,14 @@
+Roadster v1.35 — 도시 스포츠카 10종 / 전체 차량 77종
+2026-11-11 KST. 사용자: 스포츠카 위주 차량 약10종 추가. 기존 GitHub Pages 배포 승인 유지.
+
+추가: Bugatti Chiron Profilée, Bugatti Veyron 16.4 Super Sport, Koenigsegg One:1, McLaren P1, Lamborghini Revuelto, Honda NSX (1990), Pagani Huayra, Porsche 918 Spyder, Porsche 911 GT3, Lotus Elise. 도시·구조77종, 착지 실험 기존5종/15회 유지. CITY_VEHICLES64종+기존13종.
+각 GLB는 기존공개catalog commit2d18dfd9db96bbf0d9cffa949deaf7f571388cbf에서확보한독립모델. 10개합계31,583,760bytes. Sketchfab API CC BY와원본설명확인, One1원저작자jkazulyblanco/918원저작자DisneyCars추가표기. 원본GLB바이트보존. 자산은사용자선택시로딩,기존캐시제한유지.
+구현: city-fleet-profiles.js에차종별실제휠/타이어/캘리퍼/고정허브/도색재질/방향/시뮬질량연결. Lotus전시바닥/그림자/작은캐릭터와GT3중복blur림은adapter로제외. 충돌외곽은축척후실제메시에서산출. 치수·질량은도시주행가정이며OEM성능/실내재현주장금지. 기존참고실내fallback사용.
+검증: 새10종실제asset31검사통과, 전체회귀771개·구문검사통과. 로컬브라우저10종선택/원본외형/파랑도색/77목록확인. 새로운물리알고리즘변경없음. 캐시20261111-sports1.
+배포 상태: 최종 배포 확인 중. 완료 후 커밋/Actions/공개 검증 기록 추가.
+문서: README v1.35, docs/sports-fleet-review.md, dist/assets/vehicles/CITY_ATTRIBUTION.md, city-fleet-provenance.json. work/sports-fleet-assets는분석/검증작업파일이며공개물아님.
+
+--- 이전 배포 기록 ---
 Roadster v1.34 — 착지 계측 시점·재생·그래프 재검증
 2026-11-11 KST. 사용자: 한 번 더 확인하고 보정. 기존 GitHub Pages 배포 승인 유지.
 

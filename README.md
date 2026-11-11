@@ -1,9 +1,18 @@
-# Roadster Landing Lab · v1.34
+# Roadster Landing Lab · v1.35
 
 같은 높이에서 내려오는 차량의 충격을 비교하고, 충격을 줄이는 착지 방법을 찾는 3D 실험실입니다. 별도 도시 주행 모드에서는 강남역 실제 도로 배치를 따라 운전하거나 가상 냉가스 추진기로 비행할 수 있습니다.
 
 [실험실 실행](https://leejuhan-1214.github.io/roadster/) · [실험 방법과 계측 정의](docs/landing-experiment.txt) · [수행평가 탐구 설계·보고서 가이드](docs/landing-study-guide.md)
 
+## v1.35 스포츠카 10종 추가
+
+도시 주행·구조 탐색의 차량은 **77종**입니다. 새로 추가한 차량은 Bugatti Chiron Profilée, Bugatti Veyron 16.4 Super Sport, Koenigsegg One:1, McLaren P1, Lamborghini Revuelto, Honda NSX (1990), Pagani Huayra, Porsche 918 Spyder, Porsche 911 GT3, Lotus Elise입니다.
+
+각 차종의 독립된 원본 3D 모델을 사용합니다. 실제 메시를 기준으로 네 바퀴의 조향·회전축, 차체 도색, 충돌 외곽과 가상 노즐 배치를 연결했습니다. 모델에 포함된 전시 바닥·그림자 판·중복 회전 흐림 메시는 필요한 차종에서 제외합니다. 운전석은 기존 참고 실내 체계를 사용하며, 차종별 OEM 실내·성능을 실측 재현한 모델은 아닙니다. 공통 추진계·주행 조작은 유지하며 착지 실험은 기존 5종/15회 비교로 유지합니다.
+
+원본 제작자·라이선스·원저작자 추가 표기는 [차량 크레딧](dist/assets/vehicles/CITY_ATTRIBUTION.md), 검토 기록은 [스포츠카 모델 검토](docs/sports-fleet-review.md), 파일 해시는 [차량 출처 명세](dist/assets/vehicles/city-fleet-provenance.json)에 기록합니다. 신규 모델 합계는 약 31.6MB이며 선택한 차량을 필요할 때 불러오는 기존 방식과 캐시 제한을 유지합니다.
+
+배포·검증 결과는 LOCAL_HANDOFF.txt의 v1.35 기록을 확인합니다.
 ## v1.34 계측 시점과 재생 보정
 
 스프링 에너지·첫 감속 구간·분사 애니메이션의 시간 기준과 그래프 색상 연결을 재검토했습니다.
@@ -134,7 +143,7 @@ v1.30에서는 공통 가상 실내와 운전석 시점을 처음 추가했습�
 
 ## 차체와 자산 출처
 
-기존 13종에 54종을 추가해 **도시 주행·구조 탐색 67종**을 제공합니다. 착지 실험은 5종, 도시 주행과 구조 탐색은 전체 차량을 제공합니다. 새 차량의 목록·원본 제작자·원본 라이선스·다운로드 해시·변환 기록은 [도시 차량 출처](dist/assets/vehicles/city-fleet-provenance.json)에 있습니다. [54종 제작자·라이선스 목록](dist/assets/vehicles/CITY_ATTRIBUTION.md), [후보 검토·제외 범위](docs/city-fleet-review.md)도 보존합니다. 추가 차량의 주행 질량은 외형·차급을 위한 가정값이며 제조사별 성능 측정값이 아닙니다.
+기존 13종에 도시 차량 64종을 추가해 **도시 주행·구조 탐색 77종**을 제공합니다. 착지 실험은 5종, 도시 주행과 구조 탐색은 전체 차량을 제공합니다. 새 차량의 목록·원본 제작자·원본 라이선스·다운로드 해시·변환 기록은 [도시 차량 출처](dist/assets/vehicles/city-fleet-provenance.json)에 있습니다. [도시 추가 64종 제작자·라이선스 목록](dist/assets/vehicles/CITY_ATTRIBUTION.md), [후보 검토·제외 범위](docs/city-fleet-review.md)도 보존합니다. 추가 차량의 주행 질량은 외형·차급을 위한 가정값이며 제조사별 성능 측정값이 아닙니다.
 
 기존 13종 모델은 공개 CC BY 4.0 자산입니다. 추가 모델은 각 원본의 라이선스와 제작자 표시를 별도로 보존합니다. 제작자·원본 링크·라이선스는 화면의 **사용 방법과 출처**, [Roadster 출처](dist/assets/tesla-roadster-2020/license.txt), [추가 차체 출처](dist/assets/vehicles/ATTRIBUTION.txt)에 있습니다. [차량 제원과 질량 기준](dist/assets/vehicles/vehicle-specifications.md), [기존 3종의 참고 자료](docs/vehicle-reference.txt), [추가 10종 출처·해시](dist/assets/vehicles/fleet-provenance.json)도 함께 확인하십시오. 원본 메시 수는 실제 부품 수가 아닙니다.
 

@@ -384,3 +384,89 @@ Asset delivery: [pedrosoandre/carros](https://github.com/pedrosoandre/carros) at
 - License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
 - Local file: `volvo-v60.glb` (918168 bytes; SHA-256 `2808e756b72a5af76cdc25a6144d73f3488bd6e79b08ea8485c37dcb814d8676`)
 
+
+## v1.35 sports additions
+
+Ten separately sourced artist replicas, with the same runtime adaptations and city-only simulation assumptions described above.
+
+### Bugatti Chiron Profilée (2023)
+
+- Original: [2023 Bugatti Chiron Profilee](https://sketchfab.com/3d-models/6da5092ee455446cb050e4c6b4a3ac05)
+- Author: [DisneyCars](https://sketchfab.com/supercarmodels)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `bugatti-chiron.glb` (2989204 bytes; SHA-256 `2d73cf6197a785367076d02aef5bf8e1ebc583d6e9085e83887f32c2765ba508`)
+- Runtime adaptation: Original red emissive rear strip Object_2 / Meshpart182Mtl at X=-58.032 and white emissive front lamp Object_34 / Meshpart256Mtl at X=-75.065 identify forward=-X; rotate pi about Y. Neumatico1Mtl four-tire combined mesh and wheel-only Color1/Rin1/Sombra groups are spatially partitioned at the original axle/side midpoints.
+
+### Bugatti Veyron 16.4 Super Sport
+
+- Original: [Bugatti Veyron 16.4 Super Sport - Lowpoly](https://sketchfab.com/3d-models/0ee4c65face949efa4500deb17c79150)
+- Author: [andikapratamaw](https://sketchfab.com/andikapratamaw)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `bugatti-veyron.glb` (3967440 bytes; SHA-256 `083b52fdcbb7b54f4bdc5a59c0d3773797d859545a43fb10d7dd8416a37923b6`)
+- Runtime adaptation: Exterior mirror glass Object_9 at Z=+0.534 is beside the forward windshield and ahead of body center; front axle Z=+1.272, rear axle Z=-1.435. Forward=+Z is rotated +pi/2 to +X. Dedicated tire, rim and orange caliper meshes are identified separately per wheel; body Object_4 keeps editable main paint while white/black trim stays original.
+
+### Koenigsegg One:1
+
+- Original: [Koenigsegg One:1](https://sketchfab.com/3d-models/none-b4e5a4c5fa5d4d45acd6715d3325254f)
+- Author: [iSteven](https://sketchfab.com/OneSteven)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `koenigsegg-one.glb` (1721852 bytes; SHA-256 `b0cb81dcbd43813022b5f982d74b0de9252aece876e6bcaa76891330b7f1789c`)
+- Upstream contributor: [jkazulyblanco](https://sketchfab.com/3d-models/8d253a7f43404113838d72c7fc9cfa94) · CC Attribution
+- Runtime adaptation: White emissive headlights object011_emit at Z=+1.175 and red emissive taillights object008_remit at Z=-1.309 identify forward=+Z. Four wheel Material014 tire meshes, Material013 discs and cb rims are separate from four caliper meshes. Runtime covariance neutralization removes the artist front-wheel steering before applying simulated steer/spin.
+
+### McLaren P1
+
+- Original: [Mclaren P1 — www.vecarz.com](https://sketchfab.com/3d-models/none-adae2edc721e4ce7b31c1d06a581e30a)
+- Author: [vecarz](https://sketchfab.com/heynic)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `mclaren-p1.glb` (4407404 bytes; SHA-256 `5a9361ee8e81c3d1cb120a80b361e05f7ddddeae7c33cf277aaf0bc4548b5b30`)
+- Runtime adaptation: Named Headlights geometry around Z=+0.78 and Taillights around Z=-0.9 establish forward=+Z; rotate +pi/2. Four named Tyre and Rim assemblies plus Brake_Disk rotate, named hub/caliper assemblies steer without spinning. Main Carpaint panels are separate from Carpaint_Black carbon/trim and interior materials.
+
+### Lamborghini Revuelto
+
+- Original: [Free Lamborghini Revuelto](https://sketchfab.com/3d-models/none-cf52245eb68f48daa909c7ad2a8deaa3)
+- Author: [ALIEEEN](https://sketchfab.com/ALIEEEN)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `lamborghini-revuelto.glb` (2955328 bytes; SHA-256 `47f148ba4efb0b9bb7c7b7e810f2e0557a616bd33bbbe1381a6015fe12b79809`)
+- Runtime adaptation: Named headlights/daylights are +Z (z 1.7–1.9), named taillights/exhaust are -Z (z -1.9); four named Wheel_FR/FL/BR/BL assemblies with Tire/Rim/Caliper/Brake_rotor. Dedicated Body material covers shell/mirrors, not glass/interior.
+
+### Honda NSX (1990)
+
+- Original: [Honda NSX 1990](https://sketchfab.com/3d-models/1cc15628a00a4739a6b6c01128927c8d)
+- Author: [Lexyc16](https://sketchfab.com/Lexyc16)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `honda-nsx.glb` (3097524 bytes; SHA-256 `23c6ffa73b82a686a83239b3560ca3b1be22836629798c2cd99a5f492e37487e`)
+- Runtime adaptation: Four Circle001–004 wheel groups have cylindrical Material.011 tire meshes at z1.748/0.035 and x ±0.53; Material.023 rims and Material.018 caps retained. Body Material.003 covers main shell, nose and side mirrors; +Z has popup-headlight/turn-signal assembly, -Z has exhaust at z -0.415.
+
+### Pagani Huayra
+
+- Original: [Pagani Huayra [Free]](https://sketchfab.com/3d-models/none-c2d61a9f53a54a229547bb76e4b71e25)
+- Author: [Black Snow](https://sketchfab.com/BlackSnow02)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `pagani-huayra.glb` (2118084 bytes; SHA-256 `c4adce3c2a91854794f6e17f566ea3521d50cc3f81ef82ba7035fdd16c848dc2`)
+- Runtime adaptation: pag_runninglight is +Z (2.249), pag_taillight_L/pag_lights are -Z (-1.935/-2.015). Four explicit cylindrical tire meshes Object_50–53; original wheel/rim/disc/cap meshes have four-wheel spans at tire height. amdb11_caliper meshes remain fixed with steering. Dedicated PAG_HUAYRA_PAINT and PAINT_2 are exterior only.
+
+### Porsche 918 Spyder
+
+- Original: [Porsche 918 Spyder 2015 — www.vecarz.com](https://sketchfab.com/3d-models/none-9fb9a088d0704a06ba69a8a6de100f10)
+- Author: [vecarz](https://sketchfab.com/heynic)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `porsche-918-spyder.glb` (4343032 bytes; SHA-256 `1020d512bf738acbb631bdb68fb2a19e66708481282b788f8f2970c1ce5f2ab9`)
+- Upstream contributor: [DisneyCars](https://sketchfab.com/3d-models/e98b813802aa4658a54953ca8fa0d604) · CC Attribution
+- Runtime adaptation: Front light lenses at +Z (z2.2) and Tail_Light_Base at -Z (z-1.63). Four Tyre__Dirt_Version meshes at z1.656/-1.076; four rims material_42, rim screws, caps and Disc meshes rotate; named Caliper and adjacent decal Detail meshes steer without spinning. Dedicated Body_Paint_-_GT_Silver_Metalic covers shell/bumpers/door outer panels only.
+
+### Porsche 911 GT3
+
+- Original: [Porsche 911 GT3](https://sketchfab.com/3d-models/none-78d5c47ab2554c2592b7e499179a0792)
+- Author: [ChevroletSS](https://sketchfab.com/ChevroletSS)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `porsche-911-gt3.glb` (1310556 bytes; SHA-256 `4058dc7aa3c2ad27f230c1ac77fe4bc253930aeacffeab48371360c557456718`)
+- Runtime adaptation: Named FrontLight/front bumper at source +Z and RearLight/rear spoiler at -Z. Four distinct EXT_Tyre meshes; separate rims, discs, calipers and fixed hubs. Duplicate blurred front rim Object_20 omitted.
+
+### Lotus Elise
+
+- Original: [LOTUS ÉLISE](https://sketchfab.com/3d-models/none-75e9045ac1af4cdbb69318108c81edfd)
+- Author: [Stéphane Agullo](https://sketchfab.com/sa3d)
+- License: [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)
+- Local file: `lotus-elise.glb` (4673336 bytes; SHA-256 `4cf5f0d9f51a2e3ed864a3a16c93beff53cd70736e6956204e5061a4cd93d9e5`)
+- Runtime adaptation: CAR.lamp-avant-* front lamps at source -Z and CAR.lamp-arr-* rear lamps at +Z. Four explicit wheel Layers 2/16/17/18 with CAR.black tires and CAR.chrome rims; source studio floor, shadow plane and tiny animated character excluded.

@@ -2289,5 +2289,472 @@ export const CITY_VEHICLES = [
     "dryMass": 1900,
     "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
     "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "bugatti-chiron",
+    "title": "Bugatti Chiron Profilée (2023)",
+    "short": "Chiron Profilée",
+    "brand": "Bugatti",
+    "model": "Chiron Profilée (2023)",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "DisneyCars",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/6da5092ee455446cb050e4c6b4a3ac05",
+    "url": "../assets/vehicles/bugatti-chiron.glb",
+    "yaw": 3.141592653589793,
+    "adapter": {
+      "wheelNames": [
+        "Object_9",
+        "Object_45",
+        "Object_46",
+        "Object_47",
+        "Object_48"
+      ],
+      "tireNames": [
+        "Object_45"
+      ],
+      "splitX": 67.01725,
+      "splitZ": -3.39673
+    },
+    "paintMaterials": [
+      "Meshpart70Mtl"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.6841,
+    "width": 2.1866,
+    "height": 1.1949,
+    "wheelbase": 2.71,
+    "referenceMass": 1950,
+    "rigMass": 150,
+    "dryMass": 2100,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "bugatti-veyron",
+    "title": "Bugatti Veyron 16.4 Super Sport",
+    "short": "Veyron Super Sport",
+    "brand": "Bugatti",
+    "model": "Veyron 16.4 Super Sport",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "andikapratamaw",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/0ee4c65face949efa4500deb17c79150",
+    "url": "../assets/vehicles/bugatti-veyron.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelNames": [
+        "Object_12",
+        "Object_13",
+        "Object_14",
+        "Object_15",
+        "Object_17",
+        "Object_18",
+        "Object_19",
+        "Object_20",
+        "Object_22",
+        "Object_23",
+        "Object_24",
+        "Object_25",
+        "Object_27",
+        "Object_28",
+        "Object_29",
+        "Object_30"
+      ],
+      "tireNames": [
+        "Object_15",
+        "Object_20",
+        "Object_25",
+        "Object_30"
+      ],
+      "brakeNames": [
+        "Object_12",
+        "Object_17",
+        "Object_22",
+        "Object_27"
+      ],
+      "splitX": -0.082,
+      "splitZ": 0.01
+    },
+    "paintMaterials": [
+      "M_Metalic_Orange"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.5374,
+    "width": 1.9776,
+    "height": 1.2275,
+    "wheelbase": 2.71,
+    "referenceMass": 1850,
+    "rigMass": 150,
+    "dryMass": 2000,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "koenigsegg-one",
+    "title": "Koenigsegg One:1",
+    "short": "One:1",
+    "brand": "Koenigsegg",
+    "model": "One:1",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "iSteven / jkazulyblanco",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-b4e5a4c5fa5d4d45acd6715d3325254f",
+    "url": "../assets/vehicles/koenigsegg-one.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelPattern": "^(wheel|cal)",
+      "tirePattern": "^wheel.*_Material014_0",
+      "brakePattern": "^cal",
+      "splitX": -0.07,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "material_17"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.5613,
+    "width": 2.2023,
+    "height": 1.1763,
+    "wheelbase": 2.66,
+    "referenceMass": 1400,
+    "rigMass": 150,
+    "dryMass": 1550,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "mclaren-p1",
+    "title": "McLaren P1",
+    "short": "P1",
+    "brand": "McLaren",
+    "model": "P1",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "vecarz",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-adae2edc721e4ce7b31c1d06a581e30a",
+    "url": "../assets/vehicles/mclaren-p1.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelPattern": "^(Rim_|Tyre_|Brake_Disk_|g_Susp_Hub_)",
+      "tirePattern": "^Tyre_",
+      "brakePattern": "^g_Susp_Hub_.*Brake_Caliper",
+      "fixedWheelPattern": "^g_Susp_Hub_",
+      "splitX": -0.059,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "Carpaint"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.8524,
+    "width": 2.1446,
+    "height": 1.1832,
+    "wheelbase": 2.67,
+    "referenceMass": 1500,
+    "rigMass": 150,
+    "dryMass": 1650,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "lamborghini-revuelto",
+    "title": "Lamborghini Revuelto",
+    "short": "Revuelto",
+    "brand": "Lamborghini",
+    "model": "Revuelto",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "ALIEEEN",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-cf52245eb68f48daa909c7ad2a8deaa3",
+    "url": "../assets/vehicles/lamborghini-revuelto.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelPattern": "^Wheel_(FR|FL|BR|BL)",
+      "tirePattern": "^Wheel_(FR|FL|BR|BL)_Tire_0",
+      "brakePattern": "^Wheel_(FR|FL|BR|BL)_Caliper_0",
+      "splitX": 0,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "Body"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 5.0262,
+    "width": 2.1985,
+    "height": 1.1873,
+    "wheelbase": 2.8,
+    "referenceMass": 1800,
+    "rigMass": 150,
+    "dryMass": 1950,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "honda-nsx",
+    "title": "Honda NSX (1990)",
+    "short": "NSX NA1",
+    "brand": "Honda",
+    "model": "NSX (1990)",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "Lexyc16",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/1cc15628a00a4739a6b6c01128927c8d",
+    "url": "../assets/vehicles/honda-nsx.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelNames": [
+        "Circle001_9",
+        "Circle002_19",
+        "Circle003_20",
+        "Circle004_21"
+      ],
+      "tireNames": [
+        "Object_17",
+        "Object_41",
+        "Object_46",
+        "Object_51"
+      ],
+      "splitX": 0.89,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "Material.003"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.473,
+    "width": 1.9546,
+    "height": 1.1609,
+    "wheelbase": 2.53,
+    "referenceMass": 1350,
+    "rigMass": 150,
+    "dryMass": 1500,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "pagani-huayra",
+    "title": "Pagani Huayra",
+    "short": "Huayra",
+    "brand": "Pagani",
+    "model": "Huayra",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "Black Snow",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-c2d61a9f53a54a229547bb76e4b71e25",
+    "url": "../assets/vehicles/pagani-huayra.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelNames": [
+        "Object_46",
+        "Object_48",
+        "Object_49",
+        "Object_50",
+        "Object_51",
+        "Object_52",
+        "Object_53",
+        "Object_56",
+        "Object_57",
+        "Object_58",
+        "Object_62"
+      ],
+      "tireNames": [
+        "Object_50",
+        "Object_51",
+        "Object_52",
+        "Object_53"
+      ],
+      "brakeNames": [
+        "Object_48",
+        "Object_49"
+      ],
+      "splitX": 0,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "PAG_HUAYRA_PAINT",
+      "PAG_HUAYRA_PAINT_2"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 5.0323,
+    "width": 2.3056,
+    "height": 1.1679,
+    "wheelbase": 2.8,
+    "referenceMass": 1400,
+    "rigMass": 150,
+    "dryMass": 1550,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "porsche-918-spyder",
+    "title": "Porsche 918 Spyder",
+    "short": "918 Spyder",
+    "brand": "Porsche",
+    "model": "918 Spyder",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "vecarz / DisneyCars",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-9fb9a088d0704a06ba69a8a6de100f10",
+    "url": "../assets/vehicles/porsche-918-spyder.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelNames": [
+        "Object_950",
+        "Object_953",
+        "Object_956",
+        "Object_959",
+        "Object_962",
+        "Object_965",
+        "Object_969",
+        "Object_972",
+        "Object_975",
+        "Object_978",
+        "Object_981",
+        "Object_984",
+        "Object_988",
+        "Object_991",
+        "Object_994",
+        "Object_997",
+        "Object_1000",
+        "Object_1003",
+        "Object_1007",
+        "Object_1010",
+        "Object_1013",
+        "Object_1016",
+        "Object_1019",
+        "Object_1022",
+        "Object_1026",
+        "Object_1030",
+        "Object_1034",
+        "Object_1038"
+      ],
+      "tireNames": [
+        "Object_950",
+        "Object_969",
+        "Object_988",
+        "Object_1007"
+      ],
+      "brakeNames": [
+        "Object_953",
+        "Object_956",
+        "Object_972",
+        "Object_975",
+        "Object_991",
+        "Object_994",
+        "Object_1010",
+        "Object_1013"
+      ],
+      "splitX": 0.29,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "Body_Paint_-_GT_Silver_Metalic"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.82,
+    "width": 2.0539,
+    "height": 1.1789,
+    "wheelbase": 2.73,
+    "referenceMass": 1700,
+    "rigMass": 150,
+    "dryMass": 1850,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "porsche-911-gt3",
+    "title": "Porsche 911 GT3",
+    "short": "911 GT3",
+    "brand": "Porsche",
+    "model": "911 GT3",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "ChevroletSS",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-78d5c47ab2554c2592b7e499179a0792",
+    "url": "../assets/vehicles/porsche-911-gt3.glb",
+    "yaw": 1.5707963267948966,
+    "adapter": {
+      "wheelPattern": "Tyre|GEO_rim_|Wheel_Hub_|g_Brake_Caliper|A_DISC_",
+      "tirePattern": "EXT_Tyre",
+      "brakePattern": "g_Brake_Caliper",
+      "fixedWheelPattern": "Wheel_Hub_",
+      "excludeNames": [
+        "Object_20"
+      ],
+      "splitX": 0,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "EXT_Carpaint.004"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 4.5489,
+    "width": 1.9784,
+    "height": 1.3007,
+    "wheelbase": 2.45,
+    "referenceMass": 1450,
+    "rigMass": 150,
+    "dryMass": 1600,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
+  },
+  {
+    "id": "lotus-elise",
+    "title": "Lotus Elise",
+    "short": "Elise",
+    "brand": "Lotus",
+    "model": "Elise",
+    "cityOnly": true,
+    "category": "sports",
+    "author": "Stéphane Agullo",
+    "license": "CC BY 4.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "source": "https://sketchfab.com/3d-models/none-75e9045ac1af4cdbb69318108c81edfd",
+    "url": "../assets/vehicles/lotus-elise.glb",
+    "yaw": -1.5707963267948966,
+    "adapter": {
+      "wheelPattern": "^LOTUS-def3Layer(2|16|17|18)_",
+      "tireNames": [
+        "LOTUS-def3Layer2_CARblack_0",
+        "LOTUS-def3Layer16_CARblack_0",
+        "LOTUS-def3Layer17_CARblack_0",
+        "LOTUS-def3Layer18_CARblack_0"
+      ],
+      "excludePattern": "^SOL01_|SHADE|NANA-",
+      "splitX": 0,
+      "splitZ": 0
+    },
+    "paintMaterials": [
+      "CAR.carros"
+    ],
+    "reference": "도시 스포츠카 · 치수/질량은 시뮬레이션 가정",
+    "length": 3.7658,
+    "width": 1.8875,
+    "height": 1.2643,
+    "wheelbase": 2.3,
+    "referenceMass": 900,
+    "rigMass": 150,
+    "dryMass": 1050,
+    "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
+    "dimensionBasis": "Wheelbase is a rounded simulation assumption; exterior/collision dimensions are measured from the artist mesh after proportional scaling, not OEM CAD"
   }
 ];
