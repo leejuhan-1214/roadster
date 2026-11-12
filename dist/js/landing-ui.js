@@ -98,46 +98,46 @@ function download(name,rows){
 }
 
 export class LandingUI {
-  constructor({onStart,onCompareVehicles,onCompareMethods,onCompareFleetMethods,onCompareBrakeHeights,onStop,vehicles=[]}){
+  constructor({onStart,onCompareVehicles,onCompareMethods,onCompareFleetMethods,onCompareBrakeHeights,onStop,onConfigure,vehicles=[]}){
     this.root=document.getElementById('landing-lab');
     this.results=[];this.busy=false;this.selectedGroup=null;this.nextId=1;
-    this.root.innerHTML=`<div class="section-label">착지 충격 실험</div>
+    this.root.innerHTML=`
       <form id="landing-settings" class="landing-settings">
-        <div class="landing-study-top"><span>언제 분사해야 충격이 줄어들까?</span><button id="landing-study-preset" type="button">탐구 조건 3m</button></div>
-        <label>출발 높이 <span>바퀴 아래 · m</span><input id="landing-height" name="height" type="number" min="0" step="any" value="3" required></label>
-        <label>착지 방식<select id="landing-method" name="method"><option value="free">자유 낙하</option><option value="brake">지면 전 추력 제동</option><option value="gentle">완만한 하강 제어</option></select></label>
-        <div class="landing-control-pair">
-          <label>제동 시작 <span>m</span><input id="landing-brake-height" name="brakeHeight" type="number" min="0" step="any" value="1.5" required></label>
-          <label>목표 하강속도 <span>m/s</span><input id="landing-target-speed" name="targetSpeed" type="number" min="0.2" max="2" step="0.1" value="0.5" required></label>
+        <div class="landing-primary-settings">
+          <label>출발 높이 <span>m</span><input id="landing-height" name="height" type="number" min="0" step="any" value="3" required title="실험을 시작할 때 바퀴 아래 높이"></label>
+          <label>착지 방식<select id="landing-method" name="method"><option value="free">자유 낙하</option><option value="brake">추력 제동</option><option value="gentle">완만한 하강</option></select></label>
         </div>
-        <details class="landing-suspension"><summary>서스펜션 조정 · 바퀴별</summary><div class="landing-control-pair">
-          <label>스프링 <span>kN/m</span><input id="landing-spring" name="springK" type="number" min="30" max="150" step="5" value="75" required></label>
-          <label>감쇠 <span>kN·s/m</span><input id="landing-damper" name="damperC" type="number" min="1" max="15" step="0.5" value="6" required></label>
+        <button id="landing-start" class="primary-btn" type="submit">실험 시작 <span>↓</span></button>
+        <button id="landing-methods" class="landing-compare-button" type="button">현재 차체 · 3방식 비교</button>
+        <details id="landing-advanced" class="landing-settings-details"><summary>제동 · 서스펜션</summary><div class="landing-detail-content">
+          <div class="landing-control-pair"><label>제동 시작 <span>m</span><input id="landing-brake-height" name="brakeHeight" type="number" min="0" step="any" value="1.5" required></label><label>목표 하강속도 <span>m/s</span><input id="landing-target-speed" name="targetSpeed" type="number" min="0.2" max="2" step="0.1" value="0.5" required></label></div>
+          <div class="landing-control-pair"><label>스프링 <span>kN/m · 바퀴별</span><input id="landing-spring" name="springK" type="number" min="30" max="150" step="5" value="75" required></label><label>감쇠 <span>kN·s/m · 바퀴별</span><input id="landing-damper" name="damperC" type="number" min="1" max="15" step="0.5" value="6" required></label></div>
+          <button id="landing-study-preset" type="button" class="landing-preset-button">기본 3 m 조건으로</button>
         </div></details>
-        <p class="landing-note">평탄면·무풍·초속도 0·공기저항 OFF<br>공통 가상 서스펜션·추진계</p>
-        <button id="landing-start" class="primary-btn" type="submit">현재 차체 실험 <span>↓</span></button>
-        <details class="landing-fleet" open><summary>비교할 5종 · 초기 총질량</summary><div class="landing-fleet-list">${vehicles.map(v=>'<label><input type="checkbox" name="vehicleId" value="'+html(v.id)+'" checked><span>'+html(v.short)+(experimentMass(v).assumed?' <em>가정</em>':'')+'</span><strong>'+Math.round(experimentMass(v).total).toLocaleString('ko-KR')+' kg</strong></label>').join('')}</div></details>
-        <div class="landing-batch-buttons"><button id="landing-vehicles" type="button">선택 차체 비교</button><button id="landing-methods" type="button">착지 3방식 비교</button></div>
-        <button id="landing-brake-heights" class="landing-sweep-button" type="button">제동 높이 비교 <span>5단계 · 기준 포함 6회</span></button>
-        <button id="landing-fleet-methods" class="primary-btn" type="button">실험 5종 × 3방식 <span>${vehicles.length*3}회</span></button>
-        <details class="landing-study-guide"><summary>탐구 순서 · 물리 개념</summary><ol><li>같은 차체로 <b>착지 3방식</b>을 비교합니다.</li><li><b>제동 높이 비교</b>로 분사 시작만 바꿉니다.</li><li>안정 착지 중 충격과 기체 소비의 절충점을 찾습니다.</li></ol><p>통제: 출발 높이·초기 속도·탱크·스프링·감쇠. 차종 비교에서는 질량과 구조가 함께 바뀝니다.</p><p><b>v = √(2gh)</b> 낙하 속도<br><b>∫F알짜 dt = Δp</b> 충격량<br><b>N휠 ≈ max(0, kx + cẋ)</b> 바퀴별 반력</p><p>x는 양의 압축량, ẋ는 압축 속도입니다. 식은 선형 구간의 근사이며 22 cm 초과에서는 범프 스톱이 추가됩니다.</p></details>
+        <details class="landing-settings-details landing-more-comparisons"><summary>차체 · 제동 높이 비교</summary><div class="landing-detail-content">
+          <div class="landing-fleet-list">${vehicles.map(v=>'<label><input type="checkbox" name="vehicleId" value="'+html(v.id)+'" checked><span>'+html(v.short)+(experimentMass(v).assumed?' <em>가정</em>':'')+'</span><strong>'+Math.round(experimentMass(v).total).toLocaleString('ko-KR')+' kg</strong></label>').join('')}</div>
+          <button id="landing-vehicles" class="landing-compare-button" type="button">선택 차체 비교</button>
+          <button id="landing-fleet-methods" class="landing-compare-button" type="button">전체 5종 × 3방식 <span>${vehicles.length*3}회</span></button>
+          <button id="landing-brake-heights" class="landing-sweep-button" type="button">제동 높이 비교 <span>6회</span></button>
+        </div></details>
+        <details class="landing-study-guide"><summary>실험 조건 · 물리 개념</summary><p>같은 높이·초기 탱크 조건에서 비교합니다. 평탄면·무풍·초속도 0·공기저항 OFF, 공통 가상 서스펜션·추진계를 사용합니다.</p><ol><li>같은 차체로 <b>3방식</b>을 비교합니다.</li><li><b>제동 높이 비교</b>로 분사 시작만 바꿉니다.</li><li>안정 착지 중 충격과 기체 소비의 절충점을 찾습니다.</li></ol><p>통제: 출발 높이·초기 속도·탱크·스프링·감쇠. 차종 비교에서는 질량과 구조가 함께 바뀝니다.</p><p><b>v = √(2gh)</b> 낙하 속도<br><b>∫F알짜 dt = Δp</b> 충격량<br><b>N휠 ≈ max(0, kx + cẋ)</b> 바퀴별 반력</p><p>x는 양의 압축량, ẋ는 압축 속도입니다. 식은 선형 구간의 근사이며 22 cm 초과에서는 범프 스톱이 추가됩니다.</p></details>
       </form>
-      <div class="landing-run-footer"><p id="landing-status" role="status" aria-live="polite">높이와 착지 방식을 선택하세요.</p><button id="landing-stop" type="button" hidden>중단</button></div>
-      <button id="landing-results" class="text-btn" type="button" disabled>비교 결과 <span id="landing-result-count">0회</span></button>
-      <p class="landing-note">비교마다 초기 탱크 조건을 통일합니다.</p>`;
+      <div class="landing-run-footer"><p id="landing-status" role="status" aria-live="polite">실험 준비</p><button id="landing-stop" type="button" hidden>중단</button></div>
+      <button id="landing-results" class="text-btn" type="button" disabled>결과 보기 <span id="landing-result-count">0회</span></button>`;
     this.form=this.root.querySelector('form');this.status=this.root.querySelector('#landing-status');
     this.root.querySelector('#landing-study-preset').addEventListener('click',()=>{
       if(this.busy)return;
       for(const [name,value]of Object.entries({height:3,method:'free',brakeHeight:1.5,targetSpeed:.5,springK:75,damperC:6})){
         const input=this.form.elements.namedItem(name);input.value=String(value);input.setCustomValidity?.('');
       }
-      this.root.querySelector('#landing-brake-heights span').textContent='5단계 · 기준 포함 6회';
-      this.setProgress('현재 차체 · 3 m 조건 준비. 3방식 또는 제동 높이 비교를 실행하세요.');
+      this.root.querySelector('#landing-brake-heights span').textContent='6회';
+      this.setProgress('3 m 조건 준비');
     });
     this.form.addEventListener('input',event=>{
       event.target.setCustomValidity?.('');
-      if(event.target.id==='landing-height')this.root.querySelector('#landing-brake-heights span').textContent=Number(event.target.value)>0?'5단계 · 기준 포함 6회':'0 m · 기준 포함 2회';
+      if(event.target.id==='landing-height')this.root.querySelector('#landing-brake-heights span').textContent=Number(event.target.value)>0?'6회':'2회';
     });
+    this.form.elements.namedItem('method').addEventListener('change',event=>{if(event.target.value!=='free')this.root.querySelector('#landing-advanced').open=true;});
     this.form.addEventListener('submit',event=>{event.preventDefault();if(!this.busy&&this.checkValidity())onStart(this.readOptions());});
     this.root.querySelector('#landing-vehicles').addEventListener('click',()=>{if(!this.busy&&this.checkValidity()){if(this.readOptions().vehicleIds.length<2){this.setProgress('비교할 차체를 2개 이상 선택하세요.');return;}onCompareVehicles(this.readOptions());}});
     this.root.querySelector('#landing-methods').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareMethods(this.readOptions());});
@@ -147,17 +147,22 @@ export class LandingUI {
     this.root.querySelector('#landing-results').addEventListener('click',()=>this.showResults());
     this.dialog=document.createElement('dialog');this.dialog.id='landing-results-dialog';this.dialog.className='landing-results-dialog';
     this.dialog.setAttribute('aria-labelledby','landing-results-heading');
-    this.dialog.innerHTML=`<div class="modal-top"><h2 id="landing-results-heading">착지 비교 결과</h2><button class="icon-btn" id="landing-results-close" aria-label="착지 결과 닫기">×</button></div>
+    this.dialog.innerHTML=`<div class="modal-top"><h2 id="landing-results-heading">착지 비교 결과</h2><div class="landing-result-header-actions"><button id="landing-configure" class="landing-configure-button">조건 바꾸기</button><button class="icon-btn" id="landing-results-close" aria-label="착지 결과 닫기">×</button></div></div>
       <div class="landing-results-toolbar"><label for="landing-result-group">실험 묶음 <select id="landing-result-group"></select></label><span id="landing-group-conditions"></span></div>
       <p id="landing-best" class="landing-best"></p>
-      <section class="landing-research" aria-label="이론 검증과 제동 조건 탐구"><div class="landing-research-heading"><h3>물리 검증 · 충격과 기체 소비</h3><label id="landing-research-vehicle-label" hidden>분석 차체 <select id="landing-research-vehicle" aria-label="분석할 차체"></select></label></div><p id="landing-research-scope" class="landing-result-note"></p><div id="landing-research-cards" class="landing-research-cards"></div><div id="landing-research-view-controls" class="landing-research-view-controls"><label><input id="landing-stable-zoom" type="checkbox">안정 착지만 확대</label><span id="landing-zoom-note"></span></div><div id="landing-research-plots" class="landing-research-plots"><section><h4>제동 시작 높이 → 최대 등가반력</h4><div id="landing-height-chart" class="landing-research-chart"></div></section><section><h4>기체 소비 ↔ 최대 등가반력</h4><div id="landing-gas-chart" class="landing-research-chart"></div></section></div><p id="landing-tradeoff" class="landing-tradeoff"></p><details class="landing-research-explanation"><summary>그래프와 검산 읽는 법</summary><p>○ 안정 착지 · × 수동 분사/차체 접촉/한계 초과/진동 · ◎ 절충 후보. 절충 후보는 다른 안정 결과가 충격과 기체 소비를 동시에 줄일 수 없는 측정 조건입니다. 측정한 범위의 후보이며 하나의 보편적 최적값을 뜻하지 않습니다.</p><p>자유낙하 속도 검산은 무풍·공기저항 없음·초속도 0 조건입니다. 충격량 검산은 <b>자유낙하 전체 측정 구간</b>의 지면 반력(접촉 보정 포함)과 중력을 적분해 같은 구간의 운동량 변화와 비교합니다. 분사 중에는 질량이 변하므로 이 고정질량 검산을 적용하지 않습니다.</p><p>접촉 직전 수직 운동에너지는 접촉 때 질량을 사용합니다. 분사 기체의 에너지는 포함하지 않으며 전체 에너지 보존 검사가 아닙니다. 차체 파손·탑승자 상해는 계산하지 않습니다.</p></details></section>
+      <details class="landing-analysis-details"><summary>물리 분석 · 제동 높이</summary><section class="landing-research" aria-label="이론 검증과 제동 조건 탐구"><div class="landing-research-heading"><h3>물리 검증 · 충격과 기체 소비</h3><label id="landing-research-vehicle-label" hidden>분석 차체 <select id="landing-research-vehicle" aria-label="분석할 차체"></select></label></div><p id="landing-research-scope" class="landing-result-note"></p><div id="landing-research-cards" class="landing-research-cards"></div><div id="landing-research-view-controls" class="landing-research-view-controls"><label><input id="landing-stable-zoom" type="checkbox">안정 착지만 확대</label><span id="landing-zoom-note"></span></div><div id="landing-research-plots" class="landing-research-plots"><section><h4>제동 시작 높이 → 최대 등가반력</h4><div id="landing-height-chart" class="landing-research-chart"></div></section><section><h4>기체 소비 ↔ 최대 등가반력</h4><div id="landing-gas-chart" class="landing-research-chart"></div></section></div><p id="landing-tradeoff" class="landing-tradeoff"></p><details class="landing-research-explanation"><summary>그래프와 검산 읽는 법</summary><p>○ 안정 착지 · × 수동 분사/차체 접촉/한계 초과/진동 · ◎ 절충 후보. 절충 후보는 다른 안정 결과가 충격과 기체 소비를 동시에 줄일 수 없는 측정 조건입니다. 측정한 범위의 후보이며 하나의 보편적 최적값을 뜻하지 않습니다.</p><p>자유낙하 속도 검산은 무풍·공기저항 없음·초속도 0 조건입니다. 충격량 검산은 <b>자유낙하 전체 측정 구간</b>의 지면 반력(접촉 보정 포함)과 중력을 적분해 같은 구간의 운동량 변화와 비교합니다. 분사 중에는 질량이 변하므로 이 고정질량 검산을 적용하지 않습니다.</p><p>접촉 직전 수직 운동에너지는 접촉 때 질량을 사용합니다. 분사 기체의 에너지는 포함하지 않으며 전체 에너지 보존 검사가 아닙니다. 차체 파손·탑승자 상해는 계산하지 않습니다.</p></details></section></details>
       <div class="landing-table-wrap" tabindex="0" aria-label="착지 결과 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">높이<br>m</th><th scope="col">초기 질량<br>kg</th><th scope="col">최대 등가반력<br>kN · 2 ms</th><th scope="col">자유낙하 대비<br>반력 변화</th><th scope="col">접촉 최대 하중<br>g</th><th scope="col">첫 접촉 속도<br>m/s</th><th scope="col">기체 사용<br>kg</th><th scope="col">착지 상태</th></tr></thead><tbody id="landing-result-rows"></tbody></table></div>
       <details class="landing-metrics-details"><summary>접촉 질량·에너지·충격량·압축 비교</summary><div class="landing-table-wrap" tabindex="0" aria-label="착지 세부 계측 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">접촉 직전 질량<br>kg</th><th scope="col">접촉 직전 수직 K<br>kJ</th><th scope="col">첫 접촉→첫 감속 종료<br>ms · 2 ms 해상도</th><th scope="col">감속 종료 수직 속도<br>m/s</th><th scope="col">첫 감속 지면 충격량<br>kN·s</th><th scope="col">최대 압축<br>cm</th><th scope="col">최대 반발 높이<br>cm</th></tr></thead><tbody id="landing-metric-rows"></tbody></table></div><p class="landing-result-note">충격량과 감속 시간은 같은 2 ms 끝점까지 측정합니다. 감속 종료는 |수직 속도| &lt; 0.01 m/s 또는 첫 반발이 검출된 표본이며, 정확히 속도 0인 해석적 순간은 아닙니다. 종료 속도는 위쪽이 양수입니다. 중력·분사력이 함께 작용하므로 차체의 전체 운동량 변화와 같지 않습니다. 반발은 접촉 후 관찰 구간의 최대 바퀴 높이입니다.</p></details>
       <div class="landing-chart-heading"><h3>첫 접촉 전후 등가반력</h3><label id="landing-chart-selector" hidden>그래프 차체 <select id="landing-chart-vehicle" aria-label="그래프 차체"></select></label><span id="landing-chart-range">0 s = 각 실험의 첫 접촉</span></div><div id="landing-force-chart" class="landing-force-chart"></div><div id="landing-chart-legend" class="landing-chart-legend"></div>
-      <p class="landing-result-note">접촉 보정 충격량을 2 ms로 나눈 등가력 포함. 최대값은 2 ms 기준, 그래프는 10 ms 구간 최댓값입니다. 하중 1 g는 정지 지지 상태입니다. 실차 안전성 평가가 아닌 가정 모델 비교입니다.</p>
+      <details class="landing-reading-note"><summary>측정값 읽는 법</summary><p class="landing-result-note">접촉 보정 충격량을 2 ms로 나눈 등가력 포함. 최대값은 2 ms 기준, 그래프는 10 ms 구간 최댓값입니다. 하중 1 g는 정지 지지 상태입니다. 실차 안전성 평가가 아닌 가정 모델 비교입니다.</p></details>
       <div class="landing-results-actions"><button id="landing-export-summary">전체 결과 CSV</button><button id="landing-export-traces">전체 시간기록 CSV</button><button id="landing-export-graphs">현재 그래프 SVG</button><button id="landing-clear-results">기록 지우기</button></div>`;
     document.body.append(this.dialog);
     this.dialog.querySelector('#landing-results-close').addEventListener('click',()=>this.dialog.close());
+    this.dialog.querySelector('#landing-configure').addEventListener('click',()=>{
+      this.dialog.close();
+      if(onConfigure)onConfigure();else document.getElementById('left-panel')?.classList.add('open');
+      this.form.elements.namedItem('height')?.focus({preventScroll:true});
+    });
     this.dialog.querySelector('#landing-result-group').addEventListener('change',event=>{this.selectedGroup=event.target.value;this.renderResults();});
     this.dialog.querySelector('#landing-chart-vehicle').addEventListener('change',event=>{this.chartVehicle=event.target.value;this.renderResults();});
     this.dialog.querySelector('#landing-research-vehicle').addEventListener('change',event=>{this.researchVehicle=event.target.value;this.renderResults();});
@@ -218,12 +223,13 @@ export class LandingUI {
     const sameVehicle=new Set(rows.map(result=>result.vehicleId)).size===1;
     const best=sameVehicle?sorted[0]:null;
     const bestText=this.dialog.querySelector('#landing-best');
+    bestText.hidden=rows.length<2;
     if(complete&&best){
       const comparison=landingBaselineComparison(best,rows);
       const reduction=comparison&&comparison.baseline!==best?comparison.reductionPercent:null;
       const tied=sorted.filter(result=>Math.abs(result.peakEquivalentGroundForceN-best.peakEquivalentGroundForceN)<1).length>1;
       bestText.textContent='이 묶음의 안정 착지 중 '+(tied?'공동 ':'')+'최소 등가반력: '+label(best)+' · '+methodLabel(best)+' · '+number(best.peakEquivalentGroundForceN/1000)+' kN'+(reduction!==null?' · 자유 낙하보다 '+number(Math.abs(reduction),1)+'% '+(reduction>=0?'감소':'증가'):'')+(valid.length<rows.length?' · 수동 분사·차체 접촉·진동·한계 초과 결과는 최소값 후보에서 제외':'');
-    }else bestText.textContent=allHistory?'조건이 다른 전체 기록입니다. 높이·질량·스프링·감쇠를 확인하며 비교하세요. 전체 순위는 매기지 않습니다.':complete&&!sameVehicle?'차종마다 질량·크기·관성이 함께 달라집니다. 분석 차체를 선택해 같은 차체의 착지 방식을 비교하세요.':complete?'안정 착지 조건을 충족한 결과가 없어 최소 충격 순위를 매기지 않았습니다.':rows.length===1?'같은 조건으로 다른 차체나 착지 방식을 비교해 보세요.':'비교 실험 진행 중';
+    }else bestText.textContent=allHistory?'조건이 다른 전체 기록입니다. 높이·질량·스프링·감쇠를 확인하며 비교하세요. 전체 순위는 매기지 않습니다.':complete&&!sameVehicle?'차종마다 질량·크기·관성이 함께 달라집니다. 분석 차체를 선택해 같은 차체의 착지 방식을 비교하세요.':complete?'안정 착지 조건을 충족한 결과가 없어 최소 충격 순위를 매기지 않았습니다.':rows.length===1?'':'비교 실험 진행 중';
     this.dialog.querySelector('#landing-result-rows').innerHTML=rows.map((result,index)=>{
       const landed=isLanded(result),unsettled=result.status==='unsettled'||(result.settled===false&&Number.isFinite(result.touchdownSpeed));
       const status=result.bodyStrike?'차체 접촉'+(unsettled?' · 진동':''):result.bottomedOut?'서스펜션 한계'+(unsettled?' · 진동':''):unsettled?'측정 완료 · 진동 지속':!landed?'미착지':'안정 착지';

@@ -30,7 +30,9 @@ export class LandingLiveUI {
         <p>화살표는 차체 옆으로 옮겨 표시합니다. 접촉 전 N = 0. 접촉하면 스프링·감쇠가 하강을 멈춥니다. 화살표 N은 연속 반력이며 아래 등가반력은 접촉 보정 충격량도 포함합니다.</p>
         <p>스프링 값은 선형 부분만 계산하며 22 cm 이후의 비선형 스토퍼와 감쇠 소산은 제외합니다. 분사 중 질량이 줄어듭니다. 위 에너지는 차체의 순간값이며 배출 기체·중력 위치에너지·소산을 합친 보존량은 아닙니다.</p>
       </details>`;
-    root.querySelector('.force-reading').before(panel);this.panel=panel;
+    const diagnostics=root.querySelector('#landing-diagnostics');
+    if(diagnostics)diagnostics.append(panel);else root.querySelector('.force-reading').before(panel);
+    this.panel=panel;
     this.nodes=Object.fromEntries([...panel.querySelectorAll('[id]')].map(el=>[el.id,el]));
   }
   setVisible(visible){this.panel.hidden=!visible;}

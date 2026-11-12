@@ -98,7 +98,7 @@ export class LandingVisual {
   constructor(){
     this.root=new THREE.Group();this.root.name='landing physics diagram';this.root.visible=false;
     this.enabled=true;this.config=null;this.scale=10000;this.metrics={gravityN:0,thrustN:0,thrustVerticalN:0,groundN:0,groundVerticalN:0,forceScaleNPerM:this.scale,clearance:0,compression:0,velocityY:0};
-    this._position=new THREE.Vector3();this._direction=new THREE.Vector3();this._thrust=new THREE.Vector3();this._right=new THREE.Vector3(1,0,0);this._point=new THREE.Vector3();
+    this._position=new THREE.Vector3();this._direction=new THREE.Vector3();this._thrust=new THREE.Vector3();this._right=new THREE.Vector3(1,0,0);this._point=new THREE.Vector3();this._bodyX=new THREE.Vector3();this._bodyZ=new THREE.Vector3();
     this.forces=new THREE.Group();this.root.add(this.forces);this.forceArrows={};this.forceLabels={};
     for(const [key,text]of [['gravity','mg'],['thrust','T'],['ground','N']]){
       const arrow=new THREE.ArrowHelper(key==='gravity'?DOWN:UP,new THREE.Vector3(),1,COLORS[key],.17,.09);
@@ -193,9 +193,18 @@ export class LandingVisual {
     }
     const originX=this.config?0:position.x,originZ=this.config?0:position.z;
     this.updateRuler(this.config?.height??3,clearance,originX,originZ);
+    // Keep the ruler and release labels beside the projected body as the user
+    // orbits. Their vertical coordinates still represent true world heights.
+    this._bodyX.set(1,0,0).applyQuaternion(q);this._bodyZ.set(0,0,1).applyQuaternion(q);
+    const halfSpan=Math.abs(this._right.dot(this._bodyX))*finite(sim.params.bodyLength,5)*.5+Math.abs(this._right.dot(this._bodyZ))*finite(sim.params.bodyWidth,2)*.5;
+    const rulerOffset=halfSpan+.85;
+    this.ruler.position.set(originX+this._right.x*rulerOffset,0,originZ+this._right.z*rulerOffset);
+    this.ruler.rotation.y=Math.atan2(-this._right.z,this._right.x);
+    this.heightLabel.position.set(this._right.x*(rulerOffset+.25),.18,this._right.z*(rulerOffset+.25));
+    this.brakeLabel.position.set(this._right.x*(rulerOffset+.25),.18,this._right.z*(rulerOffset+.25));
     this.origin.position.set(originX,.025,originZ);
     this.heightMarker.visible=!!this.config;this.brakeMarker.visible=this.config?.method==='brake';
-    this.clearanceLine.position.set(originX-3.25,0,originZ-2.05);this.clearanceLine.scale.y=Math.max(0,clearance);this.clearanceLine.visible=clearance>.005;
+    this.clearanceLine.position.copy(this.ruler.position).addScaledVector(this._right,.08);this.clearanceLine.scale.y=Math.max(0,clearance);this.clearanceLine.visible=clearance>.005;
     for(let i=0;i<4;i++){
       const wheel=wheels[i],physical=sim.wheels[i],mark=this.contactMarks[i],spring=this.springs[i];
       if(!wheel){mark.visible=spring.visible=false;continue;}

@@ -1,6 +1,6 @@
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
 import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
-import {LandingVisual,landingRulerWindow} from './landing-visual.js?v=20261111-science1';
+import {LandingVisual} from './landing-visual.js?v=20261112-lab1';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261111-drivefix1';
@@ -83,11 +83,11 @@ function label(text,{width=9,height=1,color='#e6eceb',bg=null,font='600',size=90
 
 // Fit the complete 3D envelope in the usable inspector viewport, retaining its
 // current orbit direction instead of flattening the assembly into a front board.
-export function inspectionDistance(box,direction,fov,aspect,availableWidth=1){
-  const center=box.getCenter(new THREE.Vector3()),right=new THREE.Vector3().crossVectors(UP,direction).normalize();
+export function inspectionDistance(box,direction,fov,aspect,availableWidth=1,center=box.getCenter(new THREE.Vector3()),fill=.78){
+  const right=new THREE.Vector3().crossVectors(UP,direction).normalize();
   if(right.lengthSq()<.01)right.set(1,0,0);
   const up=new THREE.Vector3().crossVectors(direction,right).normalize();
-  const tanY=Math.tan(THREE.MathUtils.degToRad(fov)/2)*.78,tanX=tanY*aspect*availableWidth;
+  const tanY=Math.tan(THREE.MathUtils.degToRad(fov)/2)*fill,tanX=tanY*aspect*availableWidth;
   let distance=3;
   for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
     const point=new THREE.Vector3(x,y,z).sub(center),near=point.dot(direction);
@@ -380,24 +380,35 @@ export class FlightScene {
     }).catch(error=>{if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}this.cityPromise=null;throw error;});
     return this.cityPromise;
   }
-  frameLandingStart(sim){
-    const height=Math.abs(sim.state.pos.y);
-    this.camera.far=Math.max(1500,Math.min(1e12,height*2+1000));this.camera.updateProjectionMatrix();
-    const p=sim.bodyPosition||sim.state.pos,release=this.landingVisual?.config?.height??Math.max(0,p.y-.67);
-    const ruler=landingRulerWindow(release,release);
-    // Fit the local measuring window, not the entire path of a high drop.
-    // Include displaced force arrows and the ruler left of the car, and use
-    // the canvas space left after the actual telemetry panel is accounted for.
-    const low=Math.min(p.y-.75,ruler.start),high=Math.max(p.y+3.1,ruler.end);
-    const box=new THREE.Box3(new THREE.Vector3(p.x-4.8,low,p.z-2.7),new THREE.Vector3(p.x+3.2,high,p.z+2.7));
-    const center=box.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(-8,3.8,4.2).normalize();
-    const available=this.inspectionViewport();
-    const distance=inspectionDistance(box,direction,43,this.camera.aspect,available);
-    this.landingFocusOffset=center.clone().sub(p);this.camera.fov=43;
+  frameLabVehicle(sim,{resetView=true,landing=!!this.landingVisual?.config}={}){
+    const p=sim.bodyPosition||sim.state.pos,params=sim.params||this.vehicle?.geometryParams||{};
+    const halfLength=Math.max(2.5,(params.bodyLength||5)/2),halfWidth=Math.max(1.1,(params.bodyWidth||2.2)/2);
+    const diagram=this.landingVisual?.enabled!==false;
+    // Prioritise the car and nearby contact plane. A kilometre-high trial must
+    // not shrink the car to fit the entire ruler, and its final landing must
+    // have the same eye level as a low trial.
+    const box=new THREE.Box3(
+      new THREE.Vector3(p.x-Math.max(halfLength+.5,diagram?3.8:0),landing?Math.max(0,p.y-3.5):p.y-.85,p.z-Math.max(halfWidth+.4,diagram?2.35:0)),
+      new THREE.Vector3(p.x+halfLength+.5,p.y+(diagram?2.8:1.25),p.z+halfWidth+.4));
+    const center=p.clone().add(new THREE.Vector3(0,.25,0));
+    const previous=this.camera.position.clone().sub(this.controls.target),oldDistance=previous.length();
+    const direction=resetView||oldDistance<.01?new THREE.Vector3(6.4,3.2,8).normalize():previous.normalize();
+    const available=this.inspectionViewport(),vertical=this.labViewportHeight||1;
+    const fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(43)/2)*vertical));
+    // This envelope already leaves space around the body and ground contact.
+    // Applying the inspector's extra 22% margin again made the car needlessly small.
+    const fitted=inspectionDistance(box,direction,fov,this.camera.aspect/vertical,available,center,1);
+    const distance=!resetView&&oldDistance>0?oldDistance:fitted;
+    // Flush residual OrbitControls damping before repositioning; otherwise a
+    // completed drag can rotate the next trial after its camera was restored.
+    const damping=this.controls.enableDamping;this.controls.enableDamping=false;this.controls.update();this.controls.enableDamping=damping;
+    this.landingFocusOffset=new THREE.Vector3(0,.25,0);this.camera.fov=43;
+    this.camera.far=Math.max(1500,Math.min(1e12,Math.abs(p.y)*2+1000));this.camera.up.copy(UP);
     this.cameraTarget.copy(center);this.controls.target.copy(center);this.controls.maxDistance=Math.max(55,distance*1.4);
     this.camera.position.copy(center).addScaledVector(direction,distance);this.cameraPosition.copy(this.camera.position);
     this.camera.lookAt(center);this.camera.updateProjectionMatrix();this.controls.update();this.chaseBlend=1;this.lastCameraHeading=0;
   }
+  frameLandingStart(sim,options={}){FlightScene.prototype.frameLabVehicle.call(this,sim,{...options,landing:true});}
   frameCityStart(sim){
     this.cockpit?.recenter();this.cockpitDrag=null;
     this.camera.far=3500;this.camera.updateProjectionMatrix();
@@ -495,18 +506,29 @@ export class FlightScene {
   inspectionViewport() {
     const w=this.canvas?.clientWidth||1280,h=this.canvas?.clientHeight||720;
     if(this.mode==='lab'){
-      const getRect=id=>typeof document!=='undefined'?document.getElementById(id)?.getBoundingClientRect():null;
-      const rightPanel=getRect('telemetry'),leftPanel=w>1000?getRect('left-panel'):null;
-      const right=Math.min(w*.4,rightPanel?.width?Math.max(0,w-rightPanel.left):w<=700?197:w<=1000?182:272);
-      const left=w>1000?Math.min(w*.36,leftPanel?.right||334):0;
-      this.camera.setViewOffset(w,h,(right-left)/2,0,w,h);
-      return Math.max(.25,1-(left+right)/w);
+      const canvasRect=this.canvas?.getBoundingClientRect?.()||{left:0,top:0};
+      const rect=element=>element&&!element.hidden?element.getBoundingClientRect?.():null;
+      const getRect=id=>typeof document!=='undefined'?rect(document.getElementById(id)):null;
+      const rightPanel=getRect('telemetry'),leftPanel=getRect('left-panel');
+      const visible=r=>r&&r.width>0&&r.height>0&&r.right>canvasRect.left&&r.left<canvasRect.left+w;
+      const right=visible(rightPanel)?Math.min(w*.45,Math.max(0,w-(rightPanel.left-canvasRect.left))):typeof document==='undefined'?(w<=1000?216:234):0;
+      const left=visible(leftPanel)?Math.min(w*.45,Math.max(0,leftPanel.right-canvasRect.left)):0;
+      const header=typeof document!=='undefined'?rect(document.querySelector?.('.topbar')):null;
+      const tools=typeof document!=='undefined'?rect(document.querySelector?.('.view-tools')):null;
+      const top=header?.height?Math.min(h*.25,Math.max(0,header.bottom-canvasRect.top)+8):72;
+      const bottom=tools?.height?Math.min(h*.25,Math.max(0,h-(tools.top-canvasRect.top))+8):56;
+      this.labViewportHeight=Math.max(.4,1-(top+bottom)/h);
+      this.camera.setViewOffset(w,h,(right-left)/2,(bottom-top)/2,w,h);
+      return Math.max(.2,1-(left+right)/w);
     }
     const panel=this.mode==='inspect'&&w>1000?Math.min(360,w*.36):0;
     if(panel)this.camera.setViewOffset(w,h,-panel/2,0,w,h);else this.camera.clearViewOffset();
     return 1-panel/w;
   }
   frameWholeVehicle({resetView=false}={}) {
+    if(this.mode==='lab'){
+      FlightScene.prototype.frameLabVehicle.call(this,{bodyPosition:this.vehicle.root.position},{resetView});return;
+    }
     if(this.mode==='inspect'&&this.vehicle.fitLayout){
       this.vehicle.root.updateMatrixWorld(true);
       const box=this.inspectionBounds().applyMatrix4(this.vehicle.root.matrixWorld);

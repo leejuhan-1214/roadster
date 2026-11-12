@@ -1,3 +1,6 @@
+[v1.37 착지 실험 시점·간결화]
+최신 배포/검증은 LOCAL_HANDOFF 첫항목. lab camera는 frameLabVehicle/restoreLabView 공통경로. C는실험리셋없는시점복원,배치첫회만기본구도이며후속회사용자시점보존. 설정패널실제가림기준프레이밍과camera-right눈금배치유지. 기본화면짧게,세부측정/추가비교/분석접힘유지. 결과조건바꾸기는측정기록보존. 물리수식/실험코호트/도시77종을UI정리때변경하지말것.
+
 [v1.36 도시 주행 오류 수정]
 LOCAL_HANDOFF.txt 최신 배포 상태를 먼저 확인하세요. DB11 외부 타이어 오분류가 차체 충돌 범위를 낮춰 공중판정/무입력 기체 소모와 wheel omega0을 일으켰습니다. city-fleet-profiles의 실제 부품 분류, 차종별 혼합 wheelDetail 범위, provenance geometry를 일치시킵니다. driving-input은 바퀴 외에 차체 지지도 고려하며 도로 상대높이로 판정합니다. 회귀 tests/wheel-assets.test.mjs는 실제 77모델을 정지부터 W로 출발시켜 가스0·실제 가시 정점 회전까지 확인합니다. 속도/omega를 강제주입한 검사만으로 회전 정상이라고 판단하지 마세요. 원본 GLB/도색/77종/실험5종/Space/H/B/F/Shift/공중A/D 유지.
 
