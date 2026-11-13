@@ -8,7 +8,7 @@ export const CITY_SURFACES=Object.freeze([
 ]);
 export const CITY_EXPERIMENT_DEFAULTS=Object.freeze({
   surface:'dry',rollingResistance:.015,aeroEnabled:true,
-  windX:0,windZ:0,roadRoughness:.15,
+  windX:0,windZ:0,roadRoughness:.15,fanEnabled:true,
 });
 export const BRAKE_STOP_SPEED=.1; // m/s; the displayed integer km/h is not a stop detector.
 export const BRAKE_DECEL_WINDOW=.05; // Peak horizontal speed loss averaged over 50 ms.
@@ -31,6 +31,7 @@ export function normalizeCityExperiment(value={}){
     aeroEnabled:typeof source.aeroEnabled==='boolean'?source.aeroEnabled:d.aeroEnabled,
     windX:numeric(source.windX,d.windX,-30,30),windZ:numeric(source.windZ,d.windZ,-30,30),
     roadRoughness:numeric(source.roadRoughness,d.roadRoughness,0,1),
+    fanEnabled:typeof source.fanEnabled==='boolean'?source.fanEnabled:d.fanEnabled,
   };
 }
 export function cityExperimentParams(value={}){
@@ -123,13 +124,13 @@ export function brakeResultsCSV(results=[]){
   const number=value=>Number.isFinite(value)?Number(value.toFixed(6)):'';
   const header=['trial','vehicle','valid','reason','initial_speed_km_h','stopping_distance_m','stopping_time_s',
     'observed_path_m','observed_time_s','max_deceleration_50ms_m_s2','stop_threshold_m_s',
-    'surface','friction_mu','rolling_resistance_Crr','aero_enabled','wind_x_m_s','wind_z_m_s','road_roughness'];
+    'surface','friction_mu','rolling_resistance_Crr','aero_enabled','wind_x_m_s','wind_z_m_s','road_roughness','fan_enabled'];
   const rows=results.map(r=>{
     const settings=normalizeCityExperiment(r.settings),params=cityExperimentParams(settings);
     return [r.id,r.vehicleId,r.valid?'yes':'no',BRAKE_REASONS[r.reason]||r.reason,
       number(r.initialSpeed*3.6),number(r.stoppingDistance),number(r.stoppingTime),number(r.distance),
       number(r.elapsed),number(r.maxDeceleration),BRAKE_STOP_SPEED,settings.surface,params.friction,
-      settings.rollingResistance,settings.aeroEnabled,settings.windX,settings.windZ,settings.roadRoughness];
+      settings.rollingResistance,settings.aeroEnabled,settings.windX,settings.windZ,settings.roadRoughness,settings.fanEnabled];
   });
   return '\uFEFF'+[header,...rows].map(row=>row.map(escape).join(',')).join('\r\n')+'\r\n';
 }

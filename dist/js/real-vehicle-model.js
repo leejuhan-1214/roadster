@@ -3,7 +3,7 @@ import {vehiclePaintRule,prepareVehiclePaint} from './vehicle-paint.js?v=2026111
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
-import {createVehicle} from './vehicle.js?v=20261107-drive2';
+import {createVehicle} from './vehicle.js?v=20261114-air1';
 import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js';
 import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261109-wheel2';
 import {straightenWheelAxes} from './wheel-alignment.js?v=20261109-wheel1';
@@ -119,7 +119,7 @@ export function adaptRealVehicle(source,profile){
   // Envelope spans symmetric axle origin. Tires are handled by wheel contacts.
   const geometryParams={wheelbase:profile.wheelbase,trackWidth:width,wheelRadius:radius,bodyLength:2*Math.max(Math.abs(hullBounds.min.x),Math.abs(hullBounds.max.x)),bodyWidth:size.z,bodyHeight:size.y,bodyCenterY:(hullBounds.min.y+hullBounds.max.y)/2};
   return {root,parts,detailParts,catalog,wheels,paintMaterials,geometryParams,profileId:profile.id,sourceMeshCount:records.length,
-    wing:parts.get('wing'),tank:parts.get('tank'),battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,valveIndicators:fallback.valveIndicators,
+    wing:parts.get('wing'),tank:parts.get('tank'),compressor:fallback.compressor,battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,valveIndicators:fallback.valveIndicators,
     assetInfo:{title:profile.title,author:profile.author,license:profile.license,neutralWheelAxes}};
 }
 

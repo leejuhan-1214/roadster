@@ -13,15 +13,18 @@ import {loadModelGeometry} from './model-loader-helper.mjs';
 
 const dt=.002,spawnHeading=-1.22009,up=new Vector3(0,1,0);
 const keys=(...codes)=>new Set(codes);
-function moving(params={},speed=70/3.6){
-  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,...params}),driver=new DrivingController();
+function moving(params={},speed=70/3.6,options={}){
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,...params}),driver=new DrivingController(options);
   sim.state.q.setFromAxisAngle(up,spawnHeading);sim.state.pos.set(-2.95,sim.restHeight,17.28);
   sim.state.vel.set(Math.cos(spawnHeading)*speed,0,-Math.sin(spawnHeading)*speed);
   sim.wheels.forEach(w=>w.omega=speed/sim.params.wheelRadius);driver.throttle=1;
   return {sim,driver};
 }
-function turnRun(params,kph,code='KeyA',{fullThrottle=false,legacySteering=false}={}){
-  const {sim,driver}=moving(params,kph/3.6),initialGas=sim.state.gas;
+function turnRun(params,kph,code='KeyA',{fullThrottle=false,legacySteering=false,fanEnabled=false}={}){
+  // Historical torque/rack comparisons hold normal load at their original
+  // fan-off setting. Fan-on driving is exercised separately below: extra grip
+  // changes tire saturation, so a fixed improvement in yaw is not universal.
+  const {sim,driver}=moving(params,kph/3.6,{fanEnabled}),initialGas=sim.state.gas;
   let previousSteer=0;
   for(let i=0;i<1000;i++){
     const input=driver.update(keys('KeyW',code),sim,dt);
@@ -53,6 +56,12 @@ test('actual Roadster chassis steers in both directions at city heading under he
     assert.ok(left.yaw>.4&&right.yaw<-.4,'A/D must turn the rigid chassis, not only its wheels');
     assert.ok(Math.abs(left.yaw+right.yaw)<.015,'left and right remain symmetric at the real spawn heading');
     assert.ok(left.speed<full.speed-3,'assist changes wheel drive request instead of inventing extra lateral force');
+    const fanLeft=turnRun(params,70,'KeyA',{fanEnabled:true}),fanRight=turnRun(params,70,'KeyD',{fanEnabled:true});
+    assert.ok(fanLeft.sim.fanForce>0&&fanRight.sim.fanForce>0,'exercise the new default suction system');
+    assert.ok(fanLeft.yaw>.4&&fanRight.yaw<-.4,'fan-on steering changes the real chassis heading');
+    assert.ok(fanLeft.pathTurn>.4&&fanRight.pathTurn<-.4,'fan-on steering changes the actual direction of travel');
+    assert.ok(Math.abs(fanLeft.yaw+fanRight.yaw)<.015,'fan-on left/right remain symmetric on the sampled road');
+    assert.ok(fanLeft.sim.wheels[0].steer>.04&&fanRight.sim.wheels[0].steer<-.04,'fan-on front wheels follow the steering linkage');
     const {sim,driver}=left,gas=sim.state.gas;
     for(let i=0;i<2000;i++){sim.step(dt,driver.update(keys('KeyW'),sim,dt));assert.equal(sim.contactCount,4);}
     assert.equal(driver.steer,0);assert.equal(sim.wheels[0].steer,0);
@@ -73,7 +82,7 @@ test('physical steering travel and torque priority independently improve the dri
 
 test('ground cornering obeys dry/wet/ice tire force limits and cannot turn on zero friction',()=>{
   for(const mu of [1.15,.65,.15,0]){
-    const result=turnRun({friction:mu,roadRoughness:0,aeroEnabled:false},70);
+    const result=turnRun({friction:mu,roadRoughness:0,aeroEnabled:false},70,'KeyA',{fanEnabled:true});
     for(const wheel of result.sim.wheels)assert.ok(wheel.tireForceN<=mu*wheel.load+1e-6);
     if(mu>0)assert.ok(result.sim.frictionForceN>0);
     if(mu===0){assert.ok(Math.abs(result.yaw)<1e-9);assert.equal(result.sim.frictionForceN,0);assert.equal(result.sim.totalThrust,0);}

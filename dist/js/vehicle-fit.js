@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261111-cockpit1';
+import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261114-air1';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const Z=new THREE.Vector3(0,0,1),UP=new THREE.Vector3(0,1,0);
@@ -148,7 +148,26 @@ function fitNozzles(vehicle){
     vehicle.jetMounts[6+i]={pos:surface.clone().add(new THREE.Vector3(0,0,-side*.006)),dir:new THREE.Vector3(0,0,-side)};
     covers.push(hatch(rig,surface.clone().add(new THREE.Vector3(0,0,-side*.004)),new THREE.Vector3(0,0,side),.11,coverMaterial,6+i));
   });
-  for(let i=0;i<(vehicle.fans?.length||0);i++)vehicle.fans[i].position.set(-liftX,bounds.min.y+.09,(i?1:-1)*liftZ*.62);
+  // Compact four-duct diagram follows each source vehicle's lower rear shell.
+  // Source meshes remain untouched; housing/rotor are not exterior OEM claims.
+  const fans=vehicle.fans||[],fanScale=Math.min(1,halfWidth*1.5/Math.max(.34,fans.length*.34),size.y*.70/.34,size.x*.15/.50);
+  for(let i=0;i<fans.length;i++){
+    const fan=fans[i],z=(i-(fans.length-1)/2)*.34*fanScale;
+    const y=bounds.min.y+.18*fanScale;
+    const hit=surfaceHit(meshes,new THREE.Vector3(bounds.min.x-2,y,z),new THREE.Vector3(1,0,0),new THREE.Vector3(bounds.min.x,y,z));
+    const rearX=clamp(hit.x,bounds.min.x,bounds.min.x+size.x*.25);
+    fan.position.set(rearX+.12*fanScale,y,z);fan.scale.setScalar(fanScale);
+  }
+  // This internal cutaway is intentionally diagrammatic, so shrink rather
+  // than protrude through a short/narrow model. It does not set tank capacity.
+  const tank=vehicle.parts.get('tank');
+  if(tank&&vehicle.compressor){
+    const tankBounds=rootBounds(tank,vehicle.root),tankSize=tankBounds.getSize(new THREE.Vector3()),tankCenter=tankBounds.getCenter(new THREE.Vector3());
+    const scale=Math.min(1,size.x*.78/tankSize.x,size.y*.65/tankSize.y,size.z*.72/tankSize.z);
+    const target=new THREE.Vector3((bounds.min.x+bounds.max.x)/2,bounds.min.y+size.y*.42,(bounds.min.z+bounds.max.z)/2);
+    tank.scale.setScalar(scale);tank.position.copy(target.sub(tankCenter.multiplyScalar(scale)));
+    tank.userData.basePosition=tank.position.clone();
+  }
   batchHatchFrames(rig,covers);
   vehicle.nozzleCovers=covers;vehicle.nozzleFit={skinBounds:bounds.clone(),liftSurfaces:bottom.map(v=>v.toArray()),rearSurfaces:rear.map(v=>v.toArray()),sideSurfaces:sidePoints.map(v=>v.toArray())};
   return {liftX,liftY,liftZ,boostX,boostY,boostZ,yawX,yawY,yawZ};

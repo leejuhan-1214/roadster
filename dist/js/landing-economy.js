@@ -1,4 +1,4 @@
-import {nozzle, ATMOSPHERE} from './physics.js?v=20261111-calibration1';
+import {nozzle, ATMOSPHERE} from './physics.js?v=20261114-air1';
 
 const G = 1.4, R = 287, STEP = .002;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

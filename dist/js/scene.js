@@ -3,7 +3,7 @@ import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
 import {LandingVisual} from './landing-visual.js?v=20261112-lab1';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261111-drivefix1';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261114-air1';
 import {loadCityWorld} from './city-world.js?v=20261111-trees2';
 import {attachStreamingCity} from './city-streaming.js?v=20261111-trees2';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261111-street1';
@@ -15,10 +15,10 @@ import {sampleRoadSurface} from './road-surface.js?v=20261107-drive2';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js?v=20261107-drive2';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261111-drivefix1';
-import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261111-cockpit1';
-import { loadRoadsterVehicle } from './roadster-model.js?v=20261107-drive2';
+import { createVehicle } from './vehicle.js?v=20261114-air1';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261114-air1';
+import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261114-air1';
+import { loadRoadsterVehicle } from './roadster-model.js?v=20261114-air1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
 import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive2';
@@ -633,7 +633,15 @@ export class FlightScene {
     if(this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
     if(this.mode==='city')this.roadRelief.visible=false;
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
-    for(const fan of this.vehicle.fans||[])fan.rotation.y+=visualClock.dt*((this.telemetry.fanN||0)>10?18:0);
+    for(const fan of this.vehicle.fans||[]){
+      const rotor=fan.userData.rotor||fan;
+      rotor.rotation.x+=visualClock.dt*45*Math.sqrt(Math.max(0,this.telemetry.fanPowerW||0)/80000);
+    }
+    if(this.vehicle.compressor){
+      const compressor=this.vehicle.compressor,active=(this.telemetry.compressorFlowKgS||0)>0;
+      if(compressor.userData.rotor)compressor.userData.rotor.rotation.z+=visualClock.dt*(active?25:0);
+      if(compressor.userData.statusLight)compressor.userData.statusLight.material.emissiveIntensity=active?1.4:0;
+    }
     const insideCockpit=this.mode==='city'&&this.cameraName==='hood';
     // Use the inspected original cabin, or its model-specific reference interior.
     // Cloned inside materials preserve the shared exterior and explosion view.

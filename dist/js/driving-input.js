@@ -16,10 +16,12 @@ const hasBodySupport=sim=>sim.bodyGroundContacts>0||sim.groundCorrectionImpulseN
 const hasSettledSupport=sim=>sim.contactCount===4||hasBodySupport(sim);
 
 export class DrivingController {
-  constructor(options={}){this.flightSteering='strafe';this.flightAssist=true;this.setOptions(options);this.reset();}
+  constructor(options={}){this.flightSteering='strafe';this.flightAssist=true;this.fanEnabled=true;this.compressorEnabled=false;this.setOptions(options);this.reset();}
   setOptions(options={}){
     if(['turn','strafe'].includes(options.flightSteering))this.flightSteering=options.flightSteering;
     if(typeof options.flightAssist==='boolean')this.flightAssist=options.flightAssist;
+    if(typeof options.fanEnabled==='boolean')this.fanEnabled=options.fanEnabled;
+    if(typeof options.compressorEnabled==='boolean')this.compressorEnabled=options.compressorEnabled;
     return this;
   }
   reset(){
@@ -110,10 +112,16 @@ export class DrivingController {
     }
     const holding=this.altHold&&!lift;
     const flight=this.airborne||!!lift||holding||this.landingAssist;
+    // Suction extracts ambient air under the floor to increase tire load. It
+    // does not fill the pressure tank or provide upward flight thrust. Leave
+    // it off while parked, drifting, or requesting a launch/hover manoeuvre.
+    const groundDemand=Math.abs(this.throttle)>.001||boosting||
+      (magnitude>.4&&(this.brake>.01||turn!==0));
+    const fan=this.fanEnabled&&sim.contactCount>0&&!flight&&!drifting&&groundDemand;
     // Steering linkage still turns unloaded front wheels in flight. Tire forces
     // require contact; the selected air mode uses yaw jets or lateral vectoring.
     const input={throttle:this.airborne?0:this.throttle,brake:this.brake,steer:this.steer,
-      stabilize:flight,fan:false,wing:false,coastRegen:false,lift,
+      stabilize:flight,fan,compressor:this.compressorEnabled,wing:false,coastRegen:false,lift,
       boost:boosting,handbrake:drifting?1:0,
       airMoveForward,airMoveRight,altHold:holding,targetHeight:this.targetHeight,
       pitch:this.airborne?Number(held(keys,'ArrowDown'))-Number(held(keys,'ArrowUp')):0,

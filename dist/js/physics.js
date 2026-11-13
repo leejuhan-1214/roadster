@@ -4,6 +4,7 @@ import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
 import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
+import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261114-air1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -12,6 +13,7 @@ import {preparePrism,containsFootprint,prismContact} from './city-building-colli
  * The ten-nozzle layout and all performance parameters are hypothetical.
  */
 export const DEFAULTS = Object.freeze({
+  ...AIR_SYSTEM_DEFAULTS,
   dryMass: 1900, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
   friction: 1.15, rollingResistance: .015, springK: 75000, damperC: 6000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
@@ -44,6 +46,11 @@ export const PARAMETER_INFO = {
   springK: ['바퀴별 스프링 상수', 'N/m', '타이어와 서스펜션을 합친 가정값'],
   damperC: ['바퀴별 감쇠 계수', 'N·s/m', '선형 댐퍼 가정'],
   fanMaxForce: ['팬 최대 다운포스', 'N', '가정 · 차고·기울기에 따라 감소'],
+  compressorPowerKW: ['공기 압축기 출력', 'kW', '가정 · 4단 중간 냉각 및 후냉각, 정차 중 배터리로 충전'],
+  compressorEfficiency: ['압축기 단 효율', '—', '가정 · 등엔트로피 단 압축 일과 실제 전기 입력의 비'],
+  compressorMaxFlowKgS: ['흡입 질량 유량 한도', 'kg/s', '가정 · 압력과 가용 전력에 따라 더 감소'],
+  fanPowerKW: ['팬 정격 전력', 'kW', '가정 · 탱크가 아닌 배터리로 지면 흡착 팬 구동'],
+  fanArea: ['흡착 유효 면적', 'm²', '가정 · 압력차 × 면적으로 다운포스 계산'],
   motorPowerKW: ['모터 최대 출력', 'kW', '가정 · 앞 1개·뒤 2개 모터 합산'],
   motorTorqueNm: ['모터 최대 토크', 'N·m', '가정 · 앞 1개·뒤 2개 모터 합산'],
   valveTau: ['밸브 응답 시정수', 's', '1차 지연 가정'],
@@ -219,6 +226,7 @@ export class PhysicsSim {
       q: new Quaternion(), omega: new Vector3(), gas, temp: p.initialTemperature,
       pressure: p.tankPressureMPa * 1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
       acceleration: new Vector3(), gasUsed: 0, expelledEnthalpy: 0,
+      gasRefilledKg:0, inletEnthalpyJ:0, tankHeatOutJ:0, compressorEnergyJ:0,
     };
     if (preset === 'drop') this.state.pos.y += 3;
     if (preset === 'flight') { this.state.pos.y += 1.8; this.state.vel.x = 8; }
@@ -226,6 +234,8 @@ export class PhysicsSim {
     if (preset === 'rolling') this.state.vel.x = 20;
     this.contactCount = preset === 'drop' || preset === 'flight' ? 0 : 4;
     this.fanForce = 0; this.totalThrust = 0; this.maxThrust = 0;
+    this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
+    this.compressorState='off';this.compressorPowerW=0;this.compressorFlowKgS=0;this.compressorHeatW=0;this.tankHeatW=0;
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
     this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
     this.preStepVelocityY=0;this.resolvedAcceleration=new Vector3();this.stepDuration=0;
@@ -333,8 +343,32 @@ export class PhysicsSim {
     const p = this.params, s = this.state;
     const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
     this.lastInput = input;
-    const mass = this.mass, gravity = Math.max(0, p.gravity);
     const velocityBefore=s.vel.clone();this.preStepVelocityY=s.vel.y;this.stepDuration=dt;
+    // Refilling is an explicit parked operation. Intaking ambient air increases
+    // mass and consumes battery energy; it never replenishes a live nozzle.
+    const dischargeLimitW=Math.max(0,Number.isFinite(p.batteryMaxDischargeKW)?p.batteryMaxDischargeKW:800)*1000;
+    let blocked=null;
+    if(input.compressor){
+      const intakeUp=UP.clone().applyQuaternion(s.q),intakeSurface=this.surfaceHeightAt(s.pos.x,s.pos.z,s.pos.y-this.restHeight);
+      const flyingIntent=input.boost||input.lift>0||input.altHold||Number.isFinite(input.verticalAcceleration)||input.airMoveForward||input.airMoveRight||input.pitch||input.roll||input.yaw||input.thrusterCommands?.some(x=>x>0);
+      const nozzleActive=this.thrusters.some(t=>t.opening>1e-8||t.mdot>1e-8);
+      blocked=this.contactCount<3||!p.contactEnabled||s.pos.y-this.restHeight-intakeSurface>.1||intakeUp.y<.95?'airborne':
+        flyingIntent||nozzleActive?'thrusters':s.vel.length()>.15||s.omega.length()>.1||Math.abs(input.throttle||0)>.001?'moving':null;
+    }
+    const refill=rechargeAirTank(s,p,dt,{enabled:!!input.compressor,blockReason:blocked,capacityKg:this.initialGas,powerBudgetW:dischargeLimitW});
+    if(refill.addedKg>0){
+      // Inelastic capture of ambient air. Intake momentum follows the configured
+      // wind; with no wind the small permitted parking velocity is diluted.
+      const oldVehicleMass=this.mass,newVehicleMass=oldVehicleMass+refill.addedKg;
+      s.vel.multiplyScalar(oldVehicleMass/newVehicleMass);
+      s.vel.addScaledVector(new Vector3(p.windX||0,0,p.windZ||0),refill.addedKg/newVehicleMass);
+    }
+    s.gas=refill.gas;s.temp=refill.temp;s.pressure=refill.pressure;
+    s.gasRefilledKg+=refill.addedKg;s.inletEnthalpyJ+=refill.inletEnthalpyJ;s.tankHeatOutJ+=refill.tankHeatOutJ;
+    s.compressorEnergyJ+=refill.powerW*dt;
+    this.compressorState=refill.status;this.compressorPowerW=refill.powerW;this.compressorFlowKgS=refill.addedKg/dt;
+    this.compressorHeatW=refill.aftercoolerHeatJ/dt;this.tankHeatW=refill.tankHeatOutJ/dt;
+    const mass = this.mass, gravity = Math.max(0, p.gravity);
     this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
     this.inertia.set(p.inertiaRoll, p.inertiaYaw, p.inertiaPitch);
     const qInv = s.q.clone().invert();
@@ -436,7 +470,7 @@ export class PhysicsSim {
       s.expelledEnthalpy += oldU - s.gas * CV * s.temp;
       s.pressure = s.gas * R * s.temp / p.tankVolume;
     }
-    s.gasUsed = this.initialGas - s.gas;this.massFlowKgS=totalFlow*flowScale;
+    s.gasUsed += dm;this.massFlowKgS=totalFlow*flowScale;
 
     // Anisotropic body drag, relative wind, and aerodynamic surface moment.
     const relative = s.vel.clone().sub(new Vector3(p.windX || 0, 0, p.windZ || 0)).applyQuaternion(qInv);
@@ -456,15 +490,17 @@ export class PhysicsSim {
     }
 
     // Fan pressure force vanishes rapidly when the ground seal opens.
-    let electricPower = 0;
+    let electricPower = this.compressorPowerW;
     this.fanForce = 0;
-    if (input.fan && s.batteryJ > 0) {
+    this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
+    if(input.fan){
       const fanSurface=this.surfaceHeightAt(s.pos.x,s.pos.z,s.pos.y-this.restHeight);
       const clearance = Math.max(0, s.pos.y - this.restHeight - fanSurface);
-      electricPower=Math.min(80000,s.batteryJ/dt);
-      this.fanForce = Math.max(0, p.fanMaxForce) * Math.exp(-clearance / .10) * Math.max(0, bodyUp.y) ** 6 * electricPower/80000;
+      const fan=poweredGroundFan({enabled:!!input.fan,clearance,upY:bodyUp.y,dt,
+        batteryJ:Math.max(0,s.batteryJ-electricPower*dt),powerBudgetW:Math.max(0,dischargeLimitW-electricPower)},p);
+      this.fanForce=fan.forceN;this.fanPowerW=fan.powerW;this.fanPressurePa=fan.pressurePa;this.fanAirflowM3S=fan.airflowM3S;this.fanSeal=fan.seal;
+      electricPower+=fan.powerW;
       applyAt(bodyUp.clone().multiplyScalar(-this.fanForce), new Vector3(-.10, -.25, 0).sub(this.cg).applyQuaternion(s.q));
-
     }
 
     this.lastContactCount = this.contactCount;
@@ -489,7 +525,8 @@ export class PhysicsSim {
     const absScale=Math.min(...this.wheels.map(w=>w.absFactor));
     const oldWheelOmega=this.wheels.map(w=>w.omega);
     const wheelOmegaBound=this.wheels.map(w=>Math.max(Math.abs(w.omega),s.vel.clone().add(new Vector3().crossVectors(omegaWorld,w.pos.clone().applyQuaternion(s.q))).length()/p.wheelRadius));
-    const drive=evaluateElectricDrive({wheelOmega:oldWheelOmega,wheelOmegaBound,throttle:throttle*this.tractionCut,brake:Math.max(brakeAmount,coastBrake)*absScale,batteryEnergyJ:Math.max(0,s.batteryJ-electricPower*dt),dt},p);
+    const driveParameters=electricPower>0?{...p,batteryMaxDischargeKW:Math.max(0,dischargeLimitW-electricPower)/1000}:p;
+    const drive=evaluateElectricDrive({wheelOmega:oldWheelOmega,wheelOmegaBound,throttle:throttle*this.tractionCut,brake:Math.max(brakeAmount,coastBrake)*absScale,batteryEnergyJ:Math.max(0,s.batteryJ-electricPower*dt),dt},driveParameters);
     for(let index=0;index<this.wheels.length;index++){
       const wheel=this.wheels[index],rCenter=wheel.pos.clone().applyQuaternion(s.q),worldCenter=s.pos.clone().add(rCenter);
       const cornerVel=s.vel.clone().add(new Vector3().crossVectors(omegaWorld,rCenter));
@@ -704,14 +741,17 @@ export class PhysicsSim {
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
       verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,
       temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
-      thrustN: this.totalThrust, fanN: this.fanForce, fanPressurePa: this.fanForce / 2.2, contactCount: contact, slip: this.maxSlip || 0,
+      thrustN: this.totalThrust, fanN: this.fanForce, fanPressurePa:this.fanPressurePa,fanPowerW:this.fanPowerW,fanAirflowM3S:this.fanAirflowM3S,fanSeal:this.fanSeal,contactCount: contact, slip: this.maxSlip || 0,
+      compressorState:this.compressorState,compressorPowerW:this.compressorPowerW,compressorFlowKgS:this.compressorFlowKgS,
+      compressorHeatW:this.compressorHeatW,tankHeatW:this.tankHeatW,compressorEnergyJ:s.compressorEnergyJ,
+      gasRefilledKg:s.gasRefilledKg,gasConsumedKg:s.gasUsed,
       kineticEnergy: kinetic, potentialEnergy: m * p.gravity * Math.max(0, s.pos.y - this.restHeight),
       rotationEnergy: rotation, springEnergy: spring, tankEnergy: s.gas * CV * s.temp,
-      gasUsed: this.initialGas - s.gas, thrustToWeight: this.totalThrust / Math.max(.001, m * p.gravity),
+      gasUsed:s.gasUsed, thrustToWeight: this.totalThrust / Math.max(.001, m * p.gravity),
       status, attitude, acceleration: s.acceleration.clone(), gLoad, batteryPct: 100 * s.batteryJ / (p.batteryKWh * 3.6e6),
       saturation: this.saturation, lastImpactSpeed: this.lastImpactSpeed, maxAltitude: this.maxAltitude,
-      massBalanceError: Math.abs(s.gas + s.gasUsed - this.initialGas),
-      tankEnergyBalanceError: Math.abs(s.gas * CV * s.temp + s.expelledEnthalpy - this.initialEnergy),
+      massBalanceError: Math.abs(s.gas + s.gasUsed - this.initialGas-s.gasRefilledKg),
+      tankEnergyBalanceError: Math.abs(s.gas * CV * s.temp + s.expelledEnthalpy+s.tankHeatOutJ-s.inletEnthalpyJ - this.initialEnergy),
       groundHeight: this.restHeight, time: s.time, cgOffset: this.cg.clone(), inertia: this.inertia.clone(),
       obstacleContacts: [...this.obstacleContacts], lastObstacleImpact: this.lastObstacleImpact, collisionCount:this.collisionCount,
       gripUsage:Math.max(0,...this.wheels.map(w=>w.load>1&&p.friction>0?w.tireForceN/(p.friction*w.load):0)),

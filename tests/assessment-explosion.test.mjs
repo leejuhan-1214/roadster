@@ -16,7 +16,7 @@ for(const profile of VEHICLES)test(profile.id+': assessment explosion is compact
   try{
     prepareAssessmentVehicle(vehicle);configureVehicleFit(vehicle,profile);
     assert.deepEqual(vehicle.catalog.filter(e=>e.kind==='hypothesis').map(e=>e.id).sort(),[...LANDING_APPARATUS].sort());
-    assert.equal(vehicle.fans.length,0,'unused downforce fans are removed');
+    assert.equal(vehicle.fans.length,4,'the air-system diagram retains four independent suction fans');
     const layout=vehicle.fitLayout,groups=layout.logicalGroups;
     assert.ok(groups.length>=8&&groups.length<=20,'anatomical assemblies, not a material-fragment cloud');
     const size=vehicle.explosionBounds.getSize(new THREE.Vector3()),base=vehicle.assemblyBounds.getSize(new THREE.Vector3());

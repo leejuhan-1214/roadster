@@ -221,6 +221,30 @@ export function createVehicle() {
   tube(tank,[[.9,-.34,0],[.9,-.36,-.66],[-1.45,-.36,-.66]],.014,silver);
   tank.userData.supplyLamp=supplyLamp;
 
+  // Separate ambient-air recharge path. This is a compact functional diagram,
+  // not OEM packaging or a volume-accurate compressor/COPV installation.
+  const compressor=new THREE.Group();compressor.name='ambient air compressor schematic';
+  compressor.position.set(1.13,-.08,0);tank.add(compressor);
+  compressor.userData.schematic=true;
+  const compressorMetal=new THREE.MeshStandardMaterial({color:'#688a98',metalness:.72,roughness:.31});
+  const inlet=box(compressor,[.13,.20,.28],carbon,[.27,0,0]);inlet.name='ambient inlet filter';
+  for(let i=0;i<5;i++)box(compressor,[.018,.17,.012],silver,[.342,0,-.104+i*.052]);
+  const rotor=new THREE.Group();rotor.name='compressor electric motor rotor';compressor.add(rotor);
+  put(compressor,new THREE.CylinderGeometry(.09,.09,.20,16,1,true),compressorMetal,[.02,0,0],[Math.PI/2,0,0]);
+  put(rotor,new THREE.CylinderGeometry(.057,.057,.22,12),satin,[.02,0,0],[Math.PI/2,0,0]);
+  box(rotor,[.10,.022,.012],silver,[.02,0,.115]);
+  // Four compression stages and a finned cooler make the energy path legible.
+  for(let i=0;i<4;i++){
+    const stage=put(compressor,new THREE.CylinderGeometry(.057-i*.006,.057-i*.006,.09,12),compressorMetal,[-.11-i*.045,.055,i%2?.085:-.085],[0,0,Math.PI/2]);
+    stage.name='compression stage '+(i+1);
+  }
+  const cooler=box(compressor,[.17,.075,.24],satin,[-.20,-.07,0]);cooler.name='intercooler and aftercooler schematic';
+  for(let i=0;i<5;i++)box(compressor,[.16,.035,.009],silver,[-.20,-.014,-.10+i*.05]);
+  const check=put(compressor,new THREE.ConeGeometry(.032,.07,10),silver,[-.31,-.11,0],[0,0,Math.PI/2]);check.name='tank inlet check valve';
+  tube(compressor,[[.20,0,0],[.12,.06,0],[-.10,.07,0],[-.20,-.07,0],[-.31,-.11,0],[-.34,-.14,0]],.011,silver);
+  const chargeLamp=put(compressor,new THREE.SphereGeometry(.018,8,6),blue.clone(),[.09,.10,0]);
+  compressor.userData.rotor=rotor;compressor.userData.statusLight=chargeLamp;
+
   // Three-motor functional layout. Rotor/reduction/half-shafts are illustrative,
   // not an OEM CAD assembly; shaft phase follows the simulated wheel state.
   const driveRotors=[],driveUnits=[];
@@ -296,14 +320,24 @@ export function createVehicle() {
     jetMounts.push({pos:new THREE.Vector3(BOOST_LAYOUT.x-BOOST_LAYOUT.exitDepth,BOOST_LAYOUT.y,z),dir:new THREE.Vector3(1,0,0)});
   }
   const fans=[];
-  for(const z of [-.44,.44]) {
-    const fan=new THREE.Group();fan.position.set(-1.35,-.34,z);thrusters.add(fan);
-    put(fan,new THREE.TorusGeometry(.20,.025,8,32),silver,[0,0,0],[Math.PI/2,0,0]);
-    for(let i=0;i<8;i++) {
-      const a=i/8*Math.PI*2;
-      box(fan,[.15,.012,.045],satin,[Math.cos(a)*.10,0,Math.sin(a)*.10],[0,-a+.3,0]);
+  for(const z of [-.51,-.17,.17,.51]) {
+    const fan=new THREE.Group();fan.name='underbody suction duct '+fans.length;fan.position.set(-1.94,-.12,z);thrusters.add(fan);
+    fan.userData.schematic=true;
+    // Fixed rear-facing housing, with an independently animated axial rotor.
+    put(fan,new THREE.CylinderGeometry(.14,.14,.16,20,1,true),carbon,[0,0,0],[0,0,Math.PI/2]);
+    for(const x of [-.08,.08])put(fan,new THREE.TorusGeometry(.14,.012,6,24),silver,[x,0,0],[0,Math.PI/2,0]);
+    const rotor=new THREE.Group();rotor.name='suction fan rotor';fan.add(rotor);
+    for(let i=0;i<7;i++){
+      const a=i/7*Math.PI*2;
+      box(rotor,[.016,.12,.035],satin,[0,Math.cos(a)*.077,Math.sin(a)*.077],[a,0,.22]);
     }
-    put(fan,new THREE.CylinderGeometry(.047,.047,.028,16),dark);
+    put(rotor,new THREE.CylinderGeometry(.034,.034,.045,12),dark,[0,0,0],[0,0,Math.PI/2]);
+    // Intake faces the floor, the duct turns rearward through the fan.
+    const intake=box(fan,[.20,.014,.22],black,[.30,-.14,0]);intake.name='underfloor air intake';
+    box(fan,[.34,.018,.25],carbon,[.17,.12,0]);
+    for(const side of [-1,1])box(fan,[.34,.24,.012],carbon,[.17,0,side*.125]);
+    for(const zz of [-.07,0,.07])box(fan,[.18,.012,.009],silver,[.30,-.152,zz]);
+    fan.userData.rotor=rotor;fan.userData.intake=intake;
     fans.push(fan);
   }
 
@@ -321,5 +355,5 @@ export function createVehicle() {
       o.castShadow=true;o.receiveShadow=true;
     }
   });
-  return {root,parts,paintMaterials,wheels,fans,wing,tank,battery,jetMounts,gimbalNozzles,valveIndicators,driveRotors,driveUnits,bounds:{length:4.7,width:2.2,height:1.27}};
+  return {root,parts,paintMaterials,wheels,fans,wing,tank,compressor,battery,jetMounts,gimbalNozzles,valveIndicators,driveRotors,driveUnits,bounds:{length:4.7,width:2.2,height:1.27}};
 }

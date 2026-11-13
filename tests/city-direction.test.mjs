@@ -13,18 +13,25 @@ function airborne(options={},extra={}){
 }
 
 test('A/D actually changes ground heading through loaded tires with left/right symmetry',()=>{
+  for(const fanEnabled of [false,true]){
   const states=[];
   for(const code of ['KeyA','KeyD']){
-    const sim=new PhysicsSim(params),driver=new DrivingController();
+    const sim=new PhysicsSim(params),driver=new DrivingController({fanEnabled});
     advance(sim,driver,keys('KeyW'),1);
     const gas=sim.state.gas;
     advance(sim,driver,keys('KeyW',code),2);
     assert.equal(sim.contactCount,4);assert.equal(sim.state.gas,gas,'ground steering uses tires, not a yaw thruster');
+    assert.equal(sim.fanForce>0,fanEnabled,'exercise both normal-load configurations');
     states.push({yaw:sim.telemetry().attitude.yaw,z:sim.state.pos.z});
   }
   assert.ok(states[0].yaw>.4&&states[0].z<-5,'A turns and travels to the driver left');
   assert.ok(states[1].yaw<-.4&&states[1].z>5,'D turns and travels to the driver right');
-  assert.ok(Math.abs(states[0].yaw+states[1].yaw)<1e-9);
+  // The fan-on contact solve differs by 0.00392 degrees and 1.55 mm in this
+  // mirrored 13.5 m turn. Keep the legacy exact-symmetry check, and constrain
+  // the nonlinear fan/contact case to 0.00573 degrees and 3 mm.
+  assert.ok(Math.abs(states[0].yaw+states[1].yaw)<(fanEnabled?1e-4:1e-9));
+  assert.ok(Math.abs(states[0].z+states[1].z)<(fanEnabled?.003:1e-9));
+  }
 });
 
 test('default airborne A/D translates left and right with level heading and finite gas',()=>{

@@ -130,9 +130,21 @@ export function createNaturalExplosionLayout(entries,vehicle){
   // A descending underbody can block a wheel that is deliberately constrained
   // to its axle plane. If the usual compact layout has no valid path, reserve
   // those four wheel routes first, then route the flexible body assemblies.
-  const orders=[[anchor,...remaining],[anchor,...remaining.filter(g=>g.wheelIndex>=0),...remaining.filter(g=>g.wheelIndex<0)]];
+  const orders=[],orderKeys=new Set();
+  const queueOrder=order=>{
+    const key=order.map(g=>g.id).join('|');
+    if(!orderKeys.has(key)){orderKeys.add(key);orders.push(order);}
+  };
+  queueOrder([anchor,...remaining]);
+  queueOrder([anchor,...remaining.filter(g=>g.wheelIndex>=0),...remaining.filter(g=>g.wheelIndex<0)]);
   let placed,bounds,blocked;
-  for(const order of orders){
+  // A compact newly fitted tank/duct can change which small assembly has the
+  // narrowest exit route. A volume-first greedy order may trap that assembly
+  // despite a valid simultaneous separation. Reserve its route sooner rather
+  // than dropping collision tests, rotating parts, or spreading them in a row.
+  // Retries are deterministic and bounded; already successful layouts are kept.
+  for(let attempt=0;attempt<orders.length&&attempt<16;attempt++){
+    const order=orders[attempt];
     placed=[];bounds=new THREE.Box3();blocked=null;
     for(const group of order){
     let target=group.center.clone(),delta=new THREE.Vector3();
@@ -153,6 +165,9 @@ export function createNaturalExplosionLayout(entries,vehicle){
     group.target=target;group.delta=delta;const box=boxAt(group,target);bounds.union(box);placed.push({group,box});
     }
     if(!blocked)break;
+    const constrained=groups.find(g=>g.id===blocked),others=order.filter(g=>g!==anchor&&g!==constrained);
+    queueOrder([anchor,constrained,...others]);
+    if(constrained.wheelIndex<0)queueOrder([anchor,...others.filter(g=>g.wheelIndex>=0),constrained,...others.filter(g=>g.wheelIndex<0)]);
   }
   if(blocked)throw new Error('No collision-free disassembly path for '+blocked);
   const groundLift=Math.max(0,.15-bounds.min.y);
