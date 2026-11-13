@@ -8,7 +8,14 @@ W 전진, F 추가 분사, Shift 드리프트, Space 상승, 공중 A/D 옆이�
 
 착지 실험은 기존 4방식/5종×4방식20회이며 자동 비교 중 팬과 재충전은 꺼져 있습니다. 재충전 후 누적 분사 소비량과 잔량을 혼동하지 않도록 `gasConsumedKg`와 `gasRefilledKg`를 별도로 제공합니다.
 
-<!-- V140_RELEASE_VERIFICATION -->
+검증·배포 완료 (2026-11-14): 전체 826개 검사 및 구문 검사 통과. 런타임 1a127a48cdb39f959c1004398eed76e84ec0bf80. Actions https://github.com/leejuhan-1214/roadster/actions/runs/43467113840 build/deploy 성공. 공개 변경 16파일 HTTP 200·SHA256 일치 및 기존 사이트 주소의 v1.40/새 진입 스크립트 확인. 캐시 20261114-air1.
+
+독립 실제 solver 검사: 동일 Roadster 2,275 kg·평지에서 건조 노면 W+F 0–100 km/h 1.694초. 젖은 μ0.65 노면 W만 사용 시 팬 끔 6.877초 / 켬 3.278초, 20m/s 제동거리 41.348m / 18.506m. 건조 W만 사용 시 3.256초 / 3.274초로 팬이 항상 가속을 개선하지는 않는다. 이 값은 시뮬레이션 결과이며 실차 측정 성능이 아니다.
+
+반충전 탱크 10초 충전 0.722791kg / 배터리 600kJ. 질량·탱크 에너지 검산 통과. Roadster 3m 착지 4방식 결과가 v1.39와 유지되고, 자동 착지 중 압축기 전력·재충전은 0임을 확인했다. 구조 검사에는 77종 차체의 자연 분해·재조립과 공기 장치 배치가 포함된다.
+
+직접 브라우저 화면 검증은 연결 시간 초과로 완료하지 못했다. UI 버튼 이벤트·물리 solver·자산 구조 검사와 공개 배포 파일을 검증했다. 근거: outputs/v140-tests-final.txt, v140-check.txt, v140-air-independent-audit.json, v140-public-verification.json, v140-public-link.json.
+
 
 ---
 
