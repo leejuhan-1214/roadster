@@ -47,7 +47,11 @@
 
 한계도 확인했습니다. 같은 기본 설정의 Cybertruck 3m는 정착했어도 접촉 속도가 약 1.306m/s여서 0.5m/s 목표를 놓쳤고 예측 가능 표시도 false입니다. 10m에서는 약 4.261m/s·197.704kN과 서스펜션 한계 초과를 기록했습니다. 목표 속도 미달과 한계 초과를 구분해 보존하며, 서스펜션 한계를 넘은 10m 결과는 절약 착지의 적격 요약에 넣지 않습니다.
 
-<!-- V138_RELEASE_VERIFICATION -->
+검증·배포 완료 (2026-11-13): 전체 798개 회귀 및 후속 20개 검사, npm run check 통과. 런타임 ad1b025e59f5419bc7f5e93c983534990c781132. Actions https://github.com/leejuhan-1214/roadster/actions/runs/43352888933 build/deploy 성공. 공개 변경 5파일 HTTP 200·SHA256 일치. 실제 모델 형상으로 기존 30회, 새 제어 19조건 및 보정 후 Roadster/Cybertruck 3m·10m를 검증했습니다.
+
+Roadster 3m: 절약 착지 44.932790 kg / 27.415736 kN / 0.379054 m/s. 완만한 하강 대비 기체 42.05% 감소, 1.5m 지정 높이 제동 대비 최대 등가반력 52.42% 감소로 비교 기준이 서로 다릅니다. 전역 최소나 모든 차종의 목표 속도 달성을 보장하지 않습니다.
+
+이번 브라우저 연결은 시간 초과로 실패하여 새 버전의 직접 화면 조작·시각 검증은 완료하지 못했습니다. UI DOM 동작/CSV 자동 검사와 공개 파일 검증을 수행했습니다. 근거: outputs/v138-tests.txt, v138-check.txt, v138-eco-independent-final.json, v138-public-verification.json. 캐시 20261113-economy1.
 
 ## v1.37 착지 관찰 시점·간결한 실험 화면
 

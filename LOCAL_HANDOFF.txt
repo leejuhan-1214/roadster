@@ -7,8 +7,12 @@ UI: 기본 방식 eco/절약 착지. 기본 버튼 '절약 효과 비교 · 4회
 효과 비교: 같은 group/차종/출발높이/목표속도/스프링/감쇠/초기질량/기체/탱크용적/압력/온도만 연결. eco와 gentle는 정착 및 수동/차체접촉/한계초과 없음이 필수. brake는 실제 접촉계측이 있으면 차체접촉·한계초과·진동 상태도 반력 기준에 남기고 실패표시 유지. 기체 변화는 gentle 대비 실제 gasUsed, 반력 변화는 brake 대비 실제 peakEquivalentGroundForceN. 비교 기준 ID와 %를 CSV에 기록하고 악화는 증가/음수로 보존한다. 전체기록·미완료묶음에는 한 개의 절약률/전역순위를 만들지 않는다.
 해석: settled는 목표속도달성과 다르다. 예측 feasible 역시 실제성공 보장이 아니다. 높은 낙하/무거운차량/저압/부족한추력에서 목표미달·차체접촉·서스펜션한계가 가능하다. 제한된 후보의 기체 절약 시도이며 전역최소/항상더낮은충격/모든차종안전 주장 금지. 2ms등가반력은 실차파손·탑승자상해 수치가 아니다.
 문서: README 최신 사용법/필드사전, docs/landing-study-guide.md의 4회 연구 절차·두 목적 비교·예측/실제 구분, CLAUDE_HANDOFF_PROMPT.txt 인계 갱신. 이전 수치 예시는 해당 버전의 기록으로 보존.
-독립 수치 예시: outputs/v138-eco-independent-targeted.json의 baseline은 brakeHeight1.5m/targetSpeed0.5/k75000/c6000/dt0.002. Roadster3m 초기2275kg/기체375kg, eco44.932790kg/27.415736kN/접촉0.379054m/s. gentle77.535kg/27.163kN 대비기체42.05%감소하나반력약0.93%증가; brake1.5m30.847kg/57.620kN 대비반력52.42%감소하나기체더사용. 서로다른기준을명시. Cyber3m gentle선택/정착이지만1.305709m/s로목표미달·feasiblefalse, Cyber10m4.260607m/s/197.704081kN/bottomedOut.
-<!-- V138_RELEASE_VERIFICATION -->
+독립 수치 예시: outputs/v138-eco-independent-final.json의 baseline은 brakeHeight1.5m/targetSpeed0.5/k75000/c6000/dt0.002. Roadster3m 초기2275kg/기체375kg, eco44.932790kg/27.415736kN/접촉0.379054m/s. gentle77.535kg/27.163kN 대비기체42.05%감소하나반력약0.93%증가; brake1.5m30.847kg/57.620kN 대비반력52.42%감소하나기체더사용. 서로다른기준을명시. Cyber3m gentle선택/정착이지만1.305709m/s로목표미달·feasiblefalse, Cyber10m4.260607m/s/197.704081kN/bottomedOut.
+검증·배포 완료 (2026-11-13): 전체 798개 회귀 및 후속 20개 검사, npm run check 통과. 런타임 ad1b025e59f5419bc7f5e93c983534990c781132. Actions https://github.com/leejuhan-1214/roadster/actions/runs/43352888933 build/deploy 성공. 공개 변경 5파일 HTTP 200·SHA256 일치. 실제 모델 형상으로 기존 30회, 새 제어 19조건 및 보정 후 Roadster/Cybertruck 3m·10m를 검증했습니다.
+
+Roadster 3m: 절약 착지 44.932790 kg / 27.415736 kN / 0.379054 m/s. 완만한 하강 대비 기체 42.05% 감소, 1.5m 지정 높이 제동 대비 최대 등가반력 52.42% 감소로 비교 기준이 서로 다릅니다. 전역 최소나 모든 차종의 목표 속도 달성을 보장하지 않습니다.
+
+이번 브라우저 연결은 시간 초과로 실패하여 새 버전의 직접 화면 조작·시각 검증은 완료하지 못했습니다. UI DOM 동작/CSV 자동 검사와 공개 파일 검증을 수행했습니다. 근거: outputs/v138-tests.txt, v138-check.txt, v138-eco-independent-final.json, v138-public-verification.json. 캐시 20261113-economy1.
 
 --- 이전 배포 기록 ---
 Roadster v1.37 — 착지 관찰 시점과 화면 정리
