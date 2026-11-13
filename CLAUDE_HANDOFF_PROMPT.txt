@@ -12,7 +12,13 @@ ecoMinimumCoastTime는 정책 하한, ecoCoastTime/autoBrakeHeight는 실제 제
 독립 검증은 실제 모델 형상 5종 × 3m/10m × brake/gentle/eco의 30회다. 모두 첫 유량 전 기체 0kg / 추력 0N이며, 10개 eco 모두 brake 후보와 최소 무분사 조건을 충족했다. Roadster 3m: 44.932790kg / 27.415736kN / 0.379054m/s, 완만한 하강 대비 기체 42.05% 감소 / 1.5m 지정 높이 제동 대비 반력 52.42% 감소. Cybertruck 3m: 86.415995kg / 52.144558kN / 1.328753m/s, 차체 접촉·압축 한계 없이 정착했지만 목표 미달. Cybertruck 10m: 129.647942kg / 197.704081kN / 4.260607m/s, 압축 한계 초과다. 두 Cybertruck 조건은 ecoPlanFeasible=false를 유지한다.
 
 근거는 outputs/v139-independent-audit.json과 v139-v138-coast-baseline.json이다. 후속 수정 시 관련 회귀와 4회/20회 계약, 무분사 중 기체 보존, 실제 모델을 검사하라. 전체 검사·공개 배포·브라우저 확인은 실제로 검증한 내용만 기록하라. 인증정보를 출력하거나 요구하지 마라.
-<!-- V139_RELEASE_VERIFICATION -->
+검증·배포 완료 (2026-11-13): 전체 803개 회귀 검사와 npm run check 통과. 컨트롤러 집중 29개, UI 집중 32개 및 실험 차체 5종×4방식 실행도 통과했습니다. 실제 형상 기준 5종×두 높이×세 비교 방식의 30조건을 별도로 검증했습니다.
+
+런타임 41cb76aac8b36aaba781027604930261f3da6ec9. Actions https://github.com/leejuhan-1214/roadster/actions/runs/43379621873 build/deploy 성공. 공개 변경 6파일 HTTP 200·SHA256 일치, 기존 사이트 주소에서도 v1.39 HTML과 새 진입 스크립트를 확인했습니다. 캐시 20261113-coast1.
+
+직접 브라우저 조작·시각 검증은 완료하지 못했습니다. Roadster 전용 탭 연결은 시간 초과로 실패했고, 기존 Chrome의 다른 탭 내용 읽기는 자동 승인 검토에서 작업 외 사적 콘텐츠 접근 우려로 거부됐습니다. 해당 탭을 추가로 읽거나 조작하지 않았습니다. 대신 실제 solver·UI DOM 동작·공개 파일을 검증했습니다.
+
+근거: outputs/v139-tests.txt, v139-check.txt, v139-controller-tests.txt, v139-ui-tests.txt, v139-independent-audit.json, v139-public-verification.json, v139-public-link.json.
 
 --- 이하 과거 인계 기록: 3/15회와 gentle 자동대체 지시는 현재 계약이 아님 ---
 [v1.38 절약 착지 · 2026-11-13]

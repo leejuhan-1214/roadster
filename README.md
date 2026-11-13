@@ -31,7 +31,13 @@ Cybertruck 3m는 이전 `gentle` 대체의 무분사 0.090초에서 0.320초로 
 
 독립 수치 근거는 작업 산출물 `outputs/v139-independent-audit.json`, 이전 버전 무분사 기준은 `outputs/v139-v138-coast-baseline.json`입니다. 전체 검사와 공개 배포 확인은 다음 검증 기록과 `LOCAL_HANDOFF.txt` 최신 항목에 구분해 기록합니다. 아래 v1.38 이하 절은 당시의 기능·수치·배포 이력입니다.
 
-<!-- V139_RELEASE_VERIFICATION -->
+검증·배포 완료 (2026-11-13): 전체 803개 회귀 검사와 npm run check 통과. 컨트롤러 집중 29개, UI 집중 32개 및 실험 차체 5종×4방식 실행도 통과했습니다. 실제 형상 기준 5종×두 높이×세 비교 방식의 30조건을 별도로 검증했습니다.
+
+런타임 41cb76aac8b36aaba781027604930261f3da6ec9. Actions https://github.com/leejuhan-1214/roadster/actions/runs/43379621873 build/deploy 성공. 공개 변경 6파일 HTTP 200·SHA256 일치, 기존 사이트 주소에서도 v1.39 HTML과 새 진입 스크립트를 확인했습니다. 캐시 20261113-coast1.
+
+직접 브라우저 조작·시각 검증은 완료하지 못했습니다. Roadster 전용 탭 연결은 시간 초과로 실패했고, 기존 Chrome의 다른 탭 내용 읽기는 자동 승인 검토에서 작업 외 사적 콘텐츠 접근 우려로 거부됐습니다. 해당 탭을 추가로 읽거나 조작하지 않았습니다. 대신 실제 solver·UI DOM 동작·공개 파일을 검증했습니다.
+
+근거: outputs/v139-tests.txt, v139-check.txt, v139-controller-tests.txt, v139-ui-tests.txt, v139-independent-audit.json, v139-public-verification.json, v139-public-link.json.
 
 ## v1.38 기체 절약 착지 · 2026-11-13
 
