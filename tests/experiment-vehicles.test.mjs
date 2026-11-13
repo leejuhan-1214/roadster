@@ -16,7 +16,7 @@ test('landing cohort stays at five mass-spaced vehicles when the city garage gro
   for(let i=1;i<masses.length;i++)assert.ok(masses[i]-masses[i-1]>=250);
   assert.equal(isExperimentVehicle(extra.id),false);
   assert.equal(isExperimentVehicle(EXPERIMENT_DEFAULT_ID),true);
-  assert.equal(createLandingJobs('fleet-methods',fleet,{height:3},EXPERIMENT_DEFAULT_ID).length,15);
+  assert.equal(createLandingJobs('fleet-methods',fleet,{height:3},EXPERIMENT_DEFAULT_ID).length,20);
   assert.throws(()=>experimentVehicles(fleet.filter(v=>v.id!=='bmw')),/bmw/);
 });
 

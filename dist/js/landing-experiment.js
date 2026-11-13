@@ -1,5 +1,5 @@
 import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261113-economy1';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261113-coast1';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
@@ -9,6 +9,7 @@ export const LANDING_METHODS=Object.freeze([
   {id:'free',label:'자유낙하'},
   {id:'brake',label:'지정 높이에서 분사'},
   {id:'gentle',label:'완만한 하강 제어'},
+  {id:'eco',label:'절약 착지'},
 ]);
 export const BRAKE_HEIGHT_FRACTIONS=Object.freeze([.1,.25,.5,.75,1]);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -17,7 +18,7 @@ const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Numb
 export function landingSettings(options={}){
   const height=finite(options.height,3,0,Number.MAX_VALUE);
   return {...options,height,
-    method:options.method==='eco'||LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
+    method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
     brakeHeight:finite(options.brakeHeight,2,0,Number.MAX_VALUE),
     targetSpeed:finite(options.targetSpeed,.5,.2,2),
     springK:finite(options.springK,75000,30000,150000),
@@ -39,8 +40,7 @@ export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
     return [{vehicleId:active.id,method:'free'},...brakeHeights.map(brakeHeight=>({vehicleId:active.id,method:'brake',brakeHeight}))];
   }
   if(kind==='fleet-methods')return fleet.flatMap(vehicle=>LANDING_METHODS.map(item=>({vehicleId:vehicle.id,method:item.id})));
-  if(kind==='methods')return LANDING_METHODS.map(item=>({vehicleId:active.id,method:item.id}));
-  if(kind==='economy')return [...LANDING_METHODS,{id:'eco'}].map(item=>({vehicleId:active.id,method:item.id}));
+  if(kind==='methods'||kind==='economy')return LANDING_METHODS.map(item=>({vehicleId:active.id,method:item.id}));
   if(kind==='vehicles')return fleet.filter(vehicle=>settings.vehicleIds?.includes(vehicle.id)).map(vehicle=>({vehicleId:vehicle.id,method}));
   return [{vehicleId:active.id,method}];
 }
@@ -87,6 +87,7 @@ export function createLandingRun(sim,options={}){
     ecoPredictedGas:economy?.predictedGas??null,ecoPlanFeasible:economy?.feasible??null,
     ecoPredictedTouchdownGas:economy?.predictedTouchdownGas??null,ecoProfile:economy?.profile??null,
     ecoCoastOnly:economy?.coastOnly??false,autoBrakeHeight:null,ecoCoastTime:null,
+    ecoMinimumCoastTime:economy?.minimumCoastTime??null,
     ecoPlanTimeMs,
     touchdownTime:null,touchdownSpeed:null,contactDuration:null,contactEndTime:null,contactEndVelocityY:null,
     peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
@@ -105,13 +106,14 @@ export function landingRunInput(run,sim,manualLift=false){
   const gap=landingClearance(sim),velocity=sim.state.vel.y,g=sim.params.gravity;
   if(run.method==='eco'){
     if((run.height===0||run.ecoCoastOnly)&&!run.manualLiftUsed)return off;
+    if(!run.manualLiftUsed&&run.elapsed+1e-10<run.ecoMinimumCoastTime)return off;
     // Manual thrust changes the planned trajectory. On release, use feedback
     // immediately; measurements retain the manual-input marker for fair comparison.
     if(!run.braking&&(gap<=run.ecoPlannedBrakeHeight||run.manualLiftUsed)){
       run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.ecoCoastTime=run.elapsed;
     }
     if(!run.braking)return off;
-    return {...off,stabilize:true,verticalAcceleration:economyAcceleration(gap,velocity,run.targetSpeed,g,sim.params.valveTau,run.ecoProfile)};
+    return {...off,stabilize:true,verticalAcceleration:economyAcceleration(gap,velocity,run.targetSpeed,g,sim.params.valveTau)};
   }
   if(run.method==='brake'&&gap<=run.brakeHeight)run.braking=true;
   if(run.method==='brake'&&!run.braking)return off;

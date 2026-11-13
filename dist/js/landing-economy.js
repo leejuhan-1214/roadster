@@ -21,7 +21,7 @@ function forecast(initial, trigger, target, profile='brake') {
     const mass = dryMass + gas;
     const manifold = Math.max(ATMOSPHERE, pressure - feedLossCoefficient * flow * flow);
     const full = nozzle(manifold, temperature, area);
-    const acceleration = economyAcceleration(gap, velocity, target, g, tau, profile);
+    const acceleration = profile==='gentle'?gentleForecastAcceleration(gap,velocity,target,g,tau):economyAcceleration(gap,velocity,target,g,tau);
     const requested = mass * Math.max(0, g + acceleration);
     const command = full.force > 0 ? clamp(requested / full.force, 0, 1) : 0;
     const midpoint = command + (opening - command) * halfDecay;
@@ -46,7 +46,8 @@ function forecast(initial, trigger, target, profile='brake') {
   // is the measurement, while its command still opens the valve for one step.
   if(gap<=0){
     const full=nozzle(Math.max(ATMOSPHERE,pressure-feedLossCoefficient*flow*flow),temperature,area);
-    const requested=(dryMass+gas)*Math.max(0,g+economyAcceleration(gap,velocity,target,g,tau,profile));
+    const acceleration=profile==='gentle'?gentleForecastAcceleration(gap,velocity,target,g,tau):economyAcceleration(gap,velocity,target,g,tau);
+    const requested=(dryMass+gas)*Math.max(0,g+acceleration);
     const command=full.force>0?clamp(requested/full.force,0,1):0;
     const midpoint=command+(opening-command)*halfDecay;
     opening=command+(opening-command)*decay;flow=full.mdot*midpoint;
@@ -74,16 +75,19 @@ function forecast(initial, trigger, target, profile='brake') {
 }
 
 /** Feedback requests acceleration; only PhysicsSim applies forces and motion. */
-export function economyAcceleration(gap, velocity, target, gravity, valveTau, profile='brake') {
+export function economyAcceleration(gap, velocity, target, gravity, valveTau) {
   const futureGap = Math.max(.015, gap + velocity * Math.max(.001, valveTau) * 2);
-  if(profile==='gentle'){
-    const approachSpeed=Math.sqrt(target*target+4*futureGap);
-    const desired=-Math.min(2.5,approachSpeed);
-    const feedForward=approachSpeed<2.5?-2*velocity/approachSpeed:0;
-    return clamp(feedForward+6*(desired-velocity),-gravity,1.1*gravity);
-  }
   const needed = .5*(velocity/futureGap)*velocity-.5*target*target/futureGap;
   return clamp(velocity < -target ? needed : 5 * (-target - velocity), -gravity, 1.1 * gravity);
+}
+
+// A reference gas budget only. The economy controller never executes this path.
+function gentleForecastAcceleration(gap,velocity,target,gravity,valveTau){
+  const futureGap=Math.max(.015,gap+velocity*Math.max(.001,valveTau)*2);
+  const approachSpeed=Math.sqrt(target*target+4*futureGap);
+  const desired=-Math.min(2.5,approachSpeed);
+  const feedForward=approachSpeed<2.5?-2*velocity/approachSpeed:0;
+  return clamp(feedForward+6*(desired-velocity),-gravity,1.1*gravity);
 }
 
 export function planEconomyLanding(sim, height, targetSpeed) {
@@ -97,11 +101,16 @@ export function planEconomyLanding(sim, height, targetSpeed) {
   const full = nozzle(initial.pressure, initial.temperature, initial.area);
   if (full.force <= 0 || initial.gas <= 0) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:false, coastOnly:true};
   const acceptable = p => p.complete && p.speed <= targetSpeed + .025;
+  // Every powered automatic economy run starts with a genuine unpowered fall.
+  // Scale the short minimum with the available free-fall time at low heights.
+  const minimumCoastTime=Math.max(1,Math.ceil(Math.min(.12,Math.sqrt(initial.height)*Math.sqrt(2/initial.gravity)*.15)/STEP))*STEP;
+  const coastSteps=Math.round(minimumCoastTime/STEP);
+  const maximumTrigger=Math.max(0,initial.height-.5*initial.gravity*STEP*STEP*coastSteps*(coastSteps+1)-1e-9);
   let best = null, previousTrigger = 0, bracket = null;
   const candidates=[];
   // Scan a bounded set first: finite tanks can make the outcome non-monotone.
   for (let i = 1; i <= 12; i++) {
-    const trigger = initial.height * (i / 12);
+    const trigger = Math.min(maximumTrigger,initial.height * (i / 12));
     const candidate = forecast(initial, trigger, targetSpeed);
     candidates.push(candidate);
     if (acceptable(candidate) && (!best || candidate.gasUsed < best.gasUsed)) {
@@ -122,8 +131,6 @@ export function planEconomyLanding(sim, height, targetSpeed) {
     }
   }
   const gentle=forecast(initial,initial.height,targetSpeed,'gentle');
-  candidates.push(gentle);
-  if(acceptable(gentle)&&(!best||gentle.gasUsed<best.gasUsed))best=gentle;
   // When pressure/mass cannot meet the requested speed, do not spend more gas
   // than gentle descent chasing a tiny further speed reduction. Prefer its
   // lower-speed alternatives within the same forecast gas budget.
@@ -133,5 +140,5 @@ export function planEconomyLanding(sim, height, targetSpeed) {
   return {brakeHeight:chosen.trigger, predictedSpeed:chosen.complete?chosen.speed:null,
     predictedGas:chosen.complete?chosen.gasUsed:null,
     predictedTouchdownGas:chosen.complete?chosen.touchdownGasUsed:null,
-    profile:chosen.profile,feasible:!!best, coastOnly:false};
+    profile:'brake',minimumCoastTime,feasible:!!best, coastOnly:false};
 }

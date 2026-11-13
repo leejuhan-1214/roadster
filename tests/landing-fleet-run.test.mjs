@@ -13,10 +13,10 @@ import {loadModelGeometry} from './model-loader-helper.mjs';
 
 const cohort=experimentVehicles(VEHICLES);
 
-test('the five mass-comparison chassis complete three same-height landing methods with finite recorded results',async t=>{
+test('the five mass-comparison chassis complete four same-height landing methods with finite recorded results',async t=>{
   const options={height:3,brakeHeight:1.5,targetSpeed:.5,springK:75000,damperC:6000};
   const jobs=createLandingJobs('fleet-methods',cohort,options,'roadster'),results=[];
-  assert.equal(jobs.length,15);
+  assert.equal(jobs.length,20);
   let initialGas;
   for(const profile of cohort){
     const gltf=await loadModelGeometry(profile);
@@ -41,13 +41,20 @@ test('the five mass-comparison chassis complete three same-height landing method
           assert.equal(run.gasUsed,0);
           assert.ok(Math.abs(run.touchdownSpeed-Math.sqrt(2*DEFAULTS.gravity*3))<.06,'free fall uses the shared height');
         }
+        if(job.method==='eco'){
+          assert.equal(run.ecoProfile,'brake');
+          assert.ok(run.ecoMinimumCoastTime>0);
+          assert.ok(run.ecoCoastTime+1e-10>=run.ecoMinimumCoastTime);
+        }
         results.push({vehicleId:profile.id,method:job.method,status:run.status,speed:run.touchdownSpeed,peak:run.peakEquivalentGroundForceN,gas:run.gasUsed});
       }
     }finally{disposeVehicle(vehicle);}
   }
-  assert.equal(results.length,15);assert.equal(new Set(results.map(r=>r.vehicleId+'/'+r.method)).size,15);
+  assert.equal(results.length,20);assert.equal(new Set(results.map(r=>r.vehicleId+'/'+r.method)).size,20);
   const roadster=results.filter(r=>r.vehicleId==='roadster');
   assert.ok(roadster.find(r=>r.method==='gentle').speed<roadster.find(r=>r.method==='brake').speed);
   assert.ok(roadster.find(r=>r.method==='brake').speed<roadster.find(r=>r.method==='free').speed);
-  t.diagnostic('15 same-height runs completed: '+results.filter(r=>r.status==='landed').length+' settled, '+results.filter(r=>r.status==='unsettled').length+' unsettled, '+results.filter(r=>r.status==='timeout').length+' timed out.');
+  assert.ok(roadster.find(r=>r.method==='eco').gas<roadster.find(r=>r.method==='gentle').gas);
+  assert.ok(roadster.find(r=>r.method==='eco').peak<roadster.find(r=>r.method==='brake').peak);
+  t.diagnostic('20 same-height runs completed: '+results.filter(r=>r.status==='landed').length+' settled, '+results.filter(r=>r.status==='unsettled').length+' unsettled, '+results.filter(r=>r.status==='timeout').length+' timed out.');
 });

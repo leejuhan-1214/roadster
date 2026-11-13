@@ -9,13 +9,13 @@ const cohort=experimentVehicles(VEHICLES);
 
 test('all-fleet comparison creates every car and method exactly once independent of selection',()=>{
   const jobs=createLandingJobs('fleet-methods',cohort,{vehicleIds:[cohort[0].id],method:'gentle',height:2000},cohort[0].id);
-  assert.equal(jobs.length,15);
-  assert.equal(new Set(jobs.map(job=>job.vehicleId+'/'+job.method)).size,15);
-  for(const vehicle of cohort)assert.deepEqual(jobs.filter(job=>job.vehicleId===vehicle.id).map(job=>job.method),['free','brake','gentle']);
+  assert.equal(jobs.length,20);
+  assert.equal(new Set(jobs.map(job=>job.vehicleId+'/'+job.method)).size,20);
+  for(const vehicle of cohort)assert.deepEqual(jobs.filter(job=>job.vehicleId===vehicle.id).map(job=>job.method),['free','brake','gentle','eco']);
   assert.deepEqual(createLandingJobs('vehicles',cohort,{vehicleIds:[cohort[2].id,cohort[0].id],method:'gentle'},cohort[1].id),[
     {vehicleId:cohort[0].id,method:'gentle'},{vehicleId:cohort[2].id,method:'gentle'},
   ]);
-  assert.deepEqual(createLandingJobs('methods',cohort,{},cohort[1].id).map(job=>job.vehicleId),Array(3).fill(cohort[1].id));
+  assert.deepEqual(createLandingJobs('methods',cohort,{},cohort[1].id).map(job=>job.vehicleId),Array(4).fill(cohort[1].id));
   assert.deepEqual(createLandingJobs('fleet-methods',[],{},'missing'),[]);
 });
 

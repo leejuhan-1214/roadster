@@ -12,13 +12,38 @@ function runLanding(options={},params={}){
   return {sim,run,result:run.result};
 }
 
-test('economy is opt-in for four-method jobs and preserves legacy three-method comparisons',()=>{
+test('every comparison shares exactly four landing methods without duplicating economy',()=>{
   assert.equal(landingSettings({method:'eco'}).method,'eco');
-  assert.equal(LANDING_METHODS.length,3);
+  assert.equal(LANDING_METHODS.length,4);
   const fleet=[{id:'a'},{id:'b'}];
   assert.deepEqual(createLandingJobs('economy',fleet,{},'a').map(r=>r.method),['free','brake','gentle','eco']);
-  assert.equal(createLandingJobs('methods',fleet,{},'a').length,3);
-  assert.equal(createLandingJobs('fleet-methods',fleet,{},'a').length,6);
+  assert.deepEqual(createLandingJobs('methods',fleet,{},'a'),createLandingJobs('economy',fleet,{},'a'));
+  assert.equal(createLandingJobs('fleet-methods',fleet,{},'a').length,8);
+});
+
+test('automatic economy starts with measured zero thrust and zero gas use across heights and masses',()=>{
+  for(const dryMass of [1090,1350,1640,1900,3150])for(const height of [.02,3,10]){
+    const sim=new PhysicsSim({dryMass}),run=createLandingRun(sim,{height,method:'eco'});
+    let steps=0;
+    while(!run.braking&&!run.done&&steps<10000){
+      const input=landingRunInput(run,sim);
+      if(run.braking)break;
+      sim.step(.002,input);updateLandingRun(run,sim);steps++;
+      assert.equal(sim.totalThrust,0);assert.equal(sim.state.gas,run.initialGas);
+      assert.ok(Math.abs(sim.state.vel.y+sim.params.gravity*run.elapsed)<1e-8);
+    }
+    assert.ok(steps>=2);assert.equal(run.ecoProfile,'brake');
+    assert.ok(run.ecoCoastTime+1e-10>=run.ecoMinimumCoastTime);
+    assert.ok(run.autoBrakeHeight<height);
+  }
+});
+
+test('heavy-chassis economy remains delayed braking when the target speed is infeasible',()=>{
+  const eco=runLanding({}, {dryMass:3150}).result,gentle=runLanding({method:'gentle'},{dryMass:3150}).result;
+  assert.equal(eco.ecoProfile,'brake');assert.equal(eco.ecoPlanFeasible,false);
+  assert.ok(eco.ecoCoastTime>=eco.ecoMinimumCoastTime);
+  assert.ok(eco.gasUsed<=gentle.gasUsed+1e-4);
+  assert.ok(eco.touchdownSpeed>eco.targetSpeed);
 });
 
 test('coast then brake reduces gas versus gentle and impact versus a late fixed trigger',()=>{
@@ -61,12 +86,10 @@ test('a bounded forecast never labels an unfinished high drop as a touchdown pre
   assert.equal(sim.state.vel.length(),0);assert.equal(sim.state.gas,r.initialGas);
 });
 
-test('an economy gentle-profile fallback remains observable beyond the free-fall deadline',()=>{
-  const sim=new PhysicsSim({dryMass:100}),run=createLandingRun(sim,{height:40,method:'eco'});
-  // Exercise the selected-profile execution independently of the planner's
-  // preference: this synthetic light rig (not a vehicle specification) can
-  // sustain the longer gentle descent.
-  run.ecoProfile='gentle';run.ecoPlannedBrakeHeight=40;
+test('the separate gentle method remains observable beyond the free-fall deadline',()=>{
+  const sim=new PhysicsSim({dryMass:100}),run=createLandingRun(sim,{height:40,method:'gentle'});
+  // This synthetic light rig is not a vehicle specification; it can sustain
+  // the separate gentle controller through a longer descent.
   for(let i=0;!run.done&&i<14000;i++){
     sim.step(.002,landingRunInput(run,sim));updateLandingRun(run,sim);
   }

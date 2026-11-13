@@ -15,7 +15,8 @@ test('entry exposes landing, structure and a separate city without retired demon
   assert.match(main,/landingRun&&mode==='lab'/,'a landing trial stays scoped to the lab');
   assert.match(main,/sim\.step\(LANDING_STEP,landingRunInput\(landingRun,sim,landingLiftHeld\)\)/,'landing trials retain controlled inputs');
   assert.match(main,/createLandingJobs\(kind,EXPERIMENT_VEHICLES,settings,activeVehicle\.id\)/);
-  assert.match(main,/onCompareFleetMethods:\(\)=>startLanding\('fleet-methods'\)/,'the all-fleet button reaches the 15-run experiment cohort builder');
+  assert.match(main,/onCompareMethods:\(\)=>startLanding\('methods'\)/,'the single four-method button reaches the common method comparison builder');
+  assert.match(main,/onCompareFleetMethods:\(\)=>startLanding\('fleet-methods'\)/,'the all-fleet button reaches the 20-run experiment cohort builder');
 });
 
 test('retained static controls have unique IDs and entry bindings resolve',()=>{

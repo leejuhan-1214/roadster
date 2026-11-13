@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {PhysicsSim} from '../dist/js/physics.js';
-import {landingLiveReadings,LandingLiveUI} from '../dist/js/landing-live.js';
+import {landingLiveReadings,landingPhaseLabel,LandingLiveUI} from '../dist/js/landing-live.js';
+import {LANDING_STEP,createLandingRun,landingRunInput,updateLandingRun} from '../dist/js/landing-experiment.js';
 
 test('live vertical kinetic energy uses current gas-dependent mass and only vertical speed',()=>{
   const sim=new PhysicsSim();sim.state.vel.set(12,-4,9);
@@ -32,5 +33,30 @@ test('readings preserve solver state and read world-space thrust without stale d
   const nodes=Object.fromEntries(ids.map(id=>[id,{textContent:''}]));
   LandingLiveUI.prototype.update.call({panel:{hidden:false},nodes},sim,{metrics:{thrustVerticalN:0,forceScaleNPerM:10000}},null);
   assert.equal(nodes['landing-thrust-y'].textContent,'0.5 kN');assert.equal(snapshot(),before);
+});
+
+test('eco phase follows real unpowered descent and solver thrust rather than an armed controller',()=>{
+  const sim=new PhysicsSim(),run=createLandingRun(sim,{height:3,method:'eco'}),initialGas=sim.state.gas;
+  const ids=['landing-weight','landing-thrust-y','landing-normal','landing-force-scale','landing-acceleration','landing-kinetic','landing-elastic','landing-live-compression','landing-phase'];
+  const nodes=Object.fromEntries(ids.map(id=>[id,{textContent:''}])),ui={panel:{hidden:false},nodes};
+  assert.equal(landingPhaseLabel(sim,{...run,braking:true},{active:true}),'무분사 낙하','a request alone must not claim actual braking thrust');
+  let coastSteps=0,firstThrustTime=null;
+  for(let step=0;step<2000&&!run.done;step++){
+    sim.step(LANDING_STEP,landingRunInput(run,sim));updateLandingRun(run,sim);
+    LandingLiveUI.prototype.update.call(ui,sim,{metrics:{thrustVerticalN:999999}},run,{active:true});
+    if(sim.totalThrust===0){
+      coastSteps++;assert.equal(sim.state.gas,initialGas);assert.equal(nodes['landing-phase'].textContent,'무분사 낙하');
+    }else{
+      firstThrustTime=run.elapsed;assert.ok(sim.state.gas<initialGas);assert.equal(nodes['landing-phase'].textContent,'착지 제동');break;
+    }
+  }
+  assert.ok(coastSteps>0,'eco must have observed zero-thrust, zero-consumption flight');
+  assert.ok(firstThrustTime>0,'the same flight must later produce actual braking thrust');
+  assert.equal(landingPhaseLabel(sim,{...run,braking:false},{active:true}),'착지 제동','residual valve force must not be called unpowered');
+  assert.equal(landingPhaseLabel(sim,run,{active:true,paused:true}),'착지 제동 · 정지');
+  assert.equal(landingPhaseLabel(sim,{...run,manualLiftActive:true},{active:true}),'수동 분사');
+  assert.equal(landingPhaseLabel(sim,{...run,touchdownTime:run.elapsed,manualLiftActive:true},{active:true}),'접촉 · 완충');
+  assert.equal(landingPhaseLabel(sim,run,{active:false,paused:true}),'측정 완료');
+  assert.equal(landingPhaseLabel(sim,null,{active:false}),'자유 조종');
 });
 

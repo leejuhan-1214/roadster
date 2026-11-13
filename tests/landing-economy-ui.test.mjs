@@ -7,7 +7,7 @@ const rows=[
   {...base,id:'free',method:'free',brakeHeight:1.5,gasUsed:0,peakEquivalentGroundForceN:1700000,bodyStrike:true},
   {...base,id:'brake',method:'brake',brakeHeight:1.5,gasUsed:35,peakEquivalentGroundForceN:60000},
   {...base,id:'gentle',method:'gentle',brakeHeight:1.5,gasUsed:80,peakEquivalentGroundForceN:40000},
-  {...base,id:'eco',method:'eco',brakeHeight:1.5,autoBrakeHeight:1.9,ecoCoastTime:.45,ecoProfile:'brake',ecoPlannedBrakeHeight:1.88,ecoPredictedTouchdownSpeed:.51,ecoPredictedTouchdownGas:19.5,ecoPredictedGas:19.9,ecoPlanFeasible:true,gasUsed:20,peakEquivalentGroundForceN:30000}
+  {...base,id:'eco',method:'eco',brakeHeight:1.5,autoBrakeHeight:1.9,ecoCoastTime:.45,ecoMinimumCoastTime:.12,ecoProfile:'brake',ecoPlannedBrakeHeight:1.88,ecoPredictedTouchdownSpeed:.51,ecoPredictedTouchdownGas:19.5,ecoPredictedGas:19.9,ecoPlanFeasible:true,gasUsed:20,peakEquivalentGroundForceN:30000}
 ];
 const eco=rows[3];
 function resultNodes(results=rows,selectedGroup='economy'){
@@ -86,6 +86,7 @@ test('CSV preserves economy baselines, reductions and measured automatic trigger
     assert.equal(value('method'),'eco');assert.equal(value('eco_gas_baseline_id'),'gentle');assert.equal(value('eco_force_baseline_id'),'brake');
     assert.equal(Number(value('eco_gas_reduction_percent_vs_gentle')),75);assert.equal(Number(value('eco_force_reduction_percent_vs_brake')),50);
     assert.equal(Number(value('autoBrakeHeight')),1.9);assert.equal(Number(value('ecoCoastTime')),.45);
+    assert.equal(Number(value('ecoMinimumCoastTime')),.12);
     assert.equal(value('ecoProfile'),'brake');assert.equal(value('ecoPlanFeasible'),'true');
     assert.equal(Number(value('ecoPlannedBrakeHeight')),1.88);assert.equal(Number(value('ecoPredictedTouchdownSpeed')),.51);
     assert.equal(Number(value('ecoPredictedTouchdownGas')),19.5);assert.equal(Number(value('ecoPredictedGas')),19.9);

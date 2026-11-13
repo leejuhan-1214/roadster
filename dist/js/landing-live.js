@@ -16,6 +16,18 @@ export function landingLiveReadings(sim){
     compression:springState.stateCompression};
 }
 
+export function landingPhaseLabel(sim,run,{active=false,paused=false}={}){
+  if(!run)return '자유 조종';
+  if(!active)return '측정 완료';
+  // The controller can arm before a valve produces force. Read actual solver
+  // thrust, including a valve-closing tail, instead of the request or diagram.
+  const thrusting=Number.isFinite(sim.totalThrust)&&sim.totalThrust>0;
+  const phase=run.touchdownTime!==null?'접촉 · 완충':run.manualLiftActive?'수동 분사':
+    run.method==='eco'?(thrusting?'착지 제동':'무분사 낙하'):
+    run.braking||run.method==='gentle'?'추력 제동':'낙하';
+  return phase+(paused?' · 정지':'');
+}
+
 export class LandingLiveUI {
   constructor(root){
     this.root=root;
@@ -47,8 +59,6 @@ export class LandingLiveUI {
     this.nodes['landing-kinetic'].textContent=fmt(reading.verticalKineticEnergyJ/1000)+' kJ';
     this.nodes['landing-elastic'].textContent=fmt(reading.springEnergyJ/1000)+' kJ';
     this.nodes['landing-live-compression'].textContent=fmt(reading.compression*100,1)+' cm';
-    let phase='자유 조종';
-    if(run){phase=active?(run.touchdownTime!==null?'접촉 · 완충':run.manualLiftActive?'수동 분사':run.braking||run.method==='gentle'?'추력 제동':'낙하'): '측정 완료';if(active&&paused)phase+=' · 정지';}
-    this.nodes['landing-phase'].textContent=phase;
+    this.nodes['landing-phase'].textContent=landingPhaseLabel(sim,run,{active,paused});
   }
 }

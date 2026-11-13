@@ -1,3 +1,20 @@
+[v1.39 현재 인계 · 2026-11-13]
+README.md의 v1.39, LOCAL_HANDOFF.txt 첫 항목, docs/landing-study-guide.md와 현재 git 상태를 먼저 읽어라. 아래 v1.38 이하 인계는 과거 기록이며 최신 사용자 지시와 현재 구현이 우선한다. 기존 GitHub Pages 배포 승인은 유효하다.
+
+착지 방식은 free/brake/gentle/eco 총 4개다. LANDING_METHODS와 일반 methods/economy 호환 경로는 현재 차체 4회, fleet-methods는 실험 5종 × 4방식 = 20회다. 기존 3방식 전용 버튼과 중복 절약 비교 버튼을 복원하지 마라. #landing-methods는 '4방식 비교 / 현재 차체 · 4회', #landing-fleet-methods는 '전체 5종 × 4방식 / 20회'다. 제동 높이 비교는 free 1회 + brake 5회의 별도 설계이며, 선택 차체 비교는 선택한 단일 방식으로 실행한다. 도시·구조 77종과 실험 5종을 혼동하지 마라.
+
+eco는 무분사 낙하 뒤 필요한 높이에서 제동한다. gentle를 실행 후보나 자동 대체로 되살리지 마라. gentle는 기체 사용량을 비교하는 참조 예측일 뿐이다. 최소 무분사 시간 min(0.12초, 자유낙하 예상 시간의 15%)을 2ms 단위로 올림하며 계획과 실제 입력이 같은 정책을 사용한다. 초기화 때 한 번 제한된 후보를 계산하고, 예측값을 실제 속도·기체·반력에 대입하지 않는다. 높이 0 또는 무추력으로 목표를 충족하는 조건은 끝까지 분사하지 않을 수 있다. Space 수동 개입은 자동 정책의 예외이며 비교 제외 표시를 유지한다.
+
+ecoMinimumCoastTime는 정책 하한, ecoCoastTime/autoBrakeHeight는 실제 제어 명령이 시작된 시간/높이다. 실제 분사는 sim.totalThrust로 판정하여 0이면 '무분사 낙하', 양수이면 '착지 제동'을 보여준다. 최초 양의 유량 2ms 표본의 끝 시각을 명령 시작 시각과 혼동하지 마라. ecoProfile은 brake 또는 무분사 null이다. 예측 ecoPredicted*와 실측 gasUsed/touchdownSpeed/peakEquivalentGroundForceN를 구분하고, 예측 불충족·차체 접촉·압축 한계·목표 미달을 숨기지 마라.
+
+비교 요약은 동일 묶음·차체·초기 조건에서만 계산한다. 기체 절감은 gentle 대비, 반력 절감은 brake 대비로 서로 다른 기준이다. 악화는 증가/음수, 부적격은 빈칸으로 남긴다. 정착만으로 목표 속도 달성이나 실차 안전을 주장하지 마라. 고정 2ms·유한 기체·탱크 냉각·밸브 응답·서스펜션·마찰·입력 해제·시점·CSV/SVG와 기존 운전 조작을 보존하라.
+
+독립 검증은 실제 모델 형상 5종 × 3m/10m × brake/gentle/eco의 30회다. 모두 첫 유량 전 기체 0kg / 추력 0N이며, 10개 eco 모두 brake 후보와 최소 무분사 조건을 충족했다. Roadster 3m: 44.932790kg / 27.415736kN / 0.379054m/s, 완만한 하강 대비 기체 42.05% 감소 / 1.5m 지정 높이 제동 대비 반력 52.42% 감소. Cybertruck 3m: 86.415995kg / 52.144558kN / 1.328753m/s, 차체 접촉·압축 한계 없이 정착했지만 목표 미달. Cybertruck 10m: 129.647942kg / 197.704081kN / 4.260607m/s, 압축 한계 초과다. 두 Cybertruck 조건은 ecoPlanFeasible=false를 유지한다.
+
+근거는 outputs/v139-independent-audit.json과 v139-v138-coast-baseline.json이다. 후속 수정 시 관련 회귀와 4회/20회 계약, 무분사 중 기체 보존, 실제 모델을 검사하라. 전체 검사·공개 배포·브라우저 확인은 실제로 검증한 내용만 기록하라. 인증정보를 출력하거나 요구하지 마라.
+<!-- V139_RELEASE_VERIFICATION -->
+
+--- 이하 과거 인계 기록: 3/15회와 gentle 자동대체 지시는 현재 계약이 아님 ---
 [v1.38 절약 착지 · 2026-11-13]
 현재 요청은 '기체 사용량을 줄이면서 착지 충격도 작게'이다. README.md의 v1.38, LOCAL_HANDOFF.txt 첫 항목, docs/landing-study-guide.md와 현재 git 상태를 먼저 읽어라. 아래 과거 버전의 수치/배포 완료를 최신 결과로 복사하지 말고, 최신 사용자 지시와 실제 구현을 우선하라. v1.38 최종 수치·전체검사·배포는 LOCAL_HANDOFF의 확인된 최신 기록으로 판단한다.
 
