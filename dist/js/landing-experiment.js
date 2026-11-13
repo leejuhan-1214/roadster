@@ -1,4 +1,5 @@
 import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261113-economy1';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
@@ -16,7 +17,7 @@ const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Numb
 export function landingSettings(options={}){
   const height=finite(options.height,3,0,Number.MAX_VALUE);
   return {...options,height,
-    method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
+    method:options.method==='eco'||LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
     brakeHeight:finite(options.brakeHeight,2,0,Number.MAX_VALUE),
     targetSpeed:finite(options.targetSpeed,.5,.2,2),
     springK:finite(options.springK,75000,30000,150000),
@@ -39,6 +40,7 @@ export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
   }
   if(kind==='fleet-methods')return fleet.flatMap(vehicle=>LANDING_METHODS.map(item=>({vehicleId:vehicle.id,method:item.id})));
   if(kind==='methods')return LANDING_METHODS.map(item=>({vehicleId:active.id,method:item.id}));
+  if(kind==='economy')return [...LANDING_METHODS,{id:'eco'}].map(item=>({vehicleId:active.id,method:item.id}));
   if(kind==='vehicles')return fleet.filter(vehicle=>settings.vehicleIds?.includes(vehicle.id)).map(vehicle=>({vehicleId:vehicle.id,method}));
   return [{vehicleId:active.id,method}];
 }
@@ -55,7 +57,7 @@ export function createLandingRun(sim,options={}){
   // Keep that failure guard at ordinary heights, but scale it with free fall
   // and the gentle controller's 2.5 m/s cruise reference for larger releases.
   const freeFallTime=Math.sqrt(config.height)*Math.sqrt(2/9.80665);
-  const flightTimeout=Math.max(15,freeFallTime*2+10,config.method==='gentle'?config.height/2.5+10:0);
+  const flightTimeout=Math.max(15,freeFallTime*2+10,['gentle','eco'].includes(config.method)?config.height/2.5+10:0);
   const precontactSampleInterval=Math.max(.01,flightTimeout/4000);
   Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,
     gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
@@ -67,6 +69,9 @@ export function createLandingRun(sim,options={}){
   sim.state.vel.set(0,0,0);sim.state.q.identity();sim.state.omega.set(0,0,0);
   sim.contactCount=sim.lastContactCount=0;
   for(const w of sim.wheels){w.grounded=false;w.compression=0;w.load=0;w.omega=0;}
+  const planStart=config.method==='eco'?performance.now():0;
+  const economy=config.method==='eco'?planEconomyLanding(sim,landingClearance(sim),config.targetSpeed):null;
+  const ecoPlanTimeMs=economy?performance.now()-planStart:null;
   return {...config,config:Object.freeze({...config}),startTime:sim.state.time,
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
@@ -78,6 +83,11 @@ export function createLandingRun(sim,options={}){
     totalGravityImpulseNs:0,constantMassAuditValid:true,freeFallConditionsValid:true,
     parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
     braking:false,manualLiftActive:false,manualLiftUsed:false,manualLiftDuration:0,
+    ecoPlannedBrakeHeight:economy?.brakeHeight??null,ecoPredictedTouchdownSpeed:economy?.predictedSpeed??null,
+    ecoPredictedGas:economy?.predictedGas??null,ecoPlanFeasible:economy?.feasible??null,
+    ecoPredictedTouchdownGas:economy?.predictedTouchdownGas??null,ecoProfile:economy?.profile??null,
+    ecoCoastOnly:economy?.coastOnly??false,autoBrakeHeight:null,ecoCoastTime:null,
+    ecoPlanTimeMs,
     touchdownTime:null,touchdownSpeed:null,contactDuration:null,contactEndTime:null,contactEndVelocityY:null,
     peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
     groundImpulseNs:0,totalGroundImpulseNs:0,correctionImpulseNs:0,impactCorrectionImpulseNs:0,
@@ -93,6 +103,16 @@ export function landingRunInput(run,sim,manualLift=false){
   if(run.manualLiftActive)return {...off,stabilize:true,lift:1};
   if(run.done||run.method==='free'||run.touchdownTime!==null)return off;
   const gap=landingClearance(sim),velocity=sim.state.vel.y,g=sim.params.gravity;
+  if(run.method==='eco'){
+    if((run.height===0||run.ecoCoastOnly)&&!run.manualLiftUsed)return off;
+    // Manual thrust changes the planned trajectory. On release, use feedback
+    // immediately; measurements retain the manual-input marker for fair comparison.
+    if(!run.braking&&(gap<=run.ecoPlannedBrakeHeight||run.manualLiftUsed)){
+      run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.ecoCoastTime=run.elapsed;
+    }
+    if(!run.braking)return off;
+    return {...off,stabilize:true,verticalAcceleration:economyAcceleration(gap,velocity,run.targetSpeed,g,sim.params.valveTau,run.ecoProfile)};
+  }
   if(run.method==='brake'&&gap<=run.brakeHeight)run.braking=true;
   if(run.method==='brake'&&!run.braking)return off;
   // Anticipate valve delay without changing actual velocity. A braking run waits

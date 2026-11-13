@@ -1,3 +1,16 @@
+Roadster v1.38 — 유한 기체 절약 착지와 4방식 비교
+2026-11-13 KST. 사용자: 연료를 최소로 쓰면서 충격력도 작게 착지. 기존 GitHub Pages 배포 승인 유지. 이 모델에서 소비하는 것은 연소 연료가 아니라 배출한 압축 공기 질량이다.
+
+UI: 기본 방식 eco/절약 착지. 기본 버튼 '절약 효과 비교 · 4회'는 현재 차체 하나의 free/brake/gentle/eco를 같은 조건으로 실행한다. 기존 LANDING_METHODS 3개 및 5종×3방식15회는 그대로이며 추가 비교 메뉴에 유지. eco에서 제동 시작은 자동/비활성; 저장한 brakeHeight는 4회 비교의 고정 높이 brake 기준에만 사용. 목표속도/서스펜션 설정은 유효. 기존 Space/자유조종/카메라/도시77종 유지.
+제어: landing-economy.js의 planEconomyLanding이 초기화 시 한 번 후보를 예측한다. 지연 제동 후보12개와 적격 경계10회 보정, 기존 gentle 곡선 후보를 비교한다. 목표속도+0.025m/s 이내 후보 중 접촉 후 밸브 닫힘 기체까지 포함한 예측 총사용량이 작은 후보 선택. 모두 부적격이면 gentle 예측 총기체 이하 후보 중 접촉속도가 낮은 대안을 선택하되 ecoPlanFeasible=false 유지. 각 예측 단계 수와 밸브 꼬리 계산에 상한이 있으며 매 프레임 전체 탐색하지 않는다. 실제 solver는 2ms/유한추력/밸브지연/유량/탱크압력·온도·질량 변화를 유지한다. 예측값으로 실제 속도/연료/충격을 덮어쓰지 않는다.
+계측: autoBrakeHeight/ecoCoastTime는 run.braking 전환, 즉 자동 제동 제어를 시작한 실제 높이/그 전 대기시간이다. 최초 비영 노즐 유량 시점이 아니며 gentle 선택 시 제어 시작 후 최초 명령은 0일 수 있다. CSV에 ecoProfile, ecoPlannedBrakeHeight, ecoPredictedTouchdownSpeed, ecoPredictedTouchdownGas, ecoPredictedGas, ecoPlanFeasible를 별도 기록한다. 실제값은 touchdownSpeed/touchdownGasUsed/gasUsed/peakEquivalentGroundForceN이다.
+효과 비교: 같은 group/차종/출발높이/목표속도/스프링/감쇠/초기질량/기체/탱크용적/압력/온도만 연결. eco와 gentle는 정착 및 수동/차체접촉/한계초과 없음이 필수. brake는 실제 접촉계측이 있으면 차체접촉·한계초과·진동 상태도 반력 기준에 남기고 실패표시 유지. 기체 변화는 gentle 대비 실제 gasUsed, 반력 변화는 brake 대비 실제 peakEquivalentGroundForceN. 비교 기준 ID와 %를 CSV에 기록하고 악화는 증가/음수로 보존한다. 전체기록·미완료묶음에는 한 개의 절약률/전역순위를 만들지 않는다.
+해석: settled는 목표속도달성과 다르다. 예측 feasible 역시 실제성공 보장이 아니다. 높은 낙하/무거운차량/저압/부족한추력에서 목표미달·차체접촉·서스펜션한계가 가능하다. 제한된 후보의 기체 절약 시도이며 전역최소/항상더낮은충격/모든차종안전 주장 금지. 2ms등가반력은 실차파손·탑승자상해 수치가 아니다.
+문서: README 최신 사용법/필드사전, docs/landing-study-guide.md의 4회 연구 절차·두 목적 비교·예측/실제 구분, CLAUDE_HANDOFF_PROMPT.txt 인계 갱신. 이전 수치 예시는 해당 버전의 기록으로 보존.
+독립 수치 예시: outputs/v138-eco-independent-targeted.json의 baseline은 brakeHeight1.5m/targetSpeed0.5/k75000/c6000/dt0.002. Roadster3m 초기2275kg/기체375kg, eco44.932790kg/27.415736kN/접촉0.379054m/s. gentle77.535kg/27.163kN 대비기체42.05%감소하나반력약0.93%증가; brake1.5m30.847kg/57.620kN 대비반력52.42%감소하나기체더사용. 서로다른기준을명시. Cyber3m gentle선택/정착이지만1.305709m/s로목표미달·feasiblefalse, Cyber10m4.260607m/s/197.704081kN/bottomedOut.
+<!-- V138_RELEASE_VERIFICATION -->
+
+--- 이전 배포 기록 ---
 Roadster v1.37 — 착지 관찰 시점과 화면 정리
 2026-11-12 KST. 사용자: 시점이상/불필요문구를 줄이고 계속 실험하며 반복수정. 기존 Pages배포 승인 유지.
 카메라: scene.frameLabVehicle 공통경로, frameLandingStart resetView:false로배치간사용자각도/줌보존. 준비/시작/초기화방향통일. C는lab시점복원(실험state변경없음), reset과모드/차량변경은공통복원. 실제패널가림/상하조작부를프레이밍반영,높은고도에서도근처만표시,중복fit여백제거. landing-visual 눈금/h0/hb는camera-right차체외곽으로배치.

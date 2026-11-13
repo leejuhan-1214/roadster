@@ -1,3 +1,19 @@
+[v1.38 절약 착지 · 2026-11-13]
+현재 요청은 '기체 사용량을 줄이면서 착지 충격도 작게'이다. README.md의 v1.38, LOCAL_HANDOFF.txt 첫 항목, docs/landing-study-guide.md와 현재 git 상태를 먼저 읽어라. 아래 과거 버전의 수치/배포 완료를 최신 결과로 복사하지 말고, 최신 사용자 지시와 실제 구현을 우선하라. v1.38 최종 수치·전체검사·배포는 LOCAL_HANDOFF의 확인된 최신 기록으로 판단한다.
+
+eco/절약 착지가 기본 선택이다. landing-ui.js의 onCompareEconomy→main.js startLanding('economy')→createLandingJobs('economy')는 현재 차체의 free/brake/gentle/eco 4회다. 기존 LANDING_METHODS 3개와 fleet-methods 5종×3방식15회는 바꾸지 않는다. 제동 시작 입력은 eco에서 자동/비활성이고, 그 값은 비교의 고정 높이 brake 기준에 보존한다. 목표 속도/스프링/감쇠는 유효하다. 현재의 간결한 화면·추가 비교 펼침·기록 보존·카메라·실험 전 자유조종·Space 수동 개입 계약을 유지하라.
+
+landing-economy.js는 초기화 시 한 번 planEconomyLanding으로 지연제동 후보/경계 보정/gentle 곡선을 예측한다. 목표 속도 허용 오차 안의 후보 중 접촉 후 밸브 닫힘 기체까지 포함한 예측 총사용량을 비교한다. 실패 후보뿐이면 대체 곡선을 골라도 ecoPlanFeasible=false를 유지한다. 탐색 단계 수는 제한하며 매 프레임 대규모 재탐색하지 않는다. 실제 실행은 기존 2ms PhysicsSim의 유한 추력·밸브 지연·유량·압력·온도·기체 질량을 적용한다. 속도를 직접 바꾸거나 기체를 보충해 성공시키지 말고 예측값을 실측 결과로 쓰지 마라.
+
+CSV: autoBrakeHeight/ecoCoastTime는 자동 제동 제어가 시작된 높이/그 전 대기시간이며 최초 비영 유량 시점이 아니다. gentle 제어는 시작부터 활성이어도 첫 명령이 0일 수 있다. ecoProfile/ecoPlannedBrakeHeight/ecoPredictedTouchdownSpeed/ecoPredictedTouchdownGas/ecoPredictedGas/ecoPlanFeasible는 예측/선택 정보다. 실제 touchdownSpeed/touchdownGasUsed/gasUsed/peakEquivalentGroundForceN와 분리하라. settled 및 bodyStrike/bottomedOut과 목표속도 달성은 서로 다른 판정이다.
+
+절약 요약은 동일 group/차종/높이/목표속도/서스펜션/초기질량·기체·탱크조건만 비교한다. eco와 gentle는 수동·차체접촉·한계초과 없이 정착해야 한다. brake는 실제접촉을 측정했다면 큰 충격도 반력 기준으로 남기며 실패 표시는 보존한다. 기체 %는 gentle 대비 gasUsed, 반력 %는 brake 대비 peakEquivalentGroundForceN이다. 두 기준 ID를 CSV에 보존하고 악화는 증가/음수, 부적격은 빈칸으로 표시한다. 전체기록 혼합 순위나 예측치 기반 절감률을 만들지 마라. tests/landing-economy-ui.test.mjs가 이 비교/CSV/입력 계약을 검사한다.
+
+전역 최소 연료나 모든 차량/높이/압력에서 안전한 착지를 보장하지 않는다. 높은 낙하·무거운 차체·저압에서 목표 미달과 한계 초과를 숨기지 말고 실제 접촉 속도·기체·반력·상태를 보고한다. 가정 모델/2ms 등가반력을 실차 충돌 인증이나 탑승자 상해로 해석하지 마라. 최종 검증은 관련 회귀와 실제 solver의 여러 차종·높이·압력, 기존3/15회 계약을 포함한다. 배포 승인 자체는 기존 사용자 지시로 유지되며, 완료 표시는 해당 SHA의 Actions와 공개 파일/실행을 확인한 뒤 남긴다.
+
+<!-- V138_RELEASE_VERIFICATION -->
+
+--- 이전 인계 기록 ---
 [v1.37 착지 실험 시점·간결화]
 최신 배포/검증은 LOCAL_HANDOFF 첫항목. lab camera는 frameLabVehicle/restoreLabView 공통경로. C는실험리셋없는시점복원,배치첫회만기본구도이며후속회사용자시점보존. 설정패널실제가림기준프레이밍과camera-right눈금배치유지. 기본화면짧게,세부측정/추가비교/분석접힘유지. 결과조건바꾸기는측정기록보존. 물리수식/실험코호트/도시77종을UI정리때변경하지말것.
 
