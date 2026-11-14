@@ -1,17 +1,17 @@
-import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
+import {RechargeReadout} from './recharge-readout.js?v=20261115-calibrated1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261114-air1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261115-fleet1';
-import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261115-fleet1';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261115-fleet1';
-import {LandingUI} from './landing-ui.js?v=20261114-rocket1';
-import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261113-coast1';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261115-calibrated1';
+import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261115-calibrated1';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261115-calibrated1';
+import {LandingUI} from './landing-ui.js?v=20261115-calibrated1';
+import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261115-calibrated1';
 import {RenderStateBuffer} from './render-state.js?v=20261111-calibration1';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261115-fleet1';
-import {FlightScene} from './scene.js?v=20261115-fleet1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261115-calibrated1';
+import {FlightScene} from './scene.js?v=20261115-calibrated1';
 
-import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261114-rocket1';
+import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-calibrated1';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
 
 const EXPERIMENT_VEHICLES=experimentVehicles(VEHICLES),experimentIds=new Set(EXPERIMENT_VEHICLES.map(v=>v.id));
@@ -36,7 +36,7 @@ const cameraLabel=()=>mode==='lab'?'시점 복원':camera==='top'?'상부 카메
 let landingSession=null,landingRun=null,lastResult=null,landingSerial=0;
 const freeDriving=()=>mode==='city'||(mode==='lab'&&!landingSession);
 let lastStamp=0,accumulator=0,lastUI=0,frames=0,frameTimer=0,toastTimer,lastManeuverNotice='idle';
-const maneuverLabels={profile:'이 차체의 추진 장치를 확인하세요',thrust:'회전에 필요한 추력 여유가 부족해요 · 기체를 충전하세요',height:'8 m 이상 상승한 뒤 X를 누르세요',gas:'공중제비에 필요한 기체가 부족해요',momentum:'상승 중 X · 수직 속도 7 m/s 이상',attitude:'수평 자세로 안정된 뒤 X를 누르세요',prepare:'공중제비 · 상승 여유 확보',rolling:'공중제비 · 회전 중',recovering:'공중제비 · 자세 회복',complete:'공중제비 완료 · 수평 자세 회복',cancelled:'공중제비 취소',contact:'지면 접촉 · 회전 종료',unavailable:'지금은 공중제비를 시작할 수 없어요'};
+const maneuverLabels={profile:'이 차체의 추진 장치를 확인하세요',thrust:'기준 밸브의 추력이 부족해 공중제비를 시작할 수 없어요',height:'8 m 이상 상승한 뒤 X를 누르세요',gas:'공중제비에 필요한 기체가 부족해요',momentum:'상승 중 X · 수직 속도 7 m/s 이상',attitude:'수평 자세로 안정된 뒤 X를 누르세요',prepare:'공중제비 · 상승 여유 확보',rolling:'공중제비 · 회전 중',recovering:'공중제비 · 자세 회복',complete:'공중제비 완료 · 수평 자세 회복',cancelled:'공중제비 취소',contact:'지면 접촉 · 회전 종료',unavailable:'지금은 공중제비를 시작할 수 없어요'};
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2800);}
 function setPaused(value){
   paused=value;if(!value&&landingSession)landingSession.singleStepping=false;if(value){clearLandingLift();clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
@@ -142,7 +142,7 @@ function refreshVehiclePicker(){
   $('vehicle-picker-label').textContent=mode==='lab'?'실험 차체 · 5종':'차체 선택';
   const info=experimentIds.has(activeVehicle.id)?experimentMass(activeVehicle):null;
   $('lab-mass').hidden=mode!=='lab'||!info;
-  if(info){$('lab-mass-total').textContent=Math.round(info.total).toLocaleString('ko-KR')+' kg';$('lab-mass-detail').textContent='차체·장치 '+Math.round(activeVehicle.dryMass).toLocaleString('ko-KR')+' + 기체 '+Math.round(info.gas)+' kg'+(info.assumed?' · 질량 가정값':'');}
+  if(info){$('lab-mass-total').textContent=Math.round(info.total).toLocaleString('ko-KR')+' kg';$('lab-mass-detail').textContent='차체·장치 '+Math.round(activeVehicle.dryMass).toLocaleString('ko-KR')+' + 기체 '+Math.round(info.gas)+' kg'+(info.assumed?' · 차체 질량 가정':'')+' · 빈 용기 57.6 + 배관 등 25 kg 포함';}
 }
 function renderCityVehicleOptions(){
   const matches=searchCityVehicles(VEHICLES,$('city-vehicle-search').value),groups=new Map();
@@ -286,7 +286,7 @@ function setupCityExperiments(){
 }
 function compressorStatus(t){
   if(!driver.compressorEnabled)return '공기 충전 꺼짐';
-  return ({charging:'주변 공기 흡입 · 압축 중',moving:'정차 후 충전',airborne:'지상에 착지한 뒤 충전',thrusters:'분사 종료 후 충전',full:'탱크 충전 한도',ready:'운용 충전 완료 · 99%',cooling:'냉각하며 충전',battery:'배터리 부족',off:'충전 대기'})[t.compressorState]||'충전 대기';
+  return ({charging:'외부 압축기 · 주변 공기 충전',moving:'정차 후 충전',airborne:'지상에 착지한 뒤 충전',thrusters:'분사 종료 후 충전',full:'탱크 충전 한도',ready:'운용 충전 완료 · 99%',cooling:'냉각하며 충전',battery:'배터리 부족',off:'충전 대기'})[t.compressorState]||'충전 대기';
 }
 function updateCityExperiments(t){
   if($('city-experiments').hidden)return;
@@ -379,12 +379,13 @@ function updateCityHUD(t){
   $('city-acceleration').textContent=(acceleration>=0?'+':'')+acceleration.toFixed(1)+' m/s² · '+(acceleration/sim.params.gravity).toFixed(1)+' g';
   $('city-distance').textContent=(cityDistance/1000).toFixed(2)+' km · 탱크 '+t.pressureMPa.toFixed(1)+' MPa';
   $('city-compressor').setAttribute('aria-pressed',driver.compressorEnabled);
-  $('city-compressor').textContent=driver.compressorEnabled?(['ready','full'].includes(t.compressorState)?'충전 완료':['charging','cooling'].includes(t.compressorState)?'충전 중 · 중지':'충전 대기 · 중지'):'공기 충전';
+  $('city-compressor').textContent=driver.compressorEnabled?(['ready','full'].includes(t.compressorState)?'충전 완료':['charging','cooling'].includes(t.compressorState)?'충전 중 · 중지':'충전 대기 · 중지'):'외부 공기 충전';
   const charge=rechargeReadout.update(sim.state,sim.params,{enabled:driver.compressorEnabled,capacityKg:sim.initialGas,powerBudgetW:sim.params.batteryMaxDischargeKW*1000,status:t.compressorState});
   $('city-recharge').hidden=!driver.compressorEnabled;
-  $('city-recharge').textContent=charge?charge.text+' · '+((t.compressorPowerW||0)/1000).toFixed(0)+' kW':'';
+  $('city-recharge').textContent=charge?charge.text+' · '+((t.compressorPowerW||0)/1000).toFixed(1)+' kW · 외부 전원':'';
   $('city-compressor').title=compressorStatus(t);
   $('city-motion').textContent=paused?'일시정지':driver.landingAssist?'착지 보조':t.saturation&&driver.airborne?'추력 한계':driveInput.airBrake?'공중 제동':driveInput.lift?'상승 분사':driver.altHold?'고도 유지':driveInput.handbrake?'드리프트':driveInput.boost?'F 추진 가속':driver.airborne?'자유 비행':t.horizontalSpeed<.1&&!driveInput.throttle?'정지 유지':driveInput.brake>.3?'제동':driveInput.corneringAssist?'코너링 보조':driveInput.throttle?'가속':driveInput.brake>0?'페달 해제 감속':'타력';
+  if(t.thermalLimited&&!paused)$('city-motion').textContent='분사 온도 하한 · 열 회복 대기';
   if(['prepare','rolling','recovering'].includes(driver.maneuverStatus))$('city-motion').textContent=maneuverLabels[driver.maneuverStatus];
   $('city-altitude').textContent=Math.max(0,landingClearance(sim)).toFixed(1)+' m';
   $('city-vertical').textContent=(t.verticalSpeed>=0?'+':'')+t.verticalSpeed.toFixed(1)+' m/s';
@@ -447,7 +448,7 @@ function updateUI(){
   landingLiveUI?.update(sim,scene.landingVisual,run,{active:!!landingRun,paused});
   $('altitude').innerHTML=Math.max(0,landingClearance(sim)).toFixed(2)+' <small>m</small>';
   $('vertical').innerHTML=(t.verticalSpeed>=0?'+':'')+t.verticalSpeed.toFixed(2)+' <small>m/s</small>';
-  const force=Math.max(0,sim.groundForceN)+Math.max(0,sim.groundCorrectionImpulseNs)/LANDING_STEP;
+  const force=sim.contactMeanForceN;
   $('ground-force').innerHTML=(force/1000).toFixed(2)+' <small>kN</small>';
   $('peak-force').textContent=run?(run.peakEquivalentGroundForceN/1000).toFixed(2)+' kN':'—';
   $('peak-g').textContent=run&&run.touchdownTime!==null?run.contactPeakG.toFixed(2)+' g':'—';
@@ -464,7 +465,7 @@ function updateUI(){
 }
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
-  $('guide-content').innerHTML=tab==='sources'?'<p>공기 장치: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md" target="_blank" rel="noopener noreferrer">테슬라 특허·공식 자료와 구현 가정</a></p><p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>2020 Roadster 외형을 포함한 77종에 공통 가상 추진 장치를 적용했습니다. 이 장치는 각 실차의 기본 사양이 아닙니다. 실험 5종은 동일한 250 kg 초기 공기를 사용하며 차체별 분사 위치가 다릅니다. <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>4방식 비교로 자유 낙하·추력 제동·완만한 하강·절약 착지를 같은 조건에서 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 시점 복원 · V: 물리 표시 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 각 차체는 Space로 충분히 상승한 뒤 X를 누르면 분사로 한 바퀴 회전한 뒤 자세를 회복합니다. 질량·관성·높이·기체 조건이 부족하면 시작하지 않습니다. B는 회전을 취소하고 제동합니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. 팬 접지 보조는 지상 가속·제동 때 바닥의 공기를 빼서 접지력을 높이며 배터리를 사용합니다. 공중 부양은 별도의 압축기체 노즐이 담당합니다. 공기 충전을 켜면 정차·분사 종료 후 배터리로 주변 공기를 압축해 탱크를 채웁니다. 충전은 압축에 필요한 일과 냉각을 계산하며 운용 기준인 99%에서 멈춥니다. 300 kW 압축기와 5 kW 냉각 보조장치는 가정값이며 실제 자동차의 탑재 사양이 아닙니다. 화면의 예상 시간은 현재 기체량·온도·배터리를 반영합니다. R은 출발점·탱크·배터리를 초기화하는 시뮬레이션 복귀입니다. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
+  $('guide-content').innerHTML=tab==='sources'?'<p>공기 장치: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md" target="_blank" rel="noopener noreferrer">테슬라 특허·공식 자료와 구현 가정</a></p><p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>2020 Roadster 외형을 포함한 77종에 공통 가상 추진 장치를 적용했습니다. 이 장치는 각 실차의 기본 사양이 아닙니다. 실험 5종은 동일한 108 L 탱크·250 bar 게이지·20°C·약 30.33 kg 공기를 사용합니다. 빈 용기 57.6 kg과 배관 등 25 kg을 차체 질량에 더했습니다. 노즐 위치는 차체별로 다릅니다. <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>4방식 비교로 자유 낙하·추력 제동·완만한 하강·절약 착지를 같은 조건에서 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 시점 복원 · V: 물리 표시 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상향 분사, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. Space는 상향 분사 명령입니다. 이번 공개 부품 기준의 상향 추력은 차량 중량보다 작아 지속 부양·공중제비가 불가능합니다. X는 실제 추력 여유를 검사하여 기동을 거부합니다. 테슬라 전용 장치의 재현이나 성능 판정이 아닙니다. B는 회전을 취소하고 제동합니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. 팬 접지 보조는 지상 가속·제동 때 바닥의 공기를 빼서 접지력을 높이며 배터리를 사용합니다. 공중 부양은 별도의 압축기체 노즐이 담당합니다. 외부 공기 충전은 정차·분사 종료 후 PE300-TE 기준 7.5 kW·흡입 공기 300 L/min 압축기를 연결한 모델입니다. 외부 전력 사용량과 차량 배터리를 분리합니다. 실제기체 압력·에너지와 기체↔용기↔대기 열교환을 계산하고 99% 기준 질량에서 멈춥니다. 충전 시간은 온도와 냉각 조건에 따라 달라집니다. 제조사 유량은 0–200 bar 충전 기준 ±5%이며 250 bar까지의 유량과 열전달 계수는 근사입니다. R은 출발점·탱크·배터리를 초기화하는 시뮬레이션 복귀입니다. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
 }
 function openGuide(tab='controls'){renderGuide(tab);$('guide-modal').showModal();}
 function focusApparatus(id){

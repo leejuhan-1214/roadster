@@ -11,7 +11,7 @@ export function landingLiveReadings(sim){
     accelerationY:sim.resolvedAcceleration.y,
     verticalKineticEnergyJ:.5*mass*vy*vy,
     // Linear spring storage only. PhysicsSim also has a nonlinear bump stop
-    // beyond 0.22 m; neither that storage nor damping loss is included here.
+    // beyond 0.12 m; neither that storage nor damping loss is included here.
     springEnergyJ:springState.springEnergyJ,
     compression:springState.stateCompression};
 }
@@ -40,7 +40,7 @@ export class LandingLiveUI {
         <p class="landing-equation">통제 실험 · 위쪽 +<br>수직 연속력 N + Tᵧ − mg</p>
         <dl><div><dt>실제 가속도 aᵧ (보정 포함)</dt><dd id="landing-acceleration">—</dd></div><div><dt>수직 운동 ½mvᵧ²</dt><dd id="landing-kinetic">—</dd></div><div><dt>선형 스프링 Σ½kx²</dt><dd id="landing-elastic">—</dd></div><div><dt>현재 최대 압축 x</dt><dd id="landing-live-compression">—</dd></div></dl>
         <p>화살표는 차체 옆으로 옮겨 표시합니다. 접촉 전 N = 0. 접촉하면 스프링·감쇠가 하강을 멈춥니다. 화살표 N은 연속 반력이며 아래 등가반력은 접촉 보정 충격량도 포함합니다.</p>
-        <p>스프링 값은 선형 부분만 계산하며 22 cm 이후의 비선형 스토퍼와 감쇠 소산은 제외합니다. 분사 중 질량이 줄어듭니다. 위 에너지는 차체의 순간값이며 배출 기체·중력 위치에너지·소산을 합친 보존량은 아닙니다.</p>
+        <p>스프링 값은 선형 부분만 계산하며 12 cm 이후의 비선형 스토퍼와 감쇠 소산은 제외합니다. 분사 중 질량이 줄어듭니다. 위 에너지는 차체의 순간값이며 배출 기체·중력 위치에너지·소산을 합친 보존량은 아닙니다.</p>
       </details>`;
     const diagnostics=root.querySelector('#landing-diagnostics');
     if(diagnostics)diagnostics.append(panel);else root.querySelector('.force-reading').before(panel);

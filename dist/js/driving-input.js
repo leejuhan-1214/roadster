@@ -1,13 +1,13 @@
 // Ground and cold-gas flight controls. Pedal release requests modest blended
 // braking, so a full battery still slows the car using the wheel brakes.
 // All speed changes continue through tire forces and the rigid-body solver.
-import {isRocketProfile} from './rocket-layout.js?v=20261115-fleet1';
-import {RocketRollController} from './rocket-flight.js?v=20261115-fleet1';
+import {isRocketProfile} from './rocket-layout.js?v=20261115-calibrated1';
+import {RocketRollController} from './rocket-flight.js?v=20261115-calibrated1';
 export const CITY_DRIVE_PARAMS=Object.freeze({
   friction:1.15,rollingResistance:.015,aeroEnabled:true,dragScale:1,
   roadRoughness:.15,windX:0,windZ:0,tractionControl:true,absEnabled:true,
-  springK:75000,damperC:6000,
-  tankPressureMPa:35.875,
+  springK:70000,damperC:4000,
+  // Pressure and gas properties belong to the selected hardware profile.
 });
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const approach=(value,target,amount)=>value+clamp(target-value,-amount,amount);

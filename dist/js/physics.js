@@ -1,11 +1,15 @@
+import {ForceWindow} from './force-window.js?v=20261115-calibrated1';
+import {advanceAirDischarge} from './air-blowdown.js?v=20261115-calibrated1';
+import {meteredNozzle} from './pneumatic-feed.js?v=20261115-calibrated1';
 import { Vector3, Quaternion, Euler } from 'three';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
 import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive2';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
 import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
-import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261115-fleet1';
-import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-fleet1';
+import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan,nominalAirMass,gasProperties} from './air-systems.js?v=20261115-calibrated1';
+import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-calibrated1';
+import {CONTACT_DEFAULTS,suspensionResponse,suspensionStaticCompression} from './landing-contact.js?v=20261115-calibrated1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -15,8 +19,11 @@ import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layou
  */
 export const DEFAULTS = Object.freeze({
   ...AIR_SYSTEM_DEFAULTS,
+  // Legacy analytic solver fixtures remain ideal; every displayed fleet profile
+  // explicitly applies the source-calibrated real-air hardware parameters.
+  realGas:false,calibratedHardware:false,compressorExternalPower:false, ...CONTACT_DEFAULTS,
   dryMass: 1900, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
-  friction: 1.15, rollingResistance: .015, springK: 75000, damperC: 6000, fanMaxForce: 18000,
+  friction: 1.15, rollingResistance: .015, springK: 70000, damperC: 4000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
   gravity: 9.80665, dragScale: 1, valveTau: .03,
   wheelRadius: .36, wheelInertia: 2.6, gearRatio: 9, driveEfficiency: .94,
@@ -40,14 +47,16 @@ export const PARAMETER_INFO = {
   trackWidth: ['윤거', 'm', '가정 · 좌우 바퀴 중심 간 거리, 공개 실측 치수 아님'],
   dryMass: ['기체 제외 질량', 'kg', '가정 · 차체, 배터리, 빈 탱크, 탑승자 포함'],
   tankVolume: ['탱크 체적', 'm³', '가정 · 비행 실험용 저장 용량, 실차 확정 사양 아님'],
-  tankPressureMPa: ['초기 절대압력', 'MPa', '이상 공기 375 kg / 900 L / 300 K로 역산한 가정'],
+  tankPressureMPa: ['초기 절대압력', 'MPa', '기준 장치 250 bar 게이지 + 대기압; 용기 정격 300 bar'],
   initialTemperature: ['초기 기체 온도', 'K', '실측값이 아닌 상온 가정'],
   friction: ['접지력 한도 μ', '—', '타이어가 전달할 수 있는 힘의 한도. 타력 감속 계수와 다름'],
   rollingResistance: ['구름저항 계수 Crr', '—', '가정 · 접지 하중에 비례하는 타력 주행 저항, μN 한도 안에서 적용'],
-  springK: ['바퀴별 스프링 상수', 'N/m', '타이어와 서스펜션을 합친 가정값'],
-  damperC: ['바퀴별 감쇠 계수', 'N·s/m', '선형 댐퍼 가정'],
+  springK: ['바퀴별 스프링 상수', 'N/m', '공통 실험 장치 · 70 N/mm 공개 스프링을 참고한 유효값, 실차 휠 레이트 아님'],
+  damperC: ['바퀴별 감쇠 계수', 'N·s/m', '공통 실험 장치 · 선형 감쇠 4,000 가정, 실차 댐퍼 측정값 아님'],
+  suspensionTravel: ['유효 압축 한계', 'm', '가정 · 0.18 m 초과 결과는 정상 착지 비교에서 제외'],
+  bumpStopStart: ['범프 스톱 개입', 'm', '가정 · 0.12 m부터 점진적 추가 반력'],
   fanMaxForce: ['팬 최대 다운포스', 'N', '가정 · 차고·기울기에 따라 감소'],
-  compressorPowerKW: ['공기 압축기 출력', 'kW', '가정 · 4단 중간 냉각 및 후냉각, 정차 중 배터리로 충전'],
+  compressorPowerKW: ['외부 압축기 정격', 'kW', 'BAUER PE300-TE 7.5 kW · 300 L/min 참고, 차량 배터리와 분리'],
   compressorEfficiency: ['압축기 단 효율', '—', '가정 · 등엔트로피 단 압축 일과 실제 전기 입력의 비'],
   compressorMaxFlowKgS: ['흡입 질량 유량 한도', 'kg/s', '가정 · 압력과 가용 전력에 따라 더 감소'],
   compressorCoolingPowerKW: ['충전 냉각 보조 전력', 'kW', '가정 · 압축기와 같은 배터리 예산을 쓰는 펌프·팬'],
@@ -145,6 +154,15 @@ export function nozzle(pressure, temperature, area, ambient = ATMOSPHERE) {
   return { mdot, force, ve, pe, regime: choked ? 'choked' : 'subsonic', effectiveVelocity: force / mdot };
 }
 
+/** Feasible reference feed; analytic legacy fixtures keep the ideal nozzle. */
+export function thrusterNozzle(pressure,temperature,area,params={},group='lift'){
+  if(!params.calibratedHardware)return nozzle(pressure,temperature,area);
+  if(temperature<(params.minimumGasOperatingTemperature??263.15)-1e-6)
+    return {...nozzle(ATMOSPHERE,temperature,area),regime:'temperature-limit'};
+  return meteredNozzle(pressure,temperature,area,ATMOSPHERE,
+    {...params,maxPressureMPa:params.valveMaxPressureMPa,valveKv:group.startsWith('yaw')?(params.yawValveKv??.6):params.valveKv},nozzle);
+}
+
 export function rocketReference(mInitial, mFinal, effectiveVelocity) {
   return effectiveVelocity * Math.log(mInitial / mFinal);
 }
@@ -226,15 +244,16 @@ export class PhysicsSim {
       else t.mountPosition.set(i%2?-p.yawX:p.yawX,p.yawY,(i===6||i===9)?p.yawZ:-p.yawZ);
       t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);
     });
-    const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
+    const gas = nominalAirMass(p);
     this.initialGas = gas;
-    this.initialEnergy = gas * CV * p.initialTemperature;
-    this.restHeight = .31 + p.wheelRadius + this.cg.y - (p.dryMass + gas) * p.gravity / (4 * p.springK);
+    this.initialEnergy = gas * gasProperties(gas,p.tankVolume,p.initialTemperature,p).u;
+    this.restHeight = .31 + p.wheelRadius + this.cg.y - suspensionStaticCompression((p.dryMass + gas) * p.gravity / 4,p);
     this.state = { pos: new Vector3(this.cg.x, this.restHeight, this.cg.z), vel: new Vector3(),
       q: new Quaternion(), omega: new Vector3(), gas, temp: p.initialTemperature,
       pressure: p.tankPressureMPa * 1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
       acceleration: new Vector3(), gasUsed: 0, expelledEnthalpy: 0,
       gasRefilledKg:0, inletEnthalpyJ:0, tankHeatOutJ:0, compressorEnergyJ:0,
+      tankWallTemp:p.initialTemperature,ambientHeatOutJ:0,externalCompressorEnergyJ:0,thermalLimited:false,
     };
     if (preset === 'drop') this.state.pos.y += 3;
     if (preset === 'flight') { this.state.pos.y += 1.8; this.state.vel.x = 8; }
@@ -247,6 +266,7 @@ export class PhysicsSim {
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
     this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
     this.preStepVelocityY=0;this.resolvedAcceleration=new Vector3();this.stepDuration=0;
+    this.contactForceWindow=new ForceWindow();this.contactMeanForceN=0;
     this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
     this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
@@ -258,7 +278,7 @@ export class PhysicsSim {
     for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
       w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
-    for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
+    for (const t of this.thrusters) { t.force = 0; t.maxForce = thrusterNozzle(this.state.pressure, this.state.temp, t.area,p,t.group).force; t.opening = 0; t.command = 0; t.mdot = 0; }
     return this.state;
   }
 
@@ -371,7 +391,9 @@ export class PhysicsSim {
       s.vel.multiplyScalar(oldVehicleMass/newVehicleMass);
       s.vel.addScaledVector(new Vector3(p.windX||0,0,p.windZ||0),refill.addedKg/newVehicleMass);
     }
-    s.gas=refill.gas;s.temp=refill.temp;s.pressure=refill.pressure;
+    s.gas=refill.gas;s.temp=refill.temp;s.pressure=refill.pressure;s.tankWallTemp=refill.tankWallTemp;
+    s.ambientHeatOutJ+=refill.ambientHeatOutJ||0;
+    s.externalCompressorEnergyJ+=(refill.externalPowerW||0)*dt;
     s.gasRefilledKg+=refill.addedKg;s.inletEnthalpyJ+=refill.inletEnthalpyJ;s.tankHeatOutJ+=refill.tankHeatOutJ;
     s.compressorEnergyJ+=refill.powerW*dt;
     this.compressorState=refill.status;this.compressorPowerW=refill.powerW;this.compressorCompressionPowerW=refill.compressionPowerW;this.compressorCoolingPowerW=refill.coolingPowerW;this.compressorFlowKgS=refill.addedKg/dt;
@@ -389,7 +411,7 @@ export class PhysicsSim {
     // Direct blowdown: pressure falls with the tank, and flow adds a supply-line loss.
     const oldFlow=this.thrusters.reduce((sum,t)=>sum+t.mdot,0);
     this.manifoldPressure=Math.max(ATMOSPHERE,s.pressure-Math.max(0,p.feedLossCoefficient)*oldFlow*oldFlow);
-    const layoutMaximum = this.thrusters.map(t => nozzle(this.manifoldPressure, s.temp, t.area));
+    const layoutMaximum = this.thrusters.map(t => thrusterNozzle(this.manifoldPressure,s.temp,t.area,p,t.group));
     for (let i = 0; i < this.thrusters.length; ++i) this.thrusters[i].maxForce = layoutMaximum[i].force;
     const isAirborne = this.contactCount === 0;
     const enabledControl = isAirborne || input.lift > .01 || input.altHold || Number.isFinite(input.verticalAcceleration)||(this.rocketProfile&&input.boost);
@@ -483,29 +505,25 @@ export class PhysicsSim {
       if (desiredForces[i] > available.force + 1) this.saturation = true;
       t.command = available.force > 0 ? clamp(desiredForces[i] / available.force, 0, 1) : 0;
       const openingOld = t.opening;
-      const tau = Math.max(.001, Number(p.valveTau) || .03);
+      const tau = Math.max(.001, Number(t.command<openingOld?p.valveCloseTau??p.valveTau:p.valveTau) || .03);
       t.opening = t.command + (t.opening - t.command) * Math.exp(-dt / tau);
       const midOpening = t.command + (openingOld - t.command) * Math.exp(-dt / (2 * tau));
       t.force = available.force * midOpening; t.mdot = available.mdot * midOpening;
       totalFlow += t.mdot;
     }
-    // Check-valve cutoff at ambient; a finite tank cannot eject negative mass.
-    const removable = s.pressure > ATMOSPHERE ? s.gas * (1 - (ATMOSPHERE / s.pressure) ** (1 / GAMMA)) : 0;
-    const dm = Math.min(totalFlow * dt, Math.max(0, removable));
-    const flowScale = totalFlow * dt > 0 ? dm / (totalFlow * dt) : 0;
-    for (const t of this.thrusters) {
-      t.force *= flowScale; t.mdot *= flowScale; this.totalThrust += t.force;
-      if (t.force > 0) applyAt(t.dir.clone().multiplyScalar(t.force).applyQuaternion(s.q), t.pos.clone().applyQuaternion(s.q));
+    // The same finite-mass, open-system energy step is used in landing forecasts.
+    // Active refill already advances wall heat; other states exchange heat here.
+    const discharge=advanceAirDischarge(s,p,totalFlow*dt,dt,{heat:!refill.heatAdvanced});
+    const dm=discharge.removedKg,flowScale=totalFlow*dt>0?dm/(totalFlow*dt):0;
+    for(const t of this.thrusters){
+      t.force*=flowScale;t.mdot*=flowScale;this.totalThrust+=t.force;
+      if(t.force>0)applyAt(t.dir.clone().multiplyScalar(t.force).applyQuaternion(s.q),t.pos.clone().applyQuaternion(s.q));
     }
-    if (dm > 0) {
-      const oldU = s.gas * CV * s.temp;
-      const oldMass = s.gas;
-      s.gas -= dm;
-      s.temp *= (s.gas / oldMass) ** (GAMMA - 1);
-      s.expelledEnthalpy += oldU - s.gas * CV * s.temp;
-      s.pressure = s.gas * R * s.temp / p.tankVolume;
-    }
-    s.gasUsed += dm;this.massFlowKgS=totalFlow*flowScale;
+    s.gas=discharge.gas;s.temp=discharge.temp;s.pressure=discharge.pressure;
+    s.tankWallTemp=discharge.tankWallTemp;s.thermalLimited=discharge.thermalLimited;
+    s.expelledEnthalpy+=discharge.expelledEnthalpyJ;s.tankHeatOutJ+=discharge.tankHeatOutJ;
+    s.ambientHeatOutJ+=discharge.ambientHeatOutJ;
+    s.gasUsed+=dm;this.massFlowKgS=totalFlow*flowScale;
 
     // Anisotropic body drag, relative wind, and aerodynamic surface moment.
     const relative = s.vel.clone().sub(new Vector3(p.windX || 0, 0, p.windZ || 0)).applyQuaternion(qInv);
@@ -525,7 +543,7 @@ export class PhysicsSim {
     }
 
     // Fan pressure force vanishes rapidly when the ground seal opens.
-    let electricPower = this.compressorPowerW;
+    let electricPower = refill.batteryPowerW??this.compressorPowerW;
     this.fanForce = 0;
     this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
     if(input.fan){
@@ -574,7 +592,7 @@ export class PhysicsSim {
       const centreRadius=Math.abs(steering)>1e-7?p.wheelbase/Math.tan(Math.abs(steering)):Infinity;
       const mountZ=wheel.pos.z+this.cg.z,wheelRadiusToTurn=centreRadius+Math.sign(steering)*mountZ;
       wheel.steer=wheel.isFront?Math.sign(steering)*Math.atan(p.wheelbase/wheelRadiusToTurn):0;
-      const normal=wheel.grounded?Math.max(0,p.springK*compression-p.damperC*cornerVel.dot(n)+900000*Math.max(0,compression-.22)**1.35):0;
+      const normal=wheel.grounded?suspensionResponse(compression,-cornerVel.dot(n),p).force:0;
       wheel.load=normal;if(normal>0)this.contactCount++;
       this.groundForceN+=normal*n.y;
       const fwd=new Vector3(Math.cos(wheel.steer),0,-Math.sin(wheel.steer)).applyQuaternion(s.q);fwd.addScaledVector(n,-fwd.dot(n)).normalize();
@@ -613,10 +631,10 @@ export class PhysicsSim {
     if (p.contactEnabled) {
       for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
         const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q);
-        const penetration = .006 - (s.pos.y + r.y);
+        const penetration = p.bodyContactSkin - (s.pos.y + r.y);
         if (penetration > 0) {
           const contactVel = s.vel.clone().add(new Vector3().crossVectors(omegaWorld, r));
-          const normal = Math.max(0, 420000 * penetration - 6500 * contactVel.y);
+          const normal = Math.max(0, p.bodyContactK * penetration - p.bodyContactC * contactVel.y);
           this.groundForceN+=normal;this.bodyGroundContacts++;
           const horizontalSpeed = Math.hypot(contactVel.x, contactVel.z);
           const drag = Math.min(normal * Math.min(.45, Math.max(0, p.friction)), horizontalSpeed * mass / Math.max(dt * 8, .02));
@@ -640,6 +658,7 @@ export class PhysicsSim {
     if (spin > 1e-12) s.q.multiply(new Quaternion().setFromAxisAngle(s.omega.clone().divideScalar(spin), spin * dt)).normalize();
     if (p.contactEnabled) { this._resolveBrakeStick(dt,input); this._resolveObstacles(); this._resolveGround(); }
     this.resolvedAcceleration.copy(s.vel).sub(velocityBefore).divideScalar(dt);
+    this.contactMeanForceN=this.contactForceWindow.push(this.groundForceN*dt+this.groundCorrectionImpulseNs,dt);
     s.time += dt; s.acceleration.copy(acceleration);
     this.lastForce.copy(force); this.lastTorque.copy(torqueBody);
     this.maxAltitude = Math.max(this.maxAltitude, s.pos.y - this.restHeight);
@@ -732,14 +751,19 @@ export class PhysicsSim {
   }
 
   _resolveGround() {
-    const s = this.state;
+    const s = this.state, p=this.params;
     const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
-    let lowest = Infinity, rLow = null;
+    let lowest = Infinity; const supports=[];
     for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
       const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q), height = s.pos.y + r.y;
-      if (height < lowest) { lowest = height; rLow = r; }
+      lowest=Math.min(lowest,height); supports.push({r,height});
     }
     if (lowest >= 0) return;
+    // A parallel face lands at its support centroid. Selecting its first corner
+    // arbitrarily creates pitch/roll in an otherwise exactly symmetric drop.
+    // A tilted box still uses the physical lowest edge or vertex.
+    const touching=supports.filter(point=>point.height-lowest<1e-7);
+    const rLow=touching.reduce((sum,point)=>sum.add(point.r),new Vector3()).divideScalar(touching.length);
     // Constraint stabilization removes residual numeric overlap; inward momentum is
     // removed with the corresponding effective-mass impulse, never an unexplained v=0.
     s.pos.y -= lowest;
@@ -750,7 +774,8 @@ export class PhysicsSim {
     const cross = new Vector3().crossVectors(rLow, UP);
     const invInertiaCross = cross.clone().applyQuaternion(qInv).divide(this.inertia).applyQuaternion(s.q);
     const effectiveInvMass = 1 / this.mass + cross.dot(invInertiaCross);
-    const impulse = -(1.05) * vNormal / effectiveInvMass;
+    const restitution=clamp(Number(p.groundRestitution)||0,0,1);
+    const impulse = -(1+restitution) * vNormal / effectiveInvMass;
     s.vel.y += impulse / this.mass;
     s.omega.add(cross.multiplyScalar(impulse).applyQuaternion(qInv).divide(this.inertia));
     this.impactImpulse += impulse;
@@ -780,15 +805,16 @@ export class PhysicsSim {
       temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
       thrustN: this.totalThrust, fanN: this.fanForce, fanPressurePa:this.fanPressurePa,fanPowerW:this.fanPowerW,fanAirflowM3S:this.fanAirflowM3S,fanSeal:this.fanSeal,contactCount: contact, slip: this.maxSlip || 0,
       compressorState:this.compressorState,compressorPowerW:this.compressorPowerW,compressorCompressionPowerW:this.compressorCompressionPowerW,compressorCoolingPowerW:this.compressorCoolingPowerW,compressorFlowKgS:this.compressorFlowKgS,
+      externalCompressorEnergyJ:s.externalCompressorEnergyJ,thermalLimited:s.thermalLimited,tankWallTemperature:s.tankWallTemp,
       compressorHeatW:this.compressorHeatW,tankHeatW:this.tankHeatW,compressorEnergyJ:s.compressorEnergyJ,
       gasRefilledKg:s.gasRefilledKg,gasConsumedKg:s.gasUsed,
       kineticEnergy: kinetic, potentialEnergy: m * p.gravity * Math.max(0, s.pos.y - this.restHeight),
-      rotationEnergy: rotation, springEnergy: spring, tankEnergy: s.gas * CV * s.temp,
+      rotationEnergy: rotation, springEnergy: spring, tankEnergy: s.gas * gasProperties(s.gas,p.tankVolume,s.temp,p).u,
       gasUsed:s.gasUsed, thrustToWeight: this.totalThrust / Math.max(.001, m * p.gravity),
       status, attitude, acceleration: s.acceleration.clone(), gLoad, batteryPct: 100 * s.batteryJ / (p.batteryKWh * 3.6e6),
       saturation: this.saturation, lastImpactSpeed: this.lastImpactSpeed, maxAltitude: this.maxAltitude,
       massBalanceError: Math.abs(s.gas + s.gasUsed - this.initialGas-s.gasRefilledKg),
-      tankEnergyBalanceError: Math.abs(s.gas * CV * s.temp + s.expelledEnthalpy+s.tankHeatOutJ-s.inletEnthalpyJ - this.initialEnergy),
+      tankEnergyBalanceError: Math.abs(s.gas * gasProperties(s.gas,p.tankVolume,s.temp,p).u + s.expelledEnthalpy+s.tankHeatOutJ-s.inletEnthalpyJ - this.initialEnergy),
       groundHeight: this.restHeight, time: s.time, cgOffset: this.cg.clone(), inertia: this.inertia.clone(),
       obstacleContacts: [...this.obstacleContacts], lastObstacleImpact: this.lastObstacleImpact, collisionCount:this.collisionCount,
       gripUsage:Math.max(0,...this.wheels.map(w=>w.load>1&&p.friction>0?w.tireForceN/(p.friction*w.load):0)),

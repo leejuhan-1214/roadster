@@ -4,7 +4,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {createVehicle} from './vehicle.js?v=20261114-air1';
-import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js';
+import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js?v=20261115-calibrated1';
 import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261109-wheel2';
 import {straightenWheelAxes} from './wheel-alignment.js?v=20261109-wheel1';
 

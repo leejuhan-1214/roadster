@@ -1,13 +1,14 @@
+import {HARDWARE_MASS} from './reference-hardware.js?v=20261115-calibrated1';
 import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261111-drivefix1';
 import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261109-assessment1';
-import {ROCKET_PARAMS} from './rocket-layout.js?v=20261115-fleet1';
+import {ROCKET_PARAMS} from './rocket-layout.js?v=20261115-calibrated1';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.
 export const VEHICLES = Object.freeze([
   {id:'roadster', title:'Tesla Roadster 2020', short:'Roadster 2020', brand:'Tesla', model:'Roadster',
     author:'metarex.4d', license:'CC BY 4.0', licenseUrl:'https://creativecommons.org/licenses/by/4.0/',
     source:'https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8',
-    reference:'2020 콘셉트 외형 · 공통 가상 추진 장치', dryMass:1900},
+    reference:'2020 콘셉트 외형 · 차체 질량 가정',referenceMass:1750,rigMass:150, dryMass:1900},
   {id:'ferrari', title:'Ferrari 458 Spider', short:'458 Spider', brand:'Ferrari', model:'458 Spider',
     author:'vicent091036', license:'CC BY 4.0', licenseUrl:'https://creativecommons.org/licenses/by/4.0/',
     source:'https://sketchfab.com/3d-models/ferrari-458-italia-57bf6cc56931426e87494f554df1dab6',
@@ -22,14 +23,17 @@ export const VEHICLES = Object.freeze([
     dryMass:1350, referenceMass:1200, rigMass:150},
   ...EXTRA_VEHICLES,
   ...CITY_VEHICLES,
-]);
+].map(profile=>{
+  const referenceMass=profile.referenceMass??(profile.dryMass-(profile.rigMass??150));
+  return {...profile,referenceMass,rigMass:HARDWARE_MASS.total,dryMass:referenceMass+HARDWARE_MASS.total};
+}));
 export function vehicleProfile(id){const profile=VEHICLES.find(v=>v.id===id);if(!profile)throw new Error('알 수 없는 차종');return profile;}
 
 export function vehiclePhysics(profile, geometry, defaults){
   // Shared experimental conversion: equal initial air and nozzle hardware.
   // Each source body keeps its own fitted mount positions, mass and inertia.
   const air={tankVolume:ROCKET_PARAMS.tankVolume,tankPressureMPa:ROCKET_PARAMS.tankPressureMPa,initialTemperature:ROCKET_PARAMS.initialTemperature,feedLossCoefficient:ROCKET_PARAMS.feedLossCoefficient};
-  if(profile.id==='roadster')return {...defaults,...ROCKET_PARAMS,...geometry,...air};
+  if(profile.id==='roadster')return {...defaults,...ROCKET_PARAMS,...geometry,...air,dryMass:profile.dryMass};
   const m=profile.dryMass, l=profile.length,w=profile.width,h=profile.height;
   return {...defaults,...ROCKET_PARAMS,...geometry,...air,dryMass:m,
     // Box-inertia estimate, not measured OEM inertia. Same spring/damper/rig.

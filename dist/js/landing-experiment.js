@@ -1,5 +1,6 @@
+import {ForceWindow,FORCE_WINDOW_SECONDS} from './force-window.js?v=20261115-calibrated1';
 import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-fleet1';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-calibrated1';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
@@ -21,8 +22,8 @@ export function landingSettings(options={}){
     method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
     brakeHeight:finite(options.brakeHeight,2,0,Number.MAX_VALUE),
     targetSpeed:finite(options.targetSpeed,.5,.2,2),
-    springK:finite(options.springK,75000,30000,150000),
-    damperC:finite(options.damperC,6000,1000,15000),
+    springK:finite(options.springK,70000,30000,150000),
+    damperC:finite(options.damperC,4000,1000,15000),
   };
 }
 
@@ -90,7 +91,8 @@ export function createLandingRun(sim,options={}){
     ecoMinimumCoastTime:economy?.minimumCoastTime??null,
     ecoPlanTimeMs,
     touchdownTime:null,touchdownSpeed:null,contactDuration:null,contactEndTime:null,contactEndVelocityY:null,
-    peakGroundForceN:0,peakEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
+    forceWindow:new ForceWindow(),forceWindowSeconds:FORCE_WINDOW_SECONDS,currentEquivalentGroundForceN:0,
+    peakGroundForceN:0,peakEquivalentGroundForceN:0,peakRawEquivalentGroundForceN:0,peakG:0,contactPeakG:0,
     groundImpulseNs:0,totalGroundImpulseNs:0,correctionImpulseNs:0,impactCorrectionImpulseNs:0,
     maxCompression:0,bottomedOut:false,bodyStrike:false,reboundHeight:0,
     gasUsed:0,samples:[],sampleBucket:-1,settledFor:0,settled:false,result:null};
@@ -138,14 +140,14 @@ export function landingRunInput(run,sim,manualLift=false){
 
 function complete(run,status){
   run.done=true;run.status=status;
-  const {config,startTime,done,result,sampleBucket,settledFor,braking,previousMass,previousGas,...data}=run;
+  const {config,startTime,done,result,sampleBucket,settledFor,braking,previousMass,previousGas,forceWindow,...data}=run;
   run.result={...data,samples:run.samples.map(s=>({...s})),config:{...config}};
 }
 
 /** Summary peaks use every step, including body-ground correction impulses.
  * peakGroundForceN is the continuous suspension/skid force. The equivalent peak
- * additionally divides a numerical contact impulse by 2 ms: a discretized load,
- * NOT a resolved material stress or physically instantaneous impact-force peak.
+ * uses a fixed 20 ms moving-window integral including contact impulses.
+ * Raw step-equivalent peaks remain diagnostics, not a material/crash stress.
  */
 export function updateLandingRun(run,sim,dt=LANDING_STEP){
   if(run.done)return run;
@@ -155,7 +157,10 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   run.elapsed=sim.state.time-run.startTime;
   if(run.manualLiftActive){run.manualLiftUsed=true;run.manualLiftDuration+=dt;}
   const ground=Math.max(0,sim.groundForceN),impulse=Math.max(0,sim.groundCorrectionImpulseNs);
-  const equivalent=ground+impulse/dt;
+  const rawEquivalent=ground+impulse/dt;
+  const equivalent=run.forceWindow.push(ground*dt+impulse,dt);
+  run.currentEquivalentGroundForceN=equivalent;
+  run.peakRawEquivalentGroundForceN=Math.max(run.peakRawEquivalentGroundForceN,rawEquivalent);
   // Match the integrator's midpoint mass for gravity, and retain the actual
   // endpoint velocity. A constant-mass impulse audit uses this whole interval,
   // never the 10 ms peak-envelope chart or the fractionally timed first stop.
@@ -168,7 +173,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   if(run.touchdownTime===null)run.freeFallConditionsValid &&= noExtraVerticalForce&&
     Math.abs(sim.params.gravity-run.parameters.gravity)<1e-12&&Math.abs(sim.mass-run.initialMass)<1e-9;
   const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
-  const properG=acceleration.length()/Math.max(.001,sim.params.gravity);
+  const properG=equivalent/Math.max(.001,sim.mass*sim.params.gravity);
   const touching=ground>0||impulse>0;
   if(touching&&run.touchdownTime===null){
     run.touchdownTime=run.elapsed-dt;
@@ -198,7 +203,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   }
   const compression=Math.max(0,...sim.wheels.map(w=>w.compression));
   run.maxCompression=Math.max(run.maxCompression,compression);
-  run.bottomedOut ||= compression>.22;
+  run.bottomedOut ||= compression>(sim.params.suspensionTravel??.18);
   run.bodyStrike ||= sim.bodyGroundContacts>0||impulse>0;
   const clearance=landingClearance(sim);
   if(run.touchdownTime!==null)run.reboundHeight=Math.max(run.reboundHeight,clearance);
@@ -209,7 +214,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   const sampleInterval=nearContact?.01:run.precontactSampleInterval;
   const springState=landingSpringState(sim);
   const sample={time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,groundForceN:ground,
-    equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
+    equivalentGroundForceN:equivalent,rawEquivalentGroundForceN:rawEquivalent,gLoad:properG,thrustN:sim.totalThrust,
     // compression retains the force-evaluation value for backwards compatibility;
     // stateCompression and springEnergyJ both belong to this end-state pose.
     compression,stateCompression:springState.stateCompression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,
@@ -225,6 +230,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
     const last=run.samples.at(-1);
     last.groundForceN=Math.max(last.groundForceN,ground);
     last.equivalentGroundForceN=Math.max(last.equivalentGroundForceN,equivalent);
+    last.rawEquivalentGroundForceN=Math.max(last.rawEquivalentGroundForceN,rawEquivalent);
     last.manualLift=Math.max(last.manualLift,sample.manualLift);
     last.gLoad=Math.max(last.gLoad,properG);last.correctionImpulseNs+=impulse;
   }

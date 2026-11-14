@@ -1,3 +1,40 @@
+Roadster v1.43 — 공개 부품 사양과 실제 공기 물성으로 착지·충전 보정
+2026-11-15 KST. 현재 기준은 이 최상단 절이다. 아래 v1.42 및 이전 제원·성능·배포 기록은 과거 기록으로 보존한다.2020 Roadster 외형, 도시 주행77종, 착지 실험5종×4방식 유지. 실제 판매 부품을 참조한 교육용 가상 조합이며 Tesla 비행 장치나 각 실차의 인증된 성능이 아니다.
+
+상태: V143_DEPLOY_PENDING
+npm run check 및 전체953개 검사 통과(실패0), 40회 착지 독립 감사·충전 민감도·로컬 브라우저4방식 비교/분사/외부충전 확인 완료. GitHub Pages 배포·공개 파일 대조는 대기 중이다. 완료 후 실제 커밋·Actions URL·공개 파일 대조 결과를 기록한다. 현재 캐시 태그20261115-calibrated1.
+
+현재 장치와 물리:
+- Luxfer L87A9 L×12=108 L, 빈 용기57.6 kg, 부속25 kg은 가정. 용기300 bar 정격과 별개로 밸브에 맞춰250 bar 게이지압=25.101325 MPa 절대압 운용.
+- 초기20°C에서 실제 공기 EOS로30.334060 kg. Roadster 가정 차체1750+장치82.6+공기30.334=총1862.934 kg. 기존600 L·250 kg·35.875 MPa는 과거 조건.
+- Bürkert Type6240 DN12 Kv2.2 및 각12 mm 목의 밸브-노즐 직렬 유량. 하부4구 초기 추력 약5.58 kN은 Roadster 무게 약18.27 kN보다 작다. 호버링·공중제비를 보장하거나 부족한 힘을 만들어내지 않는다.
+- BAUER PE300-TE급 외부 충전기7.5 kW·300 L/min 자유 공기 환산 유량·3단.140 kg 충전기는 차량 질량에서 제외하고 외부 전력으로 집계한다. 차량 배터리300 kW 충전 모형은 과거 기록.
+- 목표는 상온 정격 공기99%=30.030720 kg.20°C·50%→99% 예측141.94분·5.141 kWh, 모터 가동 환산41.13분. 벽-주위 열전달15/30/60 W/K에서247.84/141.94/90.60분이므로 실제 제품 확정 시간으로 쓰지 않는다.
+- 실제 공기 EOS, U=m·u, 유입·유출 엔탈피, 유한 벽 열용량·열교환, 저온 유량 제한과 회복을 계산한다. 착지 예측과 실제 적분이 공유한다. 열전달계수·부속질량·통합 배치는 설계 가정이다.
+
+착지 비교:
+기본 높이0.20 m/지정 분사0.10 m/목표0.50 m/s.500 Hz 적분,20 ms 평균 등가반력 최대값. 초기 속도0, 팬·충전·수동 입력 없음.5종×4방식이며 독립 감사는0.20 m와3 m의40회. 지정 분사 높이=출발 높이/2.
+Roadster0.20 m 순서=자유낙하/지정 분사/완만한 하강/절약 착지:
+접촉 속도1.981/1.919/1.727/1.757 m/s, 최대20 ms 평균 등가반력77.11/59.62/41.02/41.94 kN, 정착까지 총기체0/1.423/3.304/2.909 kg.
+모두 정상 범위 정착이나 목표0.50 m/s 미달. 절약 제어는 이 조건에서 기체 약12% 절약·반력 소폭 증가이며 전역 최적 보장이 아니다. ecoPlanFeasible=false를 숨기지 않는다.3 m의20조합은 전부 차체 접촉/압축 한계 초과로 실제 추락 충격력·부상 예측에 쓰지 않는다.20 ms는 보고 기준이지 접촉 시간 또는 안전 기준이 아니다.
+원자료: docs/data/rocket-v143-audit.json, docs/data/charge-v143-audit.json. 착지 감사는 실행 당시 소스 해시를 보존하며 실행 중 변경 없음. 이후 parts-catalog.js 부품 제목, main.js 충전 전력, landing-ui.js 목표 미달 표시 문구 수정은 수치 엔진 변경과 구분한다.
+
+새 핵심 파일:
+dist/js/air-eos.js, air-blowdown.js, pneumatic-feed.js, reference-hardware.js, landing-contact.js, force-window.js.
+연결: physics.js, air-systems.js, landing-economy.js, landing-experiment.js, landing-measurement.js. 절약 예측은 복사 상태로 계산하며 실제 속도·기체량을 덮어쓰지 않는다. 불가능한 목표는 부분 제동 결과와 함께 그대로 표시한다.
+
+근거/현재 보고서:
+docs/v143-hardware-sources.md(부품·유량식), docs/v143-air-calibration.md(EOS·열·충전), docs/v143-contact-calibration.md(접촉식·측정), docs/landing-study-guide.md(현재4방식 표·물리식), docs/roadster-air-systems.md(현재 장치/과거 구분).
+12개 용기의 실제 차체별 공간 배치·충돌 강도·결빙·열응력·제조사 서스펜션 실측은 검증하지 않았다. 전동 구동·팬·도시 주행도 제조사 성능 인증 모형이 아니다. 공개 사실과 가정을 구분한다.
+
+다음 담당자의 최종 확인:
+1. npm test, npm run check의 실제 최종 로그를 확인하고 위 상태를 갱신한다. 핵심 새 테스트: air-eos, air-blowdown, air-recharge, pneumatic-feed, landing-calibrated-forecast, landing-contact-calibration, force-window, reference-air-integration.
+2. 착지 감사 conditions.brakeHeightRule=height/2, runtimeSourceStable=true와 수치 엔진 해시를 확인한다. 표시 문구 수정과 구분하되 물리 소스 변경 시 해당 검증을 다시 실행한다.
+3. 브라우저에서 착지4방식·충전·W/F/Shift/B/Space/공중AD/QE/X·카메라를 확인한다. 조작 유지와 기동 성공 보장은 다르다.
+4. 사용자는 수정·배포를 이미 승인했으므로 다시 허락을 요청할 필요는 없다. 최종 검사 후 실제 GitHub Pages 빌드·배포, 기존 주소 진입·버전, 변경 파일 HTTP/SHA256 확인으로 완료를 기록한다.
+
+--- 과거 기록: v1.42 및 이전. 아래 현재/성공/제원은 당시 기록이며 v1.43에 적용하지 않음 ---
+
 Roadster v1.42 — 2020 외형 복원, 77종 공통 추진, 충전 열역학 보정
 2026-11-15 KST. 사용자 선택에 따라 2026 자체 제작 모델은 삭제하고 기존 metarex.4d의 2020 Roadster 모델을 복원했다. 차종은 77종, 착지 실험은 기존 5종×4방식으로 유지한다. 원본 외형에 가상 추진 장치를 결합한 것이며 각 실차의 실제 비행 장치라는 주장이 아니다.
 

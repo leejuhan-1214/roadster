@@ -109,7 +109,7 @@ test('fuel exhaustion cannot create unphysical lift or guarantee the requested a
 test('settings bounds are finite and failed airborne trials time out',()=>{
   const settings=landingSettings({height:Infinity,springK:-1,damperC:NaN,method:'unknown',targetSpeed:0});
   assert.equal(settings.height,3);assert.equal(settings.springK,30000);
-  assert.equal(settings.damperC,6000);assert.equal(settings.method,'free');assert.equal(settings.targetSpeed,.2);
+  assert.equal(settings.damperC,4000);assert.equal(settings.method,'free');assert.equal(settings.targetSpeed,.2);
   const sim=new PhysicsSim(),run=createLandingRun(sim);sim.params.gravity=0;sim.params.contactEnabled=false;
   for(let n=0;n<7500;n++){sim.step(.002,{});updateLandingRun(run,sim);}
   assert.equal(run.done,true);assert.equal(run.result.status,'timeout');assert.equal(run.result.touchdownSpeed,null);

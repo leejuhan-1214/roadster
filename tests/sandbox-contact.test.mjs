@@ -41,7 +41,8 @@ test('smooth rendering stays within a 600k pixel budget without changing the CSS
 });
 
 test('a light brake does not remove lateral tire grip',()=>{
- const results=[];for(const brake of [0,.01,1]){const s=new PhysicsSim({aeroEnabled:false,rollingResistance:0});s.state.vel.z=.4;const e=kinetic(s);for(let i=0;i<250;i++){s.step(.002,{brake,stabilize:false});for(const w of s.wheels)assert.ok(w.tireForceN<=s.params.friction*w.load+1e-6);}assert.ok(kinetic(s)<=e+1e-3);if(brake>0)for(const w of s.wheels){const r=w.pos.clone().applyQuaternion(s.state.q);r.y=w.surfaceY-s.state.pos.y;const v=s.state.vel.clone().add(new Vector3().crossVectors(s.state.omega.clone().applyQuaternion(s.state.q),r));assert.ok(Math.abs(v.z)<.001);}results.push(s.state.vel.z);}
+ const results=[];for(const brake of [0,.01,1]){const s=new PhysicsSim({aeroEnabled:false,rollingResistance:0});s.state.vel.z=.4;const e=kinetic(s);for(let i=0;i<500;i++){s.step(.002,{brake,stabilize:false});for(const w of s.wheels)assert.ok(w.tireForceN<=s.params.friction*w.load+1e-6);}assert.ok(kinetic(s)<=e+1e-3);if(brake>0)for(const w of s.wheels){const r=w.pos.clone().applyQuaternion(s.state.q);r.y=w.surfaceY-s.state.pos.y;const v=s.state.vel.clone().add(new Vector3().crossVectors(s.state.omega.clone().applyQuaternion(s.state.q),r));assert.ok(Math.abs(v.z)<.001);}results.push(s.state.vel.z);}
  // CoM can briefly translate as the sprung chassis rolls; contact speed is the sticking constraint.
+ // Allow 1 s for the calibrated 4,000 Ns/m suspension to settle; 0.5 s sampled its transient.
  assert.ok(Math.abs(results[1]-results[2])<.003);assert.ok(Math.abs(results[1])<.015);
 });
