@@ -1,0 +1,199 @@
+{
+  "verifiedAt": "2026-11-14T16:22:58.951Z",
+  "version": "1.43.0",
+  "cacheTag": "20261115-calibrated1",
+  "sourceCommit": "8704dec115d92f855d942417a0524ae40aa49ee4",
+  "tests": {
+    "passed": 953,
+    "failed": 0,
+    "syntaxCheck": "passed"
+  },
+  "independentLandingRuns": 40,
+  "deployment": {
+    "sha": "8704dec115d92f855d942417a0524ae40aa49ee4",
+    "id": 43614726747,
+    "url": "https://github.com/leejuhan-1214/roadster/actions/runs/43614726747",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success",
+        "activeSteps": []
+      },
+      {
+        "name": "deploy",
+        "status": "completed",
+        "conclusion": "success",
+        "activeSteps": []
+      }
+    ]
+  },
+  "canonical": {
+    "url": "https://leejuhan-1214.github.io/roadster/",
+    "status": 200,
+    "version143": true,
+    "entryUpdated": true,
+    "match": true
+  },
+  "files": [
+    {
+      "file": "dist/index.html",
+      "status": 200,
+      "bytes": 17414,
+      "match": true
+    },
+    {
+      "file": "dist/js/air-blowdown.js",
+      "status": 200,
+      "bytes": 3182,
+      "match": true
+    },
+    {
+      "file": "dist/js/air-eos.js",
+      "status": 200,
+      "bytes": 4342,
+      "match": true
+    },
+    {
+      "file": "dist/js/air-systems.js",
+      "status": 200,
+      "bytes": 9905,
+      "match": true
+    },
+    {
+      "file": "dist/js/assessment-vehicle.js",
+      "status": 200,
+      "bytes": 1306,
+      "match": true
+    },
+    {
+      "file": "dist/js/driving-input.js",
+      "status": 200,
+      "bytes": 11668,
+      "match": true
+    },
+    {
+      "file": "dist/js/experiment-vehicles.js",
+      "status": 200,
+      "bytes": 2645,
+      "match": true
+    },
+    {
+      "file": "dist/js/force-window.js",
+      "status": 200,
+      "bytes": 1156,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-contact.js",
+      "status": 200,
+      "bytes": 1798,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-economy.js",
+      "status": 200,
+      "bytes": 14423,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-experiment.js",
+      "status": 200,
+      "bytes": 15633,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-live.js",
+      "status": 200,
+      "bytes": 5029,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-ui.js",
+      "status": 200,
+      "bytes": 47985,
+      "match": true
+    },
+    {
+      "file": "dist/js/main.js",
+      "status": 200,
+      "bytes": 57004,
+      "match": true
+    },
+    {
+      "file": "dist/js/parts-catalog.js",
+      "status": 200,
+      "bytes": 10849,
+      "match": true
+    },
+    {
+      "file": "dist/js/physics.js",
+      "status": 200,
+      "bytes": 63808,
+      "match": true
+    },
+    {
+      "file": "dist/js/pneumatic-feed.js",
+      "status": 200,
+      "bytes": 3274,
+      "match": true
+    },
+    {
+      "file": "dist/js/real-vehicle-model.js",
+      "status": 200,
+      "bytes": 11827,
+      "match": true
+    },
+    {
+      "file": "dist/js/recharge-readout.js",
+      "status": 200,
+      "bytes": 2367,
+      "match": true
+    },
+    {
+      "file": "dist/js/reference-hardware.js",
+      "status": 200,
+      "bytes": 1092,
+      "match": true
+    },
+    {
+      "file": "dist/js/roadster-model.js",
+      "status": 200,
+      "bytes": 10563,
+      "match": true
+    },
+    {
+      "file": "dist/js/rocket-flight.js",
+      "status": 200,
+      "bytes": 3776,
+      "match": true
+    },
+    {
+      "file": "dist/js/rocket-layout.js",
+      "status": 200,
+      "bytes": 1527,
+      "match": true
+    },
+    {
+      "file": "dist/js/scene.js",
+      "status": 200,
+      "bytes": 64846,
+      "match": true
+    },
+    {
+      "file": "dist/js/vehicle-profiles.js",
+      "status": 200,
+      "bytes": 3215,
+      "match": true
+    }
+  ],
+  "browserChecks": [
+    "Public four-method comparison completed at 0.2m and matches independent results",
+    "Powered-method target-speed misses visible",
+    "Space consumes gas and low-temperature cutoff applies",
+    "External recharge displays remaining time and 7.5 kW, pressure increases",
+    "No console errors during public landing and charging checks"
+  ]
+}

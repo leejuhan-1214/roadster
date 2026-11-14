@@ -1,8 +1,8 @@
 Roadster v1.43 — 공개 부품 사양과 실제 공기 물성으로 착지·충전 보정
 2026-11-15 KST. 현재 기준은 이 최상단 절이다. 아래 v1.42 및 이전 제원·성능·배포 기록은 과거 기록으로 보존한다.2020 Roadster 외형, 도시 주행77종, 착지 실험5종×4방식 유지. 실제 판매 부품을 참조한 교육용 가상 조합이며 Tesla 비행 장치나 각 실차의 인증된 성능이 아니다.
 
-상태: V143_DEPLOY_PENDING
-npm run check 및 전체953개 검사 통과(실패0), 40회 착지 독립 감사·충전 민감도·로컬 브라우저4방식 비교/분사/외부충전 확인 완료. GitHub Pages 배포·공개 파일 대조는 대기 중이다. 완료 후 실제 커밋·Actions URL·공개 파일 대조 결과를 기록한다. 현재 캐시 태그20261115-calibrated1.
+상태: v1.43 배포 완료
+전체953개 검사 통과(실패0), npm run check 통과. 런타임 커밋 8704dec115d92f855d942417a0524ae40aa49ee4. Actions https://github.com/leejuhan-1214/roadster/actions/runs/43614726747 build/deploy success. 공개 변경25파일 SHA256 일치, 기본주소 HTTP200·v1.43 진입파일 일치. 공개 브라우저에서0.2m4방식 결과/목표속도초과/Space분사/7.5kW외부충전 확인, 콘솔오류0. 기록 docs/data/v143-deployment-verification.json. 캐시20261115-calibrated1.
 
 현재 장치와 물리:
 - Luxfer L87A9 L×12=108 L, 빈 용기57.6 kg, 부속25 kg은 가정. 용기300 bar 정격과 별개로 밸브에 맞춰250 bar 게이지압=25.101325 MPa 절대압 운용.
@@ -27,11 +27,11 @@ dist/js/air-eos.js, air-blowdown.js, pneumatic-feed.js, reference-hardware.js, l
 docs/v143-hardware-sources.md(부품·유량식), docs/v143-air-calibration.md(EOS·열·충전), docs/v143-contact-calibration.md(접촉식·측정), docs/landing-study-guide.md(현재4방식 표·물리식), docs/roadster-air-systems.md(현재 장치/과거 구분).
 12개 용기의 실제 차체별 공간 배치·충돌 강도·결빙·열응력·제조사 서스펜션 실측은 검증하지 않았다. 전동 구동·팬·도시 주행도 제조사 성능 인증 모형이 아니다. 공개 사실과 가정을 구분한다.
 
-다음 담당자의 최종 확인:
-1. npm test, npm run check의 실제 최종 로그를 확인하고 위 상태를 갱신한다. 핵심 새 테스트: air-eos, air-blowdown, air-recharge, pneumatic-feed, landing-calibrated-forecast, landing-contact-calibration, force-window, reference-air-integration.
+후속 수정 시 확인할 사항 (현재 배포는 위 기록대로 완료):
+1. 수치 엔진 변경 후 npm test, npm run check를 실행하고 그때의 상태를 기록한다. 핵심 새 테스트: air-eos, air-blowdown, air-recharge, pneumatic-feed, landing-calibrated-forecast, landing-contact-calibration, force-window, reference-air-integration.
 2. 착지 감사 conditions.brakeHeightRule=height/2, runtimeSourceStable=true와 수치 엔진 해시를 확인한다. 표시 문구 수정과 구분하되 물리 소스 변경 시 해당 검증을 다시 실행한다.
 3. 브라우저에서 착지4방식·충전·W/F/Shift/B/Space/공중AD/QE/X·카메라를 확인한다. 조작 유지와 기동 성공 보장은 다르다.
-4. 사용자는 수정·배포를 이미 승인했으므로 다시 허락을 요청할 필요는 없다. 최종 검사 후 실제 GitHub Pages 빌드·배포, 기존 주소 진입·버전, 변경 파일 HTTP/SHA256 확인으로 완료를 기록한다.
+4. 사용자는 수정·배포를 이미 승인했다. 후속 변경을 배포하면 Actions와 공개 파일을 다시 확인한다. 현재 v1.43은 이미 완료했으므로 미완료 작업으로 재배포하지 않는다.
 
 --- 과거 기록: v1.42 및 이전. 아래 현재/성공/제원은 당시 기록이며 v1.43에 적용하지 않음 ---
 

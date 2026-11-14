@@ -4,7 +4,7 @@
 
 **공개 부품 사양으로 착지 장치와 공기 충전을 보정했습니다.** 2020 Roadster 외형, 도시 주행 77종, 착지 비교 5종·4방식은 유지합니다. 실제 판매 용기·밸브·충전기의 사양을 참고한 교육용 가상 조합입니다. Tesla 비행 장치의 확정 제원이나 실제 차체 장착·안전 인증을 재현한 것은 아닙니다.
 
-**검증·배포 상태: V143_DEPLOY_PENDING.** `npm run check` 및 전체 953개 검사(953 통과·0 실패), 40회 착지 독립 감사, 충전 민감도 검사, 로컬 브라우저의 4방식 비교·기체 분사·외부 충전 점검 완료. GitHub Pages 배포와 공개 파일 대조는 대기 중입니다. 아래 v1.42 배포 기록은 과거 기록입니다. 현재 캐시 식별자: **20261115-calibrated1**.
+**검증·배포 완료:** 전체 **953개 검사 통과·0 실패**, 구문 검사 및 40회 착지 독립 감사 완료. [GitHub Actions 빌드·배포 성공](https://github.com/leejuhan-1214/roadster/actions/runs/43614726747). 런타임 커밋 `8704dec`, 공개 변경 파일 **25/25 일치**, 기본 주소 HTTP 200·v1.43 확인. 공개 브라우저에서 4방식 착지 결과·목표 속도 초과 표시·분사 후 7.5 kW 외부 충전을 확인했습니다. [배포 확인 기록](docs/data/v143-deployment-verification.json). 캐시 식별자: **20261115-calibrated1**.
 
 ## 현재 물리 모형
 
@@ -34,7 +34,7 @@
 
 새 모듈은 dist/js/air-eos.js(실제 공기 물성), air-blowdown.js(분사·벽 열역학), pneumatic-feed.js(밸브-노즐 유량), reference-hardware.js(공통 제원), landing-contact.js(접촉), force-window.js(20 ms 측정)입니다. physics.js와 air-systems.js가 이를 사용하며 landing-economy.js의 예측도 실제 분사·온도 제한을 공유합니다. 복사 상태로 예측하며 실제 차량의 속도·기체량을 덮어쓰지 않습니다.
 
-최종 담당자가 실행·확정할 검사: npm test, npm run check,4방식 UI·충전·조작 점검, GitHub Actions 빌드·배포, 공개 진입 페이지와 변경 파일의 HTTP·SHA256 대조. 핵심 새 검사는 tests/air-eos.test.mjs, air-blowdown.test.mjs, air-recharge.test.mjs, pneumatic-feed.test.mjs, landing-calibrated-forecast.test.mjs, landing-contact-calibration.test.mjs, force-window.test.mjs, reference-air-integration.test.mjs입니다. 최종 통과 개수나 배포 완료는 아직 이 절에서 확정하지 않습니다.
+완료한 검사: npm test, npm run check,4방식 UI·충전·조작 점검, GitHub Actions 빌드·배포, 공개 진입 페이지와 변경 파일의 HTTP·SHA256 대조. 핵심 새 검사는 tests/air-eos.test.mjs, air-blowdown.test.mjs, air-recharge.test.mjs, pneumatic-feed.test.mjs, landing-calibrated-forecast.test.mjs, landing-contact-calibration.test.mjs, force-window.test.mjs, reference-air-integration.test.mjs입니다. 전체953개 통과·배포 성공·공개25파일 일치. 상세 결과는 최상단 배포 기록을 참조하세요.
 
 W 전진 · F 분사 가속 · Shift 드리프트 · B 제동 · Space 상향 분사 · 공중 A/D 옆이동 · Q/E 회전 · X 회전 요청과 마우스 카메라 조작은 유지합니다. 조작 입력과 기동 가능 여부는 다르며 추력·질량·잔압·온도에 따라 효과가 제한됩니다.
 
