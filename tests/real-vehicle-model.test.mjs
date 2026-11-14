@@ -141,11 +141,11 @@ test('published reference mass plus assumed rig and box inertia feed actual simu
     near(sim.bodyHalf[0],params.bodyLength/2);
     assert.equal(params.springK,DEFAULTS.springK);
     assert.equal(params.tankVolume,ROCKET_PARAMS.tankVolume);
-    near(sim.initialGas,250,.001);
+    near(sim.initialGas,375,.001);
     assert.equal(params.propulsionProfile,'rocket10');
   }
   const original=vehiclePhysics(vehicleProfile('roadster'),{},DEFAULTS);
   assert.deepEqual(original,{...DEFAULTS,...ROCKET_PARAMS});assert.notEqual(original,DEFAULTS);
-  near(new PhysicsSim(original).initialGas,250,.001);
+  near(new PhysicsSim(original).initialGas,375,.001);
   assert.throws(()=>vehicleProfile('nonexistent'));
 });
