@@ -7,9 +7,9 @@ import {ROCKET_PARAMS,ROCKET_THRUSTERS} from '../dist/js/rocket-layout.js';
 import {ROCKET_ROLL_MIN_HEIGHT} from '../dist/js/rocket-flight.js';
 const dt=.002,up=sim=>new Vector3(0,1,0).applyQuaternion(sim.state.q).y;
 
-test('Rocket profile uses shared 4 belly + 4 rear + 2 side geometry and 250 kg charge',()=>{
+test('Rocket profile uses shared 4 belly + 4 rear + 2 side geometry and restored 375 kg charge',()=>{
   const sim=new PhysicsSim({propulsionProfile:'rocket2026'});
-  assert.equal(sim.initialGas,250);assert.equal(sim.params.tankVolume,.6);
+  assert.equal(sim.initialGas,375);assert.equal(sim.params.tankVolume,.9);
   assert.deepEqual(sim.thrusters.map(t=>t.group),['lift','lift','lift','lift','boost','boost','boost','boost','yaw+','yaw-']);
   sim.thrusters.forEach((t,i)=>{assert.deepEqual(t.mountPosition.toArray(),ROCKET_THRUSTERS[i].position);assert.deepEqual(t.dir.toArray(),ROCKET_THRUSTERS[i].direction);});
   assert.equal(sim.thrusters[0].area,.00050,'common fleet retrofit uses the documented larger lift throat');
@@ -78,7 +78,10 @@ test('a physical Space launch reaching 8 m permits a full X roll',()=>{
 });
 test('longer launches reject depleted roll reserve before committing',()=>{
   const sim=new PhysicsSim({...ROCKET_PARAMS,roadRoughness:0}),driver=new DrivingController();
-  for(let i=0;i<800;i++)sim.step(dt,driver.update(new Set(['Space']),sim,dt));
+  let steps=0;
+  while(sim.state.gas>=sim.initialGas*.54&&steps++<10000)sim.step(dt,driver.update(new Set(['Space']),sim,dt));
+  assert.ok(sim.state.gas<sim.initialGas*.55,'actual ascent depleted the required roll reserve');
+  assert.ok(sim.state.pos.y-sim.restHeight>=ROCKET_ROLL_MIN_HEIGHT,'height is sufficient, so reserve is the rejection cause');
   driver.update(new Set(['KeyX']),sim,dt);assert.equal(driver.maneuverStatus,'gas');assert.equal(driver.rocketRoll.active,false);
 });
 test('partly depleted hover cannot spend its roll reserve preparing upward momentum',()=>{

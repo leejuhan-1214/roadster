@@ -4,7 +4,7 @@ export const EXPERIMENT_VEHICLE_IDS=Object.freeze([
   'mazda-miata-mx-5','bmw','toyota-supra-mk','roadster','tesla-cybertruck',
 ]);
 export const EXPERIMENT_DEFAULT_ID='roadster';
-export const EXPERIMENT_INITIAL_GAS_KG=250;
+export const EXPERIMENT_INITIAL_GAS_KG=375;
 const ids=new Set(EXPERIMENT_VEHICLE_IDS);
 const BASIS=Object.freeze({
   'mazda-miata-mx-5':{label:'NA6CE 5MT 기준 + 가상 장치',assumed:false},

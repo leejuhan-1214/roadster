@@ -1,5 +1,5 @@
 import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-fleet1';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-capacity375';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples

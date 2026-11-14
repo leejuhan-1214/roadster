@@ -1,12 +1,10 @@
-// Reference-based 2026 Rocket arrangement. Positions, throat areas, plumbing,
-// dry mass and inertia remain simulation assumptions, not OEM engineering data.
-// 600 L / about 250 kg and four rear jets producing >80 kN were stated at the
-// reveal. The ideal-air model uses 35.875 MPa at 300 K to match that mass/volume;
-// it does not combine a reported real-gas pressure with an ideal-gas density.
+// Shared fictional pneumatic retrofit. Storage restored to the earlier
+// 900 L / 375 kg experiment at 35.875 MPa and 300 K (ideal-air model).
+// Capacity, placement and performance are simulation assumptions.
 export const ROCKET_PROFILE_ID='rocket10';
 export const ROCKET_LIFT_LAYOUT=Object.freeze({x:1.05,y:-.39,z:.84});
 export const ROCKET_PARAMS=Object.freeze({
-  propulsionProfile:ROCKET_PROFILE_ID,tankVolume:.6,tankPressureMPa:35.875,
+  propulsionProfile:ROCKET_PROFILE_ID,tankVolume:.9,tankPressureMPa:35.875,
   initialTemperature:300,feedLossCoefficient:120,liftNozzleArea:.00050,
   liftX:1.05,liftY:-.39,liftZ:.84,boostX:-2.12,boostY:-.12,boostZ:.57,
   yawX:2.00,yawY:-.08,yawZ:.90,
