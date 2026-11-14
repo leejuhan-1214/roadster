@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {HARDWARE_MASS,REFERENCE_AIR_KG} from '../dist/js/reference-hardware.js';
 import {VEHICLES,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
 import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
 import {createLandingJobs,createLandingRun} from '../dist/js/landing-experiment.js';
@@ -13,9 +12,7 @@ test('landing cohort stays at five mass-spaced vehicles when the city garage gro
   assert.deepEqual(fleet.map(v=>v.id),EXPERIMENT_VEHICLE_IDS);
   assert.ok(fleet.some(v=>v.id===EXPERIMENT_DEFAULT_ID));
   const masses=fleet.map(v=>experimentMass(v).total);
-  assert.equal(HARDWARE_MASS.total,82.6);
-  const referenceBodies=[940,1200,1490,1750,3000];
-  masses.forEach((mass,index)=>assert.ok(Math.abs(mass-(referenceBodies[index]+82.6+REFERENCE_AIR_KG))<1e-9));
+  assert.deepEqual(masses,[1340,1600,1890,2150,3400]);
   for(let i=1;i<masses.length;i++)assert.ok(masses[i]-masses[i-1]>=250);
   assert.equal(isExperimentVehicle(extra.id),false);
   assert.equal(isExperimentVehicle(EXPERIMENT_DEFAULT_ID),true);
@@ -30,8 +27,7 @@ test('displayed initial totals equal actual reset physics and landing run masses
     const mass=experimentMass(profile,run.initialGas);
     assert.ok(Math.abs(mass.total-sim.mass)<1e-9,profile.id+' total matches the solver');
     assert.ok(Math.abs(mass.total-run.initialMass)<1e-9);
-    assert.ok(Math.abs(mass.gas-REFERENCE_AIR_KG)<1e-9);
-    assert.ok(mass.gas>30&&mass.gas<31,'108 L at 250 barg contains roughly 30 kg, not 250 kg');
+    assert.ok(Math.abs(mass.gas-250)<1e-9);
     assert.equal(JSON.stringify(profile),before,'the display helper never changes physical mass');
     assert.equal(experimentMass(profile,100).total,mass.dry+100,'remaining gas changes current total');
   }
@@ -40,13 +36,13 @@ test('displayed initial totals equal actual reset physics and landing run masses
 test('concept assumptions remain visible without double-counting the Roadster rig',()=>{
   const get=id=>VEHICLES.find(v=>v.id===id);
   const roadster=experimentMass(get('roadster'));
-  assert.equal(roadster.body,1750);assert.equal(roadster.rig,82.6);
-  assert.equal(roadster.dry,1832.6);assert.ok(Math.abs(roadster.total-(1832.6+REFERENCE_AIR_KG))<1e-9);assert.equal(roadster.assumed,true);
+  assert.equal(roadster.body,null);assert.equal(roadster.rig,null);
+  assert.equal(roadster.dry,1900);assert.equal(roadster.total,2150);assert.equal(roadster.assumed,true);
   const cyber=experimentMass(get('tesla-cybertruck'));
-  assert.equal(cyber.body,3000);assert.equal(cyber.rig,82.6);assert.equal(cyber.assumed,true);
+  assert.equal(cyber.body,3000);assert.equal(cyber.rig,150);assert.equal(cyber.assumed,true);
   const bmw=experimentMass(get('bmw'));
   assert.equal(bmw.body+bmw.rig,bmw.dry);assert.equal(bmw.assumed,false);
-  assert.match(experimentMassLabel(get('roadster')),/1,863 kg.*가정/);
+  assert.match(experimentMassLabel(get('roadster')),/2,150 kg.*가정/);
   assert.doesNotMatch(experimentMassLabel(get('bmw')),/가정/);
   assert.throws(()=>experimentMass(get('bmw'),-1),TypeError);
   assert.throws(()=>experimentMass({dryMass:NaN}),TypeError);

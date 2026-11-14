@@ -31,7 +31,7 @@ test('fan checkbox updates physical controller and retained brake comparison con
 });
 test('charging status separates waiting, empty battery, full tank and actual intake',()=>{
  const {ctx}=harness();ctx.driver.compressorEnabled=true;
- assert.match(ctx.compressorStatus({compressorState:'charging'}),/외부 압축기.*공기 충전/);
+ assert.match(ctx.compressorStatus({compressorState:'charging'}),/흡입.*압축/);
  assert.match(ctx.compressorStatus({compressorState:'moving'}),/정차/);
  assert.match(ctx.compressorStatus({compressorState:'battery'}),/배터리/);
  assert.match(ctx.compressorStatus({compressorState:'full'}),/한도/);

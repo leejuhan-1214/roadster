@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import {adaptRealVehicle} from '../dist/js/real-vehicle-model.js';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
 import {DEFAULTS,PhysicsSim} from '../dist/js/physics.js';
-import {HARDWARE_MASS,REFERENCE_AIR_KG} from '../dist/js/reference-hardware.js';
 import {ROCKET_PARAMS} from '../dist/js/rocket-layout.js';
 
 const near=(a,b,tolerance=1e-6)=>assert.ok(Math.abs(a-b)<tolerance,`${a} != ${b}`);
@@ -131,8 +130,7 @@ test('published reference mass plus assumed rig and box inertia feed actual simu
   for(const profile of VEHICLES.filter(v=>v.id!=='roadster')){
     const vehicle=profile.adapter?{geometryParams:{wheelbase:profile.wheelbase,trackWidth:profile.width*.82,bodyLength:profile.length,bodyWidth:profile.width,bodyHeight:profile.height}}:adaptRealVehicle(sourceFor(profile),profile);
     const params=vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS);
-    assert.equal(profile.rigMass,HARDWARE_MASS.total);
-    assert.equal(params.dryMass,profile.referenceMass+HARDWARE_MASS.total);
+    assert.equal(params.dryMass,profile.referenceMass+profile.rigMass);
     near(params.inertiaRoll,params.dryMass*(profile.width**2+profile.height**2)/12);
     near(params.inertiaYaw,params.dryMass*(profile.length**2+profile.width**2)/12);
     near(params.inertiaPitch,params.dryMass*(profile.length**2+profile.height**2)/12);
@@ -143,11 +141,11 @@ test('published reference mass plus assumed rig and box inertia feed actual simu
     near(sim.bodyHalf[0],params.bodyLength/2);
     assert.equal(params.springK,DEFAULTS.springK);
     assert.equal(params.tankVolume,ROCKET_PARAMS.tankVolume);
-    near(sim.initialGas,REFERENCE_AIR_KG,1e-9);
+    near(sim.initialGas,250,.001);
     assert.equal(params.propulsionProfile,'rocket10');
   }
   const original=vehiclePhysics(vehicleProfile('roadster'),{},DEFAULTS);
-  assert.deepEqual(original,{...DEFAULTS,...ROCKET_PARAMS,dryMass:vehicleProfile('roadster').dryMass});assert.notEqual(original,DEFAULTS);
-  near(new PhysicsSim(original).initialGas,REFERENCE_AIR_KG,1e-9);
+  assert.deepEqual(original,{...DEFAULTS,...ROCKET_PARAMS});assert.notEqual(original,DEFAULTS);
+  near(new PhysicsSim(original).initialGas,250,.001);
   assert.throws(()=>vehicleProfile('nonexistent'));
 });

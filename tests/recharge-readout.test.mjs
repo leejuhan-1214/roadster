@@ -7,7 +7,7 @@ test('charging estimate cache counts down without running solver every frame and
  const state={time:10,gas:100},params={compressorPowerKW:300},options={enabled:true,capacityKg:250};
  assert.match(readout.update(state,params,options).text,/1분 30초/);
  state.time=11;assert.equal(readout.update(state,params,options).seconds,89);assert.equal(calls,1);
- state.time=25;readout.update(state,params,options);assert.equal(calls,2);
+ state.time=12;readout.update(state,params,options);assert.equal(calls,2);
  state.time=0;readout.update(state,params,options);assert.equal(calls,3);
  readout.update(state,{compressorPowerKW:60},options);assert.equal(calls,4);
  assert.equal(readout.update(state,params,{...options,enabled:false}),null);

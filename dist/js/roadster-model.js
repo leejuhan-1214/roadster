@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js?v=20261115-calibrated1';
+import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js';
 
 // Licensed visual asset only. Geometry never supplies mass, inertia or aerodynamics.
 // Runtime alignment adapts it to the explicitly hypothetical simulation chassis.

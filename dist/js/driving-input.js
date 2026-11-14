@@ -1,15 +1,13 @@
-import {jetHeightAcceleration} from './landing-experiment.js?v=20261115-jet1';
-import {jetDescentAcceleration} from './landing-economy.js?v=20261115-jet1';
 // Ground and cold-gas flight controls. Pedal release requests modest blended
 // braking, so a full battery still slows the car using the wheel brakes.
 // All speed changes continue through tire forces and the rigid-body solver.
-import {isRocketProfile} from './rocket-layout.js?v=20261115-calibrated1';
-import {RocketRollController} from './rocket-flight.js?v=20261115-jet1';
+import {isRocketProfile} from './rocket-layout.js?v=20261115-fleet1';
+import {RocketRollController} from './rocket-flight.js?v=20261115-fleet1';
 export const CITY_DRIVE_PARAMS=Object.freeze({
   friction:1.15,rollingResistance:.015,aeroEnabled:true,dragScale:1,
   roadRoughness:.15,windX:0,windZ:0,tractionControl:true,absEnabled:true,
-  springK:70000,damperC:4000,
-  // Pressure and gas properties belong to the selected hardware profile.
+  springK:75000,damperC:6000,
+  tankPressureMPa:35.875,
 });
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const approach=(value,target,amount)=>value+clamp(target-value,-amount,amount);
@@ -142,10 +140,8 @@ export class DrivingController {
         // Once supported by all four tires or the hull, retain wheel braking without
         // unloading the suspension or spending tank gas to hover over the road.
         input.stabilize=false;input.verticalAcceleration=-sim.params.gravity;
-      }else if(sim.params.propulsionKind==='air-breathing-jet')input.verticalAcceleration=jetDescentAcceleration(clearance,velocity.y,.5,sim.params);
-      else input.verticalAcceleration=clamp(8*(targetVelocity-velocity.y),-sim.params.gravity,1.1*sim.params.gravity);
+      }else input.verticalAcceleration=clamp(8*(targetVelocity-velocity.y),-sim.params.gravity,1.1*sim.params.gravity);
     }
-    else if(holding&&sim.params.propulsionKind==='air-breathing-jet')input.verticalAcceleration=jetHeightAcceleration(sim,this.targetHeight);
     else if(holding)input.verticalAcceleration=clamp(24*(this.targetHeight+sim.restHeight-sim.state.pos.y)-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
     else if(airBrake&&!lift)input.verticalAcceleration=clamp(-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
     else if(this.flightAssist&&this.airborne&&!lift&&activeManeuver){
@@ -173,7 +169,6 @@ export class DrivingController {
         lift:0,altHold:false,airMoveForward:0,airMoveRight:0,roll:0,pitch:0,yaw:0,
         stabilize:true,flightAssist:false,landingAssist:false,...maneuver});
     }
-    if(sim.params.propulsionKind==='air-breathing-jet'){input.compressor=false;if(this.landingAssist&&hasSettledSupport(sim))input.jetCutoff=true;}
     return input;
   }
 }

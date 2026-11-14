@@ -12,10 +12,10 @@ const depleted=()=>{
   return sim;
 };
 
-test('intercooled stages require more than reversible isothermal work and less than a single stage',()=>{
+test('four intercooled stages require more than reversible isothermal work and less than a single stage',()=>{
   for(const pressure of [1e6,10e6,35.875e6]){
     const four=compressorSpecificWork(pressure,DEFAULTS),one=compressorSpecificWork(pressure,{...DEFAULTS,compressorStages:1});
-    assert.ok(four>AIR_R*DEFAULTS.ambientTemperature*Math.log(pressure/ATMOSPHERE));assert.ok(four<one);
+    assert.ok(four>AIR_R*300*Math.log(pressure/ATMOSPHERE));assert.ok(four<one);
   }
   assert.ok(compressorSpecificWork(ATMOSPHERE,DEFAULTS)>0,'intake losses do not create free compressor mass');
 });
@@ -27,7 +27,7 @@ test('parked charging imports mass and enthalpy, spends actual battery work and 
   assert.ok(s.gas>before.gas&&s.temp>before.temp);near(s.batteryJ,before.energy-s.compressorEnergyJ,5e-5);
   near(t.gasConsumedKg,before.used);near(s.gas-before.gas,t.gasRefilledKg,1e-8);
   assert.ok(t.massBalanceError<1e-8&&t.tankEnergyBalanceError<1e-5);
-  near(t.compressorHeatW+t.compressorFlowKgS*AIR_CP*DEFAULTS.aftercoolerApproachK,t.compressorCompressionPowerW);near(t.compressorPowerW,t.compressorCompressionPowerW+t.compressorCoolingPowerW);assert.ok(s.pressure<=DEFAULTS.tankPressureMPa*1e6);
+  near(t.compressorHeatW,t.compressorCompressionPowerW);near(t.compressorPowerW,t.compressorCompressionPowerW+t.compressorCoolingPowerW);assert.ok(s.pressure<=DEFAULTS.tankPressureMPa*1e6);
 });
 
 test('recharge is opt-in and disabled while driving, airborne, commanding jets, or waiting for valves to close',()=>{

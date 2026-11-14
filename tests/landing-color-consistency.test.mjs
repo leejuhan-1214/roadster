@@ -18,12 +18,12 @@ test('one trial keeps its color in table, force trace, both scatter plots and st
   LandingUI.prototype.renderChart.call(ui,rows);
   const traceColors=[...querySelector('#landing-force-chart').innerHTML.matchAll(/<polyline fill="none" stroke="(#[0-9a-f]{6})"/g)].map(match=>match[1]);
   assert.deepEqual(tableColors,traceColors);
-  const brakeColor=tableColors[1],label='지정 높이 재가속 · 2.25 m;';
+  const brakeColor=tableColors[1],label='지면 전 추력 제동 · 2.25 m;';
   assert.equal(colorOfPoint(landingResearchPlot(rows,{kind:'gas'}),label),brakeColor);
   assert.equal(colorOfPoint(landingResearchPlot(rows,{kind:'height',baseline:rows[0]}),label),brakeColor);
   assert.equal(colorOfPoint(landingResearchPlot(rows.slice(1),{kind:'gas',candidates:[rows[1]]}),label),brakeColor);
   assert.equal(colorOfPoint(landingResearchPlot([rows[1]],{kind:'height'}),label),brakeColor);
-  assert.equal(colorOfPoint(landingResearchPlot(rows,{kind:'gas'}),'추력 차단;'),tableColors[0],'unsafe cross shape retains trial identity too');
+  assert.equal(colorOfPoint(landingResearchPlot(rows,{kind:'gas'}),'자유 낙하;'),tableColors[0],'unsafe cross shape retains trial identity too');
 });
 
 test('trial colors remain deterministic for cloned records and records without ids',()=>{
@@ -38,5 +38,5 @@ test('standalone history traces identify release height and mass, point tooltips
   LandingUI.prototype.renderChart.call({dialog:{querySelector}},[rows[1],other],true);
   const legend=querySelector('#landing-chart-legend').innerHTML;
   assert.match(legend,/h 3 m · 2275 kg/);assert.match(legend,/h 8 m · 2200 kg/);
-  const plot=landingResearchPlot([other]);assert.match(plot,/Roadster; 출발 8 m; 지정 높이 재가속/);
+  const plot=landingResearchPlot([other]);assert.match(plot,/Roadster; 출발 8 m; 지면 전 추력 제동/);
 });

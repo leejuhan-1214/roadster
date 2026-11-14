@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import {Vector3} from 'three';
 import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
 import {DrivingController,CITY_DRIVE_PARAMS} from '../dist/js/driving-input.js';
-import {experimentVehicles} from '../dist/js/experiment-vehicles.js';
-import {VEHICLES,vehicleProfile,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
+import {vehicleProfile,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
 import {adaptRoadsterScene} from '../dist/js/roadster-model.js';
 import {createVehicle} from '../dist/js/vehicle.js';
 import {prepareAssessmentVehicle} from '../dist/js/assessment-vehicle.js';
@@ -26,7 +25,7 @@ function turnRun(params,kph,code='KeyA',{fullThrottle=false,legacySteering=false
   // fan-off setting. Fan-on driving is exercised separately below: extra grip
   // changes tire saturation, so a fixed improvement in yaw is not universal.
   const {sim,driver}=moving(params,kph/3.6,{fanEnabled}),initialGas=sim.state.gas;
-  let previousSteer=0,totalThrottle=0;
+  let previousSteer=0;
   for(let i=0;i<1000;i++){
     const input=driver.update(keys('KeyW',code),sim,dt);
     // Keep the old rack curve and full drive torque as separate baselines:
@@ -38,11 +37,11 @@ function turnRun(params,kph,code='KeyA',{fullThrottle=false,legacySteering=false
       previousSteer+=Math.max(-dt*5,Math.min(dt*5,target-previousSteer));input.steer=previousSteer;
     }
     if(fullThrottle)input.throttle=1;
-    totalThrottle+=input.throttle;sim.step(dt,input);
+    sim.step(dt,input);
     assert.equal(sim.contactCount,4);assert.equal(sim.state.gas,initialGas);
   }
   const pathHeading=Math.atan2(-sim.state.vel.z,sim.state.vel.x);
-  return {totalThrottle,yaw:Math.atan2(Math.sin(sim.telemetry().attitude.yaw-spawnHeading),Math.cos(sim.telemetry().attitude.yaw-spawnHeading)),pathTurn:Math.atan2(Math.sin(pathHeading-spawnHeading),Math.cos(pathHeading-spawnHeading)),speed:sim.telemetry().horizontalSpeed,sim,driver};
+  return {yaw:Math.atan2(Math.sin(sim.telemetry().attitude.yaw-spawnHeading),Math.cos(sim.telemetry().attitude.yaw-spawnHeading)),pathTurn:Math.atan2(Math.sin(pathHeading-spawnHeading),Math.cos(pathHeading-spawnHeading)),speed:sim.telemetry().horizontalSpeed,sim,driver};
 }
 
 test('actual Roadster chassis steers in both directions at city heading under held W',async()=>{
@@ -52,14 +51,11 @@ test('actual Roadster chassis steers in both directions at city heading under he
     prepareAssessmentVehicle(vehicle);configureVehicleFit(vehicle,profile);
     const params={...vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS};
     const full=turnRun(params,70,'KeyA',{fullThrottle:true}),previous=turnRun(params,70,'KeyA',{legacySteering:true}),left=turnRun(params,70),right=turnRun(params,70,'KeyD');
-    // The recalibrated 1,863 kg rig gives ~0.094 rad gain; fixed old-mass
-    // +0.1 rad benchmarks remain covered by the generic historical test below.
-    assert.ok(left.yaw>full.yaw+.05&&left.pathTurn>full.pathTurn+.05,'torque priority improves both body and travel direction with the same steering curve');
+    assert.ok(left.yaw>full.yaw+.1&&left.pathTurn>full.pathTurn+.1,'torque priority improves both body and travel direction with the same steering curve');
     assert.ok(left.yaw>previous.yaw+.1&&left.pathTurn>previous.pathTurn+.1,'the wider physical steering improves on v1.19 with its torque priority retained');
     assert.ok(left.yaw>.4&&right.yaw<-.4,'A/D must turn the rigid chassis, not only its wheels');
     assert.ok(Math.abs(left.yaw+right.yaw)<.015,'left and right remain symmetric at the real spawn heading');
-    assert.ok(left.totalThrottle<full.totalThrottle*.5,'assist reduces the actual integrated wheel-drive request');
-    assert.ok(left.speed<full.speed,'reduced wheel drive trades acceleration for cornering at the recalibrated mass');
+    assert.ok(left.speed<full.speed-3,'assist changes wheel drive request instead of inventing extra lateral force');
     const fanLeft=turnRun(params,70,'KeyA',{fanEnabled:true}),fanRight=turnRun(params,70,'KeyD',{fanEnabled:true});
     assert.ok(fanLeft.sim.fanForce>0&&fanRight.sim.fanForce>0,'exercise the new default suction system');
     assert.ok(fanLeft.yaw>.4&&fanRight.yaw<-.4,'fan-on steering changes the real chassis heading');
@@ -104,15 +100,4 @@ test('cornering torque priority leaves straight launch, coasting, braking, rever
   const parking=moving({},2),p=parking.driver.update(keys('KeyW','KeyA'),parking.sim,.1);assert.equal(p.corneringAssist,false);assert.equal(p.throttle,1);
   sim.state.pos.y=sim.restHeight+5;sim.contactCount=0;
   const flight=driver.update(keys('KeyW','KeyA'),sim,.1);assert.equal(flight.corneringAssist,false);assert.equal(flight.throttle,0);assert.equal(flight.airMoveForward,1);assert.equal(flight.airMoveRight,-1);assert.equal(flight.yaw,0);
-});
-
-test('city settings preserve every experiment vehicle pressure rating and initial gas mass',()=>{
- assert.equal('tankPressureMPa' in CITY_DRIVE_PARAMS,false,'city controls must not replace the selected hardware');
- for(const profile of experimentVehicles(VEHICLES)){
-  const params=vehiclePhysics(profile,{},DEFAULTS),lab=new PhysicsSim(params),city=new PhysicsSim({...params,...CITY_DRIVE_PARAMS});
-  assert.equal(city.params.tankPressureMPa,lab.params.tankPressureMPa);
-  assert.ok(city.params.tankPressureMPa<=city.params.valveMaxPressureMPa);
-  assert.ok(Math.abs(city.initialGas-lab.initialGas)<1e-10);
-  assert.equal(city.params.springK,70000);assert.equal(city.params.damperC,4000);
- }
 });
