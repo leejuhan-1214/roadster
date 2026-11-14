@@ -1,0 +1,190 @@
+{
+  "version": "1.44",
+  "runtimeCommit": "d8126c42331de375b39ee03a7ce94eae80f86925",
+  "action": {
+    "sha": "d8126c42331de375b39ee03a7ce94eae80f86925",
+    "id": 43620687397,
+    "url": "https://github.com/leejuhan-1214/roadster/actions/runs/43620687397",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "build",
+        "status": "completed",
+        "conclusion": "success",
+        "activeSteps": []
+      },
+      {
+        "name": "deploy",
+        "status": "completed",
+        "conclusion": "success",
+        "activeSteps": []
+      }
+    ],
+    "testSummary": [
+      "ℹ tests 984",
+      "ℹ pass 984",
+      "ℹ fail 0",
+      "ℹ duration_ms 110321.312774"
+    ]
+  },
+  "canonical": {
+    "url": "https://leejuhan-1214.github.io/roadster/",
+    "status": 200,
+    "version": 1,
+    "cacheTag": true,
+    "verifiedAt": "2026-11-14T17:26:06.151Z"
+  },
+  "publicFiles": [
+    {
+      "file": "dist/index.html",
+      "status": 200,
+      "bytes": 17389,
+      "match": true
+    },
+    {
+      "file": "dist/js/driving-input.js",
+      "status": 200,
+      "bytes": 12256,
+      "match": true
+    },
+    {
+      "file": "dist/js/experiment-vehicles.js",
+      "status": 200,
+      "bytes": 2693,
+      "match": true
+    },
+    {
+      "file": "dist/js/jet-engine.js",
+      "status": 200,
+      "bytes": 7129,
+      "match": true
+    },
+    {
+      "file": "dist/js/jet-rig.js",
+      "status": 200,
+      "bytes": 10994,
+      "match": true
+    },
+    {
+      "file": "dist/js/jet-vehicle.js",
+      "status": 200,
+      "bytes": 1453,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-economy.js",
+      "status": 200,
+      "bytes": 18505,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-experiment.js",
+      "status": 200,
+      "bytes": 22675,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-live.js",
+      "status": 200,
+      "bytes": 5260,
+      "match": true
+    },
+    {
+      "file": "dist/js/landing-ui.js",
+      "status": 200,
+      "bytes": 48839,
+      "match": true
+    },
+    {
+      "file": "dist/js/main.js",
+      "status": 200,
+      "bytes": 54775,
+      "match": true
+    },
+    {
+      "file": "dist/js/physics.js",
+      "status": 200,
+      "bytes": 70491,
+      "match": true
+    },
+    {
+      "file": "dist/js/render-state.js",
+      "status": 200,
+      "bytes": 2216,
+      "match": true
+    },
+    {
+      "file": "dist/js/rocket-flight.js",
+      "status": 200,
+      "bytes": 3855,
+      "match": true
+    },
+    {
+      "file": "dist/js/scene.js",
+      "status": 200,
+      "bytes": 65909,
+      "match": true
+    }
+  ],
+  "independentAudit": {
+    "path": "docs/data/jet-v144-audit.json",
+    "pass": true,
+    "checks": 161,
+    "vehicles": 5,
+    "runs": 20
+  },
+  "localTests": {
+    "initialFullSuite": {
+      "tests": 979,
+      "passed": 973,
+      "failed": 6,
+      "note": "Six obsolete UI text expectations corrected; focused 20-test rerun passed."
+    },
+    "finalAppAndRig": {
+      "passed": 9,
+      "failed": 0
+    }
+  },
+  "browser": {
+    "status": "verified",
+    "url": "https://leejuhan-1214.github.io/roadster/",
+    "methods": [
+      "free",
+      "brake",
+      "gentle",
+      "eco"
+    ],
+    "initialFlow": "ground -> ascent -> stable hover -> landing",
+    "roadsterResults": {
+      "landingFuelKg": [
+        0,
+        1.72,
+        9.35,
+        5.27
+      ],
+      "missionFuelKg": [
+        14.5,
+        16.22,
+        23.85,
+        19.77
+      ],
+      "peakForceKN": [
+        987.4,
+        585.29,
+        61.67,
+        66.17
+      ],
+      "status": [
+        "body strike",
+        "body strike",
+        "stable",
+        "stable; target speed exceeded"
+      ]
+    },
+    "consoleErrors": 0,
+    "screenshot": "outputs/roadster-v144-public-results.jpg",
+    "tabLeftOpen": true
+  },
+  "completedAt": "2026-11-14T17:27:08.081Z"
+}
