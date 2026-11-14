@@ -1,3 +1,4 @@
+import {JET_PARAMS,isJetProfile,jetEngineCount,jetNozzle,jetDensityRatio,createJetEngineState,advanceJetEngine} from './jet-engine.js?v=20261115-jet1';
 import {ForceWindow} from './force-window.js?v=20261115-calibrated1';
 import {advanceAirDischarge} from './air-blowdown.js?v=20261115-calibrated1';
 import {meteredNozzle} from './pneumatic-feed.js?v=20261115-calibrated1';
@@ -156,6 +157,7 @@ export function nozzle(pressure, temperature, area, ambient = ATMOSPHERE) {
 
 /** Feasible reference feed; analytic legacy fixtures keep the ideal nozzle. */
 export function thrusterNozzle(pressure,temperature,area,params={},group='lift'){
+  if(isJetProfile(params))return jetNozzle(params,group);
   if(!params.calibratedHardware)return nozzle(pressure,temperature,area);
   if(temperature<(params.minimumGasOperatingTemperature??263.15)-1e-6)
     return {...nozzle(ATMOSPHERE,temperature,area),regime:'temperature-limit'};
@@ -186,8 +188,8 @@ function makeThrusters(rocket=false,params={}) {
 
 export class PhysicsSim {
   constructor(params = {}) {
-    this.params = { ...DEFAULTS, ...(isRocketProfile(params)?ROCKET_PARAMS:{}), ...params };
-    this.thrusters = makeThrusters(isRocketProfile(this.params),this.params);
+    this.params = { ...DEFAULTS, ...((isRocketProfile(params)||isJetProfile(params))?ROCKET_PARAMS:{}), ...(isJetProfile(params)?JET_PARAMS:{}), ...params };
+    this.thrusters = makeThrusters(isRocketProfile(this.params)||isJetProfile(this.params),this.params);
     this.cg = new Vector3();
     this.bodyHalf = [...BODY_ENVELOPE.half];
     this.bodyBoxCenter = new Vector3(...BODY_ENVELOPE.center);
@@ -207,7 +209,8 @@ export class PhysicsSim {
 
   reset(preset = 'ground') {
     const p = this.params;
-    this.rocketProfile=isRocketProfile(p);
+    this.jetProfile=isJetProfile(p);
+    this.rocketProfile=isRocketProfile(p)||this.jetProfile;
     this.thrusters=makeThrusters(this.rocketProfile,p);
     p.dryMass = Math.max(100, Number(p.dryMass) || DEFAULTS.dryMass);
     p.tankVolume = clamp(Number(p.tankVolume) || DEFAULTS.tankVolume, .02, 2);
@@ -219,7 +222,7 @@ export class PhysicsSim {
     p.trackWidth = clamp(Number(p.trackWidth) || DEFAULTS.trackWidth, 1, 2.6);
     // Per-vehicle contact envelope in the same body coordinates as the wheel mounts.
     // Dimensions are collision approximations, independent of the visual mesh.
-    for (const [key,min,max] of [['bodyLength',1,8],['bodyWidth',.5,3],['bodyHeight',.3,4],['bodyCenterY',-2,2]]) {
+    for (const [key,min,max] of [['bodyLength',1,this.jetProfile?12:8],['bodyWidth',.5,this.jetProfile?6:3],['bodyHeight',.3,4],['bodyCenterY',-2,2]]) {
       const value=Number(p[key]);
       p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],min,max);
     }
@@ -233,7 +236,8 @@ export class PhysicsSim {
     });
     this.gimbalX=0;this.gimbalZ=0;this.gimbalDirection.set(0,1,0);
     for(const key of ['liftX','liftY','liftZ','boostX','boostY','boostZ','yawX','yawY','yawZ']){
-      const value=Number(p[key]);p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],key.endsWith('Y')?-1.5:key==='boostX'?-4:.15,key.endsWith('Y')?1.5:key==='boostX'?-.15:3);
+      const value=Number(p[key]),extent=this.jetProfile?8:3;
+      p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],key.endsWith('Y')?-1.5:key==='boostX'?-(this.jetProfile?8:4):.15,key.endsWith('Y')?1.5:key==='boostX'?-.15:extent);
     }
     this.liftLayout={x:p.liftX,y:p.liftY,z:p.liftZ};
     const rocketLayout=this.rocketProfile?rocketThrusterLayout(p):null;
@@ -244,16 +248,17 @@ export class PhysicsSim {
       else t.mountPosition.set(i%2?-p.yawX:p.yawX,p.yawY,(i===6||i===9)?p.yawZ:-p.yawZ);
       t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);
     });
-    const gas = nominalAirMass(p);
+    const gas = this.jetProfile?Math.max(0,Number(p.fuelCapacityKg)||0):nominalAirMass(p);
     this.initialGas = gas;
-    this.initialEnergy = gas * gasProperties(gas,p.tankVolume,p.initialTemperature,p).u;
+    this.initialEnergy = this.jetProfile?gas*p.jetFuelLHVJkg:gas*gasProperties(gas,p.tankVolume,p.initialTemperature,p).u;
     this.restHeight = .31 + p.wheelRadius + this.cg.y - suspensionStaticCompression((p.dryMass + gas) * p.gravity / 4,p);
     this.state = { pos: new Vector3(this.cg.x, this.restHeight, this.cg.z), vel: new Vector3(),
       q: new Quaternion(), omega: new Vector3(), gas, temp: p.initialTemperature,
-      pressure: p.tankPressureMPa * 1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
+      pressure: this.jetProfile?0:p.tankPressureMPa*1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
       acceleration: new Vector3(), gasUsed: 0, expelledEnthalpy: 0,
       gasRefilledKg:0, inletEnthalpyJ:0, tankHeatOutJ:0, compressorEnergyJ:0,
       tankWallTemp:p.initialTemperature,ambientHeatOutJ:0,externalCompressorEnergyJ:0,thermalLimited:false,
+      fuelKg:this.jetProfile?gas:0,fuelUsedKg:0,fuelChemicalEnergyJ:0,jetAirInKg:0,jetExhaustKg:0,jetExhaustKineticEnergyJ:0,jetIntakeKineticEnergyJ:0,jetUnmodelledHeatJ:0,jetStarterEnergyJ:0,
     };
     if (preset === 'drop') this.state.pos.y += 3;
     if (preset === 'flight') { this.state.pos.y += 1.8; this.state.vel.x = 8; }
@@ -279,7 +284,22 @@ export class PhysicsSim {
       w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = thrusterNozzle(this.state.pressure, this.state.temp, t.area,p,t.group).force; t.opening = 0; t.command = 0; t.mdot = 0; }
+    this.jetEnabled=false;this.jetStarterPowerW=0;this.jetAirflowKgS=0;
+    for(const t of this.thrusters){t.jetState=createJetEngineState();t.rpm=0;t.running=false;t.airMassFlowKgS=0;t.grossThrustN=0;}
+    this.jetStates=this.thrusters.map(t=>t.jetState);
     return this.state;
+  }
+
+  /** Explicit hot-idle initial condition; no impulse, height or velocity change. */
+  primeJetIdle(){
+    if(!this.jetProfile||this.state.gas<=0)return false;
+    this.jetEnabled=true;
+    for(const t of this.thrusters)if(t.group==='lift'){
+      t.jetState=createJetEngineState({idle:true});t.rpm=this.params.jetIdleRPM;t.running=true;
+      t.opening=this.params.jetIdleThrustN/this.params.jetMaximumThrustN;
+      t.force=t.maxForce*t.opening;
+    }
+    this.jetStates=this.thrusters.map(t=>t.jetState);return true;
   }
 
   /** Static stage collision boxes. Reset preserves this course; [] restores the empty test pad. */
@@ -372,8 +392,8 @@ export class PhysicsSim {
     const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
     this.lastInput = input;
     const velocityBefore=s.vel.clone();this.preStepVelocityY=s.vel.y;this.stepDuration=dt;
-    // Refilling is an explicit parked operation. Intaking ambient air increases
-    // mass and consumes battery energy; it never replenishes a live nozzle.
+    // Legacy compressed-air refilling is an explicit parked operation. Jet
+    // intake air passes through the engine and never replenishes stored fuel.
     const dischargeLimitW=Math.max(0,Number.isFinite(p.batteryMaxDischargeKW)?p.batteryMaxDischargeKW:800)*1000;
     let blocked=null;
     if(input.compressor){
@@ -383,7 +403,7 @@ export class PhysicsSim {
       blocked=this.contactCount<3||!p.contactEnabled||s.pos.y-this.restHeight-intakeSurface>.1||intakeUp.y<.95?'airborne':
         flyingIntent||nozzleActive?'thrusters':s.vel.length()>.15||s.omega.length()>.1||Math.abs(input.throttle||0)>.001?'moving':null;
     }
-    const refill=rechargeAirTank(s,p,dt,{enabled:!!input.compressor,blockReason:blocked,capacityKg:this.initialGas,powerBudgetW:dischargeLimitW});
+    const refill=this.jetProfile?{gas:s.gas,temp:s.temp,pressure:0,tankWallTemp:s.tankWallTemp,addedKg:0,inletEnthalpyJ:0,tankHeatOutJ:0,aftercoolerHeatJ:0,powerW:0,batteryPowerW:0,externalPowerW:0,compressionPowerW:0,coolingPowerW:0,status:'not-applicable'}:rechargeAirTank(s,p,dt,{enabled:!!input.compressor,blockReason:blocked,capacityKg:this.initialGas,powerBudgetW:dischargeLimitW});
     if(refill.addedKg>0){
       // Inelastic capture of ambient air. Intake momentum follows the configured
       // wind; with no wind the small permitted parking velocity is diluted.
@@ -410,8 +430,9 @@ export class PhysicsSim {
 
     // Direct blowdown: pressure falls with the tank, and flow adds a supply-line loss.
     const oldFlow=this.thrusters.reduce((sum,t)=>sum+t.mdot,0);
-    this.manifoldPressure=Math.max(ATMOSPHERE,s.pressure-Math.max(0,p.feedLossCoefficient)*oldFlow*oldFlow);
-    const layoutMaximum = this.thrusters.map(t => thrusterNozzle(this.manifoldPressure,s.temp,t.area,p,t.group));
+    this.manifoldPressure=this.jetProfile?0:Math.max(ATMOSPHERE,s.pressure-Math.max(0,p.feedLossCoefficient)*oldFlow*oldFlow);
+    const densityRatio=jetDensityRatio(s.pos.y-this.restHeight);
+    const layoutMaximum=this.thrusters.map(t=>this.jetProfile?jetNozzle(p,t.group,{densityRatio}):thrusterNozzle(this.manifoldPressure,s.temp,t.area,p,t.group));
     for (let i = 0; i < this.thrusters.length; ++i) this.thrusters[i].maxForce = layoutMaximum[i].force;
     const isAirborne = this.contactCount === 0;
     const enabledControl = isAirborne || input.lift > .01 || input.altHold || Number.isFinite(input.verticalAcceleration)||(this.rocketProfile&&input.boost);
@@ -465,7 +486,7 @@ export class PhysicsSim {
     }
     // Anticipate the first-order valve lag while the swivel changes direction.
     // Only force distribution changes; body attitude remains a result of r × F.
-    const lead=Math.max(.001,Number(p.valveTau)||.03)*(this.liftLayout.y-this.cg.y)*vertical/dt;
+    const lead=(this.jetProfile?0:Math.max(.001,Number(p.valveTau)||.03))*(this.liftLayout.y-this.cg.y)*vertical/dt;
     tx-=lead*(this.gimbalDirection.z/this.gimbalDirection.y-oldGz);
     tz+=lead*(this.gimbalDirection.x/this.gimbalDirection.y-oldGx);
     if(this.rocketProfile&&input.boost){
@@ -498,6 +519,55 @@ export class PhysicsSim {
     if (Array.isArray(input.thrusterCommands)) for (let i = 0; i < desiredForces.length; ++i)
       desiredForces[i] = clamp(input.thrusterCommands[i] || 0, 0, 1) * layoutMaximum[i].force;
     this.saturation = allocation.saturated; this.totalThrust = 0; this.maxThrust = 0;
+    let dm=0;
+    if(this.jetProfile){
+      if(input.jetEnabled!==undefined)this.jetEnabled=!!input.jetEnabled;
+      else if(desiredForces.slice(0,4).some(n=>n>1))this.jetEnabled=true;
+      if(input.jetCutoff)this.jetEnabled=false;
+      let batteryAvailable=Math.max(0,s.batteryJ),powerAvailable=dischargeLimitW;
+      this.jetStarterPowerW=0;this.jetAirflowKgS=0;
+      const relativeAir=s.vel.clone().sub(new Vector3(p.windX||0,0,p.windZ||0));
+      const relativeIntakes=this.thrusters.map(t=>relativeAir.clone().add(
+        new Vector3().crossVectors(omegaWorld,t.pos.clone().applyQuaternion(s.q))));
+      const results=this.thrusters.map((t,i)=>{
+        const available=layoutMaximum[i];this.maxThrust+=available.force;
+        t.command=available.force>0?clamp(desiredForces[i]/available.force,0,1):0;
+        const enabled=t.group==='lift'?this.jetEnabled:!input.jetLiftOnly&&input.jetEnabled!==false&&t.command>1e-5;
+        const direction=t.dir.clone().applyQuaternion(s.q);
+        const result=advanceJetEngine(t.jetState,p,t.command,dt,{enabled,cutoff:!!input.jetCutoff,
+          engineCount:jetEngineCount(p,t.group),densityRatio,axialSpeed:relativeIntakes[i].dot(direction),
+          fuelAvailableKg:s.gas>0?Infinity:0,batteryAvailableJ:batteryAvailable,powerBudgetW:powerAvailable});
+        batteryAvailable=Math.max(0,batteryAvailable-result.starterEnergyJ);
+        powerAvailable=Math.max(0,powerAvailable-result.starterPowerW);
+        this.jetStarterPowerW+=result.starterPowerW;s.jetStarterEnergyJ+=result.starterEnergyJ;
+        return result;
+      });
+      const requested=results.reduce((sum,r)=>sum+r.fuelUsedKg,0);
+      dm=Math.min(s.gas,requested);const fraction=requested>0?dm/requested:1;
+      this.massFlowKgS=dm/dt;
+      for(let i=0;i<this.thrusters.length;i++){
+        const t=this.thrusters[i],result=results[i];t.jetState=result.state;
+        if(fraction<1){t.jetState.phase='stopping';t.jetState.startElapsed=0;t.jetState.starterEnergyJ=0;}
+        t.rpm=result.rpm;t.running=result.running&&fraction===1;t.opening=t.running?result.opening:0;
+        t.mdot=result.fuelFlowKgS*fraction;t.force=result.forceN*fraction;
+        t.airMassFlowKgS=result.airMassFlowKgS*fraction;t.grossThrustN=result.grossThrustN*fraction;
+        this.jetAirflowKgS+=t.airMassFlowKgS;this.totalThrust+=Math.max(0,t.force);
+        // Gross installed exhaust momentum minus incoming air momentum once.
+        const relativeIntake=relativeIntakes[i];
+        const jetForce=t.dir.clone().multiplyScalar(t.grossThrustN).applyQuaternion(s.q)
+          .addScaledVector(relativeIntake,-t.airMassFlowKgS);
+        if(jetForce.lengthSq()>0)applyAt(jetForce,t.pos.clone().applyQuaternion(s.q));
+        const outflow=(result.exhaustMassFlowKgS*fraction)*dt;
+        const exhaustKE=.5*outflow*result.exhaustVelocityMps**2;
+        const intakeKE=.5*t.airMassFlowKgS*dt*relativeIntake.lengthSq();
+        s.jetAirInKg+=t.airMassFlowKgS*dt;s.jetExhaustKg+=outflow;
+        s.jetExhaustKineticEnergyJ+=exhaustKE;s.jetIntakeKineticEnergyJ+=intakeKE;
+        s.jetUnmodelledHeatJ+=result.chemicalEnergyJ*fraction+intakeKE-exhaustKE;
+      }
+      s.gas-=dm;s.gasUsed+=dm;s.fuelKg=s.gas;s.fuelUsedKg=s.gasUsed;
+      s.fuelChemicalEnergyJ+=dm*p.jetFuelLHVJkg;s.pressure=0;s.thermalLimited=false;
+      this.jetStates=this.thrusters.map(t=>t.jetState);
+    }else{
     let totalFlow = 0;
     for (let i = 0; i < this.thrusters.length; ++i) {
       const t = this.thrusters[i], available = layoutMaximum[i];
@@ -514,7 +584,7 @@ export class PhysicsSim {
     // The same finite-mass, open-system energy step is used in landing forecasts.
     // Active refill already advances wall heat; other states exchange heat here.
     const discharge=advanceAirDischarge(s,p,totalFlow*dt,dt,{heat:!refill.heatAdvanced});
-    const dm=discharge.removedKg,flowScale=totalFlow*dt>0?dm/(totalFlow*dt):0;
+    dm=discharge.removedKg;const flowScale=totalFlow*dt>0?dm/(totalFlow*dt):0;
     for(const t of this.thrusters){
       t.force*=flowScale;t.mdot*=flowScale;this.totalThrust+=t.force;
       if(t.force>0)applyAt(t.dir.clone().multiplyScalar(t.force).applyQuaternion(s.q),t.pos.clone().applyQuaternion(s.q));
@@ -524,6 +594,8 @@ export class PhysicsSim {
     s.expelledEnthalpy+=discharge.expelledEnthalpyJ;s.tankHeatOutJ+=discharge.tankHeatOutJ;
     s.ambientHeatOutJ+=discharge.ambientHeatOutJ;
     s.gasUsed+=dm;this.massFlowKgS=totalFlow*flowScale;
+
+    }
 
     // Anisotropic body drag, relative wind, and aerodynamic surface moment.
     const relative = s.vel.clone().sub(new Vector3(p.windX || 0, 0, p.windZ || 0)).applyQuaternion(qInv);
@@ -543,7 +615,7 @@ export class PhysicsSim {
     }
 
     // Fan pressure force vanishes rapidly when the ground seal opens.
-    let electricPower = refill.batteryPowerW??this.compressorPowerW;
+    let electricPower = (refill.batteryPowerW??this.compressorPowerW)+(this.jetProfile?this.jetStarterPowerW:0);
     this.fanForce = 0;
     this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
     if(input.fan){
@@ -792,8 +864,9 @@ export class PhysicsSim {
     const spring = this.wheels.reduce((sum, w) => sum + .5 * p.springK * w.compression ** 2, 0);
     const gLoad = s.acceleration.clone().addScaledVector(UP, p.gravity).length() / Math.max(.001, p.gravity);
     let status = contact >= 3 ? 'GROUND' : contact > 0 ? 'CONTACT' : s.vel.y > .12 ? 'ASCENDING' : s.vel.y < -.12 ? 'DESCENDING' : 'AIRBORNE';
-    if (s.pressure <= ATMOSPHERE * 1.01) status = 'GAS DEPLETED';
-    return {motorState:this.motorState, electricPowerW:this.electricPowerW,regenPowerW:this.regenPowerW,driveLossW:this.driveLossW,tractionCut:this.tractionCut,slidingWheels:this.wheels.filter(w=>w.sliding).length,massFlowKgS:this.massFlowKgS,manifoldPressureMPa:this.manifoldPressure/1e6,tankCapacityKg:this.initialGas,tankVolumeL:p.tankVolume*1000,
+    if(this.jetProfile){if(s.gas<=0)status='FUEL DEPLETED';else if(this.jetStates.some(t=>t.phase==='starting'))status='ENGINE STARTING';}
+    else if(s.pressure<=ATMOSPHERE*1.01)status='GAS DEPLETED';
+    return {propulsionKind:p.propulsionKind,jetEnabled:this.jetEnabled,jetStarterPowerW:this.jetStarterPowerW,jetAirflowKgS:this.jetAirflowKgS,airMassFlowKgS:this.jetAirflowKgS,fuelPowerW:this.jetProfile?this.massFlowKgS*p.jetFuelLHVJkg:0,jetRPM:Math.max(0,...this.thrusters.map(t=>t.rpm||0)),fuelKg:this.jetProfile?s.gas:0,fuelUsedKg:this.jetProfile?s.gasUsed:0,fuelCapacityKg:this.jetProfile?this.initialGas:0,fuelChemicalEnergyJ:s.fuelChemicalEnergyJ,jetAirInKg:s.jetAirInKg,jetExhaustKg:s.jetExhaustKg,jetStarterEnergyJ:s.jetStarterEnergyJ,jetExhaustKineticEnergyJ:s.jetExhaustKineticEnergyJ,jetIntakeKineticEnergyJ:s.jetIntakeKineticEnergyJ,jetUnmodelledHeatJ:s.jetUnmodelledHeatJ,jetFlowEnergyBalanceError:this.jetProfile?Math.abs(s.fuelChemicalEnergyJ+s.jetIntakeKineticEnergyJ-s.jetExhaustKineticEnergyJ-s.jetUnmodelledHeatJ):0,jetEnergyBalanceError:this.jetProfile?Math.abs(s.gas*p.jetFuelLHVJkg+s.fuelChemicalEnergyJ-this.initialEnergy):0,jetAirMassBalanceError:this.jetProfile?Math.abs(s.jetAirInKg+s.gasUsed-s.jetExhaustKg):0,motorState:this.motorState, electricPowerW:this.electricPowerW,regenPowerW:this.regenPowerW,driveLossW:this.driveLossW,tractionCut:this.tractionCut,slidingWheels:this.wheels.filter(w=>w.sliding).length,massFlowKgS:this.massFlowKgS,manifoldPressureMPa:this.manifoldPressure/1e6,tankCapacityKg:this.initialGas,tankVolumeL:this.jetProfile?0:p.tankVolume*1000,
       gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
       horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
       propulsionProfile:this.rocketProfile?p.propulsionProfile:'legacy',forwardAcceleration:s.acceleration.dot(fwd),
@@ -801,20 +874,20 @@ export class PhysicsSim {
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       handbrakeAmount:this.handbrakeAmount,handbrakeForceN:this.handbrakeForceN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
-      verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,
-      temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
+      verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa:this.jetProfile?0:(s.pressure-ATMOSPHERE)/1e6,
+      temperature: s.temp, gasKg: s.gas, gasPct: this.initialGas>0?100*s.gas/this.initialGas:0, totalMass: m,
       thrustN: this.totalThrust, fanN: this.fanForce, fanPressurePa:this.fanPressurePa,fanPowerW:this.fanPowerW,fanAirflowM3S:this.fanAirflowM3S,fanSeal:this.fanSeal,contactCount: contact, slip: this.maxSlip || 0,
       compressorState:this.compressorState,compressorPowerW:this.compressorPowerW,compressorCompressionPowerW:this.compressorCompressionPowerW,compressorCoolingPowerW:this.compressorCoolingPowerW,compressorFlowKgS:this.compressorFlowKgS,
       externalCompressorEnergyJ:s.externalCompressorEnergyJ,thermalLimited:s.thermalLimited,tankWallTemperature:s.tankWallTemp,
       compressorHeatW:this.compressorHeatW,tankHeatW:this.tankHeatW,compressorEnergyJ:s.compressorEnergyJ,
       gasRefilledKg:s.gasRefilledKg,gasConsumedKg:s.gasUsed,
       kineticEnergy: kinetic, potentialEnergy: m * p.gravity * Math.max(0, s.pos.y - this.restHeight),
-      rotationEnergy: rotation, springEnergy: spring, tankEnergy: s.gas * gasProperties(s.gas,p.tankVolume,s.temp,p).u,
+      rotationEnergy: rotation, springEnergy: spring, tankEnergy:this.jetProfile?s.gas*p.jetFuelLHVJkg:s.gas*gasProperties(s.gas,p.tankVolume,s.temp,p).u,
       gasUsed:s.gasUsed, thrustToWeight: this.totalThrust / Math.max(.001, m * p.gravity),
       status, attitude, acceleration: s.acceleration.clone(), gLoad, batteryPct: 100 * s.batteryJ / (p.batteryKWh * 3.6e6),
       saturation: this.saturation, lastImpactSpeed: this.lastImpactSpeed, maxAltitude: this.maxAltitude,
       massBalanceError: Math.abs(s.gas + s.gasUsed - this.initialGas-s.gasRefilledKg),
-      tankEnergyBalanceError: Math.abs(s.gas * gasProperties(s.gas,p.tankVolume,s.temp,p).u + s.expelledEnthalpy+s.tankHeatOutJ-s.inletEnthalpyJ - this.initialEnergy),
+      tankEnergyBalanceError:this.jetProfile?Math.abs(s.gas*p.jetFuelLHVJkg+s.fuelChemicalEnergyJ-this.initialEnergy):Math.abs(s.gas*gasProperties(s.gas,p.tankVolume,s.temp,p).u+s.expelledEnthalpy+s.tankHeatOutJ-s.inletEnthalpyJ-this.initialEnergy),
       groundHeight: this.restHeight, time: s.time, cgOffset: this.cg.clone(), inertia: this.inertia.clone(),
       obstacleContacts: [...this.obstacleContacts], lastObstacleImpact: this.lastObstacleImpact, collisionCount:this.collisionCount,
       gripUsage:Math.max(0,...this.wheels.map(w=>w.load>1&&p.friction>0?w.tireForceN/(p.friction*w.load):0)),

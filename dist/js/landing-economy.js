@@ -1,4 +1,5 @@
-import {nozzle, thrusterNozzle, ATMOSPHERE} from './physics.js?v=20261115-calibrated1';
+import {isJetProfile,advanceJetEngine,jetNozzle,jetEngineCount,jetDensityRatio} from './jet-engine.js?v=20261115-jet1';
+import {nozzle, thrusterNozzle, ATMOSPHERE} from './physics.js?v=20261115-jet1';
 import {advanceAirDischarge} from './air-blowdown.js?v=20261115-calibrated1';
 
 const G = 1.4, R = 287, STEP = .002;
@@ -168,6 +169,7 @@ function gentleForecastAcceleration(gap,velocity,target,gravity,valveTau){
 }
 
 export function planEconomyLanding(sim, height, targetSpeed) {
+  if(isJetProfile(sim.params))return planJetLanding(sim,height,targetSpeed);
   const p = sim.params, s = sim.state;
   const initial = {height:Math.max(0, height), gravity:p.gravity, dryMass:p.dryMass,
     tankVolume:p.tankVolume, valveTau:p.valveTau, feedLossCoefficient:Math.max(0,p.feedLossCoefficient),
@@ -226,4 +228,66 @@ export function planEconomyLanding(sim, height, targetSpeed) {
     profile:'brake',minimumCoastTime,feasible:!!best&&acceptable(chosen), coastOnly:false};
   if(cacheKey){if(calibratedPlanCache.size>=32)calibratedPlanCache.delete(calibratedPlanCache.keys().next().value);calibratedPlanCache.set(cacheKey,{...result});}
   return result;
+}
+
+
+/** A jet descent reference. Commands change thrust only; the shared engine
+ * integrator enforces its finite 5 s full-range spool slew and fuel supply. */
+export function jetDescentAcceleration(gap,velocity,targetSpeed,profile={}){
+  const cruise=profile.cruiseSpeed??Math.min(.35,targetSpeed*.7);
+  const approach=profile.approachAcceleration??.25;
+  const lead=profile.leadSeconds??.5;
+  const futureGap=Math.max(0,gap+Math.min(0,velocity)*lead);
+  const target=-Math.min(cruise,Math.sqrt(targetSpeed*targetSpeed+2*approach*futureGap));
+  return clamp((profile.velocityGain??2)*(target-velocity),-3,5);
+}
+
+/** One-dimensional, copied-state forecast using exactly the live jet engine.
+ * No ideal free-fall shortcut: the hover spool state carries into descent. */
+export function predictJetLanding(sim,height,targetSpeed,profile={},dt=.01){
+  const p=sim.params,s=sim.state,engines=sim.thrusters.slice(0,4);
+  let states=engines.map(t=>({...t.jetState}));
+  let fuel=s.gas,gap=height,velocity=s.vel.y,elapsed=0;
+  const count=jetEngineCount(p,'lift'),initialFuel=fuel;
+  const dryMass=p.dryMass,gravity=p.gravity,altitudeOffset=sim.state.pos.y-height-sim.restHeight;
+  if(!states.every(x=>x.phase))return {complete:false,speed:null,fuelUsedKg:null,elapsed:0};
+  const timeout=Math.min(90,Math.max(20,height/.2+10));
+  if(!(height>=0)||!Number.isFinite(timeout)||height>1000)return {complete:false,speed:null,fuelUsedKg:null,elapsed:0};
+  let contactSpeed=null,contactFuel=null;
+  for(let i=0;gap>0&&elapsed<timeout&&i<Math.ceil(timeout/dt);i++){
+    const mass=dryMass+fuel,acceleration=jetDescentAcceleration(gap,velocity,targetSpeed,profile);
+    const densityRatio=jetDensityRatio(Math.max(0,gap+altitudeOffset));
+    // Allocation uses installed static thrust, as in PhysicsSim. Intake ram
+    // drag belongs to the force integration below, not to a second compensator.
+    const available=jetNozzle(p,'lift',{densityRatio}).force;
+    const command=available>0?clamp(mass*Math.max(0,gravity+acceleration)/(4*available),0,1):0;
+    let force=0,used=0;
+    for(let n=0;n<4;n++){
+      const step=advanceJetEngine(states[n],p,command,dt,{enabled:true,engineCount:count,densityRatio,axialSpeed:velocity,fuelAvailableKg:Math.max(0,fuel-used)});
+      states[n]=step.state;force+=step.forceN;used+=step.fuelUsedKg;
+    }
+    fuel=Math.max(0,fuel-used);
+    velocity+=(force/Math.max(1,mass-used*.5)-gravity)*dt;
+    gap+=velocity*dt;elapsed+=dt;
+    if(gap<=0){contactSpeed=Math.max(0,-velocity);contactFuel=initialFuel-fuel;break;}
+  }
+  return {complete:gap<=0,speed:contactSpeed,fuelUsedKg:contactFuel,gasUsed:contactFuel,touchdownGasUsed:contactFuel,elapsed,profile:{...profile}};
+}
+
+/** Search a small declared set of descent schedules, not a global optimum. */
+export function planJetLanding(sim,height,targetSpeed){
+  const candidates=[];
+  for(const cruiseSpeed of [targetSpeed,Math.max(.7,targetSpeed*1.3),Math.max(1,targetSpeed*1.8),Math.max(1.4,targetSpeed*2.4)]){
+    for(const approachAcceleration of [.15,.35,.65]){
+      const profile={cruiseSpeed,approachAcceleration,leadSeconds:.6,velocityGain:2};
+      candidates.push(predictJetLanding(sim,height,targetSpeed,profile,.01));
+    }
+  }
+  const completed=candidates.filter(x=>x.complete&&Number.isFinite(x.speed));
+  const feasible=completed.filter(x=>x.speed<=targetSpeed+.025);
+  let chosen=(feasible.length?feasible:completed).sort((a,b)=>feasible.length?a.fuelUsedKg-b.fuelUsedKg:a.speed-b.speed)[0];
+  if(chosen)chosen=predictJetLanding(sim,height,targetSpeed,chosen.profile,.002);
+  return {brakeHeight:height,predictedSpeed:chosen?.speed??null,predictedGas:chosen?.fuelUsedKg??null,
+    predictedTouchdownGas:chosen?.fuelUsedKg??null,profile:'jet-descent',jetProfile:chosen?.profile??{cruiseSpeed:targetSpeed},
+    minimumCoastTime:0,feasible:!!chosen?.complete&&chosen.speed<=targetSpeed+.025,coastOnly:false};
 }

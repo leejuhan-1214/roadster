@@ -33,7 +33,7 @@ test('research cards show measured analytic verification and contact energy, nev
 test('plots retain unsafe baseline measurements, identify stable tradeoff candidates, and escape labels',()=>{
   const tradeoff=landingTradeoff(rows),plot=landingResearchPlot(rows,{kind:'gas',candidates:tradeoff.candidates});
   assert.ok(free.bodyStrike);assert.match(plot,/차체 접촉/);assert.match(plot,/<path d="M /);
-  assert.match(plot,/<circle/);assert.match(plot,/기체 사용량 · kg/);
+  assert.match(plot,/<circle/);assert.match(plot,/착지 연료량 · kg/);
   assert.match(plot,/tabindex="0" role="img" aria-label=/);
   const heightPlot=landingResearchPlot(rows,{kind:'height',baseline:free,candidates:tradeoff.candidates});
   assert.match(heightPlot,/자유낙하 기준/);assert.match(heightPlot,/제동 시작 높이 · m/);

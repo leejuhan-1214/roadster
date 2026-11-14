@@ -1,5 +1,5 @@
 import {isRocketProfile} from './rocket-layout.js?v=20261115-calibrated1';
-import {thrusterNozzle} from './physics.js?v=20261115-calibrated1';
+import {thrusterNozzle} from './physics.js?v=20261115-jet1';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const upY=q=>1-2*(q.x*q.x+q.z*q.z);
 export const ROCKET_ROLL_MIN_HEIGHT=8;
@@ -29,7 +29,8 @@ export class RocketRollController {
     if(this.phase==='rolling'||this.phase==='recovering')this.angle+=s.omega.x*step;
     if(key&&!this.keyHeld&&!this.active){
       this.angle=0;
-      if(!isRocketProfile(sim.params))this.status='profile';
+      if(sim.params.propulsionKind==='air-breathing-jet')this.status='response';
+      else if(!isRocketProfile(sim.params))this.status='profile';
       else if(sim.params.calibratedHardware&&!rocketRollAuthority(sim).sufficient)this.status='thrust';
       else if(supported||clearance<ROCKET_ROLL_MIN_HEIGHT-1e-6)this.status='height';
       else if(s.gas<sim.initialGas*.55||s.pressure<sim.params.tankPressureMPa*1e6*.43)this.status='gas';

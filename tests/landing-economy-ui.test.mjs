@@ -24,7 +24,7 @@ test('economy benefits come from measured matched baselines and retain negative 
   const increased=landingEconomyComparison(worse,rows);
   assert.equal(increased.gasReductionPercent,-25);assert.equal(increased.forceReductionPercent,-50);
   const node=resultNodes([...rows.slice(0,3),worse]);
-  assert.match(node('#landing-best').textContent,/기체 25.0% 증가/);
+  assert.match(node('#landing-best').textContent,/연료 25.0% 증가/);
   assert.match(node('#landing-best').textContent,/반력 50.0% 증가/);
 });
 
@@ -51,7 +51,7 @@ test('unsafe economy and gentle runs cannot advertise savings; actual hard fixed
 test('economy summary waits for the whole comparison and never mixes all-history results',()=>{
   const node=resultNodes();
   assert.match(node('#landing-best').textContent,/절약 착지: 20.00 kg · 30.00 kN/);
-  assert.match(node('#landing-best').textContent,/기체 75.0% 감소/);
+  assert.match(node('#landing-best').textContent,/연료 75.0% 감소/);
   assert.match(node('#landing-result-rows').innerHTML,/절약 착지/);
   assert.doesNotMatch(resultNodes(rows.slice(1))('#landing-best').textContent,/절약 착지:/);
   assert.doesNotMatch(resultNodes(rows,'__all__')('#landing-best').textContent,/절약 착지:/);

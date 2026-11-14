@@ -66,12 +66,12 @@ test('one visible four-method button dispatches the common callback and the flee
     assert.ok(root.innerHTML.indexOf('id="landing-methods"')<root.innerHTML.indexOf('id="landing-advanced"'),'main comparison stays outside collapsed extra settings');
     assert.doesNotMatch(root.innerHTML,/3방식|15회|절약 효과 비교/);
     compare.emit('click');assert.equal(methodCalls.length,1);assert.equal(retiredCalls,0);
-    assert.equal(methodCalls[0].method,'eco');assert.equal(methodCalls[0].brakeHeight,.1);assert.equal(methodCalls[0].vehicleIds.length,5);
+    assert.equal(methodCalls[0].method,'eco');assert.equal(methodCalls[0].brakeHeight,1);assert.equal(methodCalls[0].vehicleIds.length,5);
     fleet.emit('click');assert.equal(fleetCalls.length,1);assert.equal(fleetCalls[0].vehicleIds.length,5);
     ui.setBusy(true);compare.emit('click');fleet.emit('click');assert.equal(methodCalls.length,1);assert.equal(fleetCalls.length,1);
     ui.setBusy(false);ui.form.elements.namedItem('height').value='invalid';compare.emit('click');assert.equal(methodCalls.length,1,'invalid settings cannot launch a batch');
     method.value='gentle';root.querySelector('#landing-study-preset').emit('click');
     assert.equal(method.value,'eco');assert.equal(ui.form.elements.namedItem('brakeHeight').disabled,true);
-    compare.emit('click');assert.equal(methodCalls.length,2);assert.equal(methodCalls[1].height,.2);assert.equal(dialogs.length,1);
+    compare.emit('click');assert.equal(methodCalls.length,2);assert.equal(methodCalls[1].height,2);assert.equal(dialogs.length,1);
   }finally{globalThis.document=previousDocument;globalThis.FormData=previousFormData;}
 });

@@ -63,8 +63,8 @@ test('results show distinct trigger labels and exclude chassis impacts from the 
   };
   const ui={results,selectedGroup:'sweep',dialog:{querySelector:element},renderChart(){}};
   LandingUI.prototype.renderResults.call(ui);
-  assert.match(element('#landing-best').textContent,/추력 제동 · [\d.]+ m/);
-  assert.match(element('#landing-best').textContent,/자유 낙하보다 .*% 감소/);
+  assert.match(element('#landing-best').textContent,/지정 높이 재가속 · [\d.]+ m/);
+  assert.match(element('#landing-best').textContent,/추력 차단보다 .*% 감소/);
   assert.match(element('#landing-best').textContent,/최소값 후보에서 제외/);
   assert.match(element('#landing-group-conditions').textContent,/제동 시작 높이만 변경/);
   assert.match(element('#landing-result-rows').innerHTML,/기준/);

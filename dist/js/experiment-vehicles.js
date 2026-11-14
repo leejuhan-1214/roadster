@@ -31,7 +31,7 @@ export function experimentVehicles(vehicles){
  * A null body/rig means the existing profile does not define that decomposition;
  * in particular Roadster's 1,750 kg body remains an unverified concept mass assumption.
  */
-export function experimentMass(profile,initialGas=EXPERIMENT_INITIAL_GAS_KG){
+export function experimentMass(profile,initialGas=profile.fuelCapacityKg??EXPERIMENT_INITIAL_GAS_KG){
   const dry=Number(profile.dryMass),gas=Number(initialGas);
   if(!Number.isFinite(dry)||dry<=0||!Number.isFinite(gas)||gas<0)
     throw new TypeError('질량은 양의 차체 질량과 0 이상의 기체 질량이어야 합니다.');
@@ -45,7 +45,7 @@ export function experimentMass(profile,initialGas=EXPERIMENT_INITIAL_GAS_KG){
 }
 
 const kg=new Intl.NumberFormat('ko-KR',{maximumFractionDigits:0});
-export function experimentMassLabel(profile,initialGas=EXPERIMENT_INITIAL_GAS_KG){
+export function experimentMassLabel(profile,initialGas=profile.fuelCapacityKg??EXPERIMENT_INITIAL_GAS_KG){
   const mass=experimentMass(profile,initialGas);
   return (profile.short||profile.title)+' · '+kg.format(mass.total)+' kg'+(mass.assumed?' · 가정':'');
 }

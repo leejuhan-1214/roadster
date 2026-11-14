@@ -1,3 +1,4 @@
+import {installJetRig,updateJetRig} from './jet-rig.js?v=20261115-jet1';
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
 import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
 import {LandingVisual} from './landing-visual.js?v=20261112-lab1';
@@ -456,9 +457,10 @@ export class FlightScene {
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
-      if(part&&this.mode==='city'&&entry.kind==='hypothesis'){part.visible=entry.id==='thrusters';continue;}
+      if(part&&this.mode==='city'&&entry.kind==='hypothesis'){part.visible=['thrusters','jet-rig'].includes(entry.id);continue;}
       if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId?['wing','tank','battery','suspension']:[])].includes(entry.id));
     }
+    for(const part of this.vehicle.retiredAirParts||[])part.visible=false;
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
   }
   setHypothesesVisible(show) {
@@ -555,6 +557,16 @@ export class FlightScene {
       prepareAssessmentVehicle(vehicle);
       prepareRocketRetrofit(vehicle);
       configureVehicleFit(vehicle,profile);
+      if(profile.propulsionKind==='air-breathing-jet'){
+        Object.assign(vehicle.geometryParams,installJetRig(vehicle,profile));
+        const retired=['thrusters','tank','battery','suspension','compressor','air-lines'];
+        vehicle.retiredAirParts=retired.map(id=>vehicle.detailParts?.get(id)||vehicle.parts?.get(id)).filter(Boolean);
+        for(const part of vehicle.retiredAirParts)part.visible=false;
+        vehicle.catalog=(vehicle.catalog||[]).filter(entry=>!retired.includes(entry.id));
+        vehicle.catalog.push(vehicle.jetRig.inspectionEntry);
+        vehicle.detailParts?.set('jet-rig',vehicle.jetRig.root);
+        vehicle.parts?.set('jet-rig',vehicle.jetRig.root);
+      }
       vehicle.profileId=profile.id;this.vehicleCache.set(profile.id,vehicle);
     }
     this.vehicleCache.delete(profile.id);this.vehicleCache.set(profile.id,vehicle);
@@ -660,6 +672,8 @@ export class FlightScene {
     // The landing diagram uses one shared linear force scale. Keep the older
     // driving/inspection vectors available without drawing both sets together.
     const showVectors=!!options.vectors&&!(mode==='lab'&&this.landingVisual?.enabled);
+    updateJetRig(this.vehicle,view,visualClock.dt);
+    for(const part of this.vehicle.retiredAirParts||[])part.visible=false;
     this.updateJets(view,visualClock.dt,showVectors,visualClock.time);
     this.gravityArrow.visible=showVectors;
     if(showVectors){
@@ -752,10 +766,10 @@ export class FlightScene {
       const t=thrusters[i],power=clamp((t.force||0)/14000,0,1);
       if(power<=.005&&!showVectors){this.jets[i].visible=false;this.forceArrows[i].visible=false;continue;}
       const worldPosition=t.pos.clone().applyQuaternion(state.q).add(state.pos),forceDir=t.dir.clone().applyQuaternion(state.q);
-      const nozzle=this.vehicle.gimbalNozzles?.[i];
+      const nozzle=this.vehicle.jetRig?null:this.vehicle.gimbalNozzles?.[i];
       if(nozzle&&!this.hasCustomModel){nozzle.updateWorldMatrix(true,false);worldPosition.copy(nozzle.userData.exitOffset).applyMatrix4(nozzle.matrixWorld);}
-      else if(!this.hasCustomModel&&i>=4&&this.vehicle.jetMounts?.[i])worldPosition.copy(this.vehicle.jetMounts[i].pos).applyQuaternion(state.q).add(sim.bodyPosition);
-      const plume=this.jets[i];plume.visible=power>.005&&this.mode!=='inspect';
+      else if(!this.vehicle.jetRig&&!this.hasCustomModel&&i>=4&&this.vehicle.jetMounts?.[i])worldPosition.copy(this.vehicle.jetMounts[i].pos).applyQuaternion(state.q).add(sim.bodyPosition);
+      const plume=this.jets[i];plume.visible=!this.vehicle.jetRig&&power>.005&&this.mode!=='inspect';
       plume.position.copy(worldPosition);
       // Cone extends along -Y, so local +Y is the reaction-force direction.
       plume.quaternion.setFromUnitVectors(UP,forceDir);plume.scale.set(.8+power*.7,.35+power*1.1,.8+power*.7);
