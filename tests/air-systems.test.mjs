@@ -23,11 +23,11 @@ test('four intercooled stages require more than reversible isothermal work and l
 test('parked charging imports mass and enthalpy, spends actual battery work and preserves tank balances',()=>{
   const sim=depleted(),s=sim.state,before={gas:s.gas,energy:s.batteryJ,used:s.gasUsed,temp:s.temp};
   advance(sim,1,{compressor:true,brake:1});const t=sim.telemetry();
-  assert.equal(t.compressorState,'charging');assert.ok(t.compressorFlowKgS>0&&t.compressorFlowKgS<=.2);
+  assert.equal(t.compressorState,'charging');assert.ok(t.compressorFlowKgS>0&&t.compressorFlowKgS<=DEFAULTS.compressorMaxFlowKgS);
   assert.ok(s.gas>before.gas&&s.temp>before.temp);near(s.batteryJ,before.energy-s.compressorEnergyJ,5e-5);
   near(t.gasConsumedKg,before.used);near(s.gas-before.gas,t.gasRefilledKg,1e-8);
   assert.ok(t.massBalanceError<1e-8&&t.tankEnergyBalanceError<1e-5);
-  near(t.compressorHeatW,t.compressorPowerW);assert.ok(s.pressure<=DEFAULTS.tankPressureMPa*1e6);
+  near(t.compressorHeatW,t.compressorCompressionPowerW);near(t.compressorPowerW,t.compressorCompressionPowerW+t.compressorCoolingPowerW);assert.ok(s.pressure<=DEFAULTS.tankPressureMPa*1e6);
 });
 
 test('recharge is opt-in and disabled while driving, airborne, commanding jets, or waiting for valves to close',()=>{

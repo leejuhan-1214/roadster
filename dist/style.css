@@ -72,3 +72,5 @@ dialog.landing-results-dialog{width:min(1100px,calc(100vw - 36px));max-width:110
 .city.cockpit-view:not(.cockpit-panels-open).show-drive-controls .city-touch{bottom:166px}
 @media(max-width:1000px){.cockpit-tools{right:12px;top:84px}.city.cockpit-view.cockpit-panels-open .city-garage{top:128px}}
 @media(max-width:700px){.cockpit-tools{top:108px;right:10px;gap:1px;padding:4px}.cockpit-tools button{padding:7px 6px;font-size:9px}.city.cockpit-view.cockpit-panels-open .city-garage{top:150px}.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer{width:160px;right:10px;bottom:20px}}
+
+.city-garage #city-recharge{font-size:11px;line-height:1.5;color:#a2f5db;font-variant-numeric:tabular-nums}.city-garage #city-recharge[hidden]{display:none}

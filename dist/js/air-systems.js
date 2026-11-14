@@ -6,8 +6,9 @@
  * pressure proportional to power^(2/3). Leaking ground seal reduces pressure.
  */
 export const AIR_SYSTEM_DEFAULTS = Object.freeze({
-  compressorPowerKW:60, compressorEfficiency:.65, compressorMaxFlowKgS:.2,
+  compressorPowerKW:300, compressorEfficiency:.65, compressorMaxFlowKgS:.5,
   compressorStages:4, ambientTemperature:300, tankCoolingWPerK:200,
+  activeTankCoolingWPerK:1500, activeTankCoolingMaxKW:40, compressorCoolingPowerKW:5, compressorTargetFraction:.99,
   fanPowerKW:80, fanArea:2.2, fanEfficiency:.65, batteryMaxDischargeKW:800,
 });
 export const AIR_R=287, AIR_GAMMA=1.4, AIR_CV=AIR_R/(AIR_GAMMA-1), AIR_CP=AIR_CV*AIR_GAMMA, AIR_AMBIENT_PA=101325;
@@ -28,35 +29,71 @@ export function compressorSpecificWork(pressure,params={}){
  * refill process, so inactive closed-tank blowdown experiments remain unchanged.
  */
 export function rechargeAirTank(state,params,dt,{enabled=false,blockReason=null,capacityKg=Infinity,powerBudgetW=Infinity}={}){
-  const empty={addedKg:0,powerW:0,inletEnthalpyJ:0,tankHeatOutJ:0,aftercoolerHeatJ:0,
+  const empty={addedKg:0,powerW:0,compressionPowerW:0,coolingPowerW:0,inletEnthalpyJ:0,tankHeatOutJ:0,aftercoolerHeatJ:0,
     gas:state.gas,temp:state.temp,pressure:state.pressure,status:'off'};
   if(!enabled||!(dt>0))return empty;
   if(blockReason)return {...empty,status:blockReason};
-  const battery=Math.max(0,state.batteryJ||0),power=numeric(params.compressorPowerKW,60)*1000;
-  if(!(battery>0)||!(powerBudgetW>0)||!(power>0))return {...empty,status:'battery'};
-  const volume=numeric(params.tankVolume,.9,.02,2),ambient=numeric(params.ambientTemperature,300,150,500);
-  const pressureLimit=numeric(params.tankPressureMPa,35.875,.101325,80)*1e6;
   if(state.gas>=capacityKg-1e-10)return {...empty,status:'full'};
-  const oldU=state.gas*AIR_CV*state.temp;
-  // Exact exponential relaxation with fixed pre-inlet mass avoids numerical
-  // overshoot of ambient temperature even for large testing time steps.
-  const cooling=numeric(params.tankCoolingWPerK,200);
-  const heatOut=state.gas>0?(state.temp-ambient)*state.gas*AIR_CV*(1-Math.exp(-cooling*dt/(state.gas*AIR_CV))):0;
-  const cooledU=oldU-heatOut;
+  const targetFraction=numeric(params.compressorTargetFraction,.99,.5,1),targetKg=capacityKg*targetFraction;
+  // The operational cut-off leaves a declared one-percent reserve instead of
+  // pretending that an asymptotic, ambient-temperature 100% fill takes finite time.
+  if(state.gas>=targetKg-1e-10)return {...empty,status:'ready'};
+  const battery=Math.max(0,state.batteryJ||0),rated=numeric(params.compressorPowerKW,300)*1000;
+  if(!(battery>1e-8)||!(powerBudgetW>0)||!(rated>0))return {...empty,status:'battery'};
+  const volume=numeric(params.tankVolume,.6,.02,2),ambient=numeric(params.ambientTemperature,300,150,500);
+  const pressureLimit=numeric(params.tankPressureMPa,35.875,.101325,80)*1e6;
+  const auxiliaryRated=numeric(params.compressorCoolingPowerKW,5)*1000;
+  const inputBudget=Math.min(battery/dt,powerBudgetW,rated+auxiliaryRated);
+  // Pumps/fans share the same finite battery budget. With a low power allowance
+  // both systems derate, so a tiny remaining battery cannot provide free cooling.
+  const auxiliaryPower=inputBudget*auxiliaryRated/(rated+auxiliaryRated);
+  const compressionBudget=(inputBudget-auxiliaryPower)*dt;
+  const coolingScale=auxiliaryRated>0?auxiliaryPower/auxiliaryRated:0;
+  const oldU=state.gas*AIR_CV*state.temp,heatCapacity=state.gas*AIR_CV;
+  const passive=numeric(params.tankCoolingWPerK,200);
+  const passiveHeat=heatCapacity>0?(state.temp-ambient)*heatCapacity*(1-Math.exp(-passive*dt/heatCapacity)):0;
+  const passivelyCooledU=oldU-passiveHeat;
+  const active=numeric(params.activeTankCoolingWPerK,1500)*coolingScale;
+  const activeHeat=heatCapacity>0?Math.min(Math.max(0,passivelyCooledU-heatCapacity*ambient)*(1-Math.exp(-active*dt/heatCapacity)),numeric(params.activeTankCoolingMaxKW,40)*1000*coolingScale*dt):0;
+  const heatOut=passiveHeat+activeHeat,cooledU=oldU-heatOut;
   const maxPressureU=pressureLimit*volume/(AIR_GAMMA-1);
-  const maxAdded=Math.max(0,Math.min(capacityKg-state.gas,(maxPressureU-cooledU)/(AIR_CP*ambient),numeric(params.compressorMaxFlowKgS,.2)*dt));
-  const energyBudget=Math.min(battery,power*dt,powerBudgetW*dt);
-  // End-pressure work is a conservative quadrature: it never understates the
-  // compression work while pressure rises through this integration step.
+  const requestedMass=Math.max(0,Math.min(targetKg-state.gas,numeric(params.compressorMaxFlowKgS,.5)*dt));
+  const pressureMass=Math.max(0,(maxPressureU-cooledU)/(AIR_CP*ambient));
+  const maxAdded=Math.min(requestedMass,pressureMass);
+  // End-pressure work is conservative quadrature: compression work is never
+  // understated as the receiving tank pressure rises during the step.
   const workFor=dm=>dm*compressorSpecificWork((AIR_GAMMA-1)*(cooledU+dm*AIR_CP*ambient)/volume,params);
   let lo=0,hi=maxAdded;
-  if(workFor(hi)>energyBudget)for(let i=0;i<40;i++){const mid=(lo+hi)/2;if(workFor(mid)<=energyBudget)lo=mid;else hi=mid;}
+  if(workFor(hi)>compressionBudget)for(let i=0;i<40;i++){const mid=(lo+hi)/2;if(workFor(mid)<=compressionBudget)lo=mid;else hi=mid;}
   else lo=hi;
   const addedKg=lo,energy=workFor(addedKg),inletEnthalpyJ=addedKg*AIR_CP*ambient;
   const gas=state.gas+addedKg,newU=cooledU+inletEnthalpyJ;
-  return {addedKg,powerW:energy/dt,inletEnthalpyJ,tankHeatOutJ:heatOut,
-    aftercoolerHeatJ:energy,gas,temp:gas>0?newU/(gas*AIR_CV):ambient,
-    pressure:(AIR_GAMMA-1)*newU/volume,status:addedKg>1e-12?'charging':'full'};
+  const status=gas>=targetKg-1e-10?'ready':pressureMass<requestedMass*.999?'cooling':'charging';
+  return {addedKg,powerW:energy/dt+auxiliaryPower,compressionPowerW:energy/dt,coolingPowerW:auxiliaryPower,
+    inletEnthalpyJ,tankHeatOutJ:heatOut,aftercoolerHeatJ:energy,gas,temp:gas>0?newU/(gas*AIR_CV):ambient,
+    pressure:(AIR_GAMMA-1)*newU/volume,status};
+}
+
+/** Prediction only. Uses the same mass, heat, pressure and battery equations as
+ * live filling; no live state is changed and no simulation-time scaling occurs.
+ * UI callers should cache this estimate (about once per two simulation seconds).
+ */
+export function estimateRecharge(state,params,{capacityKg,powerBudgetW=Infinity,targetFraction=params.compressorTargetFraction??.99,stepSeconds=2,maxSeconds=14400}={}){
+  const fraction=numeric(targetFraction,.99,.5,1),targetKg=capacityKg*fraction;
+  const result={seconds:null,energyJ:null,targetFraction:fraction,targetKg,reason:'limit'};
+  if(!(capacityKg>0)||!Number.isFinite(capacityKg))return result;
+  if(state.gas>=targetKg-1e-10)return {...result,seconds:0,energyJ:0,reason:'ready'};
+  const p={...params,compressorTargetFraction:fraction},dt=numeric(stepSeconds,2,.05,10);
+  let next={gas:state.gas,temp:state.temp,pressure:state.pressure,batteryJ:state.batteryJ},elapsed=0,energy=0;
+  while(elapsed<maxSeconds){
+    const h=Math.min(dt,maxSeconds-elapsed),r=rechargeAirTank(next,p,h,{enabled:true,capacityKg,powerBudgetW});
+    if(r.status==='battery')return {...result,reason:'battery',energyJ:energy};
+    next={gas:r.gas,temp:r.temp,pressure:r.pressure,batteryJ:Math.max(0,next.batteryJ-r.powerW*h)};
+    elapsed+=h;energy+=r.powerW*h;
+    if(next.gas>=targetKg-1e-10)return {...result,seconds:elapsed,energyJ:energy,reason:'ready'};
+    if(r.addedKg<=1e-12&&Math.abs(r.tankHeatOutJ)<=1e-9)return {...result,reason:'blocked',energyJ:energy};
+  }
+  return {...result,energyJ:energy};
 }
 
 export function poweredGroundFan({enabled=false,clearance=0,upY=1,batteryJ=0,dt=.002,powerBudgetW=Infinity},params={}){

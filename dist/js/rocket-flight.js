@@ -1,7 +1,20 @@
-import {isRocketProfile} from './rocket-layout.js?v=20261114-rocket1';
+import {isRocketProfile} from './rocket-layout.js?v=20261115-fleet1';
+import {nozzle} from './physics.js?v=20261115-fleet1';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const upY=q=>1-2*(q.x*q.x+q.z*q.z);
 export const ROCKET_ROLL_MIN_HEIGHT=8;
+export const ROCKET_ROLL_MIN_UPWARD_SPEED=7;
+// Conservative control envelope, not a proof of collision-free flight. Evaluate
+// the real fitted lever arm and current cold-gas force before committing.
+export function rocketRollAuthority(sim){
+  const s=sim.state,lift=sim.thrusters.filter(t=>t.group==='lift');
+  let positive=0,negative=0,force=0;
+  for(const t of lift){const f=nozzle(s.pressure,s.temp,t.area).force;
+    const moment=-t.pos.z*f;force+=f;positive+=Math.max(0,moment);negative+=Math.max(0,-moment);}
+  const angularAcceleration=Math.min(positive,negative)/sim.inertia.x;
+  const thrustToWeight=force/(sim.mass*Math.max(.001,sim.params.gravity));
+  return {angularAcceleration,thrustToWeight,sufficient:angularAcceleration>=8&&thrustToWeight>=1.5};
+}
 
 // A controller, not an animation: outputs torque/acceleration requests only.
 // The solver alone changes pose, velocity and tank state. The roll axis is the
@@ -19,9 +32,10 @@ export class RocketRollController {
       if(!isRocketProfile(sim.params))this.status='profile';
       else if(supported||clearance<ROCKET_ROLL_MIN_HEIGHT-1e-6)this.status='height';
       else if(s.gas<sim.initialGas*.55||s.pressure<sim.params.tankPressureMPa*1e6*.43)this.status='gas';
-      // Low inventory needs the upward impulse acquired during launch.
-      else if(s.gas<sim.initialGas*.80&&s.vel.y<7)this.status='momentum';
+      // Acquire upward momentum with the actual launch before spending the roll reserve.
+      else if(s.vel.y<ROCKET_ROLL_MIN_UPWARD_SPEED)this.status='momentum';
       else if(upY(s.q)<.94||s.omega.length()>.5)this.status='attitude';
+      else if(!rocketRollAuthority(sim).sufficient)this.status='thrust';
       else {this.phase='prepare';this.status='prepare';this.startTime=t;}
     }
     this.keyHeld=!!key;

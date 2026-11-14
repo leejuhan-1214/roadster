@@ -4,8 +4,8 @@ import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
 import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
-import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261114-air1';
-import {ROCKET_PARAMS,ROCKET_THRUSTERS,ROCKET_LIFT_LAYOUT,isRocketProfile} from './rocket-layout.js?v=20261114-rocket1';
+import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261115-fleet1';
+import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-fleet1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -50,6 +50,8 @@ export const PARAMETER_INFO = {
   compressorPowerKW: ['공기 압축기 출력', 'kW', '가정 · 4단 중간 냉각 및 후냉각, 정차 중 배터리로 충전'],
   compressorEfficiency: ['압축기 단 효율', '—', '가정 · 등엔트로피 단 압축 일과 실제 전기 입력의 비'],
   compressorMaxFlowKgS: ['흡입 질량 유량 한도', 'kg/s', '가정 · 압력과 가용 전력에 따라 더 감소'],
+  compressorCoolingPowerKW: ['충전 냉각 보조 전력', 'kW', '가정 · 압축기와 같은 배터리 예산을 쓰는 펌프·팬'],
+  activeTankCoolingMaxKW: ['탱크 능동 냉각 한도', 'kW', '가정 · 주변보다 뜨거운 탱크에서 제거하는 열률 한도'],
   fanPowerKW: ['팬 정격 전력', 'kW', '가정 · 탱크가 아닌 배터리로 지면 흡착 팬 구동'],
   fanArea: ['흡착 유효 면적', 'm²', '가정 · 압력차 × 면적으로 다운포스 계산'],
   motorPowerKW: ['모터 최대 출력', 'kW', '가정 · 앞 1개·뒤 2개 모터 합산'],
@@ -147,8 +149,8 @@ export function rocketReference(mInitial, mFinal, effectiveVelocity) {
   return effectiveVelocity * Math.log(mInitial / mFinal);
 }
 
-function makeThrusters(rocket=false) {
-  if(rocket)return ROCKET_THRUSTERS.map(t=>({...t,pos:new Vector3(...t.position),mountPosition:new Vector3(...t.position),dir:new Vector3(...t.direction),force:0,maxForce:0,opening:0,command:0,mdot:0}));
+function makeThrusters(rocket=false,params={}) {
+  if(rocket)return rocketThrusterLayout(params).map(t=>({...t,pos:new Vector3(...t.position),mountPosition:new Vector3(...t.position),dir:new Vector3(...t.direction),force:0,maxForce:0,opening:0,command:0,mdot:0}));
   const result = [];
   for (const x of [LIFT_LAYOUT.x, -LIFT_LAYOUT.x]) for (const z of [-LIFT_LAYOUT.z, LIFT_LAYOUT.z])
     result.push({ name: `${x > 0 ? '전' : '후'}${z < 0 ? '좌' : '우'} 수직`, group: 'lift',
@@ -167,7 +169,7 @@ function makeThrusters(rocket=false) {
 export class PhysicsSim {
   constructor(params = {}) {
     this.params = { ...DEFAULTS, ...(isRocketProfile(params)?ROCKET_PARAMS:{}), ...params };
-    this.thrusters = makeThrusters(isRocketProfile(this.params));
+    this.thrusters = makeThrusters(isRocketProfile(this.params),this.params);
     this.cg = new Vector3();
     this.bodyHalf = [...BODY_ENVELOPE.half];
     this.bodyBoxCenter = new Vector3(...BODY_ENVELOPE.center);
@@ -188,7 +190,7 @@ export class PhysicsSim {
   reset(preset = 'ground') {
     const p = this.params;
     this.rocketProfile=isRocketProfile(p);
-    this.thrusters=makeThrusters(this.rocketProfile);
+    this.thrusters=makeThrusters(this.rocketProfile,p);
     p.dryMass = Math.max(100, Number(p.dryMass) || DEFAULTS.dryMass);
     p.tankVolume = clamp(Number(p.tankVolume) || DEFAULTS.tankVolume, .02, 2);
     p.tankPressureMPa = clamp(Number(p.tankPressureMPa) || DEFAULTS.tankPressureMPa, .101325, 80);
@@ -215,9 +217,10 @@ export class PhysicsSim {
     for(const key of ['liftX','liftY','liftZ','boostX','boostY','boostZ','yawX','yawY','yawZ']){
       const value=Number(p[key]);p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],key.endsWith('Y')?-1.5:key==='boostX'?-4:.15,key.endsWith('Y')?1.5:key==='boostX'?-.15:3);
     }
-    this.liftLayout=this.rocketProfile?ROCKET_LIFT_LAYOUT:{x:p.liftX,y:p.liftY,z:p.liftZ};
+    this.liftLayout={x:p.liftX,y:p.liftY,z:p.liftZ};
+    const rocketLayout=this.rocketProfile?rocketThrusterLayout(p):null;
     this.thrusters.forEach((t,i)=>{
-      if(this.rocketProfile)t.mountPosition.fromArray(ROCKET_THRUSTERS[i].position);
+      if(this.rocketProfile)t.mountPosition.fromArray(rocketLayout[i].position);
       else if(i<4)t.mountPosition.set(i<2?p.liftX:-p.liftX,p.liftY,i%2?p.liftZ:-p.liftZ);
       else if(i<6)t.mountPosition.set(p.boostX,p.boostY,i%2?p.boostZ:-p.boostZ);
       else t.mountPosition.set(i%2?-p.yawX:p.yawX,p.yawY,(i===6||i===9)?p.yawZ:-p.yawZ);
@@ -240,7 +243,7 @@ export class PhysicsSim {
     this.contactCount = preset === 'drop' || preset === 'flight' ? 0 : 4;
     this.fanForce = 0; this.totalThrust = 0; this.maxThrust = 0;
     this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
-    this.compressorState='off';this.compressorPowerW=0;this.compressorFlowKgS=0;this.compressorHeatW=0;this.tankHeatW=0;
+    this.compressorState='off';this.compressorPowerW=0;this.compressorCompressionPowerW=0;this.compressorCoolingPowerW=0;this.compressorFlowKgS=0;this.compressorHeatW=0;this.tankHeatW=0;
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
     this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
     this.preStepVelocityY=0;this.resolvedAcceleration=new Vector3();this.stepDuration=0;
@@ -371,7 +374,7 @@ export class PhysicsSim {
     s.gas=refill.gas;s.temp=refill.temp;s.pressure=refill.pressure;
     s.gasRefilledKg+=refill.addedKg;s.inletEnthalpyJ+=refill.inletEnthalpyJ;s.tankHeatOutJ+=refill.tankHeatOutJ;
     s.compressorEnergyJ+=refill.powerW*dt;
-    this.compressorState=refill.status;this.compressorPowerW=refill.powerW;this.compressorFlowKgS=refill.addedKg/dt;
+    this.compressorState=refill.status;this.compressorPowerW=refill.powerW;this.compressorCompressionPowerW=refill.compressionPowerW;this.compressorCoolingPowerW=refill.coolingPowerW;this.compressorFlowKgS=refill.addedKg/dt;
     this.compressorHeatW=refill.aftercoolerHeatJ/dt;this.tankHeatW=refill.tankHeatOutJ/dt;
     const mass = this.mass, gravity = Math.max(0, p.gravity);
     this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
@@ -768,7 +771,7 @@ export class PhysicsSim {
     return {motorState:this.motorState, electricPowerW:this.electricPowerW,regenPowerW:this.regenPowerW,driveLossW:this.driveLossW,tractionCut:this.tractionCut,slidingWheels:this.wheels.filter(w=>w.sliding).length,massFlowKgS:this.massFlowKgS,manifoldPressureMPa:this.manifoldPressure/1e6,tankCapacityKg:this.initialGas,tankVolumeL:p.tankVolume*1000,
       gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
       horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
-      propulsionProfile:this.rocketProfile?'rocket2026':'legacy',forwardAcceleration:s.acceleration.dot(fwd),
+      propulsionProfile:this.rocketProfile?p.propulsionProfile:'legacy',forwardAcceleration:s.acceleration.dot(fwd),
       longitudinalG:s.acceleration.dot(fwd)/Math.max(.001,p.gravity),rearThrustN:this.thrusters.filter(t=>t.group==='boost').reduce((sum,t)=>sum+t.force,0),
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       handbrakeAmount:this.handbrakeAmount,handbrakeForceN:this.handbrakeForceN,
@@ -776,7 +779,7 @@ export class PhysicsSim {
       verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,
       temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
       thrustN: this.totalThrust, fanN: this.fanForce, fanPressurePa:this.fanPressurePa,fanPowerW:this.fanPowerW,fanAirflowM3S:this.fanAirflowM3S,fanSeal:this.fanSeal,contactCount: contact, slip: this.maxSlip || 0,
-      compressorState:this.compressorState,compressorPowerW:this.compressorPowerW,compressorFlowKgS:this.compressorFlowKgS,
+      compressorState:this.compressorState,compressorPowerW:this.compressorPowerW,compressorCompressionPowerW:this.compressorCompressionPowerW,compressorCoolingPowerW:this.compressorCoolingPowerW,compressorFlowKgS:this.compressorFlowKgS,
       compressorHeatW:this.compressorHeatW,tankHeatW:this.tankHeatW,compressorEnergyJ:s.compressorEnergyJ,
       gasRefilledKg:s.gasRefilledKg,gasConsumedKg:s.gasUsed,
       kineticEnergy: kinetic, potentialEnergy: m * p.gravity * Math.max(0, s.pos.y - this.restHeight),

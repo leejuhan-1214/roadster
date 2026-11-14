@@ -69,6 +69,7 @@ function batchHatchFrames(rig,covers){
 
 function fitNozzles(vehicle){
   const rig=vehicle.parts.get('thrusters');if(!rig)return {};
+  const rocket=!!vehicle.rocketRetrofit,boostFractions=rocket?[-1,-1/3,1/3,1]:[-1,1];
   const meshes=skinMeshes(vehicle),bounds=new THREE.Box3();
   for(const mesh of meshes)bounds.union(rootBounds(mesh,vehicle.root));
   if(bounds.isEmpty())bounds.set(new THREE.Vector3(-2.2,-.4,-.95),new THREE.Vector3(2.2,.8,.95));
@@ -99,16 +100,16 @@ function fitNozzles(vehicle){
     covers.push(hatch(rig,new THREE.Vector3(mount.position.x,bottom[i].y+.004,mount.position.z),new THREE.Vector3(0,-1,0),.30,coverMaterial,i));
   }
   let boostY=clamp(bounds.min.y+size.y*.25,bounds.min.y+.16,bounds.max.y-.18);
-  const nominalBoostZ=clamp(halfWidth*.45,.25,.65);
+  const nominalBoostZ=clamp(halfWidth*(rocket?.54:.45),rocket?.30:.25,rocket?.76:.65);
   let boostZ=nominalBoostZ,rear=[];
   // Open bumper meshes can let a rear ray reach the FRONT shell. Search paired
   // ports on the actual rear section before adding the inward mount offset.
   // The common height/spacing still matches the symmetric thrust allocator.
   rearSearch:for(const heightFraction of [.25,.32,.4,.5,.6,.7]){
     const y=clamp(bounds.min.y+size.y*heightFraction,bounds.min.y+.16,bounds.max.y-.18);
-    for(const widthFactor of [1,.8,.6,.4]){
-      const z=nominalBoostZ*widthFactor;
-      const points=[-z,z].map(sideZ=>surfaceHit(meshes,
+    for(const widthFactor of (rocket?[1,.9,.8]:[1,.8,.6,.4])){
+      const z=rocket?Math.max(.285,nominalBoostZ*widthFactor):nominalBoostZ*widthFactor;
+      const points=boostFractions.map(fraction=>fraction*z).map(sideZ=>surfaceHit(meshes,
         new THREE.Vector3(bounds.min.x-2,y,sideZ),new THREE.Vector3(1,0,0),
         new THREE.Vector3(NaN,NaN,NaN)));
       if(points.every(p=>Number.isFinite(p.x)&&p.x<bounds.min.x+size.x*.35)){
@@ -118,12 +119,12 @@ function fitNozzles(vehicle){
   }
   // A completely open source shell has no rear surface to sample. Its rear
   // envelope is the conservative fallback; never use the far/front ray hit.
-  if(!rear.length)rear=[-boostZ,boostZ].map(z=>new THREE.Vector3(bounds.min.x,boostY,z));
+  if(!rear.length)rear=boostFractions.map(fraction=>new THREE.Vector3(bounds.min.x,boostY,fraction*boostZ));
   const boostX=Math.max(...rear.map(p=>p.x))+.075;
   // Original rig's first four groups are lift mounts, followed by two boosts.
-  const boosts=rig.children.filter(n=>n.isGroup&&!vehicle.gimbalNozzles?.some(p=>p.parent===n)&&!vehicle.fans?.includes(n)).slice(0,2);
+  const boosts=rocket?vehicle.rearNozzles:rig.children.filter(n=>n.isGroup&&!vehicle.gimbalNozzles?.some(p=>p.parent===n)&&!vehicle.fans?.includes(n)).slice(0,2);
   boosts.forEach((mount,i)=>{
-    mount.name='body fitted rear nozzle '+i;mount.position.set(boostX,boostY,i?boostZ:-boostZ);mount.scale.setScalar(.70);
+    mount.name='body fitted rear nozzle '+i;mount.position.set(boostX,boostY,boostFractions[i]*boostZ);mount.scale.setScalar(.70);
     vehicle.jetMounts[4+i]={pos:new THREE.Vector3(rear[i].x+.006,boostY,mount.position.z),dir:new THREE.Vector3(1,0,0)};
     covers.push(hatch(rig,new THREE.Vector3(rear[i].x+.004,boostY,mount.position.z),new THREE.Vector3(-1,0,0),.16,coverMaterial,4+i));
   });
@@ -133,7 +134,7 @@ function fitNozzles(vehicle){
   // port pairs toward the sill until every ray reaches the outer body shell.
   for(const factor of [1,.9,.8,.7,.6]){
     const candidateX=nominalYawX*factor,points=[];
-    for(const [x,side]of [[candidateX,1],[-candidateX,-1],[candidateX,-1],[-candidateX,1]]){
+    for(const [x,side]of (rocket?[[candidateX,1],[candidateX,-1]]:[[candidateX,1],[-candidateX,-1],[candidateX,-1],[-candidateX,1]])){
       points.push(surfaceHit(meshes,new THREE.Vector3(x,yawY,side*(halfWidth+2)),new THREE.Vector3(0,0,-side),new THREE.Vector3(x,yawY,side*halfWidth)));
     }
     const clearance=Math.min(...points.map((p,i)=>p.z*(i===0||i===3?1:-1)));
@@ -142,11 +143,11 @@ function fitNozzles(vehicle){
   }
   const yawZ=Math.max(.25,Math.min(...sidePoints.map(p=>Math.abs(p.z)))-.07);
   sidePoints.forEach((surface,i)=>{
-    const side=Math.sign(surface.z),position=new THREE.Vector3(i%2?-yawX:yawX,yawY,side*yawZ);
+    const side=Math.sign(surface.z),position=new THREE.Vector3(rocket?yawX:(i%2?-yawX:yawX),yawY,side*yawZ);
     const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.040,.045,12,1,true),new THREE.MeshStandardMaterial({color:0x4c5863,metalness:.8,roughness:.35}));
     nozzle.name='body fitted attitude nozzle '+i;nozzle.position.copy(position);nozzle.quaternion.setFromUnitVectors(UP,new THREE.Vector3(0,0,-side));nozzle.userData.partId='thrusters';rig.add(nozzle);
-    vehicle.jetMounts[6+i]={pos:surface.clone().add(new THREE.Vector3(0,0,-side*.006)),dir:new THREE.Vector3(0,0,-side)};
-    covers.push(hatch(rig,surface.clone().add(new THREE.Vector3(0,0,-side*.004)),new THREE.Vector3(0,0,side),.11,coverMaterial,6+i));
+    vehicle.jetMounts[(rocket?8:6)+i]={pos:surface.clone().add(new THREE.Vector3(0,0,-side*.006)),dir:new THREE.Vector3(0,0,-side)};
+    covers.push(hatch(rig,surface.clone().add(new THREE.Vector3(0,0,-side*.004)),new THREE.Vector3(0,0,side),.11,coverMaterial,(rocket?8:6)+i));
   });
   // Compact four-duct diagram follows each source vehicle's lower rear shell.
   // Source meshes remain untouched; housing/rotor are not exterior OEM claims.
@@ -169,7 +170,7 @@ function fitNozzles(vehicle){
     tank.userData.basePosition=tank.position.clone();
   }
   batchHatchFrames(rig,covers);
-  vehicle.nozzleCovers=covers;vehicle.nozzleFit={skinBounds:bounds.clone(),liftSurfaces:bottom.map(v=>v.toArray()),rearSurfaces:rear.map(v=>v.toArray()),sideSurfaces:sidePoints.map(v=>v.toArray())};
+  vehicle.nozzleCovers=covers;vehicle.nozzleFit={configuration:rocket?'4+4+2':'4+2+4',skinBounds:bounds.clone(),liftSurfaces:bottom.map(v=>v.toArray()),rearSurfaces:rear.map(v=>v.toArray()),sideSurfaces:sidePoints.map(v=>v.toArray())};
   return {liftX,liftY,liftZ,boostX,boostY,boostZ,yawX,yawY,yawZ};
 }
 

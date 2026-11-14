@@ -142,7 +142,7 @@ test('published reference mass plus assumed rig and box inertia feed actual simu
     assert.equal(params.springK,DEFAULTS.springK);
     assert.equal(params.tankVolume,ROCKET_PARAMS.tankVolume);
     near(sim.initialGas,250,.001);
-    assert.equal(params.propulsionProfile,'legacy');
+    assert.equal(params.propulsionProfile,'rocket10');
   }
   const original=vehiclePhysics(vehicleProfile('roadster'),{},DEFAULTS);
   assert.deepEqual(original,{...DEFAULTS,...ROCKET_PARAMS});assert.notEqual(original,DEFAULTS);
