@@ -1,4 +1,4 @@
-import {experimentMass} from './experiment-vehicles.js?v=20261111-cockpit1';
+import {experimentMass} from './experiment-vehicles.js?v=20261114-rocket1';
 import {landingTheory,landingImpulseAudit,landingTradeoff} from './landing-analysis.js?v=20261111-calibration1';
 const METHODS = {free:'자유 낙하',brake:'지면 전 추력 제동',gentle:'완만한 하강 제어',eco:'절약 착지'};
 const COLORS = ['#a2f5db','#ffbe78','#8bbfff','#ef9ed4','#dfdc7d','#b5a0ff'];

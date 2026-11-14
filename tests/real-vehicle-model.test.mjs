@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import {adaptRealVehicle} from '../dist/js/real-vehicle-model.js';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
 import {DEFAULTS,PhysicsSim} from '../dist/js/physics.js';
+import {ROCKET_PARAMS} from '../dist/js/rocket-layout.js';
 
 const near=(a,b,tolerance=1e-6)=>assert.ok(Math.abs(a-b)<tolerance,`${a} != ${b}`);
 const wheelIds=['fl','fr','rl','rr'];
@@ -139,9 +140,12 @@ test('published reference mass plus assumed rig and box inertia feed actual simu
     near(sim.wheels[1].pos.z-sim.wheels[0].pos.z,params.trackWidth);
     near(sim.bodyHalf[0],params.bodyLength/2);
     assert.equal(params.springK,DEFAULTS.springK);
-    assert.equal(params.tankVolume,DEFAULTS.tankVolume);
+    assert.equal(params.tankVolume,ROCKET_PARAMS.tankVolume);
+    near(sim.initialGas,250,.001);
+    assert.equal(params.propulsionProfile,'legacy');
   }
   const original=vehiclePhysics(vehicleProfile('roadster'),{},DEFAULTS);
-  assert.deepEqual(original,DEFAULTS);assert.notEqual(original,DEFAULTS);
+  assert.deepEqual(original,{...DEFAULTS,...ROCKET_PARAMS});assert.notEqual(original,DEFAULTS);
+  near(new PhysicsSim(original).initialGas,250,.001);
   assert.throws(()=>vehicleProfile('nonexistent'));
 });

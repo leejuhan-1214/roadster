@@ -1,6 +1,8 @@
 // Ground and cold-gas flight controls. Pedal release requests modest blended
 // braking, so a full battery still slows the car using the wheel brakes.
 // All speed changes continue through tire forces and the rigid-body solver.
+import {isRocketProfile} from './rocket-layout.js?v=20261114-rocket1';
+import {RocketRollController} from './rocket-flight.js?v=20261114-rocket1';
 export const CITY_DRIVE_PARAMS=Object.freeze({
   friction:1.15,rollingResistance:.015,aeroEnabled:true,dragScale:1,
   roadRoughness:.15,windX:0,windZ:0,tractionControl:true,absEnabled:true,
@@ -28,6 +30,7 @@ export class DrivingController {
     this.throttle=0;this.steer=0;this.brake=.2;this.gear='D';
     this.altHold=false;this.targetHeight=.8;this.airborne=false;this._holdKey=false;
     this.landingAssist=false;this.landingStatus='idle';
+    this.rocketRoll=new RocketRollController();this.maneuverStatus='idle';this.maneuverProgress=0;
   }
   setAltitudeTarget(height){
     if(!Number.isFinite(height)||height<0)return false;
@@ -147,6 +150,24 @@ export class DrivingController {
       // damps vertical speed while the user manoeuvres, using the same finite gas.
       input.verticalAcceleration=clamp(-8*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
       input.flightAssist=true;
+    }
+    if(this.airborne&&isRocketProfile(sim.params)&&(input.roll||input.pitch)){
+      // Attitude keys command angular rate. Disable altitude compensation while
+      // inverted; belly jets cannot support the car through its roof.
+      this.altHold=false;input.altHold=false;input.flightAssist=false;
+      input.lift=0;input.verticalAcceleration=-sim.params.gravity;
+    }
+    const maneuver=this.rocketRoll.update({key:held(keys,'KeyX'),abort:held(keys,'KeyB','KeyH'),sim,clearance,supported});
+    this.maneuverStatus=this.rocketRoll.status;this.maneuverProgress=this.maneuverStatus==='complete'?1:clamp(this.rocketRoll.angle/(2*Math.PI),0,1);
+    if(maneuver?.complete){
+      this.altHold=true;this.targetHeight=Math.max(.8,clearance);
+      input.altHold=true;input.targetHeight=this.targetHeight;
+      input.verticalAcceleration=clamp(-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
+    }else if(maneuver){
+      this.altHold=false;this.landingAssist=false;
+      Object.assign(input,{throttle:0,brake:0,boost:false,handbrake:0,fan:false,compressor:false,
+        lift:0,altHold:false,airMoveForward:0,airMoveRight:0,roll:0,pitch:0,yaw:0,
+        stabilize:true,flightAssist:false,landingAssist:false,...maneuver});
     }
     return input;
   }

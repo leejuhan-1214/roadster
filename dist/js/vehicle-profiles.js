@@ -1,12 +1,13 @@
 import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261111-drivefix1';
 import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261109-assessment1';
+import {ROCKET_PARAMS} from './rocket-layout.js?v=20261114-rocket1';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.
 export const VEHICLES = Object.freeze([
-  {id:'roadster', title:'Tesla Roadster 2020', short:'Roadster 2020', brand:'Tesla', model:'Roadster',
-    author:'metarex.4d', license:'CC BY 4.0', licenseUrl:'https://creativecommons.org/licenses/by/4.0/',
-    source:'https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8',
-    reference:'2020 콘셉트 · 가정 치수', dryMass:1900},
+  {id:'roadster', title:'Tesla Roadster Rocket · 2026', short:'Roadster Rocket', brand:'Tesla', model:'Roadster Rocket',
+    author:'공개 영상 참고 재현', license:'재현 모델·가정 치수', licenseUrl:'https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md',
+    source:'https://www.tesla.com/roadster',
+    reference:'2026 공개형 참고 · 4개 후방 추진기 · 실측 CAD 아님', dryMass:1900},
   {id:'ferrari', title:'Ferrari 458 Spider', short:'458 Spider', brand:'Ferrari', model:'458 Spider',
     author:'vicent091036', license:'CC BY 4.0', licenseUrl:'https://creativecommons.org/licenses/by/4.0/',
     source:'https://sketchfab.com/3d-models/ferrari-458-italia-57bf6cc56931426e87494f554df1dab6',
@@ -25,9 +26,12 @@ export const VEHICLES = Object.freeze([
 export function vehicleProfile(id){const profile=VEHICLES.find(v=>v.id===id);if(!profile)throw new Error('알 수 없는 차종');return profile;}
 
 export function vehiclePhysics(profile, geometry, defaults){
-  if(profile.id==='roadster')return {...defaults,...geometry};
+  // Equal initial air inventory in the five-body landing comparison. Roadster
+  // uses the revealed Rocket arrangement; other cars retain their generic rig.
+  const air={tankVolume:ROCKET_PARAMS.tankVolume,tankPressureMPa:ROCKET_PARAMS.tankPressureMPa,initialTemperature:ROCKET_PARAMS.initialTemperature,feedLossCoefficient:ROCKET_PARAMS.feedLossCoefficient};
+  if(profile.id==='roadster')return {...defaults,...ROCKET_PARAMS,...geometry,...air};
   const m=profile.dryMass, l=profile.length,w=profile.width,h=profile.height;
-  return {...defaults,...geometry,dryMass:m,
+  return {...defaults,...geometry,...air,propulsionProfile:'legacy',dryMass:m,
     // Box-inertia estimate, not measured OEM inertia. Same spring/damper/rig.
     inertiaRoll:m*(w*w+h*h)/12,inertiaYaw:m*(l*l+w*w)/12,inertiaPitch:m*(l*l+h*h)/12};
 }

@@ -177,7 +177,9 @@ function fitNozzles(vehicle){
 export function configureVehicleFit(vehicle,profile={}){
   if(vehicle.fitLayout)return vehicle.geometryParams;
   vehicle.root.updateMatrixWorld(true);
-  Object.assign(vehicle.geometryParams??={},fitNozzles(vehicle));
+  // The 2026 Rocket reference uses a shared fixed 4+4+2 layout. Sending it
+  // through the legacy 4+2+4 surface fitter would move outlets away from forces.
+  if(!vehicle.fixedNozzleLayout)Object.assign(vehicle.geometryParams??={},fitNozzles(vehicle));
   vehicle.root.updateMatrixWorld(true);
   // Reserve the actual open hatch envelope used by structure inspection.
   // A single large padding estimate either wastes space or misses a hinge arc.
@@ -211,7 +213,13 @@ export function updateVehicleExplosion(vehicle,progress,{inspect=false}={}){
     if(!wheel||inspect)object.position.copy(basePosition);
     if(wheel&&inspect){object.rotation.set(0,0,0);object.userData.spinGroup?.rotation.set(0,0,0);}
   }
-  for(const entry of layout.entries)entry.object.position.copy(entry.basePosition);
+  for(const entry of layout.entries){
+    // Procedural reference catalogs can select a whole wheel, whereas imported
+    // catalogs usually select meshes under it. Keep the live suspension pose in
+    // either case; inspection still restores the canonical assembly position.
+    if(!inspect&&vehicle.wheels?.includes(entry.object))continue;
+    entry.object.position.copy(entry.basePosition);
+  }
   vehicle.root.updateMatrixWorld(true);
   if(t>0)for(const entry of layout.entries){
     const object=entry.object,parent=object.parent;

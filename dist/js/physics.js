@@ -5,6 +5,7 @@ import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=2026
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
 import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
 import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261114-air1';
+import {ROCKET_PARAMS,ROCKET_THRUSTERS,ROCKET_LIFT_LAYOUT,isRocketProfile} from './rocket-layout.js?v=20261114-rocket1';
 
 /** Educational six-DOF rigid-body model; NOT a Tesla digital twin.
  * Right-handed axes: X forward, Y up, Z right. Angular velocity is body-local.
@@ -146,7 +147,8 @@ export function rocketReference(mInitial, mFinal, effectiveVelocity) {
   return effectiveVelocity * Math.log(mInitial / mFinal);
 }
 
-function makeThrusters() {
+function makeThrusters(rocket=false) {
+  if(rocket)return ROCKET_THRUSTERS.map(t=>({...t,pos:new Vector3(...t.position),mountPosition:new Vector3(...t.position),dir:new Vector3(...t.direction),force:0,maxForce:0,opening:0,command:0,mdot:0}));
   const result = [];
   for (const x of [LIFT_LAYOUT.x, -LIFT_LAYOUT.x]) for (const z of [-LIFT_LAYOUT.z, LIFT_LAYOUT.z])
     result.push({ name: `${x > 0 ? '전' : '후'}${z < 0 ? '좌' : '우'} 수직`, group: 'lift',
@@ -164,8 +166,8 @@ function makeThrusters() {
 
 export class PhysicsSim {
   constructor(params = {}) {
-    this.params = { ...DEFAULTS, ...params };
-    this.thrusters = makeThrusters();
+    this.params = { ...DEFAULTS, ...(isRocketProfile(params)?ROCKET_PARAMS:{}), ...params };
+    this.thrusters = makeThrusters(isRocketProfile(this.params));
     this.cg = new Vector3();
     this.bodyHalf = [...BODY_ENVELOPE.half];
     this.bodyBoxCenter = new Vector3(...BODY_ENVELOPE.center);
@@ -185,6 +187,8 @@ export class PhysicsSim {
 
   reset(preset = 'ground') {
     const p = this.params;
+    this.rocketProfile=isRocketProfile(p);
+    this.thrusters=makeThrusters(this.rocketProfile);
     p.dryMass = Math.max(100, Number(p.dryMass) || DEFAULTS.dryMass);
     p.tankVolume = clamp(Number(p.tankVolume) || DEFAULTS.tankVolume, .02, 2);
     p.tankPressureMPa = clamp(Number(p.tankPressureMPa) || DEFAULTS.tankPressureMPa, .101325, 80);
@@ -211,9 +215,10 @@ export class PhysicsSim {
     for(const key of ['liftX','liftY','liftZ','boostX','boostY','boostZ','yawX','yawY','yawZ']){
       const value=Number(p[key]);p[key]=clamp(Number.isFinite(value)?value:DEFAULTS[key],key.endsWith('Y')?-1.5:key==='boostX'?-4:.15,key.endsWith('Y')?1.5:key==='boostX'?-.15:3);
     }
-    this.liftLayout={x:p.liftX,y:p.liftY,z:p.liftZ};
+    this.liftLayout=this.rocketProfile?ROCKET_LIFT_LAYOUT:{x:p.liftX,y:p.liftY,z:p.liftZ};
     this.thrusters.forEach((t,i)=>{
-      if(i<4)t.mountPosition.set(i<2?p.liftX:-p.liftX,p.liftY,i%2?p.liftZ:-p.liftZ);
+      if(this.rocketProfile)t.mountPosition.fromArray(ROCKET_THRUSTERS[i].position);
+      else if(i<4)t.mountPosition.set(i<2?p.liftX:-p.liftX,p.liftY,i%2?p.liftZ:-p.liftZ);
       else if(i<6)t.mountPosition.set(p.boostX,p.boostY,i%2?p.boostZ:-p.boostZ);
       else t.mountPosition.set(i%2?-p.yawX:p.yawX,p.yawY,(i===6||i===9)?p.yawZ:-p.yawZ);
       t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);
@@ -384,7 +389,7 @@ export class PhysicsSim {
     const layoutMaximum = this.thrusters.map(t => nozzle(this.manifoldPressure, s.temp, t.area));
     for (let i = 0; i < this.thrusters.length; ++i) this.thrusters[i].maxForce = layoutMaximum[i].force;
     const isAirborne = this.contactCount === 0;
-    const enabledControl = isAirborne || input.lift > .01 || input.altHold || Number.isFinite(input.verticalAcceleration);
+    const enabledControl = isAirborne || input.lift > .01 || input.altHold || Number.isFinite(input.verticalAcceleration)||(this.rocketProfile&&input.boost);
     const forward = FORWARD.clone().applyQuaternion(s.q);
     const heading = Math.atan2(-forward.z, forward.x);
     const yawTarget = new Quaternion().setFromAxisAngle(UP, heading);
@@ -412,8 +417,14 @@ export class PhysicsSim {
       tx = this.inertia.x * ((Math.abs(input.roll || 0) > .02 ? 3.2 * input.roll : stabilize ? 10 * error.x : 0) - (stabilize || input.roll ? 5.6 : 0) * s.omega.x);
       tz = this.inertia.z * ((Math.abs(input.pitch || 0) > .02 ? 2.4 * input.pitch : stabilize ? 10 * error.z : 0) - (stabilize || input.pitch ? 5.6 : 0) * s.omega.z);
       ty = this.inertia.y * (1.2 * (input.yaw || 0) - (stabilize || input.yaw ? 1.6 : 0) * s.omega.y);
+      if(this.rocketProfile){
+        if(Number.isFinite(input.rollRateTarget))tx=this.inertia.x*clamp(12*(input.rollRateTarget-s.omega.x),-32,32);
+        else if(Math.abs(input.roll||0)>.02)tx=this.inertia.x*clamp(12*(4.5*input.roll-s.omega.x),-32,32);
+        if(Number.isFinite(input.pitchRateTarget))tz=this.inertia.z*clamp(10*(input.pitchRateTarget-s.omega.z),-18,18);
+        else if(Math.abs(input.pitch||0)>.02)tz=this.inertia.z*clamp(10*(3.0*input.pitch-s.omega.z),-18,18);
+      }
     }
-    let vertical = input.lift > 0 ? mass * gravity * (1 + .4 * clamp(input.lift, 0, 1)) : 0;
+    let vertical = input.lift > 0 ? mass * gravity * (1 + (this.rocketProfile?1.1:.4) * clamp(input.lift, 0, 1)) : 0;
     if (input.altHold) {
       const target = clamp(input.targetHeight ?? 1.5, 0, 15) + this.restHeight;
       const aDesired = clamp((input.targetAcceleration || 0) + 24 * (target - s.pos.y) + 10 * ((input.targetVelocity || 0) - s.vel.y), -gravity, 1.1 * Math.max(gravity, 1));
@@ -429,14 +440,35 @@ export class PhysicsSim {
     }
     // Anticipate the first-order valve lag while the swivel changes direction.
     // Only force distribution changes; body attitude remains a result of r × F.
-    const lead=Math.max(.001,Number(p.valveTau)||.03)*(p.liftY-this.cg.y)*vertical/dt;
+    const lead=Math.max(.001,Number(p.valveTau)||.03)*(this.liftLayout.y-this.cg.y)*vertical/dt;
     tx-=lead*(this.gimbalDirection.z/this.gimbalDirection.y-oldGz);
     tz+=lead*(this.gimbalDirection.x/this.gimbalDirection.y-oldGx);
-    const allocation=allocateLift(vertical,tx,tz,this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force),this.liftLayout);
+    if(this.rocketProfile&&input.boost){
+      // Off-centre rear jets create a real pitch moment. Counter it with the
+      // belly jets, not a hidden torque or an orientation assignment.
+      for(let i=4;i<8;i++){
+        const moment=new Vector3().crossVectors(this.thrusters[i].pos,this.thrusters[i].dir.clone().multiplyScalar(layoutMaximum[i].force));
+        tx-=moment.x;tz-=moment.z;
+      }
+    }
+    let allocation=allocateLift(vertical,tx,tz,this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force),this.liftLayout);
     // Parallel lift vectors couple yaw to roll/pitch. Side RCS counters that moment.
-    const yawRequest=ty-allocation.yawTorque;
-    const desiredForces = [...allocation.thrust, input.boost ? layoutMaximum[4].force : 0, input.boost ? layoutMaximum[5].force : 0,
+    let yawRequest=ty-allocation.yawTorque;
+    let desiredForces = [...allocation.thrust, input.boost ? layoutMaximum[4].force : 0, input.boost ? layoutMaximum[5].force : 0,
       Math.max(0, yawRequest) / (2*p.yawX), Math.max(0, yawRequest) / (2*p.yawX), Math.max(0, -yawRequest) / (2*p.yawX), Math.max(0, -yawRequest) / (2*p.yawX)];
+    if(this.rocketProfile){
+      let sides=[0,0];
+      // Two front-side ports impart lateral force as well as yaw. Their roll
+      // coupling is compensated with actual belly-jet force allocation.
+      for(let pass=0;pass<2;pass++){
+        const i=yawRequest>=0?8:9,t=this.thrusters[i];
+        const arm=new Vector3().crossVectors(t.pos,t.dir);
+        sides=[0,0];sides[i-8]=Math.min(layoutMaximum[i].force,Math.abs(yawRequest/arm.y));
+        allocation=allocateLift(vertical,tx-arm.x*sides[i-8],tz-arm.z*sides[i-8],this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force),this.liftLayout);
+        yawRequest=ty-allocation.yawTorque;
+      }
+      desiredForces=[...allocation.thrust,...layoutMaximum.slice(4,8).map(n=>input.boost?n.force:0),...sides];
+    }
     // Educational per-nozzle override, still constrained by valve lag and tank state.
     if (Array.isArray(input.thrusterCommands)) for (let i = 0; i < desiredForces.length; ++i)
       desiredForces[i] = clamp(input.thrusterCommands[i] || 0, 0, 1) * layoutMaximum[i].force;
@@ -736,6 +768,8 @@ export class PhysicsSim {
     return {motorState:this.motorState, electricPowerW:this.electricPowerW,regenPowerW:this.regenPowerW,driveLossW:this.driveLossW,tractionCut:this.tractionCut,slidingWheels:this.wheels.filter(w=>w.sliding).length,massFlowKgS:this.massFlowKgS,manifoldPressureMPa:this.manifoldPressure/1e6,tankCapacityKg:this.initialGas,tankVolumeL:p.tankVolume*1000,
       gimbalAngleDeg:Math.hypot(this.gimbalX,this.gimbalZ)*180/Math.PI, gimbalForwardDeg:this.gimbalX*180/Math.PI,gimbalRightDeg:this.gimbalZ*180/Math.PI,
       horizontalSpeed: Math.hypot(s.vel.x, s.vel.z), forwardSpeed: s.vel.dot(fwd),
+      propulsionProfile:this.rocketProfile?'rocket2026':'legacy',forwardAcceleration:s.acceleration.dot(fwd),
+      longitudinalG:s.acceleration.dot(fwd)/Math.max(.001,p.gravity),rearThrustN:this.thrusters.filter(t=>t.group==='boost').reduce((sum,t)=>sum+t.force,0),
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       handbrakeAmount:this.handbrakeAmount,handbrakeForceN:this.handbrakeForceN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
