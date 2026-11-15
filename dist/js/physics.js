@@ -142,11 +142,35 @@ export function nozzle(pressure, temperature, area, ambient = ATMOSPHERE) {
   const ve = choked ? Math.sqrt(GAMMA * R * te) : Math.sqrt(Math.max(0, 2 * CP * (temperature - te)));
   const mdot = area * pe * ve / (R * te);
   const force = mdot * ve + (pe - ambient) * area;
-  return { mdot, force, ve, pe, regime: choked ? 'choked' : 'subsonic', effectiveVelocity: force / mdot };
+  return { mdot, force, ve, pe, regime: mdot > 0 ? (choked ? 'choked' : 'subsonic') : 'off', effectiveVelocity: mdot > 0 ? force / mdot : 0 };
 }
 
 export function rocketReference(mInitial, mFinal, effectiveVelocity) {
   return effectiveVelocity * Math.log(mInitial / mFinal);
+}
+
+// Implicit midpoint Euler-top update. Explicit gyro integration adds kinetic
+// energy even without applied torque. Midpoint preserves rotational energy;
+// the matching Cayley rotation also preserves world angular momentum for a
+// torque-free rigid body. Inertia is fixed in this educational mass model.
+function integrateRotation(s,inertia,torque,dt) {
+  const old=s.omega.clone(),w=old.clone();
+  const ax=(inertia.y-inertia.z)/inertia.x,ay=(inertia.z-inertia.x)/inertia.y,az=(inertia.x-inertia.y)/inertia.z;
+  const tx=torque.x/inertia.x,ty=torque.y/inertia.y,tz=torque.z/inertia.z;
+  for(let i=0;i<12;i++){
+    const x=(old.x+w.x)/2,y=(old.y+w.y)/2,z=(old.z+w.z)/2;
+    const fx=w.x-old.x-dt*(tx+ax*y*z),fy=w.y-old.y-dt*(ty+ay*z*x),fz=w.z-old.z-dt*(tz+az*x*y);
+    if(Math.max(Math.abs(fx),Math.abs(fy),Math.abs(fz))<1e-13)break;
+    const a=-dt*ax*z/2,b=-dt*ax*y/2,c=-dt*ay*z/2,d=-dt*ay*x/2,e=-dt*az*y/2,f=-dt*az*x/2;
+    const det=1-d*f-a*(c-d*e)+b*(c*f-e);
+    const dx=((1-d*f)*fx+(b*f-a)*fy+(a*d-b)*fz)/det;
+    const dy=((d*e-c)*fx+(1-b*e)*fy+(b*c-d)*fz)/det;
+    const dz=((c*f-e)*fx+(a*e-f)*fy+(1-a*c)*fz)/det;
+    w.sub(new Vector3(dx,dy,dz));
+  }
+  const mid=old.add(w).multiplyScalar(.5);
+  s.omega.copy(w);
+  s.q.multiply(new Quaternion(mid.x*dt/2,mid.y*dt/2,mid.z*dt/2,1).normalize()).normalize();
 }
 
 function makeThrusters(rocket=false,params={}) {
@@ -632,12 +656,7 @@ export class PhysicsSim {
     s.vel.addScaledVector(acceleration, dt);
     s.pos.addScaledVector(s.vel, dt);
     const torqueBody = torqueWorld.clone().applyQuaternion(qInv);
-    const angularMomentum = s.omega.clone().multiply(this.inertia);
-    const gyro = new Vector3().crossVectors(s.omega, angularMomentum);
-    const angularAcceleration = torqueBody.clone().sub(gyro).divide(this.inertia);
-    s.omega.addScaledVector(angularAcceleration, dt);
-    const spin = s.omega.length();
-    if (spin > 1e-12) s.q.multiply(new Quaternion().setFromAxisAngle(s.omega.clone().divideScalar(spin), spin * dt)).normalize();
+    integrateRotation(s,this.inertia,torqueBody,dt);
     if (p.contactEnabled) { this._resolveBrakeStick(dt,input); this._resolveObstacles(); this._resolveGround(); }
     this.resolvedAcceleration.copy(s.vel).sub(velocityBefore).divideScalar(dt);
     s.time += dt; s.acceleration.copy(acceleration);
@@ -734,25 +753,50 @@ export class PhysicsSim {
   _resolveGround() {
     const s = this.state;
     const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
-    let lowest = Infinity, rLow = null;
+    const vertices=[];
+    let lowest = Infinity;
     for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
       const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q), height = s.pos.y + r.y;
-      if (height < lowest) { lowest = height; rLow = r; }
+      vertices.push({r,height});lowest=Math.min(lowest,height);
     }
     if (lowest >= 0) return;
-    // Constraint stabilization removes residual numeric overlap; inward momentum is
-    // removed with the corresponding effective-mass impulse, never an unexplained v=0.
+    // Position projection is kept separate from the velocity solve. All penetrating
+    // vertices belong to the same contact manifold: choosing just the first lowest
+    // corner used to impart an arbitrary roll/pitch to a perfectly level landing.
     s.pos.y -= lowest;
-    const omegaWorld = s.omega.clone().applyQuaternion(s.q);
-    const vNormal = s.vel.y + new Vector3().crossVectors(omegaWorld, rLow).y;
-    if (vNormal >= 0) return;
-    const qInv = s.q.clone().invert();
-    const cross = new Vector3().crossVectors(rLow, UP);
-    const invInertiaCross = cross.clone().applyQuaternion(qInv).divide(this.inertia).applyQuaternion(s.q);
-    const effectiveInvMass = 1 / this.mass + cross.dot(invInertiaCross);
-    const impulse = -(1.05) * vNormal / effectiveInvMass;
-    s.vel.y += impulse / this.mass;
-    s.omega.add(cross.multiplyScalar(impulse).applyQuaternion(qInv).divide(this.inertia));
+    const qInv=s.q.clone().invert(),inverseMass=1/this.mass;
+    const inverseRotation=cross=>cross.clone().applyQuaternion(qInv).divide(this.inertia).applyQuaternion(s.q);
+    const pointVelocity=r=>s.vel.clone().add(new Vector3().crossVectors(s.omega.clone().applyQuaternion(s.q),r));
+    const applyImpulse=(r,j)=>{
+      s.vel.addScaledVector(j,inverseMass);
+      s.omega.add(new Vector3().crossVectors(r,j).applyQuaternion(qInv).divide(this.inertia));
+    };
+    const contacts=vertices.filter(v=>v.height<=1e-7).map(({r})=>{
+      const cross=new Vector3().crossVectors(r,UP),v=pointVelocity(r).y;
+      const rx=new Vector3(0,r.z,-r.y),rz=new Vector3(r.y,-r.x,0);
+      return {r,k:inverseMass+cross.dot(inverseRotation(cross)),
+        // Restitution is only for impacts, not resting-contact jitter.
+        target:v<-.5?-.05*v:0,j:0,tangent:new Vector3(),
+        kxx:inverseMass+rx.dot(inverseRotation(rx)),kzz:inverseMass+rz.dot(inverseRotation(rz)),kxz:rx.dot(inverseRotation(rz))};
+    });
+    const mu=Math.min(.45,Math.max(0,this.params.friction));
+    // Accumulated projected impulses enforce unilateral contact and a Coulomb
+    // friction disk. Alternating sweep order reduces the corner-order bias.
+    for(let pass=0;pass<40;pass++){
+      let largestChange=0;
+      for(let k=0;k<contacts.length;k++){
+        const c=contacts[pass%2?contacts.length-1-k:k];
+        const next=Math.max(0,c.j+(c.target-pointVelocity(c.r).y)/c.k),change=next-c.j;
+        c.j=next;applyImpulse(c.r,new Vector3(0,change,0));largestChange=Math.max(largestChange,Math.abs(change));
+        const v=pointVelocity(c.r),det=c.kxx*c.kzz-c.kxz*c.kxz;
+        const candidate=c.tangent.clone().add(new Vector3((-c.kzz*v.x+c.kxz*v.z)/det,0,(c.kxz*v.x-c.kxx*v.z)/det));
+        const limit=mu*c.j;if(candidate.length()>limit)candidate.setLength(limit);
+        const delta=candidate.clone().sub(c.tangent);c.tangent.copy(candidate);applyImpulse(c.r,delta);
+        largestChange=Math.max(largestChange,delta.length());
+      }
+      if(largestChange<1e-8)break;
+    }
+    const impulse=contacts.reduce((sum,c)=>sum+c.j,0);
     this.impactImpulse += impulse;
     this.groundCorrectionImpulseNs+=impulse;
   }

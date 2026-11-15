@@ -1,10 +1,11 @@
 import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-capacity375';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-physics145';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
 // retain the maximum in each 10 ms chart bin; the summary never uses render rate.
 export const LANDING_STEP=.002;
+export const LANDING_MODEL_VERSION='1.45.0';
 export const LANDING_METHODS=Object.freeze([
   {id:'free',label:'자유낙하'},
   {id:'brake',label:'지정 높이에서 분사'},
@@ -72,7 +73,7 @@ export function createLandingRun(sim,options={}){
   const planStart=config.method==='eco'?performance.now():0;
   const economy=config.method==='eco'?planEconomyLanding(sim,landingClearance(sim),config.targetSpeed):null;
   const ecoPlanTimeMs=economy?performance.now()-planStart:null;
-  return {...config,config:Object.freeze({...config}),startTime:sim.state.time,
+  return {...config,modelVersion:LANDING_MODEL_VERSION,config:Object.freeze({...config}),startTime:sim.state.time,
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
     // The energy datum is the CG height at level, unloaded tire contact.
@@ -230,7 +231,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   }
   run.previousMass=sim.mass;run.previousGas=sim.state.gas;
   if(run.touchdownTime!==null){
-    const settled=Math.abs(sim.state.vel.y)<.025&&sim.state.omega.length()<.03&&sim.contactCount>=3;
+    const settled=sim.state.vel.length()<.025&&sim.state.omega.length()<.03&&sim.contactCount>=3;
     run.settledFor=settled?run.settledFor+dt:0;
     const after=run.elapsed-run.touchdownTime;
     run.settled=run.settledFor>=.3;

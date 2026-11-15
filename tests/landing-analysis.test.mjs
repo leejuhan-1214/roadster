@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PhysicsSim} from '../dist/js/physics.js';
-import {LANDING_STEP,createLandingRun,landingRunInput,updateLandingRun} from '../dist/js/landing-experiment.js';
-import {landingTheory,landingImpulseAudit,landingTradeoff} from '../dist/js/landing-analysis.js';
+import {LANDING_STEP,LANDING_MODEL_VERSION,createLandingRun,landingRunInput,updateLandingRun} from '../dist/js/landing-experiment.js';
+import {landingTheory,landingImpulseAudit,landingTradeoff,landingTargetMet} from '../dist/js/landing-analysis.js';
 
 function experiment(options={},manual=false){
   const sim=new PhysicsSim(),run=createLandingRun(sim,{height:3,...options});
@@ -81,4 +81,29 @@ test('Pareto candidates require stable landing and isolate vehicle, batch, initi
   assert.deepEqual(result.eligible.map(r=>r.id),['low-gas','low-load','dominated']);
   assert.deepEqual(result.excluded.map(r=>r.id),['unsafe','unsettled','manual','bottomed']);
   assert.equal(result.rows.length,7);assert.deepEqual(landingTradeoff([]),{rows:[],eligible:[],candidates:[],excluded:[]});
+});
+
+test('a settled drop above the requested contact speed cannot become an economical candidate',()=>{
+  const late=experiment({method:'brake',brakeHeight:1.5});
+  assert.equal(late.status,'landed');assert.equal(late.settled,true);assert.equal(late.bodyStrike,false);
+  assert.ok(late.touchdownSpeed>late.targetSpeed);
+  assert.equal(landingTargetMet(late),false);
+  const tradeoff=landingTradeoff([late]);
+  assert.deepEqual(tradeoff.eligible,[]);assert.deepEqual(tradeoff.candidates,[]);
+  assert.deepEqual(tradeoff.excluded,[late],'keep the failed target visible instead of deleting its measurement');
+});
+
+test('contact target qualification uses raw measured speed and rejects missing or invalid measurements',()=>{
+  const atTarget={targetSpeed:.5,touchdownSpeed:.5};
+  assert.equal(landingTargetMet(atTarget),true);
+  assert.equal(landingTargetMet({...atTarget,touchdownSpeed:.5001}),false,'rounding to 0.50 must not turn a miss into success');
+  for(const patch of [{touchdownSpeed:null},{touchdownSpeed:-.1},{touchdownSpeed:Infinity},{targetSpeed:undefined},{targetSpeed:NaN}])
+    assert.equal(landingTargetMet({...atTarget,...patch}),false);
+});
+
+test('model provenance survives completion and candidates never mix known or unknown model versions',()=>{
+  assert.equal(free.modelVersion,LANDING_MODEL_VERSION);
+  const row={...brake,id:'current',touchdownSpeed:.4},old={...brake,id:'old',modelVersion:'1.42.1'},unknown={...brake,id:'unknown',modelVersion:undefined};
+  assert.deepEqual(landingTradeoff([row,old,unknown],row).rows,[row]);
+  assert.deepEqual(landingTradeoff([row,old,unknown],unknown).rows,[unknown]);
 });

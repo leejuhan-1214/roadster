@@ -1,4 +1,4 @@
-import {nozzle, ATMOSPHERE} from './physics.js?v=20261115-capacity375';
+import {nozzle, ATMOSPHERE} from './physics.js?v=20261115-physics145';
 
 const G = 1.4, R = 287, STEP = .002;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -100,7 +100,7 @@ export function planEconomyLanding(sim, height, targetSpeed) {
   if (height <= 0 || freeSpeed <= targetSpeed) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:true, coastOnly:true};
   const full = nozzle(initial.pressure, initial.temperature, initial.area);
   if (full.force <= 0 || initial.gas <= 0) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:false, coastOnly:true};
-  const acceptable = p => p.complete && p.speed <= targetSpeed + .025;
+  const acceptable = p => p.complete && p.speed <= targetSpeed + 1e-9;
   // Every powered automatic economy run starts with a genuine unpowered fall.
   // Scale the short minimum with the available free-fall time at low heights.
   const minimumCoastTime=Math.max(1,Math.ceil(Math.min(.12,Math.sqrt(initial.height)*Math.sqrt(2/initial.gravity)*.15)/STEP))*STEP;

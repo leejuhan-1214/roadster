@@ -138,3 +138,12 @@ test('high releases keep the entered clearance and are measured past the old 15 
   assert.ok(contactSamples.every(sample=>sample.sampleInterval===.01));
   assert.equal(Math.max(...result.samples.map(sample=>sample.equivalentGroundForceN)),result.peakEquivalentGroundForceN);
 });
+
+
+test('horizontal sliding cannot be marked settled only because vertical oscillation stopped',()=>{
+  const sim=new PhysicsSim(),run=createLandingRun(sim,{height:.05,method:'free'});
+  sim.params.friction=0;sim.params.rollingResistance=0;sim.state.vel.x=2;
+  for(let n=0;n<15000&&!run.done;n++){sim.step(.002,landingRunInput(run,sim));updateLandingRun(run,sim);}
+  assert.equal(run.done,true);assert.ok(Math.abs(sim.state.vel.x-2)<1e-9);
+  assert.equal(run.settled,false);assert.equal(run.result.status,'unsettled');
+});

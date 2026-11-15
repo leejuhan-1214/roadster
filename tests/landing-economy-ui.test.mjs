@@ -20,12 +20,15 @@ test('economy benefits come from measured matched baselines and retain negative 
   const result=landingEconomyComparison(eco,rows);
   assert.equal(result.gentle.id,'gentle');assert.equal(result.brake.id,'brake');
   assert.equal(result.gasReductionPercent,75);assert.equal(result.forceReductionPercent,50);
+  assert.equal(result.gentleForceReductionPercent,25);
   const worse={...eco,gasUsed:100,peakEquivalentGroundForceN:90000};
   const increased=landingEconomyComparison(worse,rows);
   assert.equal(increased.gasReductionPercent,-25);assert.equal(increased.forceReductionPercent,-50);
+  assert.equal(increased.gentleForceReductionPercent,-125);
   const node=resultNodes([...rows.slice(0,3),worse]);
   assert.match(node('#landing-best').textContent,/기체 25.0% 증가/);
-  assert.match(node('#landing-best').textContent,/반력 50.0% 증가/);
+  assert.match(node('#landing-best').textContent,/완만한 하강 대비/);
+  assert.match(node('#landing-best').textContent,/반력 125.0% 증가/);
 });
 
 test('economy comparisons reject different batch, mass, rig, tank and target conditions',()=>{
@@ -36,16 +39,28 @@ test('economy comparisons reject different batch, mass, rig, tank and target con
   for(const key of ['initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature'])assert.equal(landingEconomyComparison({...eco,[key]:undefined},rows),null,key);
   assert.equal(landingEconomyComparison(eco,rows.filter(row=>row.method!=='brake')),null);
   assert.equal(landingEconomyComparison(eco,rows.map(row=>row.method==='gentle'?{...row,gasUsed:0}:row)),null);
+  assert.equal(landingEconomyComparison({...eco,modelVersion:'1.45.0'},rows),null,'old unversioned measurements cannot become new-model baselines');
 });
 
 test('unsafe economy and gentle runs cannot advertise savings; actual hard fixed-height impacts remain comparable',()=>{
-  for(const patch of [{settled:false},{manualLiftUsed:true},{bodyStrike:true},{bottomedOut:true},{status:'timeout'},{gasUsed:NaN},{peakEquivalentGroundForceN:Infinity}]){
+  for(const patch of [{settled:false},{manualLiftUsed:true},{bodyStrike:true},{bottomedOut:true},{status:'timeout'},{gasUsed:NaN},{peakEquivalentGroundForceN:Infinity},{touchdownSpeed:.5001}]){
     assert.equal(landingEconomyComparison({...eco,...patch},rows),null,JSON.stringify(patch));
     assert.equal(landingEconomyComparison(eco,rows.map(row=>row.method==='gentle'?{...row,...patch}:row)),null,JSON.stringify(patch));
   }
   const hard=rows.map(row=>row.method==='brake'?{...row,bodyStrike:true,bottomedOut:true,status:'unsettled',settled:false}:row);
   assert.equal(landingEconomyComparison(eco,hard).forceReductionPercent,50);
   assert.equal(landingEconomyComparison(eco,rows.map(row=>row.method==='brake'?{...row,manualLiftUsed:true}:row)),null);
+});
+
+test('missed contact-speed targets stay measured but cannot be highlighted or advertised as an economy success',()=>{
+  const missed={...eco,touchdownSpeed:1.4,gasUsed:1,peakEquivalentGroundForceN:100};
+  const results=[...rows.slice(0,3),missed],node=resultNodes(results);
+  assert.equal(landingEconomyComparison(missed,results),null);
+  assert.doesNotMatch(node('#landing-best').textContent,/절약 착지:/);
+  assert.match(node('#landing-result-rows').innerHTML,/정착 · 목표 속도 미충족/);
+  const plot=landingResearchPlot([missed]);
+  assert.match(plot,/목표 속도 미충족/);assert.match(plot,/<path d="M /);
+  assert.doesNotMatch(plot,/<circle/);
 });
 
 test('economy summary waits for the whole comparison and never mixes all-history results',()=>{
@@ -91,6 +106,9 @@ test('CSV preserves economy baselines, reductions and measured automatic trigger
     assert.equal(Number(value('ecoPlannedBrakeHeight')),1.88);assert.equal(Number(value('ecoPredictedTouchdownSpeed')),.51);
     assert.equal(Number(value('ecoPredictedTouchdownGas')),19.5);assert.equal(Number(value('ecoPredictedGas')),19.9);
     assert.equal(Number(value('gasUsed')),20,'measured gas remains distinct from the predicted total');
+    assert.equal(value('modelVersion'),'unknown','legacy results are not stamped as the currently running model');
+    assert.equal(value('target_speed_met'),'true');
+    assert.equal(Number(value('eco_force_reduction_percent_vs_gentle')),25);
     assert.equal(parse(lines[2])[header.indexOf('eco_gas_reduction_percent_vs_gentle')],'');
   }finally{globalThis.document=previousDocument;URL.createObjectURL=create;URL.revokeObjectURL=revoke;}
 });

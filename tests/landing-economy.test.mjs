@@ -109,3 +109,11 @@ test('controller planning and feedback do not change state and manual lift stays
   assert.equal(run.braking,true);assert.ok(Number.isFinite(resumed.verticalAcceleration));assert.deepEqual(snapshot(),after);
   }
 });
+
+
+test('a feasible economy forecast obeys the actual contact-speed target without a hidden extra tolerance',()=>{
+  const sim=new PhysicsSim({dryMass:1350}),run=createLandingRun(sim,{method:'eco',height:3,targetSpeed:.5});
+  assert.equal(run.ecoPlanFeasible,true);
+  assert.ok(run.ecoPredictedTouchdownSpeed<=run.targetSpeed+1e-9,
+    'a target of 0.50 m/s must not advertise a predicted 0.525 m/s as feasible');
+});

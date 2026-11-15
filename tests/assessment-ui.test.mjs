@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
 const page=await readFile(new URL('../dist/index.html',import.meta.url),'utf8');
-const main=await readFile(new URL('../dist/js/main.js',import.meta.url),'utf8');
+// Source extraction accepts both Windows CRLF and LF checkouts.
+const main=(await readFile(new URL('../dist/js/main.js',import.meta.url),'utf8')).replace(/\r\n/g,'\n');
 
 test('entry exposes landing, structure and a separate city without retired demonstrations',()=>{
   assert.deepEqual([...page.matchAll(/data-mode="([^"]+)"/g)].map(m=>m[1]),['lab','inspect','city']);

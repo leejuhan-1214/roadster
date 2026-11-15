@@ -3,6 +3,14 @@
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const measured=result=>['landed','unsettled'].includes(result?.status)&&finite(result.touchdownSpeed);
 
+/** A settled body is not necessarily a successful controlled landing. Use the
+ * recorded precontact speed and the user's target, not a rounded display or
+ * the economy planner's feasibility prediction. */
+export function landingTargetMet(result={}){
+  return finite(result.targetSpeed)&&result.targetSpeed>0&&finite(result.touchdownSpeed)&&
+    result.touchdownSpeed>=0&&result.touchdownSpeed<=result.targetSpeed+1e-9;
+}
+
 /** Analytic free fall is a validation baseline, not a target for powered runs.
  * Contact velocity is sampled just before the first 2 ms contact step, so its
  * small integration/contact-localization error should remain visible.
@@ -63,9 +71,9 @@ const hasConditions=result=>!!result?.groupId&&!!result?.vehicleId&&MATCH_KEYS.s
  */
 export function landingTradeoff(results=[],reference=results[0]){
   if(!hasConditions(reference))return {rows:[],eligible:[],candidates:[],excluded:[]};
-  const rows=results.filter(result=>hasConditions(result)&&MATCH_KEYS.every(key=>result[key]===reference[key]));
+  const rows=results.filter(result=>hasConditions(result)&&result.modelVersion===reference.modelVersion&&MATCH_KEYS.every(key=>result[key]===reference[key]));
   const eligible=rows.filter(result=>result.status==='landed'&&result.settled===true&&!result.bodyStrike&&
-    !result.bottomedOut&&!result.manualLiftUsed&&finite(result.touchdownSpeed)&&
+    !result.bottomedOut&&!result.manualLiftUsed&&landingTargetMet(result)&&
     finite(result.gasUsed)&&result.gasUsed>=0&&finite(result.peakEquivalentGroundForceN)&&result.peakEquivalentGroundForceN>0);
   const candidates=eligible.filter(candidate=>!eligible.some(other=>other!==candidate&&
     other.gasUsed<=candidate.gasUsed&&other.peakEquivalentGroundForceN<=candidate.peakEquivalentGroundForceN&&
