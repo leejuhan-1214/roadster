@@ -33,7 +33,11 @@ test('first-deceleration duration and ground impulse have the same resolved 2 ms
     const r=run.result;
     assert.ok(Number.isFinite(r.contactEndTime)&&Number.isFinite(r.contactEndVelocityY));
     assert.equal(r.contactDuration,r.contactEndTime-r.touchdownTime);
-    assert.ok(Math.abs(r.contactDuration/LANDING_STEP-Math.round(r.contactDuration/LANDING_STEP))<1e-8);
+    const endpointStep=r.contactEndTime/LANDING_STEP;
+    assert.ok(Math.abs(endpointStep-Math.round(endpointStep))<1e-8);
+    const crossingStep=r.touchdownTime/LANDING_STEP;
+    assert.ok(Math.abs(crossingStep-Math.round(crossingStep))>1e-5,'these two releases cross the plane between grid points');
+    assert.ok(Math.abs(r.touchdownTime-Math.sqrt(2*height/r.parameters.gravity))<1e-9);
     assert.ok(r.contactEndVelocityY>=0||Math.abs(r.contactEndVelocityY)<.01);
     const deltaP=r.initialMass*(r.contactEndVelocityY+r.touchdownSpeed);
     const gravityImpulse=-r.initialMass*r.parameters.gravity*r.contactDuration;

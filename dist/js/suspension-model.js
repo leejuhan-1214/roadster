@@ -3,7 +3,9 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 const up = new THREE.Vector3(0, 1, 0);
 const unitScale = new THREE.Vector3(1, 1, 1);
-const rigs = new WeakMap();
+// The owning Three.js group crosses module URLs (browser cache versioning).
+// Keep the animated links with that instance, outside serialized userData.
+const suspensionRig = Symbol.for('roadster.suspensionRig');
 
 // All dimensions are in metres. The simulated wheel has one vertical degree
 // of freedom, so the cutaway uses a guided carriage and telescopic coilover.
@@ -103,7 +105,7 @@ export function createSuspension(parent, hubs) {
   }
   addMesh(parent, join(frame), graphite, 'axle crossmembers, longitudinal rails and tower braces');
   addMesh(parent, join(pivotMounts), steel, 'upper strut mounts');
-  rigs.set(parent, corners);
+  Object.defineProperty(parent, suspensionRig, {value: corners});
   for (let i = 0; i < corners.length; i++) poseCorner(corners[i], hubs[i], 0);
 }
 
@@ -132,7 +134,7 @@ function poseCorner(corner, hub, steer) {
 export function updateSuspension(vehicle, inspecting = false) {
   const parent = vehicle.parts?.get('suspension');
   if (!parent?.visible) return;
-  const corners = rigs.get(parent);
+  const corners = parent[suspensionRig];
   if (!corners) return;
   for (let i = 0; i < corners.length; i++) {
     const wheel = vehicle.wheels[i];

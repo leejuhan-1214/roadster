@@ -1,6 +1,7 @@
 // Pure CPU city construction. Native module workers cannot use the page import map.
 import {ShapeUtils,Vector2,Color} from '../vendor/three.module.js';
 import {buildingColliders} from './city-footprint.js';
+import {pavedMedianMask} from './city-median.js?v=20261118-physics146';
 import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
 import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 
@@ -128,6 +129,7 @@ export function buildCityTile(data,options={}){
   const occupied=(x,z)=>!inside([x,z],bounds)||(core&&inside([x,z],core))||context.some(b=>pointInPolygon(x,z,b.points)&&!b.holes.some(h=>pointInPolygon(x,z,h)));
   const onRoad=(x,z)=>segments.some(s=>{const t=clamp((x-s.a[0])*s.dx+(z-s.a[1])*s.dz,0,s.length);return Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t)<s.road.width/2+.5;});
   const trees=[],treeKeys=new Set();
+  const onMedianPavement=pavedMedianMask(data.roads||[]);
   for(const s of segments){
     const width=s.road.width,point=(t,offset=0)=>[s.a[0]+s.dx*t-s.dz*offset,s.a[1]+s.dz*t+s.dx*offset];
     pavement('walk',s.a,s.b,width+4.6,.005,0xb6b4aa);pavement('road',s.a,s.b,width,.014,0xabb3b5);
@@ -148,7 +150,7 @@ export function buildCityTile(data,options={}){
       const lo=Math.max(0,s.range[0]*s.length-3),hi=Math.min(s.length,s.range[1]*s.length+3);
       for(let t=Math.ceil((s.distance+lo-27)/48)*48+27-s.distance;t<hi;t+=48)for(const side of [-1,1]){
         if(t<10||t>s.length-10)continue;const p=point(t,side*(width/2+1.6)),key=p.map(n=>Math.round(n*2)).join(',');
-        if(occupied(...p)||onRoad(...p)||treeKeys.has(key)||trees.length>=192)continue;
+        if(occupied(...p)||onRoad(...p)||onMedianPavement(...p)||treeKeys.has(key)||trees.length>=192)continue;
         const v=hash(String(s.road.id)+':'+Math.round(s.distance+t)+':'+side);
         trees.push({x:p[0]-origin[0],z:p[1]-origin[1],height:5.8+v*1.4,rotation:v*Math.PI*2,species:speciesForRoad(s.road),seed:v});treeKeys.add(key);
       }

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {pavedMedianMask} from './city-median.js?v=20261118-physics146';
 import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
 import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261111-trees2';
 import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
@@ -158,6 +159,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const streets=accumulator(),walks=accumulator(),paint=accumulator(),walls=accumulator(),glassWalls=accumulator(),roofs=accumulator();
   const junctionByKey=new Map(plan.junctions.map(j=>[j.point.map(n=>n.toFixed(1)).join(','),j]));
   const poles=[],arms=[],lamps=[],trees=[],roofBoxes=[];
+  const onMedianPavement=pavedMedianMask(plan.roads);
   const spatialBuildings=new Map();
   for(const b of plan.buildings){const key=Math.floor(b.center[0]/60)+','+Math.floor(b.center[1]/60);if(!spatialBuildings.has(key))spatialBuildings.set(key,[]);spatialBuildings.get(key).push(b);}
   const occupied=(x,z)=>{if(x<plan.bounds.minX||x>=plan.bounds.maxX||z<plan.bounds.minZ||z>=plan.bounds.maxZ)return true;const gx=Math.floor(x/60),gz=Math.floor(z/60);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of spatialBuildings.get((gx+dx)+','+(gz+dz))||[])if(pointInPolygon(x,z,b.points))return true;return false;};
@@ -182,12 +184,12 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
       for(let offset=-width/2+1;offset<width/2-1;offset+=1.4)pavement(paint,point(t-1.8,offset),point(t+1.8,offset),.65,.029,white);
     }
     if(s.length>35&&width>=8)for(let t=15;t<s.length-10;t+=48)for(const side of [-1,1]){
-      const p=point(t,side*(width/2+1.65));if(occupied(...p)||onRoad(...p))continue;
+      const p=point(t,side*(width/2+1.65));if(occupied(...p)||onRoad(...p)||onMedianPavement(...p))continue;
       poles.push([p[0],3.4,p[1],.13,6.8,.13]);
       const inward=-side,tip=point(t,side*(width/2+.15));
       arms.push([(p[0]+tip[0])/2,6.75,(p[1]+tip[1])/2,1.65,.12,.12,Math.atan2(-s.dx,s.dz)]);
       lamps.push([tip[0],6.7,tip[1],.75,.14,.32,Math.atan2(-s.dz,s.dx)]);
-      const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)&&!onRoad(...tree)){
+      const tree=point(t+12,side*(width/2+1.6));if(!occupied(...tree)&&!onRoad(...tree)&&!onMedianPavement(...tree)){
         const variation=hash(s.road.id+t*101+side*73),height=5.8+variation*1.4;
         trees.push({x:tree[0],z:tree[1],height,rotation:variation*Math.PI*2,species:speciesForRoad(s.road),seed:variation});
       }

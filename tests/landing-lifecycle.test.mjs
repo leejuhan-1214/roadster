@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
 import {CITY_DRIVE_PARAMS} from '../dist/js/driving-input.js';
+import {FACILITY_SOLIDS} from '../dist/js/world-obstacles.js';
 import {vehicleProfile,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
 import {createLandingRun,landingClearance} from '../dist/js/landing-experiment.js';
 
@@ -46,7 +47,7 @@ function harness(){
   const c={mode:'lab',camera:'top',paused:false,cityLoading:false,vehicleLoading:false,vehicleLoadTask:null,
     activeVehicle:profile,lastLabVehicleId:'roadster',landingSession:null,landingRun:null,lastResult:null,
     selectedPartId:null,driveInput:{throttle:1},cityDistance:40,accumulator:.04,
-    scene,sim,DEFAULTS,CITY_DRIVE_PARAMS,vehicleProfile,vehiclePhysics,createLandingRun,
+    scene,sim,DEFAULTS,CITY_DRIVE_PARAMS,FACILITY_SOLIDS,vehicleProfile,vehiclePhysics,createLandingRun,
     $:node,escape:String,vehicleCredit:()=>'',cameraLabel:()=>c.camera,
     freeDriving:()=>c.mode==='city'||(c.mode==='lab'&&!c.landingSession),
     experimentIds:new Set(['roadster']),driver:{reset(){calls.push({type:'driver-reset'});}},

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {createVehicle} from '../dist/js/vehicle.js';
-import {updateSuspension} from '../dist/js/suspension-model.js';
+// Exercise re-entry from a different module URL, as on a cache-versioned page.
+import {updateSuspension} from '../dist/js/suspension-model.js?test-second-module';
 import {FlightScene} from '../dist/js/scene.js';
 
 const point = () => new THREE.Vector3();
