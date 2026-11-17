@@ -12,8 +12,8 @@ export function landingTargetMet(result={}){
 }
 
 /** Analytic free fall is a validation baseline, not a target for powered runs.
- * Contact velocity is sampled just before the first 2 ms contact step, so its
- * small integration/contact-localization error should remain visible.
+ * The crossing velocity comes from the local integrated trajectory. Compare
+ * against an independent closed-form release-to-contact prediction.
  */
 export function landingTheory(result={}){
   const g=result.parameters?.gravity;

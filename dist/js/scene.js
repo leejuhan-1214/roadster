@@ -1,30 +1,32 @@
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
-import {CockpitView} from './cockpit-view.js?v=20261111-paint1';
+import {CockpitView} from './cockpit-view.js?v=20261118-physics146';
 import {LandingVisual} from './landing-visual.js?v=20261112-lab1';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261114-air1';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-physics146';
 import {loadCityWorld} from './city-world.js?v=20261111-trees2';
 import {attachStreamingCity} from './city-streaming.js?v=20261111-trees2';
-import {loadStreetOverlay} from './city-street-overlay.js?v=20261111-street1';
+import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-physics146';
 import {updateTreeWind} from './city-trees.js?v=20261111-trees2';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';
 import {sampleRoadSurface} from './road-surface.js?v=20261107-drive2';
+import {updateSuspension} from './suspension-model.js?v=20261118-physics146';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createVehicle } from './vehicle.js?v=20261114-air1';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261114-air1';
-import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261115-fleet1';
-import {loadRoadsterVehicle} from './roadster-model.js?v=20261115-fleet1';
+import { createVehicle } from './vehicle.js?v=20261118-physics146';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-physics146';
+import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261118-physics146';
+import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-physics146';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
 import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive2';
 import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive2';
 import {createEnvironmentMaterials,surfaceUV} from './environment-materials.js?v=20261107-fleet1';
+import {createLandingDeck} from './landing-deck.js?v=20261118-physics146';
 
 // Visual coordinates use the physics convention: +X nose, +Y up, +Z right.
 // This renderer only reads simulation state. Plumes and marks never exert forces.
@@ -176,6 +178,7 @@ export class FlightScene {
       this.sun.intensity=2.2;
       for(const light of this.scene.children)if(light.isHemisphereLight)light.intensity=.5;
     }).catch(error=>{console.warn('실사 하늘 로드 실패 · 기본 하늘 유지',error);});
+    this.landingDeck=createLandingDeck(this.environmentMaterials.concrete);this.landingDeck.visible=false;this.scene.add(this.landingDeck);
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
     this.cockpit=new CockpitView();this.cockpitMirror=new CockpitMirror();this.cockpit.setMirrorTexture(this.cockpitMirror.texture);this.scene.add(this.cockpit.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
@@ -216,14 +219,10 @@ export class FlightScene {
     this.sun.shadow.mapSize.set(1024,1024);Object.assign(this.sun.shadow.camera,{near:1,far:150,left:-24,right:24,top:24,bottom:-24});
     this.sun.shadow.bias=-.00025;this.sun.shadow.normalBias=.025;this.scene.add(this.sun,this.sun.target);
     const rim=new THREE.DirectionalLight(0xd0e3f0,.45);rim.position.set(20,8,-25);this.scene.add(rim);
-    const ground=mesh(new THREE.PlaneGeometry(1800,1800),this.environmentMaterials.pavement,0,-.026,0,this.scene);ground.rotation.x=-Math.PI/2;ground.castShadow=false;this.groundSurface=ground;
-    const grid=new THREE.GridHelper(56,28,0x728589,0x5b7075);grid.position.y=.001;grid.material.transparent=true;grid.material.opacity=.24;grid.material.depthWrite=false;this.scene.add(grid);
+    const ground=mesh(new THREE.PlaneGeometry(1800,1800),this.environmentMaterials.pavement,0,0,0,this.scene);ground.rotation.x=-Math.PI/2;ground.castShadow=false;ground.userData.dynamicGeometry=true;this.groundSurface=ground;
     const padRing=ring(25,.11,0x9babaa,.7);padRing.position.y=.006;this.scene.add(padRing);
     const inner=ring(7.5,.045,0xb6d2d0,.38);inner.position.y=.009;this.scene.add(inner);
     for(let k=0;k<4;k++){const p=mesh(new THREE.PlaneGeometry(.11,2.8),new THREE.MeshBasicMaterial({color:0x8de0d3,transparent:true,opacity:.6}),Math.cos(k*Math.PI/2)*7.5,.012,Math.sin(k*Math.PI/2)*7.5,this.scene);p.rotation.x=-Math.PI/2;p.rotation.z=k*Math.PI/2;p.castShadow=false;}
-    const arc=ring(2.7,.055,0x77ebd4,.85);arc.position.set(0,.012,0);this.scene.add(arc);
-    const padLabel=label('01  /  FLIGHT DECK',{width:8,height:1,color:'#d1ddd9',size:77});padLabel.rotation.x=-Math.PI/2;padLabel.rotation.z=Math.PI/2;padLabel.position.set(-5,.018,0);this.scene.add(padLabel);
-    const axisLabel=label('COLD GAS  ·  TEST SECTOR',{width:13,height:1,color:'#a2b6b5',size:64});axisLabel.rotation.x=-Math.PI/2;axisLabel.position.set(0,.018,-12);this.scene.add(axisLabel);
     // Lane paint is visual; the tire ground uses the shared continuous relief function.
     const paint=this.environmentMaterials.lanePaint;
     for(const z of [-8.7,8.7]){let m=mesh(new THREE.PlaneGeometry(235,.085),paint,65,.008,z,this.scene);m.rotation.x=-Math.PI/2;m.castShadow=false;}
@@ -309,8 +308,11 @@ export class FlightScene {
     this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.inspectionViewport();this.camera.updateProjectionMatrix();
   }
   updateRoadRelief(roughness=0){
-    if(!this.roadRelief)return;this.roadRelief.visible=roughness>0;
-    const a=this.roadRelief.geometry.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,sampleRoadSurface(a.getX(i),a.getZ(i),{roughness}).height-.003);
+    if(!this.roadRelief)return;
+    // The backing plane must be below the troughs when relief is enabled.
+    // A flat landing uses the exact same zero datum as the collision solver.
+    this.groundSurface.position.y=roughness>0?-.008:0;
+    const a=this.roadRelief.geometry.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,sampleRoadSurface(a.getX(i),a.getZ(i),{roughness}).height);
     a.needsUpdate=true;this.roadRelief.geometry.computeVertexNormals();
   }
   observeFrame(ms){if(this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
@@ -332,6 +334,7 @@ export class FlightScene {
     this.mode=mode;this.cockpitDrag=null;if(mode!=='city'){if(this.cockpit)this.cockpit.root.visible=false;if(this.vehicle)this.vehicle.root.visible=true;}this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
     if(this.landingVisual)this.landingVisual.root.visible=mode==='lab'&&this.landingVisual.enabled;
+    if(this.landingDeck)this.landingDeck.visible=mode==='lab';
     // City facades need depth precision hundreds of metres away; inspection keeps its close view.
     if(this.camera){this.camera.near=mode==='city'?.25:.08;this.camera.updateProjectionMatrix?.();}
     if(mode!=='inspect')this.camera.clearViewOffset();
@@ -450,14 +453,18 @@ export class FlightScene {
   }
   applyInspectorVisibility() {
     if(!this.vehicle?.detailParts){
-      for(const id of ['tank','battery','suspension','thrusters','wing','drive-front','drive-rear-left','drive-rear-right','power-electronics']){const part=this.vehicle?.parts?.get(id);if(part)part.visible=this.mode!=='inspect'||this.showHypotheses;}
+      for(const [id,part] of this.vehicle?.parts||[]){
+        const shell=id==='body'||id==='cabin';
+        const wheel=id.startsWith('wheel-');
+        part.visible=this.mode==='lab'&&this.cutaway?(wheel||id==='suspension'):(shell||wheel||this.mode!=='inspect'||this.showHypotheses);
+      }
       return;
     }
     const inspecting=this.mode==='inspect';
     for(const entry of this.getPartCatalog()) {
       const part=this.vehicle.detailParts.get(entry.id);
       if(part&&this.mode==='city'&&entry.kind==='hypothesis'){part.visible=entry.id==='thrusters';continue;}
-      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.kind==='hypothesis'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId?['wing','tank','battery','suspension']:[])].includes(entry.id));
+      if(part)part.visible=inspecting?((entry.kind!=='hypothesis'||this.showHypotheses)&&!this.hiddenParts.has(entry.id)&&(!this.isolatedPartId||entry.id===this.isolatedPartId)):(this.cutaway?(entry.id==='suspension'||entry.category==='wheels'):!['drive-front','drive-rear-left','drive-rear-right','power-electronics',...(this.vehicle.profileId?['wing','tank','battery','suspension']:[])].includes(entry.id));
     }
     if(this.selectedBox)this.selectedBox.visible=inspecting&&!!this.selectedPart&&isObjectVisible(this.selectedPart);
   }
@@ -595,6 +602,7 @@ export class FlightScene {
       w.rotation.y=physicsWheel.steer||0;
       if(w.userData.spinGroup)w.userData.spinGroup.rotation.z=-(physicsWheel.spinAngle||0);
     }
+    updateSuspension(this.vehicle,this.mode==='inspect');
   }
 
   update(sim,dt,options={}) {
@@ -635,7 +643,8 @@ export class FlightScene {
     for(let i=0;i<(this.vehicle.valveIndicators?.length||0);i++){const valve=this.vehicle.valveIndicators[i];valve.scale.y=.35+.65*(thrusters[i]?.opening||0);}
     const lamp=this.vehicle.tank?.userData.supplyLamp;if(lamp)lamp.scale.setScalar(.7+.3*Math.min(1,(sim.massFlowKgS||0)/50));
     if(this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
-    if(this.mode==='city')this.roadRelief.visible=false;
+    this.roadRelief.visible=this.mode!=='city'&&sim.params.roadRoughness>0;
+    this.landingDeck.visible=this.mode==='lab'&&!this.roadRelief.visible;
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
     for(const fan of this.vehicle.fans||[]){
       const rotor=fan.userData.rotor||fan;

@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-drive2';
+import {createSuspension} from './suspension-model.js?v=20261118-physics146';
 
 // An independently authored visual prototype, not Tesla engineering geometry.
 // Coordinate convention: +X nose, +Y roof, +Z right side. Metres throughout.
-export function createVehicle() {
+export function createVehicle({suspensionAnchors} = {}) {
   const root = new THREE.Group();
   root.name = 'Roadster educational visual prototype';
   const parts = new Map();
@@ -172,7 +173,7 @@ export function createVehicle() {
     const faceZ=side*.137;
     put(spin,new THREE.CylinderGeometry(.269,.269,.022,48),satin,[0,0,faceZ],[Math.PI/2,0,0]);
     put(spin,new THREE.TorusGeometry(.26,.017,8,48),silver,[0,0,faceZ+side*.018]);
-    const brakeDisc=put(w,new THREE.CylinderGeometry(.203,.203,.018,40),silver,[0,0,side*.14],[Math.PI/2,0,0]);
+    const brakeDisc=put(spin,new THREE.CylinderGeometry(.203,.203,.018,40),silver,[0,0,side*.14],[Math.PI/2,0,0]);
     brakeDisc.material=silver;
     for(let j=0;j<5;j++) {
       const theta=j/5*Math.PI*2;
@@ -280,20 +281,7 @@ export function createVehicle() {
   }
 
   const suspension=part('suspension',[.1,.38,-1.85]);
-  for(const [id,x,z] of wheelData) {
-    const side=Math.sign(z);
-    cylinderBetween(suspension,[x-.23,-.28,side*.45],[x,-.23,z],.019,silver);
-    cylinderBetween(suspension,[x+.23,-.28,side*.45],[x,-.23,z],.019,silver);
-    cylinderBetween(suspension,[x,.06,side*.72],[x,-.28,side*.91],.031,satin);
-    // Small real helical mesh, clearly visible in exploded mode.
-    const springPts=[];
-    for(let i=0;i<=80;i++) {
-      const u=i/80, a=u*5*Math.PI*2;
-      springPts.push([x+.053*Math.cos(a),-.25+u*.25,side*(.89-u*.13)+.053*Math.sin(a)]);
-    }
-    tube(suspension,springPts,.009,caliper,6);
-  }
-  box(suspension,[3.4,.08,.93],carbon,[0,-.37,0]);
+  createSuspension(suspension,suspensionAnchors || wheels.map(wheel => wheel.position));
 
   const thrusters=part('thrusters',[-.2,.30,-3.25]);
   const jetMounts=[],gimbalNozzles=[],valveIndicators=[];

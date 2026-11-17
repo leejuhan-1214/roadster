@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261114-air1';
+import {updateSuspension} from './suspension-model.js?v=20261118-physics146';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const Z=new THREE.Vector3(0,0,1),UP=new THREE.Vector3(0,1,0);
@@ -177,6 +178,7 @@ function fitNozzles(vehicle){
 /** Called once after each source model has been adapted to chassis coordinates. */
 export function configureVehicleFit(vehicle,profile={}){
   if(vehicle.fitLayout)return vehicle.geometryParams;
+  updateSuspension(vehicle,true);
   vehicle.root.updateMatrixWorld(true);
   // The 2026 Rocket reference uses a shared fixed 4+4+2 layout. Sending it
   // through the legacy 4+2+4 surface fitter would move outlets away from forces.

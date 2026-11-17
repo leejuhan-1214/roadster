@@ -1,4 +1,5 @@
-import {nozzle, ATMOSPHERE} from './physics.js?v=20261115-physics145';
+import {nozzle, ATMOSPHERE} from './physics.js?v=20261118-physics146';
+import {contactFraction} from './landing-measurement.js?v=20261118-physics146';
 
 const G = 1.4, R = 287, STEP = .002;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -9,12 +10,14 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function forecast(initial, trigger, target, profile='brake') {
   const {gravity:g, dryMass, tankVolume, valveTau, feedLossCoefficient, area} = initial;
   const distance = Math.max(0, initial.height - trigger);
-  const steps = Math.ceil(Math.hypot(.5,Math.sqrt(distance)*Math.sqrt(2/g)/STEP)-.5);
-  let gap = initial.height - .5 * g * STEP * STEP * steps * (steps + 1);
+  const steps = Math.ceil(Math.sqrt(distance)*Math.sqrt(2/g)/STEP);
+  let gap = initial.height - .5 * g * (STEP*steps)**2;
   let velocity = -g * STEP * steps;
   let gas = initial.gas, temperature = initial.temperature, pressure = initial.pressure;
   let opening = 0, flow = 0, elapsed = 0;
-  const tau = Math.max(.001, valveTau), decay = Math.exp(-STEP / tau), halfDecay = Math.exp(-STEP / (2 * tau));
+  let contactVelocity=gap<=0?-Math.sqrt(2*g*initial.height):velocity,contactGas=gas;
+  const tau = Math.max(.001, valveTau), decay = Math.exp(-STEP / tau);
+  const meanDecay = -Math.expm1(-STEP/tau)/(STEP/tau);
   // At very high heights the bounded search can report infeasibility without
   // freezing a frame. Live physics still runs the requested experiment.
   for (let i = 0; gap > 0 && i < 12000; i++) {
@@ -24,45 +27,37 @@ function forecast(initial, trigger, target, profile='brake') {
     const acceleration = profile==='gentle'?gentleForecastAcceleration(gap,velocity,target,g,tau):economyAcceleration(gap,velocity,target,g,tau);
     const requested = mass * Math.max(0, g + acceleration);
     const command = full.force > 0 ? clamp(requested / full.force, 0, 1) : 0;
-    const midpoint = command + (opening - command) * halfDecay;
+    const meanOpening = command + (opening - command) * meanDecay;
     opening = command + (opening - command) * decay;
-    flow = full.mdot * midpoint;
+    flow = full.mdot * meanOpening;
     const removable = pressure > ATMOSPHERE ? gas * (1 - (ATMOSPHERE / pressure) ** (1 / G)) : 0;
     const dm = Math.min(flow * STEP, Math.max(0, removable));
     const scale = flow > 0 ? dm / (flow * STEP) : 0;
-    const force = full.force * midpoint * scale;
+    const force = full.force * meanOpening * scale;
     flow *= scale;
     const nextGas = Math.max(0, gas - dm);
     if (gas > 0 && nextGas > 0) temperature *= (nextGas / gas) ** (G - 1);
     gas = nextGas;
     pressure = gas * R * temperature / tankVolume;
-    velocity += (force / Math.max(1, mass - dm * .5) - g) * STEP;
-    gap += velocity * STEP;
+    const netAcceleration=force/Math.max(1,mass-dm*.5)-g;
+    const oldGap=gap,oldVelocity=velocity;
+    velocity += netAcceleration*STEP;
+    gap += .5*(oldVelocity+velocity)*STEP;
+    if(gap<=0){
+      const fraction=contactFraction(oldGap,gap,netAcceleration,STEP);
+      contactVelocity=oldVelocity+fraction*netAcceleration*STEP;
+      contactGas=gas+(1-fraction)*dm;
+    }
     elapsed += STEP;
     if (![gap, velocity, gas, temperature, pressure].every(Number.isFinite)) break;
   }
-  const touchdownGasUsed=initial.gas-gas;
-  // Touchdown is detected after a live physics step. Its pre-step speed above
-  // is the measurement, while its command still opens the valve for one step.
-  if(gap<=0){
-    const full=nozzle(Math.max(ATMOSPHERE,pressure-feedLossCoefficient*flow*flow),temperature,area);
-    const acceleration=profile==='gentle'?gentleForecastAcceleration(gap,velocity,target,g,tau):economyAcceleration(gap,velocity,target,g,tau);
-    const requested=(dryMass+gas)*Math.max(0,g+acceleration);
-    const command=full.force>0?clamp(requested/full.force,0,1):0;
-    const midpoint=command+(opening-command)*halfDecay;
-    opening=command+(opening-command)*decay;flow=full.mdot*midpoint;
-    const removable=pressure>ATMOSPHERE?gas*(1-(ATMOSPHERE/pressure)**(1/G)):0;
-    const dm=Math.min(flow*STEP,Math.max(0,removable));flow=dm/STEP;
-    const nextGas=Math.max(0,gas-dm);
-    if(gas>0&&nextGas>0)temperature*=(nextGas/gas)**(G-1);
-    gas=nextGas;pressure=gas*R*temperature/tankVolume;
-  }
+  const touchdownGasUsed=initial.gas-contactGas;
   // Commands close at first contact, but the real valves continue expelling gas.
   // Include that finite tail when choosing the cheaper profile.
   for(let i=0;i<Math.min(5000,Math.ceil(16*tau/STEP))&&opening>1e-9;i++){
     const full=nozzle(Math.max(ATMOSPHERE,pressure-feedLossCoefficient*flow*flow),temperature,area);
-    const midpoint=opening*halfDecay;opening*=decay;
-    flow=full.mdot*midpoint;
+    const meanOpening=opening*meanDecay;opening*=decay;
+    flow=full.mdot*meanOpening;
     const removable=pressure>ATMOSPHERE?gas*(1-(ATMOSPHERE/pressure)**(1/G)):0;
     const dm=Math.min(flow*STEP,Math.max(0,removable));
     flow=dm/STEP;
@@ -70,7 +65,7 @@ function forecast(initial, trigger, target, profile='brake') {
     if(gas>0&&nextGas>0)temperature*=(nextGas/gas)**(G-1);
     gas=nextGas;pressure=gas*R*temperature/tankVolume;
   }
-  return {trigger, profile, speed:Math.max(0, -velocity), gasUsed:initial.gas - gas,touchdownGasUsed,
+  return {trigger, profile, speed:Math.max(0,gap<=0?-contactVelocity:-velocity), gasUsed:initial.gas - gas,touchdownGasUsed,
     complete:gap <= 0, coastTime:steps * STEP, burnTime:elapsed};
 }
 
@@ -105,7 +100,7 @@ export function planEconomyLanding(sim, height, targetSpeed) {
   // Scale the short minimum with the available free-fall time at low heights.
   const minimumCoastTime=Math.max(1,Math.ceil(Math.min(.12,Math.sqrt(initial.height)*Math.sqrt(2/initial.gravity)*.15)/STEP))*STEP;
   const coastSteps=Math.round(minimumCoastTime/STEP);
-  const maximumTrigger=Math.max(0,initial.height-.5*initial.gravity*STEP*STEP*coastSteps*(coastSteps+1)-1e-9);
+  const maximumTrigger=Math.max(0,initial.height-.5*initial.gravity*(STEP*coastSteps)**2-1e-9);
   let best = null, previousTrigger = 0, bracket = null;
   const candidates=[];
   // Scan a bounded set first: finite tanks can make the outcome non-monotone.

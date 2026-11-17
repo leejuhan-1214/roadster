@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {createSourceCockpit} from './source-cockpit.js?v=20261111-paint1';
-import {createReferenceCockpit} from './reference-cockpit.js?v=20261111-interior1';
+import {createReferenceCockpit} from './reference-cockpit.js?v=20261118-physics146';
 
 const clamp=THREE.MathUtils.clamp,UP=new THREE.Vector3(0,1,0),WHEEL_AXIS=new THREE.Vector3(1,0,0);
 export const COCKPIT_NEAR=.03;

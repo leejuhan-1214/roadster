@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import * as THREE from 'three';
 import {roadSegments,planStreetCell,buildStreetCell,createStreetOverlay,STREET_CELL,STREET_NEAR} from '../dist/js/city-street-overlay.js';
 import {PhysicsSim} from '../dist/js/physics.js';
+import {prismContact} from '../dist/js/city-building-collision.js';
 
 const dir=new URL('../dist/assets/city/',import.meta.url);
 const text=await readFile(new URL('street-points.json',dir),'utf8'),points=JSON.parse(text);
@@ -55,7 +56,13 @@ test('signal masts stand on the right-hand kerb before the signal, one per appro
     assert.ok(Math.abs(Math.abs(m.x)-7.6)<1e-9,'1.1 m outside the 13 m carriageway');assert.ok(Math.abs(Math.abs(m.z)-4)<1e-9,'4 m before the signal');
     assert.ok(m.x*m.dz<0,'on the right of its own direction of travel');assert.ok(m.reach>=4.5&&m.reach<=11);
   }
-  assert.equal(plan.colliders.filter(c=>c.id.startsWith('signal-')).length,2);
+  assert.equal(plan.colliders.filter(c=>c.id.startsWith('signal-')).length,8,'each signal has a mast, an arm and two heads');
+  const arm=plan.colliders.find(c=>c.id.endsWith('-arm')),sim=new PhysicsSim();
+  sim.setObstacles([arm]);
+  sim.state.pos.set(arm.center[0],sim.restHeight,arm.center[2]);
+  assert.equal(prismContact(sim,sim.obstacles[0]),null,'ground traffic passes beneath the signal');
+  sim.state.pos.y=arm.center[1];
+  assert.ok(prismContact(sim,sim.obstacles[0]),'an airborne car meets the elevated arm');
   assert.equal(planStreetCell(roadSegments(street),{signals:[[0,0]]},cell,{occupied:()=>true}).masts.length,0,'no mast inside a building');
   assert.equal(planStreetCell(roadSegments([road(6,'좁은길',[[0,-80],[0,0]],{width:5,type:'residential'})]),{signals:[[0,0]]},cell).masts.length,0);
 });
@@ -65,9 +72,15 @@ test('subway entrances line up with the street, keep their exit number and are s
   const plan=planStreetCell(street,{entrances:[[10,14,'8','강남'],[30,2,'9','강남'],[300,14,'1','멀리'],[50,90,'3','']]},cell,{key:'k'});
   assert.equal(plan.entrances.length,1,'on the carriageway, outside the cell or far from any street: not built');
   const e=plan.entrances[0];assert.deepEqual([e.x,e.z,e.ref,e.station],[10,14,'8','강남']);assert.ok(Math.abs(Math.abs(e.dx)-1)<1e-9&&Math.abs(e.dz)<1e-9);
-  const walls=plan.colliders.filter(c=>c.id.startsWith('subway-k-0'));assert.equal(walls.length,3);
+  const walls=plan.colliders.filter(c=>c.id.startsWith('subway-k-0')&&/-(right|left|back)$/.test(c.id));assert.equal(walls.length,3);
   for(const wall of walls){assert.equal(wall.kind,'prism');assert.equal(wall.footprint.length,4);assert.ok(wall.size.every(v=>v>0)&&wall.center.every(Number.isFinite));}
   const sim=new PhysicsSim({aeroEnabled:false});
+  const roof=plan.colliders.find(c=>c.id.endsWith('-canopy'));
+  sim.setObstacles([roof]);sim.state.pos.set(roof.center[0],sim.restHeight,roof.center[2]);
+  assert.equal(prismContact(sim,sim.obstacles[0]),null,'the space below the canopy stays open');
+  sim.state.pos.y=roof.center[1];
+  assert.ok(prismContact(sim,sim.obstacles[0]),'the canopy intercepts the airborne vehicle');
+  sim.setObstacles([]);
   assert.equal(sim.setObstacleChunk('street:k',plan.colliders),true,'the physics accepts the stairwell walls');
   // A car driven sideways into the stairwell from the pavement is stopped by its side wall.
   sim.state.pos.set(10,sim.restHeight,24);sim.state.q.setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI/2);sim.state.vel.set(0,0,-8);

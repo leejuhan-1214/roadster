@@ -24,6 +24,51 @@ export function roadSegments(roads){
 }
 const pointOn=(s,t,offset=0)=>[s.a[0]+s.dx*t-s.dz*offset,s.a[1]+s.dz*t+s.dx*offset];
 const distanceTo=(x,z,s)=>{const t=clamp((x-s.a[0])*s.dx+(z-s.a[1])*s.dz,0,s.length);return Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t);};
+
+// Each physical furniture part feeds both the mesh and the rotated footprint.
+// Separate the elevated cross-arm from its mast so vehicles pass underneath.
+function furnitureParts(plan,key){
+  const parts=[];
+  const steel=0x78878e,dark=0x242a2d,glass=0x9fb9c4,canopy=0x586870;
+  function part(id,anchor,u,y,v,w,h,d,color,solid=true){
+    const {x,z,dx,dz}=anchor;
+    const cx=x+dx*u-dz*v,cz=z+dz*u+dx*v;
+    parts.push({x:cx,y,z:cz,w,h,d,angle:Math.atan2(-dz,dx),color});
+    if(!solid)return;
+    const footprint=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([i,j])=>[cx+dx*i*w/2-dz*j*d/2,cz+dz*i*w/2+dx*j*d/2]);
+    plan.colliders.push({id,kind:'prism',center:[cx,y,cz],size:[Math.abs(dx*w)+Math.abs(dz*d),h,Math.abs(dz*w)+Math.abs(dx*d)],footprint});
+  }
+  plan.masts.forEach((mast,index)=>{
+    const id='signal-'+key+'-'+index;
+    part(id,mast,0,3.3,0,.22,6.6,.22,steel);
+    part(id+'-arm',mast,0,6.4,-mast.reach/2,.16,.16,mast.reach,steel);
+    for(const [i,fraction] of [.55,.95].entries()){
+      const v=-mast.reach*fraction;
+      part(id+'-head'+i,mast,0,6.05,v,.40,.48,1.5,dark);
+      // Recessed lenses reflect daylight in the unpowered signal housing.
+      for(const [lens,color] of [0x82352d,0x8c662b,0x35694b].entries())
+        part(null,mast,-.193,6.05,v-(lens-1)*.45,.018,.27,.27,color,false);
+    }
+  });
+  plan.entrances.forEach((e,index)=>{
+    const id='subway-'+key+'-'+index;
+    for(const side of [-1,1]){
+      part(id+(side>0?'-right':'-left'),e,0,.65,side*1.45,6.2,1.3,.14,glass);
+      part(null,e,0,1.29,side*1.45,6.2,.04,.16,steel,false);
+    }
+    part(id+'-back',e,-3.1,.65,0,.14,1.3,3.04,glass);
+    part(id+'-canopy',e,-.6,2.55,0,5.2,.12,3.3,canopy);
+    for(const u of [-3,1.9])for(const v of [-1.50,1.50])
+      part(id+'-post'+u+','+v,e,u,1.28,v,.1,2.55,.1,steel);
+    // Stiffeners under the canopy and mullions at the panel joints.
+    for(const u of [-2.8,-1.6,-.4,.8,1.8]){
+      part(null,e,u,2.47,0,.04,.05,3.13,steel,false);
+      for(const side of [-1,1])part(null,e,u,.64,side*1.45,.045,1.27,.15,steel,false);
+    }
+    part(id+'-totem',e,3.6,1.6,1.9,.18,3.2,.9,dark);
+  });
+  return parts;
+}
 // The opposite carriageway of a divided avenue, found on the driver's left.
 function sibling(s,segments){
   const mx=(s.a[0]+s.b[0])/2,mz=(s.a[1]+s.b[1])/2;let best=null;
@@ -72,23 +117,16 @@ export function planStreetCell(segments,points,bounds,{occupied=()=>false,key='c
         approaches.push({x:base[0],z:base[1],dx,dz,reach:clamp(half*1.15,4.5,11)});
       }
     }
-    for(const mast of approaches){plan.colliders.push({id:'signal-'+key+'-'+plan.masts.length,center:[mast.x,3.3,mast.z],size:[.3,6.6,.3]});plan.masts.push(mast);}
+    plan.masts.push(...approaches);
   }
   for(const e of points.entrances||[]){
     const [x,z,ref,station]=e;if(!inside(x,z)||occupied(x,z))continue;
     let nearest=null,distance=40;for(const s of segments){const d=distanceTo(x,z,s);if(d<distance){distance=d;nearest=s;}}
     if(!nearest||distance<nearest.width/2+.6)continue;
-    const entrance={x,z,dx:nearest.dx,dz:nearest.dz,ref:String(ref||''),station:station||''},nx=-entrance.dz,nz=entrance.dx,index=plan.entrances.length;
-    // Two side walls and the back wall of the stairwell; the street end stays open.
-    const wall=(tag,cx,cz,along,across)=>{
-      const corners=[[-along,-across],[along,-across],[along,across],[-along,across]].map(([u,v])=>[cx+entrance.dx*u+nx*v,cz+entrance.dz*u+nz*v]);
-      const xs=corners.map(c=>c[0]),zs=corners.map(c=>c[1]);
-      plan.colliders.push({id:'subway-'+key+'-'+index+tag,kind:'prism',footprint:corners,center:[cx,.65,cz],size:[Math.max(...xs)-Math.min(...xs),1.3,Math.max(...zs)-Math.min(...zs)]});
-    };
-    for(const side of [-1,1])wall(side>0?'r':'l',x+nx*side*1.45,z+nz*side*1.45,3.1,.11);
-    wall('b',x-entrance.dx*3.1,z-entrance.dz*3.1,.11,1.55);
+    const entrance={x,z,dx:nearest.dx,dz:nearest.dz,ref:String(ref||''),station:station||''};
     plan.entrances.push(entrance);
   }
+  plan.furniture=furnitureParts(plan,key);
   return plan;
 }
 
@@ -132,30 +170,11 @@ export function buildStreetCell(plan,{road,paint,furniture,boxGeometry}){
   // Just above the carriageway (0.014) so the join does not flicker, below the junction patches (0.018).
   surface(plan.fills,plan.patches,.0165,road,'divided avenue centre pavement');
   surface(plan.lines,[],.0275,paint,'centre and bus-lane lines');
-  const boxes=[],steel=new THREE.Color(0x74818a),dark=new THREE.Color(0x232a2e),glass=new THREE.Color(0x9fb9c4),canopy=new THREE.Color(0x586870),lights=[new THREE.Color(0xff5140),new THREE.Color(0xffc23a),new THREE.Color(0x45e08a)];
-  const box=(x,y,z,w,h,d,angle,color)=>boxes.push({x,y,z,w,h,d,angle,color});
-  for(const g of plan.masts){
-    const angle=Math.atan2(-g.dz,g.dx),lx=g.dz,lz=-g.dx; // the arm reaches left, over the lanes
-    box(g.x,3.3,g.z,.22,6.6,.22,0,steel);box(g.x+lx*g.reach/2,6.4,g.z+lz*g.reach/2,.16,.16,g.reach,angle,steel);
-    for(const along of [.55,.95]){
-      const hx=g.x+lx*g.reach*along,hz=g.z+lz*g.reach*along;box(hx,6.05,hz,.34,.46,1.5,angle,dark);
-      // Three lenses side by side along the arm, facing the approaching traffic.
-      lights.forEach((c,k)=>box(hx-g.dx*.19+lx*(k-1)*.45,6.05,hz-g.dz*.19+lz*(k-1)*.45,.06,.3,.3,angle,c));
-    }
-  }
-  const totems=[];
-  for(const e of plan.entrances){
-    const angle=Math.atan2(-e.dz,e.dx),nx=-e.dz,nz=e.dx;
-    for(const side of [-1,1])box(e.x+nx*side*1.45,.65,e.z+nz*side*1.45,6.2,1.3,.14,angle,glass);
-    box(e.x-e.dx*3.1,.65,e.z-e.dz*3.1,.14,1.3,3.04,angle,glass);
-    box(e.x-e.dx*.6,2.55,e.z-e.dz*.6,5.2,.12,3.3,angle,canopy);
-    for(const [fx,fz]of [[1.9,1.5],[1.9,-1.5],[-3,1.5],[-3,-1.5]])box(e.x+e.dx*fx+nx*fz,1.28,e.z+e.dz*fx+nz*fz,.1,2.55,.1,angle,steel);
-    const px=e.x+e.dx*3.6+nx*1.9,pz=e.z+e.dz*3.6+nz*1.9;box(px,1.6,pz,.18,3.2,.9,angle,dark);
-    totems.push({e,px,pz});
-  }
+  const boxes=plan.furniture;
+  const totems=plan.entrances.map(e=>({e,px:e.x+e.dx*3.6-e.dz*1.9,pz:e.z+e.dz*3.6+e.dx*1.9}));
   if(boxes.length){
-    const mesh=new THREE.InstancedMesh(boxGeometry,furniture,boxes.length),dummy=new THREE.Object3D();mesh.name='signals and subway entrances';
-    boxes.forEach((t,i)=>{dummy.position.set(t.x,t.y,t.z);dummy.rotation.set(0,t.angle,0);dummy.scale.set(t.w,t.h,t.d);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);mesh.setColorAt(i,t.color);});
+    const mesh=new THREE.InstancedMesh(boxGeometry,furniture,boxes.length),dummy=new THREE.Object3D(),tint=new THREE.Color();mesh.name='signals and subway entrances';
+    boxes.forEach((t,i)=>{dummy.position.set(t.x,t.y,t.z);dummy.rotation.set(0,t.angle,0);dummy.scale.set(t.w,t.h,t.d);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);mesh.setColorAt(i,tint.setHex(t.color));});
     mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);
   }
   const texture=totemAtlas(plan.entrances);

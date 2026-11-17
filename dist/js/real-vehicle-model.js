@@ -3,8 +3,8 @@ import {vehiclePaintRule,prepareVehiclePaint} from './vehicle-paint.js?v=2026111
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
-import {createVehicle} from './vehicle.js?v=20261114-air1';
-import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js';
+import {createVehicle} from './vehicle.js?v=20261118-physics146';
+import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js?v=20261118-physics146';
 import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261109-wheel2';
 import {straightenWheelAxes} from './wheel-alignment.js?v=20261109-wheel1';
 
@@ -109,7 +109,7 @@ export function adaptRealVehicle(source,profile){
     else{hullBounds.union(r.geometry.boundingBox);(interior?cabin:body).add(obj);}
     detailParts.set(id,obj);catalog.push({id,title,kind:'model',category,categoryLabel:{wheels:'바퀴·브레이크',interior:'실내',glazing:'유리·렌즈',exterior:'외장'}[category],sourceName:r.original.name,sourceObjectName:r.original.parent?.name||r.original.name,materialNames:r.materialNames,sourceUrl:profile.source});
   });
-  const fallback=createVehicle();
+  const fallback=createVehicle({suspensionAnchors:anchors});
   for(const id of hardware){const part=fallback.parts.get(id);root.add(part);parts.set(id,part);part.userData.kind='hypothesis';part.userData.explodeStage=hypothesisExplosionStage(id);part.traverse(o=>{if(o.isMesh)o.userData.partId=id;});detailParts.set(id,part);catalog.push(createHypothesisCatalogEntry(id));}
   // Dispose the unused procedural shell. Hardware has already been detached.
   disposeVehicle(fallback,root);

@@ -1,4 +1,4 @@
-import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
+import {landingSpringState} from './landing-measurement.js?v=20261118-physics146';
 
 // The live view reads the solver; it never writes forces, velocities or time.
 const fmt=(value,digits=2)=>Number.isFinite(value)?value.toFixed(digits):'—';

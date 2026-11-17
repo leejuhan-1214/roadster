@@ -501,16 +501,19 @@ export class PhysicsSim {
       desiredForces[i] = clamp(input.thrusterCommands[i] || 0, 0, 1) * layoutMaximum[i].force;
     this.saturation = allocation.saturated; this.totalThrust = 0; this.maxThrust = 0;
     let totalFlow = 0;
+    const valveStep = dt / Math.max(.001, Number(p.valveTau) || .03);
+    const decay = Math.exp(-valveStep);
+    // Exact average of the first-order valve opening over this force step.
+    const meanDecay = -Math.expm1(-valveStep) / valveStep;
     for (let i = 0; i < this.thrusters.length; ++i) {
       const t = this.thrusters[i], available = layoutMaximum[i];
       this.maxThrust += available.force;
       if (desiredForces[i] > available.force + 1) this.saturation = true;
       t.command = available.force > 0 ? clamp(desiredForces[i] / available.force, 0, 1) : 0;
       const openingOld = t.opening;
-      const tau = Math.max(.001, Number(p.valveTau) || .03);
-      t.opening = t.command + (t.opening - t.command) * Math.exp(-dt / tau);
-      const midOpening = t.command + (openingOld - t.command) * Math.exp(-dt / (2 * tau));
-      t.force = available.force * midOpening; t.mdot = available.mdot * midOpening;
+      t.opening = t.command + (openingOld - t.command) * decay;
+      const meanOpening = t.command + (openingOld - t.command) * meanDecay;
+      t.force = available.force * meanOpening; t.mdot = available.mdot * meanOpening;
       totalFlow += t.mdot;
     }
     // Check-valve cutoff at ambient; a finite tank cannot eject negative mass.
@@ -655,15 +658,19 @@ export class PhysicsSim {
     const acceleration = force.clone().divideScalar(midMass);
     s.vel.addScaledVector(acceleration, dt);
     s.pos.addScaledVector(s.vel, dt);
+    // Mean velocity is exact for a constant-force flight step. Retain the
+    // semi-implicit position update for the stiff ground springs.
+    if(this.contactCount===0&&this.bodyGroundContacts===0)s.pos.addScaledVector(acceleration,-.5*dt*dt);
     const torqueBody = torqueWorld.clone().applyQuaternion(qInv);
     integrateRotation(s,this.inertia,torqueBody,dt);
+    this.unprojectedPositionY=s.pos.y;
     if (p.contactEnabled) { this._resolveBrakeStick(dt,input); this._resolveObstacles(); this._resolveGround(); }
     this.resolvedAcceleration.copy(s.vel).sub(velocityBefore).divideScalar(dt);
     s.time += dt; s.acceleration.copy(acceleration);
     this.lastForce.copy(force); this.lastTorque.copy(torqueBody);
     this.maxAltitude = Math.max(this.maxAltitude, s.pos.y - this.restHeight);
-    if (this.lastContactCount === 0 && this.contactCount > 0) this.lastImpactSpeed = Math.abs(s.vel.y - acceleration.y * dt);
-    this.maxG = Math.max(this.maxG, acceleration.clone().addScaledVector(UP, gravity).length() / Math.max(gravity, .001));
+    if (this.lastContactCount === 0 && this.contactCount > 0) this.lastImpactSpeed = Math.max(0, -this.preStepVelocityY);
+    this.maxG = Math.max(this.maxG, this.resolvedAcceleration.clone().addScaledVector(UP, gravity).length() / Math.max(gravity, .001));
   }
 
   _resolveBrakeStick(dt,input) {
@@ -809,7 +816,7 @@ export class PhysicsSim {
     const kinetic = .5 * m * s.vel.lengthSq();
     const rotation = .5 * s.omega.clone().multiply(this.inertia).dot(s.omega);
     const spring = this.wheels.reduce((sum, w) => sum + .5 * p.springK * w.compression ** 2, 0);
-    const gLoad = s.acceleration.clone().addScaledVector(UP, p.gravity).length() / Math.max(.001, p.gravity);
+    const gLoad = this.resolvedAcceleration.clone().addScaledVector(UP, p.gravity).length() / Math.max(.001, p.gravity);
     let status = contact >= 3 ? 'GROUND' : contact > 0 ? 'CONTACT' : s.vel.y > .12 ? 'ASCENDING' : s.vel.y < -.12 ? 'DESCENDING' : 'AIRBORNE';
     if (s.pressure <= ATMOSPHERE * 1.01) status = 'GAS DEPLETED';
     return {motorState:this.motorState, electricPowerW:this.electricPowerW,regenPowerW:this.regenPowerW,driveLossW:this.driveLossW,tractionCut:this.tractionCut,slidingWheels:this.wheels.filter(w=>w.sliding).length,massFlowKgS:this.massFlowKgS,manifoldPressureMPa:this.manifoldPressure/1e6,tankCapacityKg:this.initialGas,tankVolumeL:p.tankVolume*1000,
@@ -826,7 +833,7 @@ export class PhysicsSim {
       compressorState:this.compressorState,compressorPowerW:this.compressorPowerW,compressorCompressionPowerW:this.compressorCompressionPowerW,compressorCoolingPowerW:this.compressorCoolingPowerW,compressorFlowKgS:this.compressorFlowKgS,
       compressorHeatW:this.compressorHeatW,tankHeatW:this.tankHeatW,compressorEnergyJ:s.compressorEnergyJ,
       gasRefilledKg:s.gasRefilledKg,gasConsumedKg:s.gasUsed,
-      kineticEnergy: kinetic, potentialEnergy: m * p.gravity * Math.max(0, s.pos.y - this.restHeight),
+      kineticEnergy: kinetic, potentialEnergy: m * p.gravity * (s.pos.y - this.restHeight),
       rotationEnergy: rotation, springEnergy: spring, tankEnergy: s.gas * CV * s.temp,
       gasUsed:s.gasUsed, thrustToWeight: this.totalThrust / Math.max(.001, m * p.gravity),
       status, attitude, acceleration: s.acceleration.clone(), gLoad, batteryPct: 100 * s.batteryJ / (p.batteryKWh * 3.6e6),
@@ -850,7 +857,7 @@ export function runValidation() {
   vacuum.state.pos.y = 20; vacuum.state.vel.set(0, 0, 0);
   for (let i = 0; i < 500; ++i) vacuum.step(.002, { stabilize: false });
   const exactHeight = 20 - .5 * DEFAULTS.gravity;
-  add('자유낙하', Math.abs(vacuum.state.pos.y - exactHeight) < .011, `${vacuum.state.pos.y.toFixed(5)} m`, `${exactHeight.toFixed(5)} m`, '항력·접촉·추력 0, 1초. 반암시적 적분의 위치 오차 약 9.8 mm.');
+  add('자유낙하', Math.abs(vacuum.state.pos.y - exactHeight) < 1e-9, `${vacuum.state.pos.y.toFixed(5)} m`, `${exactHeight.toFixed(5)} m`, '항력·접촉·추력 0, 1초. 매 단계 평균 속도로 구한 변위와 등가속도 해석해를 비교.');
   let v = 0, mass = 2000; const dt = .001, mdot = 2, ve = 500;
   for (let i = 0; i < 10000; ++i) { v += mdot * ve / (mass - mdot * dt / 2) * dt; mass -= mdot * dt; }
   const expected = rocketReference(2000, 1980, ve);
@@ -876,6 +883,6 @@ export function runValidation() {
   function fallError(h) { const sim = new PhysicsSim({ contactEnabled: false, aeroEnabled: false }); sim.state.pos.y = 20;
     for (let t = 0; t < Math.round(1 / h); ++t) sim.step(h, { stabilize: false }); return Math.abs(sim.state.pos.y - exactHeight); }
   const e1 = fallError(.002), e2 = fallError(.001);
-  add('시간 간격 수렴', e2 < e1 * .6, `${(e1 * 1000).toFixed(2)} → ${(e2 * 1000).toFixed(2)} mm`, 'Δt 절반 → 오차 감소', '자유낙하 반암시적 Euler 위치 오차를 해석해와 비교. 접촉·제어도 별도 검증 필요.');
+  add('시간 간격 검산', Math.max(e1,e2)<1e-9, `${(e1 * 1000).toExponential(1)} / ${(e2 * 1000).toExponential(1)} mm`, '두 위치 오차 < 10⁻⁹ m', '무추력 자유낙하를 2 ms와 1 ms로 계산해 각각 등가속도 해석해와 비교.');
   return results;
 }

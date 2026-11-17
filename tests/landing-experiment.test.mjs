@@ -52,6 +52,16 @@ test('both thrust-based methods reduce first contact speed and peak ground load 
   }
 });
 
+test('20 m contact is localized within its step and the first compression interval closes momentum',()=>{
+  const {result:r}=experiment({method:'free',height:20});
+  const g=r.parameters.gravity, speed=Math.sqrt(2*g*r.height);
+  assert.ok(Math.abs(r.touchdownSpeed-speed)<1e-9);
+  assert.ok(Math.abs(r.touchdownTime-speed/g)<1e-9);
+  assert.ok(Math.abs(r.touchdownKineticEnergyJ-r.initialPotentialEnergyJ)<1e-5);
+  const netImpulse=r.groundImpulseNs-r.initialMass*g*r.contactDuration;
+  assert.ok(Math.abs(netImpulse-r.initialMass*(r.contactEndVelocityY+r.touchdownSpeed))<1e-6);
+});
+
 test('late braking has a measurable cost and cannot remove velocity instantaneously',()=>{
   const early=experiment({method:'brake',brakeHeight:2}).result;
   const late=experiment({method:'brake',brakeHeight:.1}).result;

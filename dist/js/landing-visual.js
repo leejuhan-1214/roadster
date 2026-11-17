@@ -89,10 +89,6 @@ function rectangle(width,depth,color){
   const x=width/2,z=depth/2;
   return lineSegments([-x,0,-z,x,0,-z,x,0,-z,x,0,z,x,0,z,-x,0,z,-x,0,z,-x,0,-z],color,.72);
 }
-function springLine(){
-  const points=[];for(let i=0;i<=80;i++){const t=i/80,angle=t*Math.PI*12;points.push(new THREE.Vector3(Math.cos(angle)*.075,t,Math.sin(angle)*.075));}
-  return new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xb8d9e5,transparent:true,opacity:.85,depthWrite:false,toneMapped:false}));
-}
 
 export class LandingVisual {
   constructor(){
@@ -116,11 +112,10 @@ export class LandingVisual {
     this.tracePositions=new Float32Array(TRACE_CAPACITY*3);this.traceGeometry=new THREE.BufferGeometry();this.traceGeometry.setAttribute('position',new THREE.BufferAttribute(this.tracePositions,3).setUsage(THREE.DynamicDrawUsage));this.traceGeometry.setDrawRange(0,0);
     this.trace=new THREE.Line(this.traceGeometry,new THREE.LineBasicMaterial({color:0xd4e1e7,transparent:true,opacity:.6,depthWrite:false,toneMapped:false}));this.trace.frustumCulled=false;this.trace.name='centre of mass render trace';this.root.add(this.trace);
     this.traceCount=0;this.lastTraceTime=-Infinity;this.lastSimTime=-Infinity;
-    this.contactMarks=[];this.springs=[];
+    this.contactMarks=[];
     const ringGeometry=new THREE.RingGeometry(.19,.23,24);ringGeometry.rotateX(-Math.PI/2);
     for(let i=0;i<4;i++){
       const ring=new THREE.Mesh(ringGeometry,new THREE.MeshBasicMaterial({color:COLORS.ground,transparent:true,opacity:.65,depthWrite:false,toneMapped:false,side:THREE.DoubleSide}));ring.name='wheel contact '+i;this.root.add(ring);this.contactMarks.push(ring);
-      const spring=springLine();spring.name='wheel compression '+i;this.root.add(spring);this.springs.push(spring);
     }
   }
 
@@ -206,18 +201,12 @@ export class LandingVisual {
     this.heightMarker.visible=!!this.config;this.brakeMarker.visible=this.config?.method==='brake';
     this.clearanceLine.position.copy(this.ruler.position).addScaledVector(this._right,.08);this.clearanceLine.scale.y=Math.max(0,clearance);this.clearanceLine.visible=clearance>.005;
     for(let i=0;i<4;i++){
-      const wheel=wheels[i],physical=sim.wheels[i],mark=this.contactMarks[i],spring=this.springs[i];
-      if(!wheel){mark.visible=spring.visible=false;continue;}
+      const wheel=wheels[i],physical=sim.wheels[i],mark=this.contactMarks[i];
+      if(!wheel){mark.visible=false;continue;}
       this._point.copy(wheel.pos).applyQuaternion(q).add(position);
       mark.position.set(this._point.x,(finite(physical?.surfaceY))+.028,this._point.z);
       mark.visible=!!physical?.grounded&&(physical.load||0)>1;
       mark.material.opacity=.25+.55*Math.min(1,(physical?.load||0)/Math.max(1,gravity/4));
-      // Place a small measuring spring just outside each wheel. Its actual
-      // length change equals solver travel (no exaggerated compression).
-      this._point.copy(wheel.pos);this._point.z+=Math.sign(wheel.pos.z||1)*.35;this._point.y+=finite(wheel.compression);
-      spring.position.copy(this._point).applyQuaternion(q).add(position);spring.quaternion.copy(q);
-      spring.scale.y=Math.max(.015,.55-finite(wheel.compression));spring.visible=true;
-      spring.material.color.setHex(finite(wheel.compression)>.22?0xff9478:0xb8d9e5);
     }
     const time=finite(sim.state.time);
     if(time<this.lastSimTime-1e-7)this.resetTrace();this.lastSimTime=time;

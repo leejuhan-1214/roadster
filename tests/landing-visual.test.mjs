@@ -36,7 +36,7 @@ test('airborne thrust has actual resultant direction and zero ground vector/cont
   visual.dispose();
 });
 
-test('resting load and spring shortening follow the physical wheel state',()=>{
+test('resting load, contact marks and compression measurement follow the physical wheel state',()=>{
   const sim=new PhysicsSim(),run=createLandingRun(sim,{height:0}),visual=new LandingVisual();
   for(let i=0;i<1000;i++)sim.step(LANDING_STEP,{stabilize:false,coastRegen:false});
   visual.update(sim,view(sim),camera,'lab');
@@ -44,8 +44,8 @@ test('resting load and spring shortening follow the physical wheel state',()=>{
   assert.ok(Math.abs(visual.metrics.groundVerticalN-sim.mass*sim.params.gravity)<100);
   sim.wheels.forEach((wheel,i)=>{
     assert.equal(visual.contactMarks[i].visible,wheel.grounded&&wheel.load>1);
-    near(visual.springs[i].scale.y,.55-wheel.compression);
   });
+  near(visual.metrics.compression,Math.max(...sim.wheels.map(wheel=>wheel.compression)));
   const rendered={state:sim.state,wheels:sim.wheels.map(w=>({...w,load:100000}))};
   for(const wheel of sim.wheels){wheel.grounded=false;wheel.load=0;}sim.groundForceN=0;
   visual.update(sim,rendered,camera,'lab');

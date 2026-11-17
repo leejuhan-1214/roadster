@@ -75,6 +75,38 @@ export function createReferenceCockpit(vehicle={},seat={width:1.9,eye:new THREE.
     const cup=mesh(new THREE.CylinderGeometry(.042,.034,.042,20),rubber,[x,-.573,.45]);
   }
   box([1.85,.05,width*.96],[-.03,-.97,center],rubber,root,.008,'carpet floor');
+  // Seat and footwell geometry lives below the calibrated eye point. Rails,
+  // cushions and buckles share the lateral position of each seating place.
+  const seatSpan=Math.min(.46,width*.30);
+  for(const seatZ of [0,2*center]){
+    const inside=Math.sign(center-seatZ)||1;
+    for(const edge of [-1,1]){
+      box([.53,.036,.034],[-.05,-.908,seatZ+edge*seatSpan*.35],satin,root,.006,'seat slide rail');
+      box([.21,.05,.045],[-.11,-.868,seatZ+edge*seatSpan*.35],lower,root,.008,'seat carriage');
+    }
+    box([.53,.115,seatSpan],[-.075,-.80,seatZ],lower,root,.04,'seat cushion');
+    for(const edge of [-1,1])box([.44,.09,.06],[-.07,-.724,seatZ+edge*seatSpan*.42],leather,root,.028,'seat side bolster');
+    const back=box([.095,.49,seatSpan*.95],[-.32,-.52,seatZ],leather,root,.032,'contoured seat back');
+    back.rotation.z=.15;
+    for(const dz of [-.068,.068])rod([-.35,-.31,seatZ+dz],[-.367,-.22,seatZ+dz],.006,satin);
+    box([.094,.15,.23],[-.37,-.20,seatZ],leather,root,.033,'head restraint');
+    rod([-.19,-.83,seatZ+inside*seatSpan*.53],[-.18,-.70,seatZ+inside*seatSpan*.57],.014,rubber);
+    box([.051,.028,.034],[-.18,-.684,seatZ+inside*seatSpan*.57],lower,root,.006,'seat belt buckle');
+    const shoulder=seatZ-inside*seatSpan*.72;
+    const strap=box([.007,.60,.042],[-.34,-.48,shoulder],rubber,root,.002,'stowed shoulder belt');
+    strap.rotation.z=.12;
+    box([.028,.044,.053],[-.37,-.18,shoulder],satin,root,.006,'belt shoulder guide');
+  }
+  box([.025,.21,.096],[.51,-.815,-.17],rubber,root,.008,'footrest').rotation.z=-.30;
+  for(const pedal of [{name:'brake pedal',z:-.037,width:.105},{name:'accelerator pedal',z:.106,width:.061}]){
+    rod([.784,-.602,pedal.z],[.701,-.843,pedal.z],.011,satin);
+    const face=box([.020,.088,pedal.width],[.693,-.849,pedal.z],rubber,root,.007,pedal.name);
+    face.rotation.z=-.25;
+    for(let rib=-1;rib<=1;rib++){
+      const y=rib*.018;
+      box([.007,.005,pedal.width*.78],[.678+y*.25,-.849+y,pedal.z],satin,root,.001,'pedal tread');
+    }
+  }
 
   function vent(z,y=-.37,x=.685,hex=false){
     const group=new THREE.Group();root.add(group);group.name=hex?'hexagonal air vent':'air vent';group.position.set(x,y,z);

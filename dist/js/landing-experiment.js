@@ -1,11 +1,11 @@
-import {landingSpringState} from './landing-measurement.js?v=20261111-calibration1';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261115-physics145';
+import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-physics146';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
 // retain the maximum in each 10 ms chart bin; the summary never uses render rate.
 export const LANDING_STEP=.002;
-export const LANDING_MODEL_VERSION='1.45.0';
+export const LANDING_MODEL_VERSION='1.46.0';
 export const LANDING_METHODS=Object.freeze([
   {id:'free',label:'자유낙하'},
   {id:'brake',label:'지정 높이에서 분사'},
@@ -79,7 +79,7 @@ export function createLandingRun(sim,options={}){
     // The energy datum is the CG height at level, unloaded tire contact.
     // After compression, gravitational energy relative to this datum can be negative.
     energyDatumY:sim.state.pos.y-config.height,initialPotentialEnergyJ:sim.mass*sim.params.gravity*config.height,
-    previousMass:sim.mass,previousGas:sim.state.gas,finalMass:sim.mass,finalVelocityY:0,
+    previousMass:sim.mass,previousGas:sim.state.gas,previousClearance:config.height,finalMass:sim.mass,finalVelocityY:0,
     touchdownMass:null,touchdownKineticEnergyJ:null,touchdownGasUsed:null,
     totalGravityImpulseNs:0,constantMassAuditValid:true,freeFallConditionsValid:true,
     parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
@@ -139,7 +139,7 @@ export function landingRunInput(run,sim,manualLift=false){
 
 function complete(run,status){
   run.done=true;run.status=status;
-  const {config,startTime,done,result,sampleBucket,settledFor,braking,previousMass,previousGas,...data}=run;
+  const {config,startTime,done,result,sampleBucket,settledFor,braking,previousMass,previousGas,previousClearance,...data}=run;
   run.result={...data,samples:run.samples.map(s=>({...s})),config:{...config}};
 }
 
@@ -170,13 +170,21 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
     Math.abs(sim.params.gravity-run.parameters.gravity)<1e-12&&Math.abs(sim.mass-run.initialMass)<1e-9;
   const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
   const properG=acceleration.length()/Math.max(.001,sim.params.gravity);
-  const touching=ground>0||impulse>0;
-  if(touching&&run.touchdownTime===null){
-    run.touchdownTime=run.elapsed-dt;
-    run.touchdownSpeed=Math.max(0,-sim.preStepVelocityY);
-    run.touchdownMass=massBefore;
-    run.touchdownKineticEnergyJ=.5*massBefore*run.touchdownSpeed**2;
-    run.touchdownGasUsed=run.initialGas-gasBefore;
+  const clearance=landingClearance(sim);
+  if(run.touchdownTime===null&&sim.params.contactEnabled){
+    // Locate first geometric contact before numerical position projection.
+    const unprojectedClearance=clearance+(sim.unprojectedPositionY-sim.state.pos.y);
+    let fraction=null;
+    if(ground>0)fraction=0;
+    else if(unprojectedClearance<=0)fraction=contactFraction(run.previousClearance,unprojectedClearance,sim.state.acceleration.y,dt);
+    else if(impulse>0)fraction=1; // tilted hull contacted first
+    if(fraction!==null){
+      run.touchdownTime=run.elapsed-dt+fraction*dt;
+      run.touchdownSpeed=Math.max(0,-(sim.preStepVelocityY+fraction*sim.state.acceleration.y*dt));
+      run.touchdownMass=massBefore+fraction*(sim.mass-massBefore);
+      run.touchdownKineticEnergyJ=.5*run.touchdownMass*run.touchdownSpeed**2;
+      run.touchdownGasUsed=run.initialGas-(gasBefore+fraction*(sim.state.gas-gasBefore));
+    }
   }
   run.peakGroundForceN=Math.max(run.peakGroundForceN,ground);
   run.peakEquivalentGroundForceN=Math.max(run.peakEquivalentGroundForceN,equivalent);
@@ -186,7 +194,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   run.correctionImpulseNs+=impulse;
   if(run.touchdownTime!==null&&run.contactDuration===null){
     run.groundImpulseNs+=ground*dt+impulse;run.impactCorrectionImpulseNs+=impulse;
-    if(sim.state.vel.y>=0||Math.abs(sim.state.vel.y)<.01){
+    if(run.groundImpulseNs>0&&run.elapsed>run.touchdownTime&&(sim.state.vel.y>=0||Math.abs(sim.state.vel.y)<.01)){
       // groundImpulseNs already integrates the entire resolved step, including
       // any instantaneous end-of-step ground correction. Record that same
       // endpoint instead of pretending the impulse has a fractional duration.
@@ -201,7 +209,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   run.maxCompression=Math.max(run.maxCompression,compression);
   run.bottomedOut ||= compression>.22;
   run.bodyStrike ||= sim.bodyGroundContacts>0||impulse>0;
-  const clearance=landingClearance(sim);
+  run.previousClearance=clearance;
   if(run.touchdownTime!==null)run.reboundHeight=Math.max(run.reboundHeight,clearance);
   run.gasUsed=run.initialGas-sim.state.gas;
   // Preserve the full 10 ms contact trace, while long high-altitude approaches

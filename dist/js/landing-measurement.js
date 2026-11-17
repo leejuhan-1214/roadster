@@ -1,3 +1,15 @@
+/** Fraction of a flight step at which the unloaded tire reaches the surface.
+ * Endpoints include the change in projected wheel height if the body rotates. */
+export function contactFraction(startGap,endGap,accelerationY,dt){
+  if(startGap<=0)return 0;
+  if(endGap>0)return null;
+  const quadratic=.5*accelerationY*dt*dt;
+  const linear=endGap-startGap-quadratic;
+  const discriminant=Math.max(0,linear*linear-4*quadratic*startGap);
+  const divisor=Math.sqrt(discriminant)-linear;
+  return divisor>0?Math.min(1,2*startGap/divisor):1;
+}
+
 /** Read spring compression at the current pose against each wheel's sampled
  * contact surface. The solver's wheel.compression belongs to force evaluation
  * at the start of the last step, and must not be mixed with end-state energy.

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js';
+import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js?v=20261118-physics146';
 
 // Licensed visual asset only. Geometry never supplies mass, inertia or aerodynamics.
 // Runtime alignment adapts it to the explicitly hypothetical simulation chassis.
@@ -89,6 +89,12 @@ export function adaptRoadsterScene(source,fallback,sourceParser={}) {
     if(name.includes('carmainpaint')){
       mat=new THREE.MeshPhysicalMaterial({color:0xca2338,map:original.map,normalMap:original.normalMap,metalness:.68,roughness:.23,clearcoat:1,clearcoatRoughness:.12});
       mat.name=original.name;paintMaterials.push(mat);
+    }else if(name==='seats'||name==='interior'){
+      // These untextured source primitives inherit glTF's default metallic
+      // factor of one. Preserve their form and give the trim a diffuse finish.
+      mat.metalness=0;mat.roughness=name==='seats'?.82:.86;
+      if(name==='seats')mat.color.set('#abb1b2');
+      else mat.color.set('#202629');
     }else if(name.includes('glass')){
       mat.transparent=true;mat.depthWrite=false;mat.roughness=.09;mat.metalness=.17;
       if(name.includes('mid')||name.includes('tint')){mat.color.set(0x172c38);mat.opacity=name.includes('max')?.72:.48;}

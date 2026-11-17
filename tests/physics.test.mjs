@@ -34,7 +34,7 @@ test('integrated ideal straight rocket converges to Tsiolkovsky, without adding 
   assert.ok(errors[1] < errors[0] * .51 && errors[2] < errors[1] * .51);
 });
 
-test('actual rigid body follows vacuum freefall and position error halves with timestep', () => {
+test('vacuum free flight matches the uniformly accelerated trajectory at every supported timestep', () => {
   const errors = [.002, .001, .0005].map(dt => {
     const s = new PhysicsSim({ contactEnabled: false, aeroEnabled: false });
     s.state.pos.set(0, 20, 0); s.state.vel.set(0, 3, 0);
@@ -42,8 +42,7 @@ test('actual rigid body follows vacuum freefall and position error halves with t
     assert.ok(Math.abs(s.state.vel.y - (3 - DEFAULTS.gravity)) < 1e-10);
     return Math.abs(s.state.pos.y - (20 + 3 - .5 * DEFAULTS.gravity));
   });
-  assert.ok(errors[2] < .00246);
-  assert.ok(errors[1] < errors[0] * .501 && errors[2] < errors[1] * .501);
+  for(const error of errors)assert.ok(error<1e-9);
 });
 
 test('instantaneous force balance and tilt projection respect Newton second law', () => {
