@@ -116,6 +116,16 @@ test('overlay cells follow the vehicle, register their solids and are released b
   overlay.update(0,0);assert.equal(overlay.cells.size,1,'one cell per frame');assert.ok(overlay.cells.has('0,0')||overlay.cells.has('-1,-1')||overlay.cells.has('0,-1')||overlay.cells.has('-1,0'));
   for(let i=0;i<60;i++)overlay.update(0,0);
   const expected=overlay.cells.size;assert.ok(expected>=12&&expected<=25,'cells within '+STREET_NEAR+' m: '+expected);
+  const strips=[...overlay.cells.values()].flatMap(cell=>{
+    const strip=cell.group.getObjectByName('stair entrance tactile warning tiles');
+    if(!cell.counts.entrances){assert.equal(strip,undefined);return [];}
+    assert.equal(strip.count,cell.counts.entrances);return [strip];
+  });
+  assert.ok(strips.length>1);
+  for(const strip of strips){
+    assert.equal(strip.geometry,strips[0].geometry);assert.equal(strip.material,strips[0].material);
+    assert.deepEqual(strip.material.map.repeat.toArray(),[1,9]);
+  }
   assert.equal(calls.length,0,'no simulation bound yet');
   overlay.bindPhysics(physics);const withSolids=[...overlay.cells.values()].filter(c=>c.colliders.length).length;
   assert.equal(calls.filter(c=>c[0]==='set').length,withSolids);assert.ok(withSolids>0);

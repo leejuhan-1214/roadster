@@ -121,15 +121,18 @@ test('each wheel retains rotating tire/rim/disc surfaces and a non-spinning cali
   }
 });
 
-test('the nine invented educational assemblies remain explicit and preserve simulation references', () => {
-  const hypotheses = vehicle.catalog.filter(entry => entry.kind === 'hypothesis');
-  assert.deepEqual(hypotheses.map(entry => entry.id).sort(), ['battery', 'drive-front', 'drive-rear-left', 'drive-rear-right', 'power-electronics', 'suspension', 'tank', 'thrusters', 'wing']);
-  for (const entry of hypotheses) {
+test('generated sections distinguish the concept powertrain from experimental equipment and retain simulation references', () => {
+  const educational = vehicle.catalog.filter(entry => entry.kind !== 'model');
+  assert.deepEqual(educational.map(entry => entry.id).sort(), ['battery', 'drive-front', 'drive-rear-left', 'drive-rear-right', 'power-electronics', 'suspension', 'tank', 'thrusters', 'wing']);
+  for (const entry of educational) {
     assert.equal(vehicle.detailParts.get(entry.id), vehicle.parts.get(entry.id));
-    assert.equal(entry.category, 'hypothesis');
-    assert.match(entry.title, /가정/);
-    assert.equal(entry.sourceUrl, '');
-    assert.ok(vehicle.parts.get(entry.id).userData.hypothetical);
+    const reference=vehicle.parts.get(entry.id).userData.powertrainSection===true;
+    assert.equal(entry.category,reference?'powertrain':'hypothesis');
+    assert.equal(entry.kind,reference?'reference':'hypothesis');
+    assert.match(entry.title, /가정|단면/);
+    if(vehicle.parts.get(entry.id).userData.powertrainSection)assert.match(entry.sourceUrl,/petersen\.org/);
+    else if(entry.id!=='suspension')assert.equal(entry.sourceUrl,'');
+    assert.equal(vehicle.parts.get(entry.id).userData.hypothetical,!reference);
   }
   assert.equal(vehicle.wing, vehicle.parts.get('wing'));
   assert.equal(vehicle.tank, vehicle.parts.get('tank'));

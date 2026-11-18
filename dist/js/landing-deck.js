@@ -42,6 +42,19 @@ export function createLandingDeck(concrete){
       for(const dx of [.13,1.87])for(const dz of [.13,2.37])fastener(x+dx,z+dz);
     }
   }
+  // Two sealed cable inspection lids sit in the outside panels. Their top
+  // faces, paint and slotted screw heads are flush with the test surface.
+  for(const x of [-3.5,3.5]){
+    const z=1.85;
+    rectangle(2,x-.29,z-.16,x+.29,z+.16,0x5b6767);
+    rectangle(2,x-.283,z-.153,x+.283,z+.153,0x9ea8a7);
+    const light=0xb7c0bc,dark=0x687574;
+    for(const dx of [-.23,.23])for(const dz of [-.10,.10]){
+      rectangle(2,x+dx-.017,z+dz-.014,x+dx+.017,z+dz+.014,light);
+      rectangle(2,x+dx-.010,z+dz-.002,x+dx+.010,z+dz+.002,dark);
+    }
+    for(const dx of [-.1,.1])rectangle(2,x+dx-.045,z-.009,x+dx+.045,z+.009,dark);
+  }
   // Long ticks mark one metre, short ticks half a metre. Leave the contact
   // area clear when looking straight down at the wheels or measuring rebound.
   for(let i=-7;i<=7;i++){

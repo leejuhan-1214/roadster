@@ -105,7 +105,7 @@ test('a vertical landing is supported by the opponent roof and then clears when 
   let strongestDown=0;
   for(let i=0;i<2000;i++){sim.step(.002,{});race.update(.002,sim.state.pos,sim);strongestDown=Math.min(strongestDown,car.vy);}
   const bodyFloor=sim.bodyPosition.y+sim.params.bodyCenterY-sim.params.bodyHeight/2;
-  assert.ok(Math.abs(bodyFloor-(1.43+car.heave))<.008);
+  assert.ok(Math.abs(bodyFloor-(1.382+car.heave))<.008);
   assert.ok(car.heave<-.05 && strongestDown<-.5);
   assert.ok(Math.abs(sim.state.vel.y)<.15 && Math.hypot(sim.state.vel.x,sim.state.vel.z)<.1);
   assert.equal(sim.rivalSupport,true);

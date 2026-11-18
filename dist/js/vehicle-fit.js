@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261114-air1';
-import {updateSuspension} from './suspension-model.js?v=20261118-physics146';
+import {createNaturalExplosionLayout} from './explosion-layout.js?v=20261118-model154';
+import {updateSuspension} from './suspension-model.js?v=20261118-model154';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const Z=new THREE.Vector3(0,0,1),UP=new THREE.Vector3(0,1,0);
@@ -11,8 +11,9 @@ function rootBounds(object,root){
   object.updateWorldMatrix(true,true);root.updateWorldMatrix(true,false);
   const inverse=root.matrixWorld.clone().invert(),box=new THREE.Box3();
   object.traverse(node=>{if(!node.isMesh||!node.geometry)return;
-    node.geometry.computeBoundingBox();
-    box.union(node.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse,node.matrixWorld)));
+    const boundsOwner=node.isInstancedMesh?node:node.geometry;
+    boundsOwner.computeBoundingBox();
+    box.union(boundsOwner.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse,node.matrixWorld)));
   });return box;
 }
 

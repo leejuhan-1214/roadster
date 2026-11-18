@@ -284,7 +284,7 @@ export class PhysicsSim {
     this.manifoldPressure=this.state.pressure;this.massFlowKgS=0;this.electricPowerW=0;this.regenPowerW=0;this.driveLossW=0;this.tractionCut=1;
     this.history = [];
     this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
-    for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0;
+    for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0;w.lateralForceN=0;
       w.compression = this.contactCount ? Math.max(0,w.radius-(this.state.pos.y+w.pos.y)) : 0;
       w.surfaceY=this.surfaceHeightAt(this.state.pos.x+w.pos.x,this.state.pos.z+w.pos.z,this.state.pos.y+w.pos.y);
       w.omega = preset === 'corner' ? 12 / w.radius : preset === 'rolling' ? 20 / w.radius : 0; w.load = this.contactCount ? (this.loadedDryMass + gas) * p.gravity / 4 : 0;
@@ -650,6 +650,8 @@ export class PhysicsSim {
       wheel.rollingResistanceN=Math.abs(rolling);this.rollingResistanceN+=wheel.rollingResistanceN;wheel.tireForceN=tire.magnitude;
       const contactForce=fwd.clone().multiplyScalar(fx+rolling).addScaledVector(right,fy);
       wheel.forceX=contactForce.x;wheel.forceY=contactForce.y;wheel.forceZ=contactForce.z;
+      // Save the signed patch component in the same pose in which it was solved.
+      wheel.lateralForceN=normal>0 ? fy : 0;
       if(normal>0){tireResultant.add(contactForce);const lever=new Vector3(rCenter.x,surfaceY-s.pos.y,rCenter.z);applyAt(contactForce.clone().addScaledVector(n,normal),lever);}
       if((brakeAmount>0||rearHandbrake>0)&&normal>0){
         const brakingForce=Math.max(0,-fx*Math.sign(ux));this.brakeForceN+=brakingForce;
@@ -732,7 +734,10 @@ export class PhysicsSim {
       s.vel.addScaledVector(change,inverseMass);
       s.omega.add(angularImpulse.crossVectors(c.r,change).applyQuaternion(qi).divide(this.inertia));
     }
-    for(const c of contacts){c.w.forceX=c.j.x/dt;c.w.forceY=c.j.y/dt;c.w.forceZ=c.j.z/dt;c.w.tireForceN=c.j.length()/dt;}
+    for(const c of contacts){
+      c.w.forceX=c.j.x/dt;c.w.forceY=c.j.y/dt;c.w.forceZ=c.j.z/dt;c.w.tireForceN=c.j.length()/dt;
+      c.w.lateralForceN=c.j.dot(c.axes[1].axis)/dt;
+    }
     const resultant=new Vector3();this.brakeForceN=0;
     for(const w of this.wheels){resultant.add(new Vector3(w.forceX,w.forceY,w.forceZ));const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);this.brakeForceN+=Math.abs(w.forceX*forward.x+w.forceZ*forward.z);}
     this.frictionForceN=resultant.length();

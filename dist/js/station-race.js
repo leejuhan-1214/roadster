@@ -1,4 +1,4 @@
-import {resolveRivalContact,resolveRivalPair} from './race-contact.js?v=20261118-flight153';
+import {resolveRivalContact,resolveRivalPair} from './race-contact.js?v=20261118-model154';
 import {AIR_CEILING, insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261118-flight1531';
 
 const TURN_RADIUS = 32;

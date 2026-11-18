@@ -1,7 +1,10 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-flight1531';
+import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-model154';
 import {AIR_GATES,airLaneOffset} from './station-race-air.js?v=20261118-flight1531';
+import {addCircuitLighting} from './circuit-lighting.js?v=20261118-model154';
+
+import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js';
 
 const halfWidth=RACE_COURSE.width/2;
 const white=0xf1eee1,red=0xc63e37,dark=0x212c32,steel=0x829499,mint=0x5cf2cb;
@@ -33,14 +36,34 @@ function ribbon(root,name,mat,inner,outer,height,segmentLength,tileSize=3,altern
   return mesh(root,geometry,mat,name);
 }
 
+function precastWallMaterial(){
+  const w=256,h=96,pixels=new Uint8Array(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    // UVs wrap up the first face, across the cap, and down the reverse face.
+    const fromBase=Math.min(y,h-y-1),cap=fromBase>=38,edge=Math.min(x,w-1-x);
+    const grain=((Math.imul(x+3,4001)^Math.imul(y+7,7039))>>>3)%15-7;
+    const streak=3*Math.sin(x*.10)+2*Math.sin(x*.51);
+    const dirt=cap?0:Math.max(0,1-fromBase/24)*(17+streak);
+    const tieHole=!cap&&(Math.min(Math.abs(x-37),Math.abs(x-218))**2+(fromBase-24)**2<4);
+    const tone=177+grain+streak-dirt+(cap?11:0)-(edge<1?49:edge<2?14:0)-(tieHole?39:0);
+    const i=(y*w+x)*4;pixels[i]=tone+2;pixels[i+1]=tone+1;pixels[i+2]=tone-3;pixels[i+3]=255;
+  }
+  const map=new THREE.DataTexture(pixels,w,h);
+  map.name='Cast concrete panels with tie holes and joints';map.wrapS=THREE.RepeatWrapping;
+  map.colorSpace=THREE.SRGBColorSpace;map.magFilter=THREE.LinearFilter;map.minFilter=THREE.LinearMipmapLinearFilter;
+  map.generateMipmaps=true;map.needsUpdate=true;map.anisotropy=4;
+  return material(0xffffff,{map,roughness:.91,flatShading:true,side:THREE.DoubleSide});
+}
+
 // Follow the same corner vertices in the rendered walls and their collision prisms.
-function boundary(root,obstacles,side){
+function boundary(root,obstacles,side,concrete){
   const near=side*(halfWidth+2.4),far=side*(halfWidth+2.84),height=.84;
-  const count=Math.ceil(RACE_COURSE.length/5),positions=[],indices=[];
+  const count=Math.ceil(RACE_COURSE.length/5),positions=[],indices=[],uv=[];
   for(let i=0;i<=count;i++){
     const s=i*RACE_COURSE.length/count;
     const a=sampleCourse(s,near),b=sampleCourse(s,far);
     positions.push(a.x,0,a.z,a.x,height,a.z,b.x,height,b.z,b.x,0,b.z);
+    uv.push(i,0,i,.4,i,.6,i,1);
     if(i===count)continue;
     const j=i*4;
     for(let k=0;k<3;k++)indices.push(j+k,j+k+1,j+k+4,j+k+1,j+k+5,j+k+4);
@@ -54,7 +77,8 @@ function boundary(root,obstacles,side){
   // The outside wall's winding is opposite the inside wall's winding.
   if(side<0)for(let i=0;i<indices.length;i+=3)[indices[i+1],indices[i+2]]=[indices[i+2],indices[i+1]];
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-  g.setIndex(indices);g.computeVertexNormals();mesh(root,g,material(0xa4abab,{side:THREE.DoubleSide}),'Circuit safety wall');
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(indices);g.computeVertexNormals();mesh(root,g,concrete,'Circuit safety wall');
 }
 
 function billBoard(root,text,w,h,x,y,z,heading,background,foreground){
@@ -135,21 +159,26 @@ function facilities(root,obstacles){
 }
 
 function hills(root){
-  const positions=[],colors=[],land=new THREE.Color(),tri=(a,b,c,color)=>{
-    positions.push(...a,...b,...c);land.setHex(color);for(let i=0;i<3;i++)colors.push(land.r,land.g,land.b);
-  };
-  for(let i=0;i<40;i++){
-    const k=i/40*2*Math.PI,j=(i+1)/40*2*Math.PI;
-    const p=(t,r,y)=>[Math.cos(t)*r,y,Math.sin(t)*r-48];
-    const crest=t=>26+12*Math.sin(t*5+1)+7*Math.sin(t*9);
-    const a=p(k,245,-.4),b=p(j,245,-.4),c=p(k,355,crest(k)),d=p(j,355,crest(j));
-    tri(a,c,d,0x72897a);tri(a,d,b,0x758a79);
-    const e=p(k,460,crest(k)*.42),f=p(j,460,crest(j)*.42);
-    tri(c,e,f,0x82938a);tri(c,f,d,0x81928a);
+  const positions=[],colors=[],indices=[],land=new THREE.Color(),samples=192;
+  const bands=[[230,-.6,0,0x566458],[292,3,.19,0x475d54],[345,8,.49,0x465a54],
+    [405,14,.80,0x475b58],[455,19,1,0x47595b],[525,12,.72,0x506164],[640,3,.36,0x58676b]];
+  for(const [ring,[radius,seat,relief,color]] of bands.entries()){
+    for(let i=0;i<samples;i++){
+      const a=2*Math.PI*i/samples,t=a+.08*Math.sin(a*3+.23*ring);
+      const ridge=9*Math.sin(t*4+.7)+6*Math.cos(t*7-.35)+3.3*Math.sin(t*13)+1.4*Math.cos(t*28);
+      const r=radius+relief*(12*Math.cos(t*6)+6*Math.sin(t*13));
+      positions.push(Math.cos(a)*r,seat+relief*ridge,Math.sin(a)*r-48);
+      land.setHex(color).multiplyScalar(1+relief*(.045*Math.cos(t*17)+.027*Math.sin(t*31)));
+      colors.push(land.r,land.g,land.b);
+      if(ring){
+        const n=(i+1)%samples,p=(ring-1)*samples,q=ring*samples;
+        indices.push(p+i,p+n,q+i,p+n,q+n,q+i);
+      }
+    }
   }
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();
-  mesh(root,geo,material(0xffffff,{vertexColors:true,side:THREE.DoubleSide,flatShading:true}),'Distant hills');
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();
+  mesh(root,geo,material(0xffffff,{vertexColors:true,roughness:1}),'Distant hills');
 }
 
 function turfMaterial(){
@@ -276,10 +305,22 @@ function rivalCar(color){
     mesh(spin,tire,rubber,'Tyre').castShadow=true;mesh(spin,hub,alloy,'Alloy wheel');
     wheels.push({pivot,spin,front:x>0});
   }
-  return {root,wheels};
+  const mount=new THREE.Group(),patches=createTireContactShadows();mount.add(root,patches);
+  const car={root:mount,placeholder:root,wheels,patches};fitTirePatches(car);return car;
 }
 
-export function createStationRaceWorld(roadMaterial,treeLibrary){
+function fitTirePatches(car){
+  const scale=car.skin?.root.scale.x||1,origin=car.skin?.root.position||new THREE.Vector3();
+  const wheels=car.wheels.map(wheel=>{
+    wheel.baseY=wheel.pivot.position.y;
+    return {pos:wheel.pivot.position.clone().multiplyScalar(scale).add(origin),surfaceY:0,compression:0,steer:0,load:3000};
+  });
+  updateTireContactShadows(car.patches,new THREE.Vector3(),new THREE.Quaternion(),wheels,
+    car.wheels.map(w=>({radius:w.radius||.345})),'city');
+}
+
+export function createStationRaceWorld(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
+  ()=>import('./rival-exterior.js?v=20261118-model154').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
   root.name='Station Circuit';root.visible=false;
   const ground=mesh(root,new THREE.PlaneGeometry(1500,1500),turfMaterial(),'Circuit grass');
@@ -291,6 +332,7 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
   if(roadMaterial)asphalt.color.multiplyScalar(.74);
   ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,.001,2,roadMaterial?.map?.image?4:2);
   const paintedWhite=material(white),paintedRed=material(red),apron=material(0x797c76);
+  const precast=precastWallMaterial();
   for(const side of [-1,1]){
     const curb=[side*halfWidth,side*(halfWidth+.76)].sort((a,b)=>a-b);
     const edge=[side*(halfWidth-.12),side*(halfWidth+.02)].sort((a,b)=>a-b);
@@ -298,12 +340,21 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
     ribbon(root,'Run-off',apron,...runOff,.003,2);
     ribbon(root,'Kerb white',paintedWhite,...curb,.009,2.8);
     ribbon(root,'Kerb red',paintedRed,...curb,.014,2.8,3,true);
-    ribbon(root,'White edge line',paintedWhite,...edge,.018,2);boundary(root,obstacles,side);
+    ribbon(root,'White edge line',paintedWhite,...edge,.018,2);boundary(root,obstacles,side,precast);
   }
-  facilities(root,obstacles);hills(root);
+  facilities(root,obstacles);hills(root);addCircuitLighting(root,obstacles);
   const airFrames=airCourse(root);
   const grove=tracksideTrees(root,treeLibrary);
   const nextGate=new THREE.Group();nextGate.name='Next checkpoint';root.add(nextGate);
+  let exterior=null,disposed=false;
+  function dress(car){
+    car.skin=exterior.create(car.color);
+    car.root.add(car.skin.root);car.placeholder.visible=false;car.wheels=car.skin.wheels;fitTirePatches(car);
+  }
+  const rivalModelsReady=loadExterior?Promise.resolve().then(loadExterior).then(template=>{
+    if(disposed){template.dispose();return false;}
+    exterior=template;for(const car of cars)dress(car);return true;
+  }).catch(error=>{console.warn('AI 경주차 외형을 불러올 수 없습니다.',error);return false;}):Promise.resolve(false);
   const markerMaterial=new THREE.MeshBasicMaterial({color:mint});
   for(const side of [-1,1]){
     const marker=mesh(nextGate,new THREE.BoxGeometry(.20,2.2,.22),markerMaterial,'Checkpoint marker');
@@ -314,12 +365,17 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
   function update(race){
     for(let i=0;i<race.rivals.length;i++){
       const rival=race.rivals[i];
-      if(!cars[i]){cars[i]=rivalCar(rival.color);root.add(cars[i].root);}
+      if(!cars[i]){cars[i]=rivalCar(rival.color);cars[i].color=rival.color;root.add(cars[i].root);if(exterior)dress(cars[i]);}
       const car=cars[i];car.root.name=rival.name;car.root.position.set(rival.x,rival.heave||0,rival.z);car.root.rotation.y=rival.heading;
       const ahead=sampleCourse(rival.distance+2,rival.lateral);
       const angle=ahead.heading-rival.heading;
       const steer=rival.steerAngle??Math.atan2(Math.sin(angle),Math.cos(angle))*1.35;
-      for(const {spin,pivot,front} of car.wheels){spin.rotation.z=-(rival.wheelDistance??rival.distance)/.345;pivot.rotation.y=front?steer:0;}
+      const heave=rival.heave||0,scale=car.skin?.root.scale.x||1;
+      car.patches.position.y=-heave;car.patches.material.opacity=Math.max(0,1-Math.max(0,heave)/.14)**2;
+      for(const {spin,pivot,front,radius=.345,baseY} of car.wheels){
+        spin.rotation.z=-(rival.wheelDistance??rival.distance)/radius;pivot.rotation.y=front?steer:0;
+        pivot.position.y=baseY-Math.min(heave,0)/scale;
+      }
     }
     const gate=RACE_COURSE.gates[race.nextGate];
     for(let i=0;i<airFrames.length;i++){
@@ -330,6 +386,8 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
     if(gate){nextGate.position.set(gate.x,0,gate.z);nextGate.rotation.y=gate.heading;}
   }
   function dispose(){
+    if(disposed)return;disposed=true;
+    for(const car of cars)car.skin?.dispose();exterior?.dispose();
     const meshes=new Set(),materials=new Set(),textures=new Set();
     grove.removeFromParent();grove.traverse(o=>{if(o.isInstancedMesh)o.dispose();});grove.clear();
     root.traverse(o=>{
@@ -343,5 +401,5 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
     for(const g of meshes)g.dispose();for(const m of materials)m.dispose();for(const t of textures)t.dispose();
     root.clear();root.removeFromParent();
   }
-  return {root,obstacles,update,dispose};
+  return {root,obstacles,update,dispose,rivalModelsReady};
 }

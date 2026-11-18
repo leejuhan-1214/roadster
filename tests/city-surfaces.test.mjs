@@ -55,18 +55,26 @@ test('partial asset failure releases loaded maps and leaves playable fallback ma
   city.root.children.forEach((mesh,i)=>assert.equal(mesh.material,original[i]));
 });
 
-test('facade glass reflects the sky while walls and center mullions retain a rough finish',async()=>{
+test('four-storey bay maps align albedo, dielectric glass, metal frames and recessed jambs',async()=>{
   const city=fixture(),original=new MeshStandardMaterial({vertexColors:true,roughness:.68});
   const facade=new Mesh(new PlaneGeometry(3.2,3.4),original);facade.name='OSM building facades';city.root.add(facade);
+  const curtain=facade.clone();curtain.name='office curtain walls';city.root.add(curtain);
   const result=await applyCitySurfaces(city,null,{loader:{async loadAsync(){return new Texture();}}});
-  const material=facade.material,surface=material.roughnessMap,at=(x,y)=>(y*64+x)*4;
-  assert.equal(material.metalnessMap,surface,'both material channels share one small packed map');
-  assert.equal(surface.colorSpace,NoColorSpace);assert.equal(surface.image.width,64);
-  assert.equal(material.vertexColors,true,'retain per-building facade colors');
-  for(const [x,y,glass] of [[20,30,true],[44,40,true],[32,30,false],[9,30,false],[54,30,false],[20,13,false],[20,55,false]]){
-    assert.equal(surface.image.data[at(x,y)+1],glass?51:230);
-    assert.equal(surface.image.data[at(x,y)+2],glass?31:0);
+  const surface=facade.material.roughnessMap;
+  for(const {material} of [facade,curtain]){
+    const packed=material.roughnessMap,at=(x,y)=>(y*packed.image.width+x)*4;
+    assert.equal(material.metalnessMap,packed);assert.equal(material.bumpMap,packed);
+    assert.equal(packed.colorSpace,NoColorSpace);assert.equal(material.map.colorSpace,SRGBColorSpace);
+    assert.equal(packed.image.width,192);assert.deepEqual(packed.repeat.toArray(),[.25,.25]);
+    assert.deepEqual(packed.repeat.toArray(),material.map.repeat.toArray());
+    assert.equal(material.vertexColors,true,'retain per-building facade colors');
+    const glass=at(15,20),frame=at(23,20),bytes=packed.image.data;
+    assert.equal(bytes[glass+2],0,'glass is dielectric');assert.ok(bytes[frame+2]>120);
+    assert.ok(bytes[glass]<bytes[frame],'astragals project in front of glazing');
+    assert.ok(bytes[glass+1]<bytes[frame+1],'polished glass has a narrower reflection');
+    assert.notEqual(material.map.image.data[glass],material.map.image.data[at(15+48,20+48)],'adjacent bays have independent interiors');
   }
+  assert.ok(surface.image.data[(20*192+2)*4+1]>200,'the masonry around the reveal is rough');
   let disposed=0;surface.addEventListener('dispose',()=>disposed++);
-  result.dispose();assert.equal(facade.material,original);assert.equal(disposed,1);
+  result.dispose();assert.equal(facade.material,original);assert.equal(curtain.material,original);assert.equal(disposed,1);
 });

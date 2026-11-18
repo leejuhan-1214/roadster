@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+import {buildElectricDrive,buildEngineSection,ENGINE_LAYOUTS} from './drivetrain-section.js?v=20261118-model154';
 import {LIFT_LAYOUT,BOOST_LAYOUT} from './vehicle-layout.js?v=20261107-drive2';
-import {createSuspension} from './suspension-model.js?v=20261118-physics146';
+import {createSuspension} from './suspension-model.js?v=20261118-model154';
 
 // An independently authored visual prototype, not Tesla engineering geometry.
 // Coordinate convention: +X nose, +Y roof, +Z right side. Metres throughout.
-export function createVehicle({suspensionAnchors} = {}) {
+export function createVehicle({suspensionAnchors,suspensionProfileId='roadster'} = {}) {
   const root = new THREE.Group();
   root.name = 'Roadster educational visual prototype';
   const parts = new Map();
@@ -164,7 +165,7 @@ export function createVehicle({suspensionAnchors} = {}) {
   const wheels=[];
   const wheelData=[['wheel-fl',1.4,-.94],['wheel-fr',1.4,.94],['wheel-rl',-1.4,-.94],['wheel-rr',-1.4,.94]];
   for(const [id,x,z] of wheelData) {
-    const side=Math.sign(z); const w=part(id,[x*.30,-.05,side*.95],[x,-.23,z]);
+    const side=Math.sign(z); const w=part(id,[x*.30,-.05,side*.95],[x,-.24,z]);
     const spin=new THREE.Group(); w.add(spin); w.userData.spinGroup=spin;
     const tire=put(spin,new THREE.CylinderGeometry(.36,.36,.25,48,1),rubber,[0,0,0],[Math.PI/2,0,0]);
     for(const zz of [-.126,.126]) put(spin,new THREE.TorusGeometry(.282,.064,9,48),rubber,[0,0,zz]);
@@ -193,19 +194,27 @@ export function createVehicle({suspensionAnchors} = {}) {
     wheels.push(w);
   }
 
-  // Educational battery tray: illustrative packaging, not an OEM cell layout.
-  const battery=part('battery',[.15,.28,2.20]);
-  const batteryCase=new THREE.MeshStandardMaterial({color:'#34424c',metalness:.72,roughness:.34});
-  const batteryModule=new THREE.MeshStandardMaterial({color:'#678590',metalness:.6,roughness:.38});
-  box(battery,[2.85,.09,1.43],batteryCase,[0,-.335,0]);
-  for(const z of [-.725,.725])box(battery,[2.91,.11,.035],silver,[0,-.315,z]);
-  for(const x of [-1.445,1.445])box(battery,[.035,.11,1.48],silver,[x,-.315,0]);
-  for(let i=0;i<8;i++)for(let j=0;j<3;j++){
-    box(battery,[.30,.035,.40],batteryModule,[-1.22+i*.35,-.272,-.44+j*.44]);
-    box(battery,[.016,.012,.32],satin,[-1.22+i*.35,-.248,-.44+j*.44]);
+  const anchors=suspensionAnchors || wheels.map(wheel=>wheel.position);
+  const electric=suspensionProfileId==='roadster';
+  const battery=electric?part('battery',[.15,.28,2.20]):null;
+  if(battery){
+    battery.userData.powertrainSection=true;
+    const tray=new THREE.MeshStandardMaterial({color:'#48535b',metalness:.66,roughness:.4});
+    const module=new THREE.MeshStandardMaterial({color:'#899697',metalness:.55,roughness:.48});
+    const insulation=new THREE.MeshStandardMaterial({color:'#e47634',metalness:.08,roughness:.48});
+    box(battery,[1.94,.055,1.28],tray,[0,-.34,0]).name='underfloor pack cooling plate';
+    for(const side of [-1,1]){
+      box(battery,[1.97,.10,.034],silver,[0,-.305,side*.648]).name='extruded enclosure side rail';
+      box(battery,[.034,.10,1.32],silver,[side*.98,-.305,0]).name='sealed end rail';
+    }
+    for(let row=0;row<5;row++)for(const side of [-1,1]){
+      const x=(row-2)*.365,z=side*.318;
+      box(battery,[.342,.078,.574],module,[x,-.278,z]).name='illustrative module';
+      box(battery,[.026,.012,.48],satin,[x,-.233,z]).name='module retention strap';
+    }
+    box(battery,[.17,.10,.20],tray,[.87,-.257,0]).name='HV junction box';
+    for(const side of [-1,1])box(battery,[.1,.04,.04],insulation,[.984,-.252,side*.053]).name='insulated HV connector';
   }
-  tube(battery,[[-1.1,-.25,.67],[-.2,-.25,.67],[.65,-.25,.67],[1.25,-.25,.55]],.014,caliper);
-  box(battery,[.18,.055,.14],blue,[1.30,-.25,.52]);
 
   const tank=part('tank',[-.35,.8,0]);
   // Two illustrative ~450 L capsule vessels; packaging is an educational diagram.
@@ -246,42 +255,28 @@ export function createVehicle({suspensionAnchors} = {}) {
   const chargeLamp=put(compressor,new THREE.SphereGeometry(.018,8,6),blue.clone(),[.09,.10,0]);
   compressor.userData.rotor=rotor;compressor.userData.statusLight=chargeLamp;
 
-  // Three-motor functional layout. Rotor/reduction/half-shafts are illustrative,
-  // not an OEM CAD assembly; shaft phase follows the simulated wheel state.
-  const driveRotors=[],driveUnits=[];
-  const copper=new THREE.MeshStandardMaterial({color:'#d68a46',metalness:.8,roughness:.3});
-  const casing=new THREE.MeshStandardMaterial({color:'#64838a',metalness:.65,roughness:.32,transparent:true,opacity:.52,depthWrite:false});
-  function motorAssembly(id,origin,wheelIndices,offset){
-    const unit=part(id,offset);const g=new THREE.Group();g.position.fromArray(origin);unit.add(g);
-    put(g,new THREE.CylinderGeometry(.15,.15,.34,20,1,true),casing,[0,0,0],[Math.PI/2,0,0]);
-    for(const z of [-.18,.18])put(g,new THREE.TorusGeometry(.151,.012,6,24),silver,[0,0,z]);
-    const rotor=new THREE.Group();g.add(rotor);
-    put(rotor,new THREE.CylinderGeometry(.095,.095,.37,16),copper,[0,0,0],[Math.PI/2,0,0]);
-    box(rotor,[.025,.2,.025],dark,[0,0,.19]);
-    put(g,new THREE.CylinderGeometry(.025,.025,.48,12),silver,[0,0,0],[Math.PI/2,0,0]);
-    const gear=new THREE.Group();gear.position.set(.21,0,0);g.add(gear);
-    put(gear,new THREE.CylinderGeometry(.13,.13,.11,20),satin,[0,0,0],[Math.PI/2,0,0]);
-    for(let i=0;i<12;i++){const a=i*Math.PI/6;box(gear,[.025,.035,.12],silver,[Math.cos(a)*.128,Math.sin(a)*.128,0],[0,0,a]);}
-    put(g,new THREE.CylinderGeometry(.052,.052,.10,16),copper,[0,0,0],[Math.PI/2,0,0]);
-    driveRotors.push({rotor,gear,wheelIndices});driveUnits.push(unit);return unit;
-  }
-  const frontDrive=motorAssembly('drive-front',[1.19,-.20,0],[0,1],[1.15,.35,0]);
-  // Differential housing and half shafts from the single front motor.
-  put(frontDrive,new THREE.SphereGeometry(.10,12,8),dark,[1.4,-.20,0]);
-  for(const z of [-.89,.89])cylinderBetween(frontDrive,[1.4,-.20,0],[1.4,-.24,z],.022,silver);
-  for(const [i,z] of [[2,-.66],[3,.66]]){
-    const unit=motorAssembly(i===2?'drive-rear-left':'drive-rear-right',[-1.61,-.20,z],[i],[-.8,.35,Math.sign(z)*1.1]);
-    cylinderBetween(unit,[-1.4,-.20,z],[-1.4,-.24,Math.sign(z)*.89],.024,silver);
-  }
-  const electronics=part('power-electronics',[.1,1.35,-.5]);
-  for(const [x,z] of [[1.15,0],[-1.52,-.62],[-1.52,.62]]){
-    box(electronics,[.30,.065,.25],satin,[x,.015,z]);
-    for(let i=0;i<6;i++)box(electronics,[.28,.018,.012],silver,[x,.055,z-.1+i*.04]);
-    tube(electronics,[[x,.015,z],[x,.015,Math.sign(z||1)*.73],[.1,-.30,Math.sign(z||1)*.73]],.012,copper);
+  const driveRotors=electric?buildElectricDrive(part,anchors):[];
+  const driveUnits=driveRotors.map(unit=>unit.rotor.parent.parent);
+  const engineLayout=ENGINE_LAYOUTS[suspensionProfileId];
+  const engineSection=engineLayout?buildEngineSection(part,engineLayout,anchors):null;
+  if(electric){
+    const electronics=part('power-electronics',[.1,1.35,-.5]);
+    electronics.userData.powertrainSection=true;
+    const insulated=new THREE.MeshStandardMaterial({color:'#e97b2a',roughness:.5,metalness:.12});
+    const coolant=new THREE.MeshStandardMaterial({color:'#324347',roughness:.75,metalness:.08});
+    for(const [x,z] of [[anchors[0].x-.27,0],[anchors[2].x+.27,anchors[2].z*.42],[anchors[3].x+.27,anchors[3].z*.42]]){
+      box(electronics,[.23,.075,.215],satin,[x,-.002,z]).name='inverter housing';
+      for(let i=0;i<7;i++)box(electronics,[.21,.019,.008],silver,[x,.044,z-.09+i*.03]).name='cast cooling fin';
+      const side=Math.sign(z)||1;
+      const run=x>0?[[.984,-.252,side*.053],[1.03,-.21,side*.08],[x+.12,-.045,z+side*.07],[x+.11,-.01,z+side*.07]]
+        :[[.984,-.252,side*.053],[1.03,-.208,side*.56],[.83,-.206,side*.68],[-.84,-.206,side*.68],[x+.09,-.105,z+side*.095],[x+.09,-.018,z+side*.095]];
+      tube(electronics,run,.011,insulated).name='insulated DC harness';
+      tube(electronics,[[x-.10,-.01,z-.05],[x-.12,-.05,z-.06],[x-.10,-.105,z-.06]],.009,coolant).name='coolant hose';
+    }
   }
 
   const suspension=part('suspension',[.1,.38,-1.85]);
-  createSuspension(suspension,suspensionAnchors || wheels.map(wheel => wheel.position));
+  createSuspension(suspension,anchors,suspensionProfileId);
 
   const thrusters=part('thrusters',[-.2,.30,-3.25]);
   const jetMounts=[],gimbalNozzles=[],valveIndicators=[];
@@ -343,5 +338,5 @@ export function createVehicle({suspensionAnchors} = {}) {
       o.castShadow=true;o.receiveShadow=true;
     }
   });
-  return {root,parts,paintMaterials,wheels,fans,wing,tank,compressor,battery,jetMounts,gimbalNozzles,valveIndicators,driveRotors,driveUnits,bounds:{length:4.7,width:2.2,height:1.27}};
+  return {root,parts,paintMaterials,wheels,fans,wing,tank,compressor,battery,jetMounts,gimbalNozzles,valveIndicators,driveRotors,driveUnits,engineSection,bounds:{length:4.7,width:2.2,height:1.27}};
 }

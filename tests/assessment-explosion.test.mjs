@@ -6,6 +6,7 @@ import {adaptRealVehicle,disposeVehicle} from '../dist/js/real-vehicle-model.js'
 import {adaptRoadsterScene} from '../dist/js/roadster-model.js';
 import {createVehicle} from '../dist/js/vehicle.js';
 import {prepareAssessmentVehicle,LANDING_APPARATUS} from '../dist/js/assessment-vehicle.js';
+import {ENGINE_LAYOUTS,ROADSTER_DRIVE_PARTS} from '../dist/js/drivetrain-section.js';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from '../dist/js/vehicle-fit.js';
 import {loadModelGeometry} from './model-loader-helper.mjs';
 const groupBox=g=>g.entries.reduce((box,e)=>box.union(new THREE.Box3().setFromObject(e.object)),new THREE.Box3());
@@ -15,7 +16,9 @@ for(const profile of VEHICLES)test(profile.id+': assessment explosion is compact
   const vehicle=profile.id==='roadster'?adaptRoadsterScene(gltf.scene,createVehicle(),gltf.parser):adaptRealVehicle(gltf.scene,profile);
   try{
     prepareAssessmentVehicle(vehicle);configureVehicleFit(vehicle,profile);
+    const powertrain=profile.id==='roadster'?ROADSTER_DRIVE_PARTS:ENGINE_LAYOUTS[profile.id]?['engine-assembly']:[];
     assert.deepEqual(vehicle.catalog.filter(e=>e.kind==='hypothesis').map(e=>e.id).sort(),[...LANDING_APPARATUS].sort());
+    assert.deepEqual(vehicle.catalog.filter(e=>e.kind==='reference').map(e=>e.id).sort(),[...powertrain].sort());
     assert.equal(vehicle.fans.length,4,'the air-system diagram retains four independent suction fans');
     const layout=vehicle.fitLayout,groups=layout.logicalGroups;
     assert.ok(groups.length>=8&&groups.length<=20,'anatomical assemblies, not a material-fragment cloud');

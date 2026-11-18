@@ -120,7 +120,7 @@ function totemAtlas(entrances){
 }
 
 /** Meshes for one planned cell. Materials are shared; geometry and the totem texture belong to the cell. */
-export function buildStreetCell(plan,{road,paint,furniture,boxGeometry}){
+export function buildStreetCell(plan,{road,paint,furniture,boxGeometry,warningPavers}){
   const group=new THREE.Group(),asphalt=[.67,.70,.71],colors={yellow:[.9,.725,.31],blue:[.25,.47,.79]};
   const surface=(strips,patches,y,material,name)=>{
     const position=[],normal=[],uv=[],color=[];
@@ -140,6 +140,17 @@ export function buildStreetCell(plan,{road,paint,furniture,boxGeometry}){
   // Just above the carriageway (0.014) so the join does not flicker, below the junction patches (0.018).
   surface(plan.fills,plan.patches,.0165,road,'divided avenue centre pavement');
   surface(plan.lines,[],.0275,paint,'centre and bus-lane lines');
+  if(warningPavers&&plan.entrances.length){
+    // The open end of the shelter is at u=3.1. A row of nine standard
+    // 300 mm tiles begins 300 mm ahead of it and spans the 2.7 m clear width.
+    const strip=new THREE.InstancedMesh(warningPavers.geometry,warningPavers.material,plan.entrances.length);
+    const dummy=new THREE.Object3D();
+    plan.entrances.forEach(({x,z,dx,dz},i)=>{
+      dummy.position.set(x+dx*3.55,.006,z+dz*3.55);dummy.rotation.y=Math.atan2(-dz,dx);
+      dummy.updateMatrix();strip.setMatrixAt(i,dummy.matrix);
+    });
+    strip.receiveShadow=true;strip.computeBoundingSphere();strip.name='stair entrance tactile warning tiles';group.add(strip);
+  }
   const boxes=plan.furniture;
   const totems=plan.entrances.map(e=>({e,px:e.x+e.dx*3.6-e.dz*1.9,pz:e.z+e.dz*3.6+e.dx*1.9}));
   if(boxes.length){
@@ -165,12 +176,31 @@ export function buildStreetCell(plan,{road,paint,furniture,boxGeometry}){
   return group;
 }
 
+// Korean tactile warning blocks have a 6 × 6 dot profile on each 300 mm tile.
+// The height field is shared by every station exit, including streamed ones.
+function createWarningPavers(){
+  const size=96,pixels=new Uint8Array(size*size*4);
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    const radius=Math.hypot((x%16-7.5)/6,(y%16-7.5)/6);
+    const dome=Math.sqrt(Math.max(0,1-radius*radius));
+    const shade=x===0||y===0?95:160+70*dome;
+    pixels.set([shade,shade,shade,255],(y*size+x)*4);
+  }
+  const map=new THREE.DataTexture(pixels,size,size);
+  map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(1,9);
+  map.magFilter=THREE.LinearFilter;map.minFilter=THREE.LinearMipmapLinearFilter;
+  map.generateMipmaps=true;map.needsUpdate=true;
+  const geometry=new THREE.PlaneGeometry(.3,2.7).rotateX(-Math.PI/2);
+  const material=new THREE.MeshStandardMaterial({color:0xe6b549,map,bumpMap:map,bumpScale:.014,roughness:.85,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});
+  return {geometry,material,dispose(){geometry.dispose();material.dispose();map.dispose();}};
+}
+
 /** Keeps the cells around the vehicle built. `city` is the loaded world with its streamed tiles attached. */
 export function createStreetOverlay(city,points){
   const root=new THREE.Group();root.name='street detail overlay';city.root.add(root);
   const find=name=>{let found=null;city.root.traverse(o=>{if(!found&&o.isMesh&&o.name===name)found=o.material;});return found;};
   const own=[],shared=(name,fallback)=>{const material=find(name);if(material)return material;const made=new THREE.MeshStandardMaterial(fallback);own.push(made);return made;};
-  const materials={boxGeometry:new THREE.BoxGeometry(1,1,1),
+  const materials={boxGeometry:new THREE.BoxGeometry(1,1,1),warningPavers:createWarningPavers(),
     road:shared('OSM road network',{color:0xffffff,vertexColors:true,roughness:.9,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4}),
     paint:shared('lane markings and crossings',{color:0xffffff,vertexColors:true,roughness:.9,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-8}),
     furniture:new THREE.MeshStandardMaterial({color:0xffffff,roughness:.55,metalness:.4})};
@@ -271,7 +301,7 @@ export function createStreetOverlay(city,points){
     },
     /** Follow the streamed map: (re)register the solids of every built cell, or let go of the simulation. */
     bindPhysics(sim){physics=sim||null;if(physics)for(const cell of cells.values())if(cell.colliders.length)physics.setObstacleChunk('street:'+cell.key,cell.colliders);},
-    dispose(){if(disposed)return;disposed=true;for(const cell of [...cells.values()])drop(cell);city.root.remove(root);materials.boxGeometry.dispose();for(const m of own)m.dispose();}};
+    dispose(){if(disposed)return;disposed=true;for(const cell of [...cells.values()])drop(cell);city.root.remove(root);materials.boxGeometry.dispose();materials.warningPavers.dispose();for(const m of own)m.dispose();}};
 }
 export async function loadStreetOverlay(city,url=new URL('../assets/city/street-points.json',import.meta.url)){
   const response=await fetch(url);if(!response.ok)throw new Error('도로 세부 위치 HTTP '+response.status);

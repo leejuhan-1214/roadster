@@ -6,9 +6,13 @@ const clamp = (n,lo,hi) => Math.min(hi,Math.max(lo,n));
 
 // Two convex volumes follow the AI GT's bodywork and glazed cabin. The lower
 // bonnet and rear deck remain available to a vehicle descending from above.
+export const RIVAL_LENGTH=4.36;
+// The bundled Z Proto is uniformly fitted to the common race envelope.
+// Its highest roof vertex is 1.38153 m above its four tyre contact patches.
+export const RIVAL_ROOF_HEIGHT=1.382;
 const rivalShells = [
-  {x:0, y:.65, half:[2.18,.35,.99]},
-  {x:-.27, y:1.18, half:[.99,.25,.72]}
+  {x:0, y:.65, half:[RIVAL_LENGTH/2,.35,.99]},
+  {x:-.39, y:RIVAL_ROOF_HEIGHT-.235, half:[.99,.235,.72]}
 ];
 const shell = (center, directions, half) => ({center, axes:directions, half});
 const span = (box,axis) => box.half.reduce((r,h,i)=>r+h*Math.abs(axis.dot(box.axes[i])),0);

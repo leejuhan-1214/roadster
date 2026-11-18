@@ -3,14 +3,14 @@ import {vehiclePaintRule,prepareVehiclePaint} from './vehicle-paint.js?v=2026111
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
-import {createVehicle} from './vehicle.js?v=20261118-physics146';
-import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js?v=20261118-physics146';
+import {createVehicle} from './vehicle.js?v=20261118-model154';
+import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js?v=20261118-model154';
 import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261118-city151';
 import {straightenWheelAxes} from './wheel-alignment.js?v=20261109-wheel1';
 
 const ids=['wheel-fl','wheel-fr','wheel-rl','wheel-rr'];
 const labels=['앞 왼쪽','앞 오른쪽','뒤 왼쪽','뒤 오른쪽'];
-const hardware=['tank','battery','suspension','thrusters','wing','drive-front','drive-rear-left','drive-rear-right','power-electronics'];
+const hardware=['tank','suspension','thrusters','wing','engine-assembly'];
 
 // Keep a small set of actual underside vertices. Copying the lowest bolt or
 // sill height to the four extreme bumper corners creates phantom ground hits
@@ -125,18 +125,25 @@ export function adaptRealVehicle(source,profile){
     const center=r.geometry.boundingBox.getCenter(new THREE.Vector3());
     const interior=r.materialNames.some(n=>/leather|interior|carpet/i.test(n));
     const glazing=r.materialNames.some(n=>/glass|lens/i.test(n));
-    const category=r.wheel>=0?'wheels':interior?'interior':glazing?'glazing':'exterior';
+    const sourceNames=[r.original.name,r.original.parent?.name,...r.materialNames].join(' ');
+    const engineMesh=/\bengine\b|engine[_-](?:block|cover|head)|(?:piston|crankshaft|camshaft|cylinder[_-]?head|intake[_-]?manifold|exhaust[_-]?manifold)/i.test(sourceNames);
+    const category=r.wheel>=0?'wheels':interior?'interior':glazing?'glazing':engineMesh?'powertrain':'exterior';
     const id='model-'+String(index).padStart(3,'0');
-    const title=r.wheel>=0?labels[r.wheel]+' '+(r.tire?'타이어':r.brake?'캘리퍼':r.fixed?'현가장치':'휠·브레이크'):(r.materialNames[0]===profile.paint?'차체 도장':interior?'실내':glazing?'유리·렌즈':'외장')+' '+String(index+1).padStart(2,'0');
+    const title=r.wheel>=0?labels[r.wheel]+' '+(r.tire?'타이어':r.brake?'캘리퍼':r.fixed?'현가장치':'휠·브레이크'):(r.materialNames[0]===profile.paint?'차체 도장':interior?'실내':engineMesh?'원본 엔진 부품':glazing?'유리·렌즈':'외장')+' '+String(index+1).padStart(2,'0');
     const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(m=>material(m,r)):material(r.original.material,r));
     obj.name=r.original.name;obj.castShadow=true;obj.receiveShadow=true;
     obj.userData={partId:id,kind:'model',basePosition:new THREE.Vector3(),explodeOffset:new THREE.Vector3(center.x*.15,glazing?.45:.15,Math.sign(center.z)*.3),explodeStage:[.35,.9]};
     if(r.wheel>=0){r.geometry.translate(-anchors[r.wheel].x,-anchors[r.wheel].y,-anchors[r.wheel].z);(r.brake||r.fixed?wheels[r.wheel]:wheels[r.wheel].userData.spinGroup).add(obj);}
     else{hullBounds.union(r.geometry.boundingBox);(interior?cabin:body).add(obj);}
-    detailParts.set(id,obj);catalog.push({id,title,kind:'model',category,categoryLabel:{wheels:'바퀴·브레이크',interior:'실내',glazing:'유리·렌즈',exterior:'외장'}[category],sourceName:r.original.name,sourceObjectName:r.original.parent?.name||r.original.name,materialNames:r.materialNames,sourceUrl:profile.source});
+    detailParts.set(id,obj);catalog.push({id,title,kind:'model',category,categoryLabel:{wheels:'바퀴·브레이크',interior:'실내',glazing:'유리·렌즈',powertrain:'동력계',exterior:'외장'}[category],sourceName:r.original.name,sourceObjectName:r.original.parent?.name||r.original.name,materialNames:r.materialNames,sourceUrl:profile.source});
   });
-  const fallback=createVehicle({suspensionAnchors:anchors});
-  for(const id of hardware){const part=fallback.parts.get(id);root.add(part);parts.set(id,part);part.userData.kind='hypothesis';part.userData.explodeStage=hypothesisExplosionStage(id);part.traverse(o=>{if(o.isMesh)o.userData.partId=id;});detailParts.set(id,part);catalog.push(createHypothesisCatalogEntry(id));}
+  const fallback=createVehicle({suspensionAnchors:anchors,suspensionProfileId:profile.id});
+  for(const id of hardware){
+    const part=fallback.parts.get(id);if(!part)continue;
+    const entry=createHypothesisCatalogEntry(id,profile.id);
+    root.add(part);parts.set(id,part);part.userData.kind=entry.kind;part.userData.explodeStage=hypothesisExplosionStage(id);
+    part.traverse(o=>{if(o.isMesh)o.userData.partId=id;});detailParts.set(id,part);catalog.push(entry);
+  }
   // Dispose the unused procedural shell. Hardware has already been detached.
   disposeVehicle(fallback,root);
   const cityWheelGeometry=anchors.map(({x,y,z},i)=>({x,y,z,radius:(boxes[i].max.y-boxes[i].min.y)*scale/2}));
@@ -146,7 +153,7 @@ export function adaptRealVehicle(source,profile){
   // Envelope spans symmetric axle origin. Tires are handled by wheel contacts.
   const geometryParams={wheelbase:profile.wheelbase,trackWidth:width,wheelRadius:radius,bodyLength:2*Math.max(Math.abs(hullBounds.min.x),Math.abs(hullBounds.max.x)),bodyWidth:size.z,bodyHeight:size.y,bodyCenterY:(hullBounds.min.y+hullBounds.max.y)/2};
   return {root,parts,detailParts,catalog,wheels,paintMaterials,geometryParams,cityWheelGeometry,cityGroundSupports:undersideSamples(records,hullBounds),profileId:profile.id,sourceMeshCount:records.length,
-    wing:parts.get('wing'),tank:parts.get('tank'),compressor:fallback.compressor,battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,valveIndicators:fallback.valveIndicators,
+    wing:parts.get('wing'),tank:parts.get('tank'),compressor:fallback.compressor,battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,engineSection:fallback.engineSection,valveIndicators:fallback.valveIndicators,
     assetInfo:{title:profile.title,author:profile.author,license:profile.license,neutralWheelAxes}};
 }
 

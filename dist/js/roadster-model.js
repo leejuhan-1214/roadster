@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { installRoadsterDisplayLod } from './roadster-display-lod.js?v=20261118-frameperf1';
-import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js?v=20261118-physics146';
+import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js?v=20261118-model154';
 
 // Licensed visual asset only. Geometry never supplies mass, inertia or aerodynamics.
 // Runtime alignment adapts it to the explicitly hypothetical simulation chassis.
@@ -132,17 +132,19 @@ export function adaptRoadsterScene(source,fallback,sourceParser={}) {
   // Retain openly hypothetical educational hardware, never substitute an invented shell.
   for(const id of ['tank','battery','suspension','thrusters','wing','drive-front','drive-rear-left','drive-rear-right','power-electronics']){
     const part=fallback.parts.get(id);if(part){
-      root.add(part);parts.set(id,part);part.userData.hypothetical=true;part.userData.kind='hypothesis';
+      const entry=createHypothesisCatalogEntry(id);
+      root.add(part);parts.set(id,part);part.userData.hypothetical=entry.kind==='hypothesis';part.userData.kind=entry.kind;
       part.userData.basePosition=part.userData.basePosition.clone();part.userData.explodeStage=hypothesisExplosionStage(id);
       part.traverse(object=>{if(object.isMesh)object.userData.partId=id;});
-      detailParts.set(id,part);catalog.push(createHypothesisCatalogEntry(id));
+      detailParts.set(id,part);catalog.push(entry);
     }
   }
   root.userData.source='metarex.4d / Tesla Roadster 2020 / CC BY 4.0';
   root.userData.visualOnly=true;root.userData.alignment='Adapted to assumed 2.8 m wheelbase, 1.88 m track, 0.36 m wheel radius; not measured Tesla dimensions.';
   root.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
-  catalog.sort((a,b)=>a.kind===b.kind?a.id.localeCompare(b.id):a.kind==='model'?-1:1);
+  const kindOrder={model:0,reference:1,hypothesis:2};
+  catalog.sort((a,b)=>kindOrder[a.kind]-kindOrder[b.kind]||a.id.localeCompare(b.id));
   const cityWheelGeometry=ANCHORS.map(([x,y,z])=>({x,y,z,radius:.36}));
   return {root,parts,detailParts,catalog,wheels,cityWheelGeometry,paintMaterials,fans:fallback.fans,wing:parts.get('wing'),tank:parts.get('tank'),compressor:fallback.compressor,battery:parts.get('battery'),jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles||[],driveRotors:fallback.driveRotors||[],valveIndicators:fallback.valveIndicators||[],
     bounds:{length:bounds.x,width:bounds.z,height:bounds.y},actualRoadster:true,sourceMeshCount:records.length,

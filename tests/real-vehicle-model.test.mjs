@@ -88,7 +88,8 @@ for(const id of ['ferrari','bmw'])test(`${id}: source orientation, wheel orderin
 test('separately loaded vehicles own independent hardware and paint state',()=>{
   const profile=vehicleProfile('ferrari'),source=sourceFor(profile);
   const a=adaptRealVehicle(source,profile),b=adaptRealVehicle(source,profile);
-  for(const id of ['tank','thrusters','battery','drive-front','power-electronics']){
+  for(const id of ['battery','drive-front','power-electronics'])assert.equal(a.parts.has(id),false);
+  for(const id of ['tank','thrusters','engine-assembly']){
     assert.notEqual(a.parts.get(id),b.parts.get(id));
     assert.equal(a.parts.get(id).parent,a.root);
     assert.equal(b.parts.get(id).parent,b.root);

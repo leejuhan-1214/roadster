@@ -1,3 +1,5 @@
+import {ENGINE_LAYOUTS,ROADSTER_DRIVE_PARTS,ROADSTER_REFERENCE} from './drivetrain-section.js?v=20261118-model154';
+import {suspensionDescription,suspensionLayout} from './suspension-layouts.js?v=20261118-model154';
 // Catalog of the licensed artist asset, not a Tesla engineering bill of materials.
 export const ROADSTER_MODEL_SOURCE = 'https://sketchfab.com/3d-models/tesla-roadster-2020-1fbf29e297bd4a17ac39a00a378441d8';
 
@@ -139,6 +141,7 @@ export function modelObjectExplosion(record, center, category) {
 }
 
 const hypothesisInfo = {
+  'engine-assembly':['엔진 단면','크랭크 기구와 캠축의 연동을 보여 줍니다.',[.48,.94]],
   'drive-front':['앞 모터·감속기·차동장치 · 가정 장치','앞 모터 하나가 감속기와 차동장치를 통해 두 앞바퀴에 토크를 전달하는 기능 도식입니다.',[.48,.94]],
   'drive-rear-left':['뒤 왼쪽 모터·감속기 · 가정 장치','독립된 뒤 왼쪽 모터의 회전자·감속기·반축입니다. 형상과 배치는 교육용 가정입니다.',[.48,.94]],
   'drive-rear-right':['뒤 오른쪽 모터·감속기 · 가정 장치','독립된 뒤 오른쪽 모터의 회전자·감속기·반축입니다. 형상과 배치는 교육용 가정입니다.',[.48,.94]],
@@ -150,12 +153,23 @@ const hypothesisInfo = {
   wing: ['능동 윙 · 가정 장치', '다운포스 변화를 보여 주기 위해 추가한 가정 윙입니다. 원본 외형 모델과 별도인 교육용 형상입니다.', [.24, .65]],
 };
 
-export function createHypothesisCatalogEntry(id) {
-  const [title, description] = hypothesisInfo[id];
+export function createHypothesisCatalogEntry(id,profileId='roadster') {
+  let [title, description] = hypothesisInfo[id];
+  let referenceUrl='';
+  if(ROADSTER_DRIVE_PARTS.includes(id)){
+    title=title.replace('가정 장치','교육용 단면');referenceUrl=ROADSTER_REFERENCE;
+    description+=' 2017 공개 콘셉트의 삼중 모터 구성을 기준으로 그린 단면입니다. 감속비와 부품 치수는 모형값입니다.';
+  }else if(id==='suspension'){
+    description=suspensionDescription(profileId);referenceUrl=suspensionLayout(profileId).source||'';
+  }else if(id==='engine-assembly'){
+    const model=ENGINE_LAYOUTS[profileId];title=model.title+' 단면';referenceUrl=model.source;
+    description='배기량 '+model.cc.toLocaleString('ko-KR')+' cc · 보어 '+model.boreMm+' mm · 행정 '+model.strokeMm+' mm. 크랭크축이 두 바퀴 도는 동안 캠축은 한 바퀴 돌고 흡기·배기 밸브가 차례로 열립니다. 마운트 위치와 밸브 개폐 곡선은 설명용입니다.';
+  }
+  const drivetrain=ROADSTER_DRIVE_PARTS.includes(id)||id==='engine-assembly';
   return {
-    id, title, category: 'hypothesis', categoryLabel: '교육용 가정 장치', kind: 'hypothesis', lessonId: id,
+    id, title, category: drivetrain?'powertrain':'hypothesis', categoryLabel: drivetrain?'구동계 단면':'교육용 가정 장치', kind: drivetrain?'reference':'hypothesis', lessonId: id,
     description, sourceName: `createVehicle/${id}`, sourceObjectName: id, sourceAncestry: ['createVehicle'],
-    materialNames: [], sourceUrl: '', geometryNote: '프로젝트에서 생성한 설명용 형상이며 Tesla의 공개 실차 부품 자료에서 가져온 메시가 아닙니다.',
+    materialNames: [], sourceUrl: referenceUrl, geometryNote: '구조를 설명하기 위해 제작한 3D 단면입니다. 세부 치수와 절개 위치는 교육용입니다.',
   };
 }
 

@@ -16,7 +16,7 @@ function logicalGroups(entries,vehicle,assemblyBounds){
   const sourceGroups=new Map(),size=assemblyBounds.getSize(new THREE.Vector3()),mid=assemblyBounds.getCenter(new THREE.Vector3());
   for(const entry of entries){
     entry.wheelIndex=wheelIndex(entry.object,vehicle);
-    const key=entry.wheelIndex>=0?'wheel-'+entry.wheelIndex:entry.kind==='hypothesis'?entry.id:entry.sourceKey;
+    const key=entry.wheelIndex>=0?'wheel-'+entry.wheelIndex:entry.kind!=='model'?entry.id:entry.sourceKey;
     if(!sourceGroups.has(key))sourceGroups.set(key,[]);sourceGroups.get(key).push(entry);
   }
   const result=new Map();
@@ -25,7 +25,7 @@ function logicalGroups(entries,vehicle,assemblyBounds){
     const g=result.get(id);for(const entry of members){g.entries.push(entry);g.bounds.union(entry.bounds);}
   };
   for(const [key,members]of sourceGroups){
-    if(members[0].wheelIndex>=0||members[0].kind==='hypothesis'){add(key,members);continue;}
+    if(members[0].wheelIndex>=0||members[0].kind!=='model'){add(key,members);continue;}
     const bounds=new THREE.Box3();members.forEach(e=>bounds.union(e.bounds));
     const sourceSize=bounds.getSize(new THREE.Vector3());
     // A generic scene parent may contain a complete car. It is not a physical
@@ -48,7 +48,7 @@ function logicalGroups(entries,vehicle,assemblyBounds){
   }
   return [...result.values()].map(g=>{
     g.center=g.bounds.getCenter(new THREE.Vector3());g.size=g.bounds.getSize(new THREE.Vector3());
-    g.size.addScalar(g.kind==='hypothesis'?.08:.035);return g;
+    g.size.addScalar(g.kind!=='model'?.08:.035);return g;
   });
 }
 

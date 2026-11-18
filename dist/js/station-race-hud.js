@@ -1,4 +1,4 @@
-import {RACE_COURSE, sampleCourse} from './station-race.js?v=20261118-flight1531';
+import {RACE_COURSE, sampleCourse} from './station-race.js?v=20261118-model154';
 import {AIR_GATES,AIR_CEILING,airLaneOffset} from './station-race-air.js?v=20261118-flight1531';
 
 const byId = id => document.getElementById(id);
