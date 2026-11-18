@@ -1,25 +1,38 @@
 export const AIR_CEILING = 24;
 export const AIR_APPROACH = 105;
-export const AIR_GATE_SPACING = 14;
-export const AIR_APERTURE = Object.freeze({lateral:0, halfWidth:6.7, minY:2.3, maxY:7.7});
 export const AIR_RESTART_RUNUP = 90;
+export const AIR_GATE_LAYOUT=[
+  {offset:-145,lateral:0,height:4.4},
+  {offset:-80,lateral:-4.1,height:6.5},
+  {offset:-18,lateral:.6,height:9.2},
+  {offset:52,lateral:4.1,height:5.7},
+  {offset:128,lateral:-.8,height:4.2}
+].map(({offset,lateral,height})=>({offset,aperture:{lateral,halfWidth:3.45,minY:height-2.35,maxY:height+2.35}}));
 
-function aroundSector(distance, course) {
-  const delta = distance - course.airSectionDistance;
-  return delta - Math.round(delta / course.length) * course.length;
-}
+export const RIVAL_COM_HEIGHT=.63;
+const first=AIR_GATE_LAYOUT[0].offset,last=AIR_GATE_LAYOUT.at(-1).offset;
+const approach={offset:first-AIR_APPROACH,height:0,lateral:0,blend:0};
+const touchdown={offset:last+95,height:0,lateral:0,blend:0};
+const path=[approach,...AIR_GATE_LAYOUT.map(({offset,aperture:a})=>({
+  offset,height:(a.minY+a.maxY)/2-RIVAL_COM_HEIGHT,lateral:a.lateral,blend:1
+})),touchdown];
+const ground=Object.freeze({height:0,slope:0,lateral:0,lateralSlope:0,blend:0,blendSlope:0});
 
-// Nominal AI underbody rise. A smoothstep reaches cruising height before the
-// first ring and has horizontal tangents through the timing planes.
+// A zero slope through each timing plane gives the driver time to change
+// thrust direction. The guide returns underbody height above the road.
 export function rivalAirPath(distance, course) {
-  const x = aroundSector(distance, course);
-  const half = AIR_GATE_SPACING + 3, rise = 85, fall = 76;
-  if (x <= -half-rise || x >= half+fall) return {height:0, slope:0, lateral:0, blend:0};
-  const climbing = x < -half;
-  const u = climbing ? (x+half+rise)/rise : x > half ? (half+fall-x)/fall : 1;
-  const blend = u*u*(3-2*u);
-  const slope = u===1 ? 0 : 4 * 6*u*(1-u) * (climbing ? 1/rise : -1/fall);
-  return {height:4*blend, slope, lateral:0, blend};
+  const d=distance-course.airSectionDistance;
+  const local=d-Math.round(d/course.length)*course.length;
+  if(local<=approach.offset||local>=touchdown.offset)return ground;
+  let i=1;
+  while(local>path[i].offset)i++;
+  const a=path[i-1],b=path[i],span=b.offset-a.offset,t=(local-a.offset)/span;
+  const smooth=t*t*(3-2*t),derivative=6*t*(1-t)/span;
+  return {
+    height:a.height+(b.height-a.height)*smooth,slope:(b.height-a.height)*derivative,
+    lateral:a.lateral+(b.lateral-a.lateral)*smooth,lateralSlope:(b.lateral-a.lateral)*derivative,
+    blend:a.blend+(b.blend-a.blend)*smooth,blendSlope:(b.blend-a.blend)*derivative
+  };
 }
 
 export function insideRaceEnvelope(projection,y,course){
@@ -29,6 +42,8 @@ export function insideRaceEnvelope(projection,y,course){
 // The timing aperture is measured at the centre of mass, in world metres.
 // Grade-separated overflights, reverse approaches and grounded cars cannot score.
 export function throughAirGate(gate,lateral,y){
-  return !!gate?.air && y>=AIR_APERTURE.minY && y<=AIR_APERTURE.maxY
-    && Math.abs(lateral-AIR_APERTURE.lateral)<=AIR_APERTURE.halfWidth;
+  if(!gate?.air)return false;
+  const a=gate.aperture,halfHeight=(a.maxY-a.minY)/2;
+  const side=(lateral-a.lateral)/a.halfWidth,up=(y-a.minY-halfHeight)/halfHeight;
+  return side*side+up*up<=1+1e-9;
 }

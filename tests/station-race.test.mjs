@@ -1,9 +1,11 @@
 import {PhysicsSim} from '../dist/js/physics.js';
 import {courseCurvature} from '../dist/js/station-race-course.js';
+import {rivalAirPath,RIVAL_COM_HEIGHT} from '../dist/js/station-race-air.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {RACE_COURSE as course, sampleCourse, StationRace} from '../dist/js/station-race.js';
+import {normalizeRaceDifficulty,RACE_COURSE as course, sampleCourse, StationRace} from '../dist/js/station-race.js';
 
+const requiredRings=course.gates.filter(g=>g.air).length*course.laps;
 function startRace() {
   const race = new StationRace();
   race.update(3, race.startPose);
@@ -19,7 +21,9 @@ function drive(race, from, to, speed = 20, lateral = -3.15) {
   while (Math.abs(to - distance) > 1e-8 && race.phase === 'racing') {
     const metres = step * Math.min(1, Math.abs(to - distance));
     distance += metres;
-    assert.equal(race.update(Math.abs(metres) / speed, {...sampleCourse(distance, lateral),y:4}, nozzles), null);
+    const guide=rivalAirPath(distance,course);
+    const pose=sampleCourse(distance,lateral*(1-guide.blend)+guide.lateral);
+    assert.equal(race.update(Math.abs(metres)/speed,{...pose,y:Math.max(4,guide.height+RIVAL_COM_HEIGHT)},nozzles),null);
   }
 }
 
@@ -125,7 +129,7 @@ test('GT opponents brake before the bends, take all mandatory flight gates and c
   assert.ok(peak.every(speed=>speed>56),'all three exceed 200 km/h on an open straight');
   assert.ok(highestTightCornerSpeed<32 && highestTightCornerSpeed>20,'braking limits entry speed into tight corners');
   assert.ok(order.size>=2 && minSeparation>4.5);
-  assert.ok(race.rivals.every(r=>r.airGatesPassed===6 && r.finishTime>190 && r.finishTime<275 && r.speed===0));
+  assert.ok(race.rivals.every(r=>r.airGatesPassed===requiredRings && r.finishTime>190 && r.finishTime<275 && r.speed===0));
   assert.equal(race.rank,4);assert.equal(race.phase,'racing');
 });
 
@@ -145,4 +149,46 @@ test('a rival knocked below the first ring has to brake, reverse, and fly throug
     assert.ok(Math.hypot(car.x-x,car.z-z)<1.4,'recovery keeps finite horizontal speed');
   }
   assert.ok(reversed);assert.equal(car.airGatesPassed,1);assert.equal(car.retryGateDistance,null);
+});
+
+test('each level produces a distinct two-lap field while requiring every flight ring',()=>{
+  const times=[];
+  for(const difficulty of ['easy','normal','hard']){
+    const race=new StationRace({difficulty});
+    assert.equal(race.difficulty,difficulty);
+    race.update(3,race.startPose);
+    for(let i=0;i<9200&&race.rivals.some(c=>c.finishTime===null);i++)race.update(.05,race.startPose);
+    assert.ok(race.rivals.every(c=>c.finishTime!==null&&c.airGatesPassed===requiredRings));
+    const field=race.rivals.map(c=>c.finishTime);
+    assert.ok(Math.max(...field)-Math.min(...field)>3);
+    times.push(field);
+  }
+  const [easy,normal,hard]=times;
+  assert.ok(Math.min(...easy)>Math.max(...normal)*1.4);
+  assert.ok(Math.min(...normal)>Math.max(...hard)*1.06);
+});
+
+test('difficulty changes in flight preserve motion and race state and returning to normal restores its original tune',()=>{
+  for(const invalid of [null,'','extreme','constructor','__proto__'])
+    assert.equal(normalizeRaceDifficulty(invalid),'normal');
+  const race=startRace(),rival=race.rivals[0];
+  const original={top:rival.top,grip:rival.grip,power:rival.power,braking:rival.braking};
+  const first=course.gates.find(g=>g.air);
+  while(rival.distance<first.distance+1)race.update(.02,race.startPose);
+  assert.equal(rival.airGatesPassed,1);assert.ok(rival.flightActive);
+  const sceneState=()=>[race.elapsed,race.completedGates,race.collisionCount,race.rank,
+    ...race.rivals.flatMap(c=>[c.distance,c.x,c.z,c.heave,c.heading,c.speed,c.vx,c.vy,c.vz,c.airGatesPassed,c.retryGateDistance,c.wheelDistance])];
+  for(const difficulty of ['hard','easy']){
+    const before=sceneState(),speed=rival.speed,height=rival.heave,vy=rival.vy;
+    race.setDifficulty(difficulty);
+    assert.equal(race.rivals[0],rival);assert.equal(race.difficulty,difficulty);
+    assert.deepEqual(sceneState(),before);
+    race.update(.002,race.startPose);
+    assert.ok(Math.abs(rival.speed-speed)<=.002*Math.max(rival.braking,rival.acceleration)+1e-7);
+    assert.ok(Math.abs(rival.heave-height)<=.002*(Math.abs(vy)+22*.002));
+  }
+  race.setDifficulty('normal');
+  for(const [key,value] of Object.entries(original))assert.equal(rival[key],value);
+  for(let i=0;i<6200&&rival.finishTime===null;i++)race.update(.05,race.startPose);
+  assert.equal(rival.airGatesPassed,requiredRings);assert.ok(rival.finishTime>0);
 });

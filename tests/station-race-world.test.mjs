@@ -12,6 +12,33 @@ import {adaptRealVehicle} from '../dist/js/real-vehicle-model.js';
 import {vehicleProfile} from '../dist/js/vehicle-profiles.js';
 import {RIVAL_LENGTH,RIVAL_ROOF_HEIGHT} from '../dist/js/race-contact.js';
 import {FlightScene} from '../dist/js/scene.js';
+import {drawRaceMap} from '../dist/js/station-race-hud.js';
+
+test('slalom target advances in the 3D corridor and the lane diagram and resets for the next lap',()=>{
+  const race=new StationRace(),world=createStationRaceWorld();
+  const gates=RACE_COURSE.gates.filter(g=>g.air);
+  const coordinates=[];
+  const ctx={canvas:{width:210,height:170},save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},
+    fillRect(){},setLineDash(){},fillText(){},arc(){},fill(){},closePath(){},ellipse(x,y){coordinates.push({x,y});}};
+  race.phase='racing';
+  for(const n of [1,2,0]){
+    const g=gates[n];
+    race._ordinal=g.index;race.airGatesThisLap=n;race._progress=g.distance-20;
+    const p=sampleCourse(race.progress,g.aperture.lateral);
+    world.update(race,p);
+    for(const [i,courseGate] of gates.entries()){
+      const rim=world.root.getObjectByName('Air gate '+courseGate.index);
+      assert.equal(rim.getObjectByName('Active ring pointers').visible,i===n);
+      assert.equal(rim.userData.state,i===n?'target':i<n?'passed':'upcoming');
+    }
+    coordinates.length=0;
+    drawRaceMap(ctx,race,p,p.heading);
+    assert.equal(coordinates.length,gates.length);
+    assert.ok(coordinates.every((v,i)=>v.x>0&&v.x<ctx.canvas.width&&(!i||coordinates[i-1].y>v.y)));
+    assert.ok(coordinates[1].x<coordinates[0].x&&coordinates[3].x>coordinates[2].x);
+  }
+  world.dispose();
+});
 
 test('early and repeat entries reuse the partially built hidden circuit and its original opponents',async()=>{
   const idle=[],oldWindow=globalThis.window;

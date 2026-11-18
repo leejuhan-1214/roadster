@@ -4,6 +4,22 @@ import {PhysicsSim,DEFAULTS,ATMOSPHERE} from '../dist/js/physics.js';
 import {compressorSpecificWork,rechargeAirTank,poweredGroundFan,AIR_R,AIR_CV,AIR_CP} from '../dist/js/air-systems.js';
 const near=(a,b,t=1e-7)=>assert.ok(Math.abs(a-b)<=t,`${a} != ${b}`);
 const advance=(sim,t,input)=>{for(let i=0;i<Math.round(t/.002);i++)sim.step(.002,{stabilize:false,...input});};
+
+test('a regulated race supply keeps firing after expelling more than a tank while ordinary driving drains its tank',()=>{
+  const params={tankVolume:.025,gravity:0,contactEnabled:false,aeroEnabled:false};
+  const race=new PhysicsSim({...params,unlimitedRaceGas:true}),city=new PhysicsSim(params);
+  const pressure=race.state.pressure,initialMass=race.mass;
+  const input={thrusterCommands:Array(10).fill(1)};
+  advance(race,4,input);advance(city,4,input);
+  const reading=race.telemetry();
+  assert.ok(reading.gasConsumedKg>race.initialGas*2);
+  near(reading.gasKg,race.initialGas);near(reading.temperature,race.params.initialTemperature);
+  near(race.state.pressure,pressure);near(reading.totalMass,initialMass);
+  near(reading.gasRefilledKg,reading.gasConsumedKg);
+  near(reading.massBalanceError,0,1e-8);near(reading.tankEnergyBalanceError,0,1e-5);
+  assert.ok(Number.isFinite(reading.thrustToWeight)&&race.totalThrust>1000);
+  assert.ok(city.state.gas<city.initialGas*.25);assert.equal(city.state.gasRefilledKg,0);
+});
 const depleted=()=>{
   const sim=new PhysicsSim({aeroEnabled:false}),s=sim.state,oldU=s.gas*AIR_CV*s.temp;
   s.gas*=.9;s.temp*=.9**.4;s.pressure=s.gas*AIR_R*s.temp/sim.params.tankVolume;

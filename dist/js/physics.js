@@ -523,7 +523,14 @@ export class PhysicsSim {
         applyAt(worldForce,t.pos.clone().applyQuaternion(s.q));
       }
     }
-    if (dm > 0) {
+    if (dm > 0 && p.unlimitedRaceGas === true) {
+      // The circuit supplies exactly what the nozzles discharge, at tank
+      // temperature. Keep the car mass, pressure, and valve dynamics finite.
+      const enthalpy = dm * (CV + R) * s.temp;
+      s.gasRefilledKg += dm;
+      s.inletEnthalpyJ += enthalpy;
+      s.expelledEnthalpy += enthalpy;
+    } else if (dm > 0) {
       const oldU = s.gas * CV * s.temp;
       const oldMass = s.gas;
       s.gas -= dm;

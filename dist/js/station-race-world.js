@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse,projectToCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261118-circuit155';
-import {AIR_APERTURE,AIR_APPROACH} from './station-race-air.js?v=20261118-circuit155';
-import {addCircuitLighting} from './circuit-lighting.js?v=20261118-circuit155';
+import {RACE_COURSE,sampleCourse,projectToCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
+import {AIR_APPROACH,rivalAirPath} from './station-race-air.js?v=20261119-ai158';
+import {addCircuitLighting} from './circuit-lighting.js?v=20261119-ai158';
 
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js';
 
@@ -288,39 +288,64 @@ function shell(sections){
   g.setIndex(indices);g.computeVertexNormals();return g;
 }
 
-// The three optical timing planes mark the required compressed-air flight.
-// All dimensions use the same apertures tested by the sporting logic.
+// The inside of the illuminated trim is the scoring ellipse, in the Y/Z plane.
+function ovalBand(radiusZ,radiusY,outer,depth){
+  const positions=[],indices=[],steps=64;
+  for(let i=0;i<steps;i++){
+    const angle=i*2*Math.PI/steps,sy=Math.sin(angle),cz=Math.cos(angle);
+    for(const [x,margin] of [[-depth/2,0],[-depth/2,outer],[depth/2,outer],[depth/2,0]]){
+      positions.push(x,(radiusY+margin)*sy,(radiusZ+margin)*cz);
+    }
+    const next=(i+1)%steps;
+    for(let j=0;j<4;j++){
+      const a=i*4+j,b=i*4+(j+1)%4,c=next*4+j,d=next*4+(j+1)%4;
+      indices.push(a,c,b,b,c,d);
+    }
+  }
+  const shape=new THREE.BufferGeometry();
+  shape.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  shape.setIndex(indices);shape.computeVertexNormals();return shape;
+}
+
 function airCourse(root){
   const group=new THREE.Group();group.name='Roadster air route';root.add(group);
-  const frames=[];
-  for(const courseGate of RACE_COURSE.gates.filter(gate=>gate.air)){
-    const gate=AIR_APERTURE;
+  const frames=[],gates=RACE_COURSE.gates.filter(gate=>gate.air);
+  const metal=material(0x324047,{metalness:.76,roughness:.31,side:THREE.DoubleSide});
+  for(const courseGate of gates){
+    const gate=courseGate.aperture;
     const p=sampleCourse(courseGate.distance,gate.lateral);
-    const frame=new THREE.Group();frame.name='Air gate '+courseGate.index;frame.userData.gateIndex=courseGate.index;frame.position.set(p.x,0,p.z);frame.rotation.y=p.heading;
+    const midY=(gate.minY+gate.maxY)/2,radiusY=(gate.maxY-gate.minY)/2;
+    const frame=new THREE.Group();frame.name='Air gate '+courseGate.index;frame.userData.gateIndex=courseGate.index;
+    frame.position.set(p.x,midY,p.z);frame.rotation.y=p.heading;
     group.add(frame);
-    const parts=[];
-    const bar=(y,z,h,w)=>parts.push(new THREE.BoxGeometry(.16,h,w).translate(0,y,z));
+    const trim=new THREE.MeshBasicMaterial({color:0x55d9ee,side:THREE.DoubleSide,toneMapped:false});
+    mesh(frame,ovalBand(gate.halfWidth,radiusY,.13,.35),trim,'Air timing aperture');
+    mesh(frame,ovalBand(gate.halfWidth+.13,radiusY+.13,.24,.29),metal,'Timing instrument housing');
+    // Twin outward-facing pointers distinguish the target even without its color.
+    const markers=[];
     for(const sign of [-1,1]){
-      const lateral=sign*(gate.halfWidth+.10);
-      const side=(gate.maxY-gate.minY)/2-.25;
-      for(const edge of [-1,1])bar((gate.minY+gate.maxY)/2+edge*(side/2+.25),lateral,side,.20);
-      bar(gate.maxY+.10,sign*(gate.halfWidth/2+.28),.20,gate.halfWidth-.36);
-      bar(gate.minY-.07,sign*(gate.halfWidth/2+.28),.14,gate.halfWidth-.36);
+      const y=sign*(radiusY+.55);
+      for(const side of [-1,1])markers.push(new THREE.BoxGeometry(.22,.12,.66)
+        .rotateX(-side*sign*.50).translate(-.18,y+sign*.11,side*.28));
     }
-    const geo=mergeGeometries(parts);
-    for(const part of parts)part.dispose();
-    mesh(frame,geo,material(0x54deef,{emissive:0x196c86,emissiveIntensity:.9,roughness:.38}),'Air timing aperture');
+    const pointer=mesh(frame,mergeGeometries(markers),trim,'Active ring pointers');
+    markers.forEach(g=>g.dispose());
+    pointer.visible=false;
     frames.push(frame);
   }
-  const dashes=[];
-  const gates=RACE_COURSE.gates.filter(gate=>gate.air);
-  for(let distance=gates[0].distance-AIR_APPROACH;distance<=gates.at(-1).distance+24;distance+=5){
-    const p=sampleCourse(distance,0);
-    dashes.push(new THREE.BoxGeometry(1.6,.016,.19).rotateY(p.heading).translate(p.x,.032,p.z));
+  const arrows=[],first=gates[0].distance,last=gates.at(-1).distance;
+  for(let d=first-AIR_APPROACH;d<=last+95;d+=8){
+    if(gates.some(gate=>Math.abs(gate.distance-d)<3))continue;
+    const guide=rivalAirPath(d,RACE_COURSE);
+    const p=sampleCourse(d,guide.lateral),y=Math.max(.045,guide.height-.36);
+    for(const side of [-1,1]){
+      const dz=side*.29;
+      arrows.push(new THREE.BoxGeometry(.92,.045,.13).rotateY(side*.60+p.heading)
+        .translate(p.x+Math.sin(p.heading)*dz,y,p.z+Math.cos(p.heading)*dz));
+    }
   }
-  const path=mergeGeometries(dashes);
-  for(const piece of dashes)piece.dispose();
-  mesh(group,path,material(0x5bb9c8),'Aerial route ground trace');
+  mesh(group,mergeGeometries(arrows),new THREE.MeshBasicMaterial({color:0x58adb6}),'Air corridor chevrons');
+  arrows.forEach(g=>g.dispose());
   const sign=sampleCourse(gates[0].distance-AIR_APPROACH,halfWidth+3.8);
   billBoard(group,'필수 비행  ·  SPACE ↑',7.3,1.4,sign.x,3.18,sign.z,sign.heading,'#113746','#94f2ff');
   return frames;
@@ -477,10 +502,14 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
     }
     const gate=RACE_COURSE.gates[race.nextGate];
     for(let i=0;i<airFrames.length;i++){
-      const active=race.nextGate===airFrames[i].userData.gateIndex;
-      airFrames[i].children[0].material.emissiveIntensity=active?1.6:.55;
+      const frame=airFrames[i],active=race.nextGate===frame.userData.gateIndex;
+      const state=active?'target':i<race.airGatesThisLap?'passed':'upcoming';
+      if(frame.userData.state===state)continue;
+      frame.userData.state=state;
+      frame.children[0].material.color.setHex(active?0xffbe62:state==='passed'?0x456374:0x55d9ee);
+      frame.getObjectByName('Active ring pointers').visible=active;
     }
-    nextGate.visible=!!gate&&race.phase==='racing';
+    nextGate.visible=!!gate&&!gate.air&&race.phase==='racing';
     if(gate){nextGate.position.set(gate.x,0,gate.z);nextGate.rotation.y=gate.heading;}
   }
   function dispose(){

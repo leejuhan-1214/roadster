@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261118-circuit155';
+import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
 
 // Race decoration is local to the fictional track. The warm and cool guides
 // attach to the inner face of the concrete on both sides and share its vertices.
@@ -36,6 +36,43 @@ export function addCircuitLighting(root,obstacles){
   }
   mounted('Continuous amber and cyan wall guides',rails,railColors,3,{toneMapped:false});
   mounted('Track edge light spill',spill,spillColors,4,{transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+
+  // A pair of stepped beacons frames the crest of the slalom from a distance.
+  // Each vertical fin uses the same triangular footprint for drawing and contact.
+  const crest=RACE_COURSE.gates.filter(g=>g.air).reduce((a,b)=>a.aperture.maxY>b.aperture.maxY?a:b);
+  const fins=[],lights=[],tints=[];
+  for(const side of [-1,1]){
+    const edgeColor=new THREE.Color(side<0?0x8ee4f7:0xffae6a);
+    for(let i=0;i<3;i++){
+      const station=crest.distance+6*i, lateral=side*(width+runoffWidth(station,side)+12+2.6*i);
+      const pose=sampleCourse(station,lateral),height=crest.aperture.maxY+9+5*i;
+      const c=Math.cos(pose.heading),s=Math.sin(pose.heading);
+      const vertex=(along,across,y)=>[pose.x+c*along+s*across,y,pose.z-s*along+c*across];
+      const footprint=[vertex(-2.4,0,0),vertex(1.2,-1.05,0),vertex(1.2,1.05,0)];
+      const roof=footprint.map(([x,,z])=>[x,height,z]);
+      for(let j=0;j<3;j++){
+        const k=(j+1)%3;
+        fins.push(...footprint[j],...roof[j],...roof[k],...footprint[j],...roof[k],...footprint[k]);
+      }
+      fins.push(...roof[0],...roof[2],...roof[1]);
+      const bottom=height*.16,top=height-.28;
+      for(const edge of [-1,1]){
+        const a=vertex(-2.43,0,bottom),b=vertex(-1.81,.185*edge,bottom);
+        const d=vertex(-2.43,0,top),e=vertex(-1.81,.185*edge,top);
+        lights.push(...a,...b,...d,...b,...e,...d);
+        for(let n=0;n<6;n++)tints.push(edgeColor.r,edgeColor.g,edgeColor.b);
+      }
+      const xs=footprint.map(p=>p[0]),zs=footprint.map(p=>p[2]);
+      const minX=Math.min(...xs),maxX=Math.max(...xs),minZ=Math.min(...zs),maxZ=Math.max(...zs);
+      obstacles.push({id:'flight-beacon-'+side+'-'+i,kind:'prism',footprint:footprint.map(([x,,z])=>[x,z]),
+        center:[(minX+maxX)/2,height/2,(minZ+maxZ)/2],size:[maxX-minX,height,maxZ-minZ]});
+    }
+  }
+  const finGeometry=new THREE.BufferGeometry();
+  finGeometry.setAttribute('position',new THREE.Float32BufferAttribute(fins,3));finGeometry.computeVertexNormals();
+  const beacons=new THREE.Mesh(finGeometry,new THREE.MeshStandardMaterial({color:0x879399,metalness:.62,roughness:.32,side:THREE.DoubleSide}));
+  beacons.name='Air slalom crest beacons';root.add(beacons);
+  mounted('Air slalom beacon inlays',lights,tints,3,{toneMapped:false});
 
   // Split-sided vaults have a clear central span above the 24 m race ceiling.
   // Each straight steel segment shares the swept side footprint of its solver

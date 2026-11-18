@@ -1,9 +1,10 @@
-import {advanceRival, createRivalGrid, recordRivalAirGate, rivalHasFinishedCourse} from './race-rivals.js?v=20261118-circuit155';
+import {advanceRival, createRivalGrid, normalizeRaceDifficulty, recordRivalAirGate, rivalHasFinishedCourse, setRivalDifficulty} from './race-rivals.js?v=20261119-ai158';
+export {RACE_DIFFICULTIES, normalizeRaceDifficulty} from './race-rivals.js?v=20261119-ai158';
 import {resolveRivalContact,resolveRivalPair} from './race-contact.js?v=20261118-model154';
-import {AIR_CEILING, AIR_APPROACH, AIR_RESTART_RUNUP, insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261118-circuit155';
+import {AIR_CEILING, AIR_APPROACH, AIR_RESTART_RUNUP, insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261119-ai158';
 
-import {RACE_COURSE,sampleCourse,projectToCourse} from './station-race-course.js?v=20261118-circuit155';
-export {RACE_COURSE,sampleCourse} from './station-race-course.js?v=20261118-circuit155';
+import {RACE_COURSE,sampleCourse,projectToCourse} from './station-race-course.js?v=20261119-ai158';
+export {RACE_COURSE,sampleCourse} from './station-race-course.js?v=20261119-ai158';
 const {length,width:WIDTH,laps:LAP_COUNT,gates}=RACE_COURSE;
 const GATE_COUNT=gates.length,COUNTDOWN=3;
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(n,hi));
@@ -72,13 +73,14 @@ function advanceField(race,dt,start,sim) {
 }
 
 export class StationRace {
-  constructor() {
+  constructor({difficulty='normal'}={}) {
     this.phase = 'countdown';
     this.countdown = COUNTDOWN;
     this.elapsed = 0;
     this.finishTime = null;
     this.startPose = sampleCourse(-6, -3.15);
-    this.rivals = createRivalGrid();
+    this.difficulty = normalizeRaceDifficulty(difficulty);
+    this.rivals = createRivalGrid(this.difficulty);
     this.collisionCount=0;
     this.rivalSupport=false;
     this.lastCollision=null;
@@ -94,6 +96,12 @@ export class StationRace {
     this._previous = this.startPose;
     this._leftAt = null;
     this._offTrackTime = 0;
+  }
+  setDifficulty(value) {
+    const difficulty=normalizeRaceDifficulty(value);
+    if(this.difficulty===difficulty)return;
+    this.difficulty=difficulty;
+    for(const car of this.rivals)setRivalDifficulty(car,difficulty);
   }
   get nextGate() { return this._ordinal % GATE_COUNT; }
   get completedGates() { return this._ordinal; }
@@ -120,7 +128,7 @@ export class StationRace {
     let distance=this._ordinal===0?this.startPose.distance:gateDistance(this._ordinal-1)+1.5;
     const gate=gates[this.nextGate];
     const runup=(this.lap-1)*length+firstAir.distance-AIR_RESTART_RUNUP;
-    // Once committed to the air section, retry all three planes from a level
+    // Once committed to the air section, retry all flight gates from a level
     // launch straight. A recovery never awards space or progress beyond it.
     if(gate.air&&(reason==='air-gate'||this.progress>=runup)){
       this._ordinal-=this.airGatesThisLap;

@@ -16,10 +16,10 @@ import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {LandingPlanner} from './landing-preparation.js?v=20261118-city151';
 import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261119-wide157';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
-import {StationRace} from './station-race.js?v=20261118-circuit155';
-import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-circuit155';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-circuit155';
-import {FlightScene} from './scene.js?v=20261119-wide157';
+import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
+import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261119-ai158';
+import {FlightScene} from './scene.js?v=20261119-ai158';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -44,6 +44,7 @@ const mapSession=new DriveMapSession();
 let mapPanel,cityPoseReady=false;
 const driveKeys=new Set(),worldUp=new Vector3(0,1,0);
 let driver=new DrivingController(),race=null,cityReturn=null;
+let preferredRaceDifficulty='normal';
 const previousCityPosition=new Vector3();
 let clearDriveInputs=()=>driveKeys.clear();
 let landingLiftHeld=false,clearLandingLift=()=>{landingLiftHeld=false;};
@@ -79,14 +80,14 @@ function startRace(gate){
     scene.city.streaming?.bindPhysics(null);
     showCityExperiments(false);cockpitPanelsOpen=false;
   }
-  race=new StationRace();
-  sim=new PhysicsSim({...cityReturn.sim.params,...CITY_DRIVE_PARAMS,roadRoughness:0});
+  race=new StationRace({difficulty:preferredRaceDifficulty});
+  sim=new PhysicsSim({...cityReturn.sim.params,...CITY_DRIVE_PARAMS,roadRoughness:0,unlimitedRaceGas:true});
   driver=new DrivingController();cityDistance=0;
   scene.setStationRace(race);sim.setObstacles(scene.raceWorld.obstacles);
   mapPanel.setRaceActive(true);
   parkAt(race.startPose);setPaused(false);
   showRaceHUD(true);updateRaceHUD(race,sim.telemetry(),driver);
-  $('world').setAttribute('aria-label','AI 차량 3대와 달리는 4.381 km 서킷 · 매 랩 공중 링 3개 필수');
+  $('world').setAttribute('aria-label','AI 차량 3대와 달리는 4.381 km 서킷 · 매 랩 공중 링 '+RACE_COURSE.gates.filter(g=>g.air).length+'개 필수 · 기체 무제한');
   $('world').focus({preventScroll:true});
 }
 function recoverRace(){
@@ -638,7 +639,7 @@ function renderGuide(tab='controls'){
     const mapHelp=document.createElement('p');
     mapHelp.textContent='서울 지도 · 미니맵 또는 M을 눌러 한강·다리·랜드마크와 주행 경로를 봅니다. 드래그로 이동하고 휠 또는 두 손가락으로 확대합니다. 내 차를 누르면 현재 위치로 지도가 돌아옵니다.';
     $('guide-content').append(mapHelp);
-    info.textContent='서킷 경주 · 미니맵의 금색 마름모를 찾아 도로에서 역 출입구 쪽으로 들어가세요. AI 3대와 2랩을 달립니다. Space 상승, 공중 A/D 옆이동, Q/E 회전, H 높이 유지, F 부스트, X 공중제비를 사용하세요. 한 랩은 4.381 km로 14개 코너를 돕니다. 매 랩 약 2 km 지점에서 Space로 이륙해 하늘색 링 3개를 순서대로 지나세요. 지상 우회로는 인정되지 않으며 놓치면 이륙 전으로 복귀합니다. R은 마지막 통과 지점으로 복귀, 도시로 버튼은 역 출구 옆 도로로 복귀합니다.';
+    info.textContent='미니맵의 금색 마름모를 찾아 역 출입구로 들어가면 AI 3대와 2랩을 달립니다. 차량 설정이나 경주 화면에서 AI 난이도를 바꿀 수 있습니다. 서킷에서는 분사 기체가 무제한입니다. 매 랩 비행 구간에서 Space로 상승하고 공중 A/D로 옆으로 이동해 강조된 링을 차례로 통과하세요. Space를 놓으면 상승 분사가 멈춥니다. H는 현재 고도 유지, F는 부스트입니다. 링을 놓치면 이륙 구간으로 돌아갑니다. R은 트랙 복귀, 도시로 버튼은 역 출구 옆으로 복귀합니다.';
     $('guide-content').prepend(info);
   }
 }
@@ -657,7 +658,28 @@ function setSettingsPanel(open){
   if(open)$('left-panel').scrollTop=0;
   scene.inspectionViewport();
 }
+function setupRaceDifficulty(){
+  const controls=[$('city-race-difficulty'),$('race-difficulty')];
+  const storageKey='roadster.raceDifficulty';
+  // Some private or embedded browsers disable persistent storage.
+  try{preferredRaceDifficulty=normalizeRaceDifficulty(window.localStorage.getItem(storageKey));}catch{}
+  for(const control of controls){
+    control.value=preferredRaceDifficulty;
+    let pointerChoice=false;
+    control.addEventListener('pointerdown',()=>{pointerChoice=true;});
+    control.addEventListener('keydown',()=>{pointerChoice=false;});
+    control.addEventListener('change',()=>{
+      preferredRaceDifficulty=normalizeRaceDifficulty(control.value);
+      for(const selector of controls)selector.value=preferredRaceDifficulty;
+      if(race&&race.phase!=='finished')race.setDifficulty(preferredRaceDifficulty);
+      try{window.localStorage.setItem(storageKey,preferredRaceDifficulty);}catch{}
+      if(pointerChoice)$('world').focus({preventScroll:true});
+      pointerChoice=false;
+    });
+  }
+}
 function setupUI(){
+  setupRaceDifficulty();
   mapPanel=createSeoulMapPanel({
     beforeOpen(){
       if(mode!=='city'||!cityPoseReady||vehicleLoading||race)return false;
@@ -692,7 +714,6 @@ function setupUI(){
     clearDriveInputs();driver.toggleLandingAssist(sim);setPaused(false);
     $('world').focus({preventScroll:true});
   });
-  $('race-restart').addEventListener('click',()=>{if(race)startRace(cityReturn.gate);});
   $('race-retry').addEventListener('click',()=>{if(race)startRace(cityReturn.gate);});
   $('city-controls').addEventListener('click',()=>{clearDriveInputs();showCityExperiments(false);const shown=document.body.classList.toggle('show-drive-controls');$('city-controls').setAttribute('aria-pressed',shown);if(shown&&cockpitPanelsOpen)toggleCockpitPanels(false);});
   $('city-camera').addEventListener('click',()=>$('camera').click());

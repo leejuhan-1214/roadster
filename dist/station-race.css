@@ -18,6 +18,17 @@
 .race-actions { right:22px; padding:3px; display:flex; background:#10202bf0; }
 .race-actions button, #race-finish button { background:transparent; border:0; border-radius:5px; padding:9px 12px; }
 .race-actions button+button { border-left:1px solid #60807977; }
+.race-difficulty-control {
+  display:inline-flex; flex:none; align-items:center; gap:5px;
+  margin:0; color:#bfcecf; font-size:11px; white-space:nowrap; pointer-events:auto;
+}
+.race-difficulty-control select {
+  width:auto; min-width:64px; min-height:34px; margin:0; padding:4px 5px;
+  color:#e1f8ef; background:#1a323b; border:1px solid #52756f; border-radius:5px;
+  font:inherit; cursor:pointer; touch-action:manipulation;
+}
+.race-difficulty-control select:focus-visible { outline:2px solid #9bf2cf; outline-offset:1px; }
+.race-actions .race-difficulty-control { margin-inline:6px; }
 #race-signal, #race-finish { position:fixed; left:50%; top:45%; transform:translate(-50%,-50%); text-align:center; }
 #race-signal { font:800 clamp(50px,10vw,94px)/1 system-ui,sans-serif; color:white; text-shadow:0 2px 10px #061624,0 0 32px #081a29; }
 #race-finish { pointer-events:auto; min-width:240px; padding:24px; background:#10212bf5; border-radius:12px; }
@@ -57,6 +68,13 @@
 @media (max-width:360px) {
   #race-touch button { min-width:36px; font-size:10px; }
 }
+@media (max-width:510px) {
+  .race-actions { display:grid; grid-template-columns:repeat(2,auto); }
+  .race-actions .race-difficulty-control { grid-column:1 / -1; justify-self:end; margin:0 2px 2px; }
+}
+@media (max-width:380px) {
+  .race-strip>div { padding-inline:4px; }
+}
 #race-flight {
   position:fixed; left:22px; top:calc(var(--race-top) + 67px);
   border-radius:7px; padding:7px 11px; background:#10202bea;
@@ -73,6 +91,10 @@
 @media (pointer:coarse), (max-width:700px), (max-height:560px) and (orientation:landscape) {
   #race-flight { top:calc(var(--race-top) + 49px); left:9px; padding:4px 7px; font-size:10px; }
   #race-flight-hint { display:none; }
+  #race-flight-hint.race-guide-important { display:inline; }
+  #race-flight { max-width:min(290px,calc(100vw - 158px)); }
+  .race-flight-row { flex-wrap:wrap; column-gap:5px; row-gap:2px; }
+  .race-flight-row:first-child span { white-space:nowrap; }
   #race-touch .race-pad { flex-direction:column; gap:4px; }
   #race-touch .race-pad:last-child { align-items:flex-end; }
   #race-touch button { padding:3px; font-size:10px; }

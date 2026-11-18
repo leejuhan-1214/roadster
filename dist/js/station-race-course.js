@@ -1,7 +1,7 @@
 // Purpose-built station GP course, in metres. The 4.381 km target and
 // 14-corner count use the Hungaroring as a scale reference. Survey points
 // below describe our own circuit, in X/Z with +X along the starting straight.
-import {AIR_GATE_SPACING} from './station-race-air.js?v=20261118-circuit155';
+import {AIR_GATE_LAYOUT,AIR_APPROACH} from './station-race-air.js?v=20261119-ai158';
 
 const targetLength = 4381;
 const width = 16;
@@ -112,10 +112,11 @@ const back=segments.find(s=>s.turn===6);
 const backStraight=segments[segments.indexOf(back)+1];
 const airSectionDistance=backStraight.start+backStraight.length*.53;
 const gateDistances=Array.from({length:12},(_,i)=>i*length/12)
-  .filter(d=>d<airSectionDistance-155||d>airSectionDistance+95)
+  .filter(d=>d<airSectionDistance+AIR_GATE_LAYOUT[0].offset-AIR_APPROACH||
+    d>airSectionDistance+AIR_GATE_LAYOUT.at(-1).offset+95)
   .map(distance=>({distance}));
-for(const [airOrdinal,delta] of [-AIR_GATE_SPACING,0,AIR_GATE_SPACING].entries()){
-  gateDistances.push({distance:airSectionDistance+delta,air:true,airOrdinal});
+for(const [airOrdinal,{offset,aperture}] of AIR_GATE_LAYOUT.entries()){
+  gateDistances.push({distance:airSectionDistance+offset,air:true,airOrdinal,aperture});
 }
 const gates=gateDistances.sort((a,b)=>a.distance-b.distance).map((g,index)=>({...g,index,...sampleCourse(g.distance)}));
 const extent=segments.reduce((b,s)=>({minX:Math.min(b.minX,s.minX),maxX:Math.max(b.maxX,s.maxX),minZ:Math.min(b.minZ,s.minZ),maxZ:Math.max(b.maxZ,s.maxZ)}),{minX:0,maxX:0,minZ:0,maxZ:0});
