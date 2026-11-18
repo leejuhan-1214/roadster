@@ -19,7 +19,7 @@ import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261119-ai158';
-import {FlightScene} from './scene.js?v=20261119-metropolis159';
+import {FlightScene} from './scene.js?v=20261119-chase1591';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';

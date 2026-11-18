@@ -537,6 +537,7 @@ export class FlightScene {
   }
   setStationRace(race){
     if(race)while(!this.prepareRaceStage()){/* finish any remaining city preparation */}
+    this.raceChaseAnchor=null;
     this.stationRace=race;
     this.syncCircuitLighting();
     if(this.city)this.city.root.visible=this.mode==='city'&&!race;
@@ -546,6 +547,7 @@ export class FlightScene {
     this.renderer.shadowMap.needsUpdate=true;
   }
   setCamera(camera) {
+    if(camera!==this.cameraName)this.raceChaseAnchor=null;
     if(this.mode==='city'&&camera==='orbit'&&this.cameraName==='hood'&&this.vehicle){
       const p=this.vehicle.root.position;this.controls.target.copy(p).add(new THREE.Vector3(0,.4,0));
       this.camera.position.copy(p).add(new THREE.Vector3(-6,3.2,5).applyAxisAngle(UP,this.lastCameraHeading||0));
@@ -613,6 +615,7 @@ export class FlightScene {
     this.cockpit?.recenter();this.cockpitDrag=null;
     this.camera.far=this.quality==='smooth'?1050:3500;this.camera.updateProjectionMatrix();
     const p=sim.bodyPosition||sim.state.pos;
+    this.raceChaseAnchor=this.stationRace&&this.cameraName==='chase'?p.clone():null;
     const heading=Math.atan2(-tmpV.set(1,0,0).applyQuaternion(sim.state.q).z,tmpV.x);
     this.lastCameraHeading=heading;this.chaseBlend=1;
     this.cameraTarget.copy(p).add(new THREE.Vector3(0,.75,0));
@@ -1044,6 +1047,15 @@ export class FlightScene {
 
   updateCamera(sim,dt) {
     const p=sim.bodyPosition||sim.state.pos;const v=sim.state.vel;const speed=v.length();
+    if(this.mode==='city'&&this.stationRace&&this.cameraName==='chase'){
+      // Carry the eye and its pivot with the interpolated car. Damping then
+      // smooths just the turning and speed-dependent framing, even in flight.
+      if(this.raceChaseAnchor){
+        const travel=tmpV.copy(p).sub(this.raceChaseAnchor);
+        this.camera.position.add(travel);this.cameraTarget.add(travel);
+        this.raceChaseAnchor.copy(p);
+      }else this.raceChaseAnchor=p.clone();
+    }
     if(this.mode==='city'&&this.cameraName==='hood'){
       this.cockpit.setVehicle(this.vehicle);const pose=this.cockpit.update(this.camera,sim,dt,this.telemetry);
       this.cameraTarget.copy(pose.target);this.controls.target.copy(this.cameraTarget);return;
