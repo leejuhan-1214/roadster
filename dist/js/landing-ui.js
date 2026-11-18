@@ -1,5 +1,5 @@
 import {experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
-import {landingTheory,landingImpulseAudit,landingTradeoff,landingTargetMet} from './landing-analysis.js?v=20261118-physics146';
+import {landingTheory,landingImpulseAudit,landingTradeoff,landingTargetMet,landingReactionTrace} from './landing-analysis.js?v=20261118-audit148';
 const METHODS = {free:'자유 낙하',brake:'지면 전 추력 제동',gentle:'완만한 하강 제어',eco:'절약 착지'};
 const COLORS = ['#a2f5db','#ffbe78','#8bbfff','#ef9ed4','#dfdc7d','#b5a0ff'];
 const html = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -226,7 +226,7 @@ export class LandingUI {
     this.selectedGroup=saved.groupId;
     this.root.querySelector('#landing-result-count').textContent=this.results.length+'회';
     this.root.querySelector('#landing-results').disabled=this.busy;
-    this.renderResults();
+    if(this.dialog.open)this.renderResults();
   }
   clearResults(){
     this.results.length=0;this.selectedGroup=null;this.root.querySelector('#landing-result-count').textContent='0회';
@@ -314,21 +314,21 @@ export class LandingUI {
     const chartRows=focusVehicle?rows.filter(result=>result.vehicleId===this.chartVehicle):rows;
     const measured=chartRows.filter(result=>Number.isFinite(result.touchdownTime)&&result.samples?.length);
     const plotted=allHistory?measured.slice(-6):measured;
-    this.dialog.querySelector('#landing-chart-range').textContent=(allHistory?'최근 접촉 기록 '+plotted.length+'회 · ':focusVehicle?'선택 차체의 착지 방식 · ':'')+'0 s = 각 실험의 첫 접촉';
+    const legacy=plotted.some(result=>result.samples.some(sample=>!Number.isFinite(sample.equivalentGroundForcePeakTime)));
+    this.dialog.querySelector('#landing-chart-range').textContent=(allHistory?'최근 접촉 기록 '+plotted.length+'회 · ':focusVehicle?'선택 차체의 착지 방식 · ':'')+'0 s = 각 실험의 첫 접촉'+(legacy?' · 이전 기록은 구간 내 시각 근사':' · 10 ms 구간 최댓값을 측정 시각에 표시');
     const chart=this.dialog.querySelector('#landing-force-chart');
     const legend=this.dialog.querySelector('#landing-chart-legend');
     if(!plotted.length){chart.innerHTML='<p class="landing-note">첫 접촉 기록이 없습니다.</p>';legend.innerHTML='';return;}
     const tMin=-.2,tMax=1.5,W=900,H=235,pad={left:63,right:20,top:20,bottom:40},width=W-pad.left-pad.right,height=H-pad.top-pad.bottom;
-    const value=sample=>Math.max(0,Number(sample.equivalentGroundForceN)||0)/1000;
-    const traces=plotted.map(result=>({result,samples:result.samples.filter(sample=>sample.time-result.touchdownTime>=tMin&&sample.time-result.touchdownTime<=tMax)}));
-    const rawMax=Math.max(1,...traces.flatMap(trace=>trace.samples.map(value)));
+    const traces=plotted.map(result=>({result,points:landingReactionTrace(result).filter(point=>point.time>=tMin&&point.time<=tMax)}));
+    const rawMax=Math.max(1,...traces.flatMap(trace=>trace.points.map(point=>point.forceKN)));
     const yMax=Math.ceil(rawMax/5)*5;
     const x=time=>pad.left+(time-tMin)/(tMax-tMin)*width,y=force=>pad.top+height-force/yMax*height;
-    let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="첫 접촉을 0초로 정렬한 등가반력 비교 그래프"><title>첫 접촉 전후 등가반력 · kN</title>';
+    let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="첫 접촉을 0초로 정렬한 등가반력 비교 그래프"><title>첫 접촉 전후 등가반력 · kN</title><desc>0초는 첫 접촉이다. 구간 최대 등가반력을 기록한 2 ms 단계의 끝 시각에 점을 찍고 연결했다.'+(legacy?' 이전 기록에는 구간 내 최고값의 정확한 시각이 남아 있지 않다.':'')+'</desc>';
     for(let i=0;i<=4;i++){const force=yMax*i/4;svg+='<line class="landing-grid" x1="'+pad.left+'" x2="'+(W-pad.right)+'" y1="'+y(force)+'" y2="'+y(force)+'"/><text x="'+(pad.left-10)+'" y="'+(y(force)+4)+'" text-anchor="end">'+number(force,force%1?1:0)+'</text>';}
     for(const time of [0,.5,1,1.5])svg+='<text x="'+x(time)+'" y="'+(H-13)+'" text-anchor="middle">'+number(time,1)+'</text>';
     svg+='<text x="18" y="15">kN</text><text x="'+(W-12)+'" y="'+(H-13)+'">s</text><line class="landing-contact-line" x1="'+x(0)+'" x2="'+x(0)+'" y1="'+pad.top+'" y2="'+(H-pad.bottom)+'"/>';
-    traces.forEach(({result,samples})=>{const color=landingResultColor(result),points=samples.map(sample=>x(sample.time-result.touchdownTime).toFixed(2)+','+y(value(sample)).toFixed(2)).join(' ');svg+='<polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+points+'"/>';});
+    traces.forEach(({result,points})=>{const color=landingResultColor(result),coords=points.map(point=>x(point.time).toFixed(2)+','+y(point.forceKN).toFixed(2)).join(' ');svg+='<polyline fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" points="'+coords+'"/>';});
     chart.innerHTML=svg+'</svg>';
     legend.innerHTML=traces.map(({result})=>'<span><i style="background:'+landingResultColor(result)+'"></i>'+html(label(result)+' · '+methodLabel(result)+(allHistory?' · h '+heightNumber(result.height)+' m · '+number(result.initialMass,0)+' kg · k '+number(result.springK/1000,0)+' / c '+number(result.damperC/1000,1):''))+'</span>').join('');
   }
@@ -338,9 +338,13 @@ export class LandingUI {
     download('landing-results.csv',[['Roadster landing model; SI units; common hypothetical suspension/rig; peak equivalent force averages corrections over 0.002 s; baseline reduction is vehicle-specific; theory and release-to-final impulse audit apply only to untreated constant-mass free fall; touchdown energy is vertical kinetic energy, not occupant injury'],[...keys,'free_baseline_id','peak_force_reduction_percent','theory_expected_speed_m_s','theory_relative_error_percent','impulse_audit_net_N_s','impulse_audit_momentum_change_N_s','impulse_audit_residual_N_s','impulse_audit_duration_s','pareto_candidate_in_same_conditions','target_speed_met','eco_gas_baseline_id','eco_gas_reduction_percent_vs_gentle','eco_force_baseline_id','eco_force_reduction_percent_vs_brake','eco_force_reduction_percent_vs_gentle','parameters_json'],...this.results.map(result=>{const comparison=landingBaselineComparison(result,this.results),theory=landingTheory(result),audit=landingImpulseAudit(result),tradeoff=landingTradeoff(this.results,result),economy=landingEconomyComparison(result,this.results);return [...keys.map(key=>key==='modelVersion'?(result.modelVersion||'unknown'):result[key]),comparison?.baseline.id??'',comparison?.reductionPercent??'',theory.eligible?theory.expectedSpeed:'',theory.eligible?theory.relativeErrorPercent??'':'',audit.eligible?audit.netImpulseNs:'',audit.eligible?audit.momentumChangeNs:'',audit.eligible?audit.residualNs:'',audit.eligible?audit.duration:'',tradeoff.candidates.includes(result),landingTargetMet(result),economy?.gentle.id??'',economy?.gasReductionPercent??'',economy?.brake.id??'',economy?.forceReductionPercent??'',economy?.gentleForceReductionPercent??'',JSON.stringify(result.parameters||{})];})]);
   }
   exportTraces(){
-    const keys=['time','sampleInterval','clearance','velocity','groundForceN','equivalentGroundForceN','gLoad','thrustN','compression','stateCompression','gasKg','massKg','kineticEnergyJ','potentialEnergyJ','springEnergyJ','correctionImpulseNs','manualLift'];
-    const rows=[['SI units; time since release; high-altitude approach bins may be wider; contact force traces retain 0.01 s bin maxima and must not be integrated for impulse; summary integrals measured at 0.002 s; compression is the pre-integration force-evaluation value; stateCompression and energies use the same post-step pose; energies are stored state values, not an exhaust-inclusive conservation audit; potential zero is level unloaded tire contact and can be negative under compression; spring energy excludes bump stops'],['id','modelVersion','groupId','vehicleId','method','height','time_from_touchdown_s',...keys]];
-    for(const result of this.results)for(const sample of result.samples||[])rows.push([result.id,result.modelVersion||'unknown',result.groupId,result.vehicleId,result.method,result.height,Number.isFinite(result.touchdownTime)?sample.time-result.touchdownTime:'',...keys.map(key=>sample[key])]);
+    const keys=['time','sampleInterval','clearance','velocity','groundForceN','equivalentGroundForceN','gLoad','thrustN','compression','stateCompression','gasKg','massKg','kineticEnergyJ','potentialEnergyJ','springEnergyJ','correctionImpulseNs','manualLift','groundForcePeakTime','equivalentGroundForcePeakTime','gLoadPeakTime'];
+    const rows=[['SI units. Time is measured from release. time and time_from_touchdown_s locate the saved pose. The three peak times locate the end of each corresponding 0.002 s measurement step. Older logs leave these times blank. Near contact each nominal 0.01 s bin retains maxima, with a split at first contact. These maxima must not be integrated for impulse. Use the summary integrals instead. High-altitude approach bins may be wider. compression is the pre-integration force-evaluation value. stateCompression and energies use the same post-step pose. Potential zero is level unloaded tire contact. Spring energy excludes bump stops and stored energies exclude expelled gas.'],['id','modelVersion','groupId','vehicleId','method','height','time_from_touchdown_s',...keys,'equivalent_force_peak_time_from_touchdown_s']];
+    for(const result of this.results)for(const sample of result.samples||[]){
+      const measuredContact=Number.isFinite(result.touchdownTime);
+      const peakOffset=measuredContact&&Number.isFinite(sample.equivalentGroundForcePeakTime)?sample.equivalentGroundForcePeakTime-result.touchdownTime:'';
+      rows.push([result.id,result.modelVersion||'unknown',result.groupId,result.vehicleId,result.method,result.height,measuredContact?sample.time-result.touchdownTime:'',...keys.map(key=>sample[key]),peakOffset]);
+    }
     download('landing-timeseries.csv',rows);
   }
 

@@ -122,6 +122,23 @@ test('a cancelled asynchronous model load cannot start or reframe its obsolete l
   assert.equal(calls.some(call=>call.type==='landing-frame'),false);
 });
 
+test('a late economy forecast cannot revive a trial after Stop',async()=>{
+  const {c,calls}=harness(),batch=session(c);
+  c.scene.vehicle.profileId='roadster';batch.jobs[0].method='eco';c.landingSession=batch;
+  c.AbortController=AbortController;
+  let answer,signal;
+  c.landingPlanner={prepare(sim,settings,requested){
+    signal=requested;
+    return new Promise(resolve=>answer=resolve);
+  }};
+  const pending=c.nextLanding(batch);
+  c.stopLanding();
+  assert.equal(signal.aborted,true);
+  answer({method:'eco'});await pending;
+  assert.equal(c.landingRun,null);
+  assert.equal(calls.some(call=>call.type==='landing-frame'),false);
+});
+
 test('a consecutive trial with the displayed assembly reuses the model and starts back at release height',async()=>{
   const {c,calls}=harness(),batch=session(c);
   c.scene.vehicle.profileId='roadster';batch.index=1;c.landingSession=batch;

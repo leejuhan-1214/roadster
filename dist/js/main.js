@@ -2,17 +2,18 @@ import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
 import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
-import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261114-air1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-frameperf1';
+import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-audit148';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261115-capacity375';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-frameperf1';
-import {LandingUI} from './landing-ui.js?v=20261118-physics146';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-audit148';
+import {LandingUI} from './landing-ui.js?v=20261118-audit148';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
+import {LandingPlanner} from './landing-preparation.js?v=20261118-audit148';
 import {drawMappedStreets} from './city-minimap.js?v=20261118-frameperf1';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-frameperf1';
-import {FlightScene} from './scene.js?v=20261118-frameperf1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-audit148';
+import {FlightScene} from './scene.js?v=20261118-audit148';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -23,10 +24,12 @@ const $=id=>document.getElementById(id), $$=selector=>[...document.querySelector
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sim=new PhysicsSim({roadRoughness:0,aeroEnabled:false});
 const renderStates=new RenderStateBuffer(sim);
+const landingPlanner=new LandingPlanner();
 let landingLiveUI,landingLearningVisible=true,landingPlaybackRate=1;
 let scene,landingUI,selectedPartId=null,activeVehicle=vehicleProfile('roadster'),vehicleLoading=false;
 let mode='lab',camera='orbit',paused=true,showVectors=false,showLandingSuspension=false;
 let cockpitPanelsOpen=false,lastCockpitView=false;
+const compactCityViewport=matchMedia('(max-width:700px), (max-height:560px) and (orientation:landscape)');
 let cityLoading=false,modeEpoch=0,cityDistance=0,driveInput={},driveGear='D';
 let citySettings=normalizeCityExperiment({});
 const brakeTrial=new CityBrakeTrial();
@@ -57,7 +60,7 @@ function restoreLandingParams(session){
 }
 function cancelLanding(message='실험 준비'){
   if(!landingSession)return;
-  const session=landingSession;landingSession=null;landingRun=null;restoreLandingParams(session);
+  const session=landingSession;landingSession=null;landingRun=null;session.planning?.abort();restoreLandingParams(session);
   landingUI.setBusy(false,message);$('vehicle-select').disabled=vehicleLoading;setPaused(true);
 }
 function reset({cancel=true,clearMeasurement=true}={}){
@@ -111,7 +114,13 @@ async function nextLanding(session){
     Object.assign(sim.params,vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS),{
       tankVolume:session.originalParams.tankVolume,tankPressureMPa:session.originalParams.tankPressureMPa,initialTemperature:session.originalParams.initialTemperature});
     const trialSettings={...session.settings,...job,brakeHeight:job.brakeHeight??session.settings.brakeHeight,vehicleId:activeVehicle.id,title:activeVehicle.title};
-    landingRun=createLandingRun(sim,trialSettings);
+    if(trialSettings.method==='eco'){
+      session.planning=new AbortController();
+      landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · 절약 착지 분사 시점 계산 중…');
+      const run=await landingPlanner.prepare(sim,trialSettings,session.planning.signal);
+      if(landingSession!==session)return;
+      session.planning=null;landingRun=run;
+    }else landingRun=createLandingRun(sim,trialSettings);
     scene.setLandingExperiment(trialSettings);
     lastResult=null;
     session.metadata={...session.settings,...job,method:job.method,brakeHeight:job.brakeHeight??session.settings.brakeHeight,groupId:session.groupId,groupSize:session.jobs.length,groupKind:session.kind,vehicleId:activeVehicle.id,vehicleTitle:activeVehicle.title,id:session.groupId+'-'+session.index,initialMass:sim.mass,initialGas:sim.initialGas,tankVolume:sim.params.tankVolume,tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature};
@@ -120,15 +129,18 @@ async function nextLanding(session){
     restoreLabView({resetView:session.index===0});
     renderStates.reset(sim);setPaused(!!session.singleStepping);$('vehicle-select').disabled=true;
     landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · '+activeVehicle.title+' · 착지 중');
-  }catch(error){if(landingSession===session){cancelLanding('실험 중단 · '+error.message);reset({cancel:false});}console.error(error);}
+  }catch(error){if(landingSession===session){cancelLanding('실험 중단 · '+error.message);reset({cancel:false});console.error(error);}}
 }
 function stepSimulation(){
   if(freeDriving()){
     driveInput=driver.update(driveKeys,sim,LANDING_STEP);if(mode!=='city'){driveInput.fan=false;driveInput.compressor=false;}if(driveInput.throttle)driveGear=driveInput.throttle<0?'R':'D';
-    brakeTrial.sample(sim,{braking:driveKeys.has('KeyB'),drifting:driveKeys.has('ShiftLeft')||driveKeys.has('ShiftRight'),airborne:driver.airborne,settings:citySettings,vehicleId:activeVehicle.id});
+    if(mode==='city')brakeTrial.sample(sim,{braking:driveKeys.has('KeyB'),drifting:driveKeys.has('ShiftLeft')||driveKeys.has('ShiftRight'),airborne:driver.airborne,settings:citySettings,vehicleId:activeVehicle.id});
     const previousX=sim.state.pos.x,previousZ=sim.state.pos.z;
     sim.step(LANDING_STEP,driveInput);
-    if(mode==='city'&&scene.city?.streaming&&!scene.city.streaming.guard(sim.state,LANDING_STEP)){sim.state.pos.x=previousX;sim.state.pos.z=previousZ;}
+    if(mode==='city'&&scene.city?.streaming&&!scene.city.streaming.guard(sim.state,LANDING_STEP)){
+      sim.state.pos.x=previousX;sim.state.pos.z=previousZ;
+      brakeTrial.cancel(sim.obstacleContacts.length?'collision':'map-boundary');
+    }
     cityDistance+=Math.hypot(sim.state.vel.x,sim.state.vel.z)*LANDING_STEP;return;
   }
   if(!landingRun)return;
@@ -263,7 +275,7 @@ function setupCityExperiments(){
   });
   $('city-experiments-toggle').addEventListener('click',()=>showCityExperiments($('city-experiments').hidden));
   $('city-experiments-close').addEventListener('click',()=>showCityExperiments(false));
-  $('city-drive-focus').addEventListener('click',()=>{showCityExperiments(false);$('world').focus({preventScroll:true});});
+  $('city-drive-focus').addEventListener('click',()=>toggleCockpitPanels(false));
   const applySettings=event=>{
     brakeTrial.cancel('settings-changed');
     citySettings=normalizeCityExperiment({surface:$('city-surface').value,rollingResistance:$('city-crr').value,
@@ -416,16 +428,26 @@ function updateCityHUD(t){
 
 function syncCockpitHUD(){
   const inside=mode==='city'&&camera==='hood';
-  if(inside!==lastCockpitView){cockpitPanelsOpen=false;lastCockpitView=inside;}
+  const compact=mode==='city'&&compactCityViewport.matches;
+  const drawer=inside||compact;
+  if(inside!==lastCockpitView||!drawer){cockpitPanelsOpen=false;lastCockpitView=inside;}
   document.body.classList.toggle('cockpit-view',inside);
-  document.body.classList.toggle('cockpit-panels-open',inside&&cockpitPanelsOpen);
-  $('cockpit-tools').hidden=!inside;
-  $('cockpit-toggle').setAttribute('aria-expanded',inside&&cockpitPanelsOpen);
+  document.body.classList.toggle('compact-city-hud',compact);
+  document.body.classList.toggle('cockpit-panels-open',drawer&&cockpitPanelsOpen);
+  $('cockpit-tools').hidden=!drawer;
+  $('cockpit-exit').textContent=inside?'외부 시점 C':'시점 C';
+  $('cockpit-exit').title=inside?'외부 시점 (C)':'시점 변경 (C)';
+  $('cockpit-toggle').setAttribute('aria-expanded',drawer&&cockpitPanelsOpen);
   $('cockpit-toggle').textContent=cockpitPanelsOpen?'설정 닫기':'차량 · 설정';
   $('cockpit-controls').setAttribute('aria-pressed',document.body.classList.contains('show-drive-controls'));
 }
 function toggleCockpitPanels(open=!cockpitPanelsOpen){
-  clearDriveInputs();cockpitPanelsOpen=!!open;syncCockpitHUD();
+  clearDriveInputs();cockpitPanelsOpen=!!open;
+  if(open){
+    document.body.classList.toggle('show-drive-controls',false);
+    $('city-controls').setAttribute('aria-pressed',false);
+  }
+  syncCockpitHUD();
   if(!cockpitPanelsOpen){showCityExperiments(false);$('world').focus({preventScroll:true});}
 }
 function updateUI(){
@@ -491,7 +513,7 @@ function setupUI(){
   $('city-vehicle-search').addEventListener('input',()=>{clearDriveInputs();renderCityVehicleOptions();});
   $('city-vehicle-select').addEventListener('change',e=>selectVehicle(e.target.value));
   $('city-reset').addEventListener('click',()=>reset());
-  $('city-controls').addEventListener('click',()=>{showCityExperiments(false);const shown=document.body.classList.toggle('show-drive-controls');$('city-controls').setAttribute('aria-pressed',shown);});
+  $('city-controls').addEventListener('click',()=>{clearDriveInputs();showCityExperiments(false);const shown=document.body.classList.toggle('show-drive-controls');$('city-controls').setAttribute('aria-pressed',shown);if(shown&&cockpitPanelsOpen)toggleCockpitPanels(false);});
   $('city-camera').addEventListener('click',()=>$('camera').click());
   $('cockpit-toggle').addEventListener('click',()=>toggleCockpitPanels());
   $('cockpit-exit').addEventListener('click',()=>$('camera').click());
@@ -579,7 +601,8 @@ function animate(stamp){
 }
 try{
   scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent=cameraLabel();});
-  scene.setMode('lab');scene.setCamera(camera);setupUI();sim.setObstacles(FACILITY_SOLIDS);updateUI();requestAnimationFrame(animate);selectVehicle('roadster');
+  scene.setMode('lab');scene.setCamera(camera);setupUI();sim.setObstacles(FACILITY_SOLIDS);updateUI();requestAnimationFrame(animate);
+  selectVehicle('roadster').then(ready=>{if(ready)landingPlanner.warm();});
   // ?debug exposes the running objects for inspection; it changes no behaviour.
   if(new URLSearchParams(location.search).has('debug'))window.__roadster={sim,scene,driver,driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
   $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);

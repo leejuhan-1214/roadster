@@ -6,7 +6,7 @@ const source=await readFile(new URL('../dist/js/main.js',import.meta.url),'utf8'
 const helpers=source.slice(source.indexOf('function syncCockpitHUD(){'),source.indexOf('function updateUI(){'));
 function harness(){
  const classes=new Set(),nodes={},calls={clear:0,focus:0,experiments:[]};
- const context={mode:'city',camera:'chase',cockpitPanelsOpen:false,lastCockpitView:false,
+ const context={mode:'city',camera:'chase',cockpitPanelsOpen:false,lastCockpitView:false,compactCityViewport:{matches:false},
   document:{body:{classList:{toggle(name,on){if(on)classes.add(name);else classes.delete(name)},contains:name=>classes.has(name)}}},
   $:id=>nodes[id]??={hidden:false,textContent:'',attributes:{},setAttribute(name,value){this.attributes[name]=String(value)},focus(){calls.focus++}},
   clearDriveInputs(){calls.clear++},showCityExperiments(open){calls.experiments.push(open)}};
@@ -24,4 +24,12 @@ test('leaving cockpit restores the existing HUD and next entry starts with an un
  c.camera='orbit';c.syncCockpitHUD();assert.equal(classes.has('cockpit-view'),false);assert.equal(classes.has('cockpit-panels-open'),false);assert.equal(nodes['cockpit-tools'].hidden,true);
  c.camera='hood';c.syncCockpitHUD();assert.equal(c.cockpitPanelsOpen,false);assert.equal(nodes['cockpit-toggle'].attributes['aria-expanded'],'false');
  c.mode='lab';c.syncCockpitHUD();assert.equal(classes.has('cockpit-view'),false);assert.equal(nodes['cockpit-tools'].hidden,true);
+});
+test('compact chase and orbit views expose the settings drawer and release it when the driving area grows',()=>{
+ const {context:c,classes,nodes}=harness();c.compactCityViewport.matches=true;c.syncCockpitHUD();
+ assert.ok(classes.has('compact-city-hud'));assert.equal(nodes['cockpit-tools'].hidden,false);
+ assert.equal(nodes['cockpit-exit'].textContent,'시점 C');assert.equal(nodes['cockpit-toggle'].attributes['aria-expanded'],'false');
+ c.toggleCockpitPanels(true);c.camera='orbit';c.syncCockpitHUD();assert.ok(classes.has('cockpit-panels-open'));
+ c.compactCityViewport.matches=false;c.syncCockpitHUD();
+ assert.equal(classes.has('compact-city-hud'),false);assert.equal(nodes['cockpit-tools'].hidden,true);assert.equal(c.cockpitPanelsOpen,false);
 });

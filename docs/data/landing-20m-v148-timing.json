@@ -1,0 +1,188 @@
+{
+  "source": "8dc457bea7b48b51790c84c94d04c3866a220876",
+  "runsMatched": 20,
+  "spuriousAirborneReactionBefore": 8,
+  "spuriousAirborneReactionAfter": 0,
+  "rows": [
+    {
+      "vehicle": "mazda-miata-mx-5",
+      "method": "free",
+      "firstForceOldMsFromContact": 0.38002289742289364,
+      "oldFirstKiloNewtons": 477.6845909998455,
+      "firstForceNewMsFromContact": 2.3800228974226734,
+      "newFirstKiloNewtons": 477.6845909998455,
+      "oldAirborneClearanceM": -0.007527329999509447
+    },
+    {
+      "vehicle": "mazda-miata-mx-5",
+      "method": "brake",
+      "firstForceOldMsFromContact": -1.1680005008956051,
+      "oldFirstKiloNewtons": 455.86474699356455,
+      "firstForceNewMsFromContact": 2.8319994991039543,
+      "newFirstKiloNewtons": 455.86474699356455,
+      "oldAirborneClearanceM": 0.021972081852263514
+    },
+    {
+      "vehicle": "mazda-miata-mx-5",
+      "method": "gentle",
+      "firstForceOldMsFromContact": 0.9660317998747558,
+      "oldFirstKiloNewtons": 9.703352145616414,
+      "firstForceNewMsFromContact": 2.9660317998754238,
+      "newFirstKiloNewtons": 9.703352145616414,
+      "oldAirborneClearanceM": -0.0003862338147614386
+    },
+    {
+      "vehicle": "mazda-miata-mx-5",
+      "method": "eco",
+      "firstForceOldMsFromContact": -5.082399430810458,
+      "oldFirstKiloNewtons": 8.397380511215028,
+      "firstForceNewMsFromContact": 2.917600569188661,
+      "newFirstKiloNewtons": 8.397380511215028,
+      "oldAirborneClearanceM": 0.0017729195877650428
+    },
+    {
+      "vehicle": "bmw",
+      "method": "free",
+      "firstForceOldMsFromContact": 0.38002289742289364,
+      "oldFirstKiloNewtons": 477.6845909998456,
+      "firstForceNewMsFromContact": 2.3800228974226734,
+      "newFirstKiloNewtons": 477.6845909998456,
+      "oldAirborneClearanceM": -0.00752732999950978
+    },
+    {
+      "vehicle": "bmw",
+      "method": "brake",
+      "firstForceOldMsFromContact": -1.1663802232471099,
+      "oldFirstKiloNewtons": 455.9049922824636,
+      "firstForceNewMsFromContact": 2.8336197767524496,
+      "newFirstKiloNewtons": 455.9049922824636,
+      "oldAirborneClearanceM": 0.02194305736331148
+    },
+    {
+      "vehicle": "bmw",
+      "method": "gentle",
+      "firstForceOldMsFromContact": -5.2085337450584746,
+      "oldFirstKiloNewtons": 17.857684529370086,
+      "firstForceNewMsFromContact": 2.791466254944197,
+      "newFirstKiloNewtons": 17.857684529370086,
+      "oldAirborneClearanceM": 0.0038411910440091512
+    },
+    {
+      "vehicle": "bmw",
+      "method": "eco",
+      "firstForceOldMsFromContact": 1.6022978194851767,
+      "oldFirstKiloNewtons": 9.494032234809005,
+      "firstForceNewMsFromContact": 9.602297819484296,
+      "newFirstKiloNewtons": 9.494032234809005,
+      "oldAirborneClearanceM": -0.0006186356899986478
+    },
+    {
+      "vehicle": "toyota-supra-mk",
+      "method": "free",
+      "firstForceOldMsFromContact": 0.38002289742289364,
+      "oldFirstKiloNewtons": 478.9352597702137,
+      "firstForceNewMsFromContact": 8.380022897422013,
+      "newFirstKiloNewtons": 478.9352597702137,
+      "oldAirborneClearanceM": -0.007527329999508836
+    },
+    {
+      "vehicle": "toyota-supra-mk",
+      "method": "brake",
+      "firstForceOldMsFromContact": -1.1643548140143345,
+      "oldFirstKiloNewtons": 455.955008707442,
+      "firstForceNewMsFromContact": 2.835645185985225,
+      "newFirstKiloNewtons": 455.955008707442,
+      "oldAirborneClearanceM": 0.02190675726218433
+    },
+    {
+      "vehicle": "toyota-supra-mk",
+      "method": "gentle",
+      "firstForceOldMsFromContact": -1.912784809008805,
+      "oldFirstKiloNewtons": 94.3367002759305,
+      "firstForceNewMsFromContact": 2.0872151909907544,
+      "newFirstKiloNewtons": 94.3367002759305,
+      "oldAirborneClearanceM": 0.007504201162533086
+    },
+    {
+      "vehicle": "toyota-supra-mk",
+      "method": "eco",
+      "firstForceOldMsFromContact": 3.2896768720216407,
+      "oldFirstKiloNewtons": 8.49482423836412,
+      "firstForceNewMsFromContact": 11.28967687202076,
+      "newFirstKiloNewtons": 8.49482423836412,
+      "oldAirborneClearanceM": -0.0011241915401907776
+    },
+    {
+      "vehicle": "roadster",
+      "method": "free",
+      "firstForceOldMsFromContact": 0.38002289742244955,
+      "oldFirstKiloNewtons": 482.94956067235546,
+      "firstForceNewMsFromContact": 8.380022897421568,
+      "newFirstKiloNewtons": 482.94956067235546,
+      "oldAirborneClearanceM": -0.007527329999503063
+    },
+    {
+      "vehicle": "roadster",
+      "method": "brake",
+      "firstForceOldMsFromContact": -1.1623454900302477,
+      "oldFirstKiloNewtons": 457.7613746386407,
+      "firstForceNewMsFromContact": 6.837654509968871,
+      "newFirstKiloNewtons": 457.7613746386407,
+      "oldAirborneClearanceM": 0.021870729479430417
+    },
+    {
+      "vehicle": "roadster",
+      "method": "gentle",
+      "firstForceOldMsFromContact": 0.25503863828646445,
+      "oldFirstKiloNewtons": 148.1544358032003,
+      "firstForceNewMsFromContact": 8.255038638285583,
+      "newFirstKiloNewtons": 148.1544358032003,
+      "oldAirborneClearanceM": -0.0015636813130302518
+    },
+    {
+      "vehicle": "roadster",
+      "method": "eco",
+      "firstForceOldMsFromContact": 0.7983918447966865,
+      "oldFirstKiloNewtons": 9.080306171463281,
+      "firstForceNewMsFromContact": 8.798391844795805,
+      "newFirstKiloNewtons": 9.080306171463281,
+      "oldAirborneClearanceM": -0.00029045764450613687
+    },
+    {
+      "vehicle": "tesla-cybertruck",
+      "method": "free",
+      "firstForceOldMsFromContact": 0.38002289742244955,
+      "oldFirstKiloNewtons": 494.0972816992627,
+      "firstForceNewMsFromContact": 8.380022897421568,
+      "newFirstKiloNewtons": 494.0972816992627,
+      "oldAirborneClearanceM": -0.007527329999502175
+    },
+    {
+      "vehicle": "tesla-cybertruck",
+      "method": "brake",
+      "firstForceOldMsFromContact": -1.1502090679402777,
+      "oldFirstKiloNewtons": 465.130795979681,
+      "firstForceNewMsFromContact": 6.849790932058841,
+      "newFirstKiloNewtons": 465.130795979681,
+      "oldAirborneClearanceM": 0.02165288598190901
+    },
+    {
+      "vehicle": "tesla-cybertruck",
+      "method": "gentle",
+      "firstForceOldMsFromContact": 2.5199809001934526,
+      "oldFirstKiloNewtons": 277.5066020327817,
+      "firstForceNewMsFromContact": 10.519980900192571,
+      "newFirstKiloNewtons": 277.5066020327817,
+      "oldAirborneClearanceM": -0.027517720564806114
+    },
+    {
+      "vehicle": "tesla-cybertruck",
+      "method": "eco",
+      "firstForceOldMsFromContact": 2.5477737915866605,
+      "oldFirstKiloNewtons": 89.30326020926476,
+      "firstForceNewMsFromContact": 10.54777379158578,
+      "newFirstKiloNewtons": 89.30326020926476,
+      "oldAirborneClearanceM": -0.008960510930715981
+    }
+  ]
+}

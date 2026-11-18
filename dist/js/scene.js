@@ -304,12 +304,19 @@ export class FlightScene {
   }
   resize() {
     const rect=this.canvas.getBoundingClientRect();const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
+    const resized=this.bufferWidth!==undefined&&(w!==this.bufferWidth||h!==this.bufferHeight);
     const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000);
     if(w!==this.bufferWidth||h!==this.bufferHeight||ratio!==this.bufferRatio){
       this.renderer.setDrawingBufferSize(w,h,ratio);
       this.bufferWidth=w;this.bufferHeight=h;this.bufferRatio=ratio;
     }
-    this.camera.aspect=w/h;this.inspectionViewport();this.camera.updateProjectionMatrix();
+    this.camera.aspect=w/h;
+    if(resized&&this.mode==='lab'&&this.cameraName==='orbit'&&this.vehicle&&
+       Math.abs(this.camera.position.distanceTo(this.controls.target)-this.labFitDistance)<.01){
+      this.frameLabVehicle({bodyPosition:this.vehicle.root.position},{resetView:false,fitDistance:true});
+    }else{
+      this.inspectionViewport();this.camera.updateProjectionMatrix();
+    }
   }
   updateRoadRelief(roughness=0){
     if(!this.roadRelief)return;
@@ -390,7 +397,7 @@ export class FlightScene {
     }).catch(error=>{if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}this.cityPromise=null;throw error;});
     return this.cityPromise;
   }
-  frameLabVehicle(sim,{resetView=true,landing=!!this.landingVisual?.config}={}){
+  frameLabVehicle(sim,{resetView=true,fitDistance=resetView,landing=!!this.landingVisual?.config}={}){
     const p=sim.bodyPosition||sim.state.pos,params=sim.params||this.vehicle?.geometryParams||{};
     const halfLength=Math.max(2.5,(params.bodyLength||5)/2),halfWidth=Math.max(1.1,(params.bodyWidth||2.2)/2);
     const diagram=this.landingVisual?.enabled!==false;
@@ -408,7 +415,8 @@ export class FlightScene {
     // This envelope already leaves space around the body and ground contact.
     // Applying the inspector's extra 22% margin again made the car needlessly small.
     const fitted=inspectionDistance(box,direction,fov,this.camera.aspect/vertical,available,center,1);
-    const distance=!resetView&&oldDistance>0?oldDistance:fitted;
+    const distance=fitDistance||oldDistance<=0?fitted:oldDistance;
+    if(fitDistance)this.labFitDistance=distance;
     // Flush residual OrbitControls damping before repositioning; otherwise a
     // completed drag can rotate the next trial after its camera was restored.
     const damping=this.controls.enableDamping;this.controls.enableDamping=false;this.controls.update();this.controls.enableDamping=damping;
@@ -525,13 +533,22 @@ export class FlightScene {
       const getRect=id=>typeof document!=='undefined'?rect(document.getElementById(id)):null;
       const rightPanel=getRect('telemetry'),leftPanel=getRect('left-panel');
       const visible=r=>r&&r.width>0&&r.height>0&&r.right>canvasRect.left&&r.left<canvasRect.left+w;
-      const right=visible(rightPanel)?Math.min(w*.45,Math.max(0,w-(rightPanel.left-canvasRect.left))):typeof document==='undefined'?(w<=1000?216:234):0;
+      let right=visible(rightPanel)?Math.min(w*.45,Math.max(0,w-(rightPanel.left-canvasRect.left))):typeof document==='undefined'?(w<=1000?216:234):0;
       const left=visible(leftPanel)?Math.min(w*.45,Math.max(0,leftPanel.right-canvasRect.left)):0;
       const header=typeof document!=='undefined'?rect(document.querySelector?.('.topbar')):null;
       const tools=typeof document!=='undefined'?rect(document.querySelector?.('.view-tools')):null;
-      const top=header?.height?Math.min(h*.25,Math.max(0,header.bottom-canvasRect.top)+8):72;
+      let top=header?.height?Math.min(h*.25,Math.max(0,header.bottom-canvasRect.top)+8):72;
       const bottom=tools?.height?Math.min(h*.25,Math.max(0,h-(tools.top-canvasRect.top))+8):56;
-      this.labViewportHeight=Math.max(.4,1-(top+bottom)/h);
+      // In portrait, the meter often occupies only the upper right corner.
+      // Pick the clear rectangle with more room on its limiting axis. This
+      // changes the camera projection without disturbing user orbit or zoom.
+      if(w<h&&visible(rightPanel)&&!left){
+        const below=Math.max(top,rightPanel.bottom-canvasRect.top+8);
+        if(Math.min(w,h-below-bottom)>Math.min(w-right,h-top-bottom)){
+          top=below;right=0;
+        }
+      }
+      this.labViewportHeight=Math.max(.2,1-(top+bottom)/h);
       this.camera.setViewOffset(w,h,(right-left)/2,(bottom-top)/2,w,h);
       return Math.max(.2,1-(left+right)/w);
     }

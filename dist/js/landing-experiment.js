@@ -1,5 +1,5 @@
 import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-frameperf1';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-audit148';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples
@@ -52,14 +52,8 @@ export function landingClearance(sim){
 }
 
 /** Resets the supplied vehicle using shared controlled environmental conditions. */
-export function createLandingRun(sim,options={}){
+export function releaseLandingVehicle(sim,options={}){
   const config=landingSettings(options);
-  // A fixed 15 s deadline silently discarded high drops before first contact.
-  // Keep that failure guard at ordinary heights, but scale it with free fall
-  // and the gentle controller's 2.5 m/s cruise reference for larger releases.
-  const freeFallTime=Math.sqrt(config.height)*Math.sqrt(2/9.80665);
-  const flightTimeout=Math.max(15,freeFallTime*2+10,['gentle','eco'].includes(config.method)?config.height/2.5+10:0);
-  const precontactSampleInterval=Math.max(.01,flightTimeout/4000);
   Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,
     gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
     contactEnabled:true,friction:1.15,rollingResistance:.015,
@@ -70,9 +64,24 @@ export function createLandingRun(sim,options={}){
   sim.state.vel.set(0,0,0);sim.state.q.identity();sim.state.omega.set(0,0,0);
   sim.contactCount=sim.lastContactCount=0;
   for(const w of sim.wheels){w.grounded=false;w.compression=0;w.load=0;w.omega=0;}
+  return config;
+}
+
+export function createLandingRun(sim,options={}){
+  const config=releaseLandingVehicle(sim,options);
   const planStart=config.method==='eco'?performance.now():0;
   const economy=config.method==='eco'?planEconomyLanding(sim,landingClearance(sim),config.targetSpeed):null;
   const ecoPlanTimeMs=economy?performance.now()-planStart:null;
+  return recordLandingRelease(sim,config,economy,ecoPlanTimeMs);
+}
+
+export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
+  // A fixed 15 s deadline silently discarded high drops before first contact.
+  // Keep that failure guard at ordinary heights, but scale it with free fall
+  // and the gentle controller's 2.5 m/s cruise reference for larger releases.
+  const freeFallTime=Math.sqrt(config.height)*Math.sqrt(2/9.80665);
+  const flightTimeout=Math.max(15,freeFallTime*2+10,['gentle','eco'].includes(config.method)?config.height/2.5+10:0);
+  const precontactSampleInterval=Math.max(.01,flightTimeout/4000);
   return {...config,modelVersion:LANDING_MODEL_VERSION,config:Object.freeze({...config}),startTime:sim.state.time,
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
@@ -216,26 +225,30 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   // use bounded sparse samples. Every 2 ms step still contributes to all peaks.
   const nearContact=run.touchdownTime!==null||clearance<=Math.max(2,-sim.state.vel.y*.3);
   const sampleInterval=nearContact?.01:run.precontactSampleInterval;
-  const springState=landingSpringState(sim);
-  const sample={time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,groundForceN:ground,
-    equivalentGroundForceN:equivalent,gLoad:properG,thrustN:sim.totalThrust,
-    // compression retains the force-evaluation value for backwards compatibility;
-    // stateCompression and springEnergyJ both belong to this end-state pose.
-    compression,stateCompression:springState.stateCompression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,
-    // Stored translational / gravitational / linear-spring energy only: this
-    // excludes rotation, nonlinear bump stops, dissipation and expelled gas.
-    // It is not a closed-system conservation sum during thrust or contact.
-    massKg:sim.mass,kineticEnergyJ:.5*sim.mass*sim.state.vel.lengthSq(),
-    potentialEnergyJ:sim.mass*sim.params.gravity*(sim.state.pos.y-run.energyDatumY),
-    springEnergyJ:springState.springEnergyJ};
-  const bucket=sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
-  if(bucket!==run.sampleBucket){run.samples.push(sample);run.sampleBucket=bucket;}
-  else{
+  // Start a fresh bin at contact: a landing reaction must never be attached
+  // to a sample of the airborne vehicle. Each maximum carries the endpoint
+  // of the 2 ms measurement step that actually produced it.
+  const bucket=(run.touchdownTime===null?'flight:':'contact:')+sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
+  if(bucket!==run.sampleBucket){
+    const springState=landingSpringState(sim);
+    run.samples.push({time:run.elapsed,sampleInterval,clearance,velocity:sim.state.vel.y,
+      groundForceN:ground,groundForcePeakTime:run.elapsed,
+      equivalentGroundForceN:equivalent,equivalentGroundForcePeakTime:run.elapsed,
+      gLoad:properG,gLoadPeakTime:run.elapsed,thrustN:sim.totalThrust,
+      // compression comes from force evaluation; energy and stateCompression
+      // describe the end-state pose at time, independently of the bin maxima.
+      compression,stateCompression:springState.stateCompression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,
+      massKg:sim.mass,kineticEnergyJ:.5*sim.mass*sim.state.vel.lengthSq(),
+      potentialEnergyJ:sim.mass*sim.params.gravity*(sim.state.pos.y-run.energyDatumY),
+      springEnergyJ:springState.springEnergyJ});
+    run.sampleBucket=bucket;
+  }else{
     const last=run.samples.at(-1);
-    last.groundForceN=Math.max(last.groundForceN,ground);
-    last.equivalentGroundForceN=Math.max(last.equivalentGroundForceN,equivalent);
-    last.manualLift=Math.max(last.manualLift,sample.manualLift);
-    last.gLoad=Math.max(last.gLoad,properG);last.correctionImpulseNs+=impulse;
+    if(ground>last.groundForceN){last.groundForceN=ground;last.groundForcePeakTime=run.elapsed;}
+    if(equivalent>last.equivalentGroundForceN){last.equivalentGroundForceN=equivalent;last.equivalentGroundForcePeakTime=run.elapsed;}
+    if(properG>last.gLoad){last.gLoad=properG;last.gLoadPeakTime=run.elapsed;}
+    if(run.manualLiftActive)last.manualLift=1;
+    last.correctionImpulseNs+=impulse;
   }
   run.previousMass=sim.mass;run.previousGas=sim.state.gas;
   if(run.touchdownTime!==null){

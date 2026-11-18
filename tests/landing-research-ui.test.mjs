@@ -97,6 +97,14 @@ test('CSV exports separate constant-mass audit from powered contact energy and p
     const trace=await blob.text();assert.match(trace,/must not be integrated for impulse/);
     assert.match(trace,/"compression","stateCompression"/);assert.match(trace,/compression is the pre-integration force-evaluation value/);
     assert.match(trace,/"massKg","kineticEnergyJ","potentialEnergyJ","springEnergyJ"/);
+    const traceLines=trace.split('\r\n'),traceKeys=parsePrefix(traceLines[1]),first=parsePrefix(traceLines[2]);
+    const peakTime=free.samples[0].equivalentGroundForcePeakTime;
+    assert.equal(Number(first[traceKeys.indexOf('equivalentGroundForcePeakTime')]),peakTime);
+    assert.equal(Number(first[traceKeys.indexOf('equivalent_force_peak_time_from_touchdown_s')]),peakTime-free.touchdownTime);
+    LandingUI.prototype.exportTraces.call({results:[{...free,samples:[{time:free.touchdownTime,equivalentGroundForceN:100}]}]});
+    const old=parsePrefix((await blob.text()).split('\r\n')[2]);
+    assert.equal(old[traceKeys.indexOf('equivalentGroundForcePeakTime')],'');
+    assert.equal(old[traceKeys.indexOf('equivalent_force_peak_time_from_touchdown_s')],'');
   }finally{globalThis.document=previousDocument;URL.createObjectURL=create;URL.revokeObjectURL=revoke;}
 });
 

@@ -74,3 +74,43 @@ dialog.landing-results-dialog{width:min(1100px,calc(100vw - 36px));max-width:110
 @media(max-width:700px){.cockpit-tools{top:108px;right:10px;gap:1px;padding:4px}.cockpit-tools button{padding:7px 6px;font-size:9px}.city.cockpit-view.cockpit-panels-open .city-garage{top:150px}.city.cockpit-view:not(.cockpit-panels-open) .city-speedometer{width:160px;right:10px;bottom:20px}}
 
 .city-garage #city-recharge{font-size:11px;line-height:1.5;color:#a2f5db;font-variant-numeric:tabular-nums}.city-garage #city-recharge[hidden]{display:none}
+
+/* A phone has room for the road or a full garage, even in landscape. */
+.city.compact-city-hud{--city-tools-top:80px;--city-tools-right:12px}
+.compact-city-hud .cockpit-tools{top:var(--city-tools-top);right:var(--city-tools-right)}
+.compact-city-hud .cockpit-tools button{min-height:34px;padding:5px 8px}
+.compact-city-hud:not(.cockpit-panels-open) #city-garage,
+.compact-city-hud.cockpit-panels-open .city-speedometer,
+.compact-city-hud.cockpit-panels-open .city-touch,
+.compact-city-hud #city-hud:has(#city-experiments:not([hidden])) #city-garage{display:none}
+.compact-city-hud #city-garage,.compact-city-hud #city-experiments{
+  top:calc(var(--city-tools-top) + 48px);right:var(--city-tools-right);left:auto;
+  width:min(330px,calc(100vw - 24px));max-width:none;
+  max-height:calc(100dvh - var(--city-tools-top) - 58px);overflow-y:auto;overscroll-behavior:contain;
+}
+.compact-city-hud .city-location span{display:none}
+.compact-city-hud .city-speedometer{width:158px;padding:8px 11px;bottom:12px;max-height:calc(100dvh - var(--city-tools-top) - 54px);overflow:auto}
+.compact-city-hud .city-speedometer b{font-size:30px}
+.compact-city-hud .city-speedometer .city-drive-state,.compact-city-hud .city-speedometer .city-heading-reading{flex-direction:row;margin:3px 0}
+.compact-city-hud .city-speedometer #city-key-hint,.compact-city-hud .city-speedometer .pedal-track{display:none}
+.compact-city-hud .city-speedometer p{margin:3px 0;flex-wrap:wrap;gap:2px 5px}
+.compact-city-hud .city-speedometer p span{white-space:nowrap}
+.compact-city-hud .city-flight-readings{margin:6px 0}
+.compact-city-hud .city-speedometer #city-hover,.compact-city-hud .city-speedometer #city-land{padding:4px 2px}
+.city.compact-city-hud.show-drive-controls:not(.cockpit-panels-open) .city-touch{
+  bottom:max(8px,env(safe-area-inset-bottom));padding:5px;gap:4px;
+}
+.compact-city-hud .city-touch p{display:none}
+@media(max-width:700px){
+  .city.compact-city-hud{--city-tools-top:104px}
+  .compact-city-hud.show-drive-controls .city-speedometer{top:calc(var(--city-tools-top) + 48px);bottom:auto}
+  .compact-city-hud.show-drive-controls .city-map-wrap{bottom:115px}
+}
+@media(max-height:560px) and (orientation:landscape){
+  .compact-city-hud .city-map-wrap canvas{width:88px;height:71px}
+  .compact-city-hud .city-map-wrap{bottom:10px}
+  .compact-city-hud.show-drive-controls .city-speedometer{top:calc(var(--city-tools-top) + 48px);bottom:auto}
+  .city.compact-city-hud.show-drive-controls .city-touch{left:10px;right:auto;width:min(430px,calc(100vw - 184px))}
+  .compact-city-hud.show-drive-controls .city-map-wrap{bottom:114px}
+  .compact-city-hud.show-drive-controls .city-touch button{min-width:0;height:44px}
+}

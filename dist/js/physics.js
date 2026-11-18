@@ -1,4 +1,6 @@
 import { Vector3, Quaternion, Euler } from 'three';
+import {R,GAMMA,CV,nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
+export {nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
 import {sampleRoadSurface,tireForceAtSlip} from './road-surface.js?v=20261118-frameperf1';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
@@ -58,9 +60,6 @@ export const PARAMETER_INFO = {
   motorTorqueNm: ['모터 최대 토크', 'N·m', '가정 · 앞 1개·뒤 2개 모터 합산'],
   valveTau: ['밸브 응답 시정수', 's', '1차 지연 가정'],
 };
-const R = 287, GAMMA = 1.4, CV = R / (GAMMA - 1), CP = GAMMA * CV;
-export const ATMOSPHERE = 101325;
-const CRITICAL = (2 / (GAMMA + 1)) ** (GAMMA / (GAMMA - 1));
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 const UP = new Vector3(0, 1, 0);
 const FORWARD = new Vector3(1, 0, 0);
@@ -128,21 +127,6 @@ function boxContact(sim, obstacle) {
   axes.forEach((axis,i)=>{const projection=normal.dot(axis);if(Math.abs(projection)>1e-7)point.addScaledVector(axis,-Math.sign(projection)*BODY_HALF[i]);});
   point.clamp(obstacle.min,obstacle.max);
   return {normal,depth,point};
-}
-
-/** Ideal convergent nozzle, exit=throat. Pressure thrust is retained when choked.
- * Pa absolute; K; m². Inlet is the supplied stagnation state; feed-line loss is applied upstream (Cd=1).
- */
-export function nozzle(pressure, temperature, area, ambient = ATMOSPHERE) {
-  if (!(pressure > ambient) || !(temperature > 0) || !(area > 0))
-    return { mdot: 0, force: 0, ve: 0, pe: ambient, regime: 'off', effectiveVelocity: 0 };
-  const choked = ambient / pressure <= CRITICAL;
-  const pe = choked ? pressure * CRITICAL : ambient;
-  const te = choked ? temperature * 2 / (GAMMA + 1) : temperature * (ambient / pressure) ** ((GAMMA - 1) / GAMMA);
-  const ve = choked ? Math.sqrt(GAMMA * R * te) : Math.sqrt(Math.max(0, 2 * CP * (temperature - te)));
-  const mdot = area * pe * ve / (R * te);
-  const force = mdot * ve + (pe - ambient) * area;
-  return { mdot, force, ve, pe, regime: mdot > 0 ? (choked ? 'choked' : 'subsonic') : 'off', effectiveVelocity: mdot > 0 ? force / mdot : 0 };
 }
 
 export function rocketReference(mInitial, mFinal, effectiveVelocity) {

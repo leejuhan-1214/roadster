@@ -73,3 +73,39 @@ test('visible panels at narrow widths and offset canvases shift the camera into 
     assert.ok(Math.abs(center.x-249)<1e-7,'closing the panel restores the wider centre without accumulating offsets');
   }finally{if(previousDocument===undefined)delete globalThis.document;else globalThis.document=previousDocument;}
 });
+
+test('rotating to portrait keeps the post-trial car below telemetry and preserves the user orbit and zoom',()=>{
+  const saved=globalThis.document,oldWindow=globalThis.window;
+  try{
+    const scene=view(1280,780),sim=new PhysicsSim();
+    scene.frameLandingStart(sim);
+    const originalDirection=direction(scene),target=scene.controls.target.clone();
+    const rect=(left,top,width,height)=>({left,top,width,height,right:left+width,bottom:top+height});
+    const element=r=>({getBoundingClientRect:()=>r});
+    const telemetry=rect(188,106,190,318),tools=rect(12,780,366,46);
+    globalThis.document={
+      getElementById:id=>element(id==='telemetry'?telemetry:rect(0,0,0,0)),
+      querySelector:q=>element(q==='.topbar'?rect(0,0,390,96):tools)
+    };
+    globalThis.window={devicePixelRatio:1};
+    Object.assign(scene,{bufferWidth:1280,bufferHeight:780,renderer:{setDrawingBufferSize(){}},vehicle:{root:{position:sim.bodyPosition}}});
+    scene.canvas.getBoundingClientRect=()=>rect(0,0,scene.canvas.clientWidth,scene.canvas.clientHeight);
+    scene.canvas.clientWidth=390;scene.canvas.clientHeight=844;scene.resize();
+    const center=projected(scene,target);
+    assert.ok(Math.abs(center.x-195)<1e-8);
+    for(const x of [-2.35,2.35])for(const y of [-.55,.85])for(const z of [-1.03,1.03]){
+      const p=projected(scene,sim.bodyPosition.clone().add(new THREE.Vector3(x,y,z)));
+      assert.ok(p.x>0&&p.x<390&&p.y>telemetry.bottom&&p.y<tools.top,JSON.stringify(p));
+    }
+    assert.ok(direction(scene).distanceTo(originalDirection)<1e-9&&target.equals(scene.controls.target));
+    const manualOffset=new THREE.Vector3(-8,4,11);
+    scene.camera.position.copy(target).add(manualOffset);scene.camera.lookAt(target);
+    scene.canvas.clientWidth=400;scene.resize();
+    assert.ok(scene.camera.position.clone().sub(target).distanceTo(manualOffset)<1e-9);
+    telemetry.height=650;telemetry.bottom=756;scene.inspectionViewport();
+    assert.ok(projected(scene,target).x<telemetry.left,'use the side when measurements fill the vertical space');
+  }finally{
+    if(saved===undefined)delete globalThis.document;else globalThis.document=saved;
+    if(oldWindow===undefined)delete globalThis.window;else globalThis.window=oldWindow;
+  }
+});

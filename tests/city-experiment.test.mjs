@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
 import {PhysicsSim} from '../dist/js/physics.js';
+import {DrivingController,CITY_DRIVE_PARAMS} from '../dist/js/driving-input.js';
 import {CITY_SURFACES,CITY_EXPERIMENT_DEFAULTS,normalizeCityExperiment,cityExperimentParams,
   CityBrakeTrial,BRAKE_STOP_SPEED,brakeResultsCSV} from '../dist/js/city-experiment.js';
 
@@ -120,4 +123,46 @@ test('actual tire physics gives longer wet braking and no artificial frictionles
   assert.ok(wet.result.stoppingTime>dry.result.stoppingTime);
   assert.equal(none.trial.status,'measuring');assert.equal(none.result,null);
   assert.ok(none.sim.state.vel.x>19.9);assert.equal(none.sim.frictionForceN,0);
+});
+
+// Exercise the same pre-step observer and post-step map guard that a held B
+// key uses in the page, with a real rolling rigid body in both driving modes.
+const main=await readFile(new URL('../dist/js/main.js',import.meta.url),'utf8');
+const stepSource=main.slice(main.indexOf('function stepSimulation()'),main.indexOf('function refreshVehiclePicker()'));
+function driveEntry(mode,guard=()=>true){
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0}),trial=new CityBrakeTrial();
+  sim.reset('rolling');
+  const context=vm.createContext({mode,sim,brakeTrial:trial,LANDING_STEP:.002,
+    driver:new DrivingController(),driveKeys:new Set(['KeyB']),driveInput:{},driveGear:'D',
+    citySettings:CITY_EXPERIMENT_DEFAULTS,activeVehicle:{id:'roadster'},cityDistance:0,
+    freeDriving:()=>true,scene:{city:{streaming:{guard}}}});
+  const step=vm.runInContext(stepSource+'\nstepSimulation',context);
+  return {sim,trial,step};
+}
+
+test('only a city drive contributes a B stop to city braking history',()=>{
+  for(const mode of ['lab','city']){
+    const {sim,trial,step}=driveEntry(mode);
+    for(let i=0;i<2500;i++)step();
+    assert.ok(Math.abs(sim.state.vel.x)<BRAKE_STOP_SPEED);
+    assert.equal(trial.getSnapshot().results.length,mode==='city'?1:0,mode);
+    if(mode==='city'){
+      assert.equal(trial.lastResult.valid,true);
+      assert.ok(trial.lastResult.stoppingDistance>5);
+    }
+  }
+});
+test('an unloaded tile or map edge stopping the vehicle cannot yield a successful brake measurement',()=>{
+  const {trial,sim,step}=driveEntry('city',state=>{
+    state.vel.x=0;state.vel.z=0;return false;
+  });
+  const initialX=sim.state.pos.x;
+  step();step();
+  assert.equal(sim.state.pos.x,initialX);
+  assert.equal(trial.lastResult.valid,false);
+  assert.equal(trial.lastResult.reason,'map-boundary');
+  assert.equal(trial.lastResult.stoppingDistance,null);
+  assert.equal(trial.lastResult.stoppingTime,null);
+  assert.equal(trial.getSnapshot().results.length,1);
+  assert.match(brakeResultsCSV([trial.lastResult]),/지도 경계/);
 });

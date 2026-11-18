@@ -5,8 +5,47 @@ import {PhysicsSim} from '../dist/js/physics.js';
 import {LANDING_STEP,createLandingRun,landingRunInput,updateLandingRun} from '../dist/js/landing-experiment.js';
 import {landingLiveReadings} from '../dist/js/landing-live.js';
 import {landingSpringState} from '../dist/js/landing-measurement.js';
+import {landingReactionTrace} from '../dist/js/landing-analysis.js';
 
 function advance(sim,run){sim.step(LANDING_STEP,landingRunInput(run,sim));updateLandingRun(run,sim);}
+
+test('force-envelope maxima use their own measured step endpoints; airborne bins stay unloaded',()=>{
+  const sim=new PhysicsSim(),run=createLandingRun(sim,{height:20,method:'brake',brakeHeight:1.5});
+  const steps=new Map();
+  while(!run.done){
+    advance(sim,run);
+    const ground=sim.groundForceN,equivalent=ground+sim.groundCorrectionImpulseNs/LANDING_STEP;
+    const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
+    steps.set(run.elapsed,{ground,equivalent,gLoad:acceleration.length()/sim.params.gravity});
+  }
+  const {samples,touchdownTime}=run.result;
+  let independentPeak=false;
+  for(const [i,sample] of samples.entries()){
+    if(sample.time<touchdownTime)assert.equal(sample.equivalentGroundForceN,0);
+    const end=samples[i+1]?.time??Infinity;
+    for(const [field,timestamp,raw] of [['groundForceN','groundForcePeakTime','ground'],['equivalentGroundForceN','equivalentGroundForcePeakTime','equivalent'],['gLoad','gLoadPeakTime','gLoad']]){
+      assert.ok(sample[timestamp]>=sample.time&&sample[timestamp]<end);
+      assert.equal(sample[field],steps.get(sample[timestamp])[raw]);
+    }
+    if(sample.equivalentGroundForcePeakTime>sample.time&&sample.equivalentGroundForceN>0)independentPeak=true;
+  }
+  assert.ok(independentPeak);
+  const points=landingReactionTrace(run.result);
+  assert.ok(points.some(point=>point.time===0&&point.forceKN===0),'the line stays at zero until contact');
+  assert.ok(points.every(point=>point.time>=0||point.forceKN===0));
+  assert.equal(Math.max(...points.map(point=>point.forceKN)),run.result.peakEquivalentGroundForceN/1000);
+});
+
+test('older straddling bins keep their measured load without drawing a reaction in flight',()=>{
+  const legacy={touchdownTime:1,samples:[
+    {time:.980,equivalentGroundForceN:0},{time:.996,equivalentGroundForceN:120000},{time:1.006,equivalentGroundForceN:25000}
+  ]};
+  const points=landingReactionTrace(legacy);
+  assert.equal(points.length,4);
+  assert.deepEqual(points.slice(1,3),[{time:0,forceKN:0},{time:0,forceKN:120}]);
+  assert.equal(legacy.samples[1].time,.996);
+  assert.deepEqual(landingReactionTrace({touchdownTime:null,samples:legacy.samples}),[]);
+});
 
 test('live and logged elastic storage use the same end-state pose throughout impact',()=>{
   for(const options of [{height:3,method:'free'},{height:3,method:'brake',brakeHeight:2.25}]){

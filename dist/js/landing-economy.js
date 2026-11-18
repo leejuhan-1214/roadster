@@ -1,7 +1,7 @@
-import {nozzle, ATMOSPHERE} from './physics.js?v=20261118-frameperf1';
+import {nozzle, ATMOSPHERE, R, GAMMA} from './air-nozzle.js?v=20261118-audit148';
 import {contactFraction} from './landing-measurement.js?v=20261118-physics146';
 
-const G = 1.4, R = 287, STEP = .002;
+const STEP = .002;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /** A bounded, one-dimensional forecast, never a replacement for the live solver.
@@ -30,13 +30,13 @@ function forecast(initial, trigger, target, profile='brake') {
     const meanOpening = command + (opening - command) * meanDecay;
     opening = command + (opening - command) * decay;
     flow = full.mdot * meanOpening;
-    const removable = pressure > ATMOSPHERE ? gas * (1 - (ATMOSPHERE / pressure) ** (1 / G)) : 0;
+    const removable = pressure > ATMOSPHERE ? gas * (1 - (ATMOSPHERE / pressure) ** (1 / GAMMA)) : 0;
     const dm = Math.min(flow * STEP, Math.max(0, removable));
     const scale = flow > 0 ? dm / (flow * STEP) : 0;
     const force = full.force * meanOpening * scale;
     flow *= scale;
     const nextGas = Math.max(0, gas - dm);
-    if (gas > 0 && nextGas > 0) temperature *= (nextGas / gas) ** (G - 1);
+    if (gas > 0 && nextGas > 0) temperature *= (nextGas / gas) ** (GAMMA - 1);
     gas = nextGas;
     pressure = gas * R * temperature / tankVolume;
     const netAcceleration=force/Math.max(1,mass-dm*.5)-g;
@@ -58,11 +58,11 @@ function forecast(initial, trigger, target, profile='brake') {
     const full=nozzle(Math.max(ATMOSPHERE,pressure-feedLossCoefficient*flow*flow),temperature,area);
     const meanOpening=opening*meanDecay;opening*=decay;
     flow=full.mdot*meanOpening;
-    const removable=pressure>ATMOSPHERE?gas*(1-(ATMOSPHERE/pressure)**(1/G)):0;
+    const removable=pressure>ATMOSPHERE?gas*(1-(ATMOSPHERE/pressure)**(1/GAMMA)):0;
     const dm=Math.min(flow*STEP,Math.max(0,removable));
     flow=dm/STEP;
     const nextGas=Math.max(0,gas-dm);
-    if(gas>0&&nextGas>0)temperature*=(nextGas/gas)**(G-1);
+    if(gas>0&&nextGas>0)temperature*=(nextGas/gas)**(GAMMA-1);
     gas=nextGas;pressure=gas*R*temperature/tankVolume;
   }
   return {trigger, profile, speed:Math.max(0,gap<=0?-contactVelocity:-velocity), gasUsed:initial.gas - gas,touchdownGasUsed,
@@ -85,14 +85,27 @@ function gentleForecastAcceleration(gap,velocity,target,gravity,valveTau){
   return clamp(feedForward+6*(desired-velocity),-gravity,1.1*gravity);
 }
 
-export function planEconomyLanding(sim, height, targetSpeed) {
+export function economyInitialState(sim, height) {
   const p = sim.params, s = sim.state;
-  const initial = {height:Math.max(0, height), gravity:p.gravity, dryMass:p.dryMass,
+  return {height:Math.max(0, height), gravity:p.gravity, dryMass:p.dryMass,
     tankVolume:p.tankVolume, valveTau:p.valveTau, feedLossCoefficient:Math.max(0,p.feedLossCoefficient),
     gas:s.gas, temperature:s.temp, pressure:s.pressure,
     area:sim.thrusters.slice(0,4).reduce((sum,t)=>sum+t.area,0)};
+}
+
+export function planEconomyLanding(sim,height,targetSpeed){
+  return planEconomyFromState(economyInitialState(sim,height),targetSpeed);
+}
+
+export function measureEconomyPlan(initial,targetSpeed){
+  const start=performance.now();
+  const economy=planEconomyFromState(initial,targetSpeed);
+  return {economy,elapsedMs:performance.now()-start};
+}
+
+export function planEconomyFromState(initial,targetSpeed){
   const freeSpeed = Math.sqrt(initial.height)*Math.sqrt(2*initial.gravity);
-  if (height <= 0 || freeSpeed <= targetSpeed) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:true, coastOnly:true};
+  if (initial.height <= 0 || freeSpeed <= targetSpeed) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:true, coastOnly:true};
   const full = nozzle(initial.pressure, initial.temperature, initial.area);
   if (full.force <= 0 || initial.gas <= 0) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:false, coastOnly:true};
   const acceptable = p => p.complete && p.speed <= targetSpeed + 1e-9;

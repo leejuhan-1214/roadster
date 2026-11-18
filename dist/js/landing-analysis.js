@@ -3,6 +3,30 @@
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const measured=result=>['landed','unsettled'].includes(result?.status)&&finite(result.touchdownSpeed);
 
+/** Reaction-envelope points aligned to first contact. The contact origin
+ * fixes the last airborne force at zero even when the next bin holds a large
+ * impulse. Older traces did not save peak timestamps; keep their bin labels
+ * and restrict a bin straddling contact to the loaded part of the interval.
+ */
+export function landingReactionTrace(result){
+  const points=[];
+  if(!finite(result?.touchdownTime))return points;
+  let crossed=false;
+  for(const sample of result.samples||[]){
+    if(!finite(sample.time)||!finite(sample.equivalentGroundForceN))continue;
+    const hasPeakTime=finite(sample.equivalentGroundForcePeakTime);
+    let time=(hasPeakTime?sample.equivalentGroundForcePeakTime:sample.time)-result.touchdownTime;
+    const forceKN=sample.equivalentGroundForceN/1000;
+    if(!hasPeakTime&&forceKN>0)time=Math.max(0,time);
+    if(!crossed&&time>=0){
+      points.push({time:0,forceKN:0});crossed=true;
+      if(time===0&&forceKN===0)continue;
+    }
+    points.push({time,forceKN});
+  }
+  return points;
+}
+
 /** A settled body is not necessarily a successful controlled landing. Use the
  * recorded precontact speed and the user's target, not a rounded display or
  * the economy planner's feasibility prediction. */

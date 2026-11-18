@@ -5,6 +5,18 @@ import {LandingUI} from '../dist/js/landing-ui.js';
 // Parse the constructor's emitted controls and dispatch their real registered
 // callbacks. This small DOM harness needs no browser or additional dependency.
 const attributes=text=>Object.fromEntries([...text.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].map(match=>[match[1],match[2]??true]));
+test('a batch retains each trace and builds the closed results panel only when opened',()=>{
+  const controls=new Map(),renders=[];
+  const ui=Object.assign(Object.create(LandingUI.prototype),{
+    busy:true,results:[],nextId:1,dialog:{open:false,showModal(){this.open=true;}},
+    root:{querySelector(key){if(!controls.has(key))controls.set(key,{});return controls.get(key);}},
+    renderResults(){renders.push(this.results.length);}
+  });
+  for(const method of ['free','brake','gentle','eco'])ui.addResult({groupId:'one',method,samples:[{forceN:12}]});
+  assert.deepEqual(renders,[]);assert.equal(controls.get('#landing-result-count').textContent,'4회');
+  assert.equal(ui.results.length,4);assert.equal(ui.results[3].samples[0].forceN,12);
+  ui.busy=false;ui.showResults();assert.deepEqual(renders,[4]);assert.equal(ui.dialog.open,true);
+});
 function element(tag='div',attrs={}){
   const listeners=new Map();
   return {tag,...attrs,value:attrs.value??'',disabled:attrs.disabled===true,checked:attrs.checked===true,required:attrs.required===true,hidden:false,open:false,textContent:'',customValidity:'',

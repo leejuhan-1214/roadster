@@ -16,7 +16,7 @@ export const BRAKE_REASONS=Object.freeze({
   collision:'장애물 충돌',airborne:'접지 상실',released:'정지 전 B 해제',
   'settings-changed':'실험 조건 변경','vehicle-changed':'차체 변경',
   reset:'주행 초기화',paused:'일시정지',timeout:'60초 안에 정지하지 않음',thrust:'추진기 작동',
-  invalid:'유효하지 않은 측정 상태',drift:'드리프트 입력',
+  invalid:'유효하지 않은 측정 상태',drift:'드리프트 입력','map-boundary':'지도 경계에서 주행 중단',
 });
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const numeric=(value,fallback,min,max)=>{
