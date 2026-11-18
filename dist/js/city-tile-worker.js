@@ -1,4 +1,4 @@
-import {buildCityTile,cityTileTransferables} from './city-tile-builder.js?v=20261118-frameperf1';
+import {buildCityTile,cityTileTransferables} from './city-tile-builder.js?v=20261119-wide157';
 import {createRegionalPackLoader} from './city-regional-packs.js?v=20261119-wide157';
 const loadRegion=createRegionalPackLoader();
 const requests=new Map();let shared={};

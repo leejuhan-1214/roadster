@@ -16,11 +16,11 @@
   "method": "Mapped surface roads and centered building footprints outside the detailed area. Full footprints, courtyards and lane tags retained. Height is estimated only when OSM has no height/level. Water and mapped green surfaces are clipped to each cell. No generated streets or building outlines.",
   "uniqueRoadsTouchingOuterCells": 132058,
   "totals": {
-    "bytes": 18813199,
+    "bytes": 18815799,
     "rRecords": 151213,
     "gRecords": 21929,
-    "bRecords": 264088,
-    "ownedBuildings": 258503,
+    "bRecords": 264099,
+    "ownedBuildings": 258514,
     "wRecords": 1644
   },
   "archivedAt": "2026-11-10",
@@ -283,7 +283,7 @@
     "-1_-1": "971156bd9e90013ec45dd6ea692d40bda1c3356ada17a119656aa20aa87732be",
     "1_-1": "3a3d5e2dd6aa051f05b493a9841165b3d33019f62611f14f5a29881eaa9f494a",
     "2_-1": "79904a5b64bd1ad91bc05aa8306cdfd7a7926d8175645571112a70ea60792952",
-    "3_-1": "28dade3903089713bc64e9338057b8014b7dbbfee214394eef175a4305888570",
+    "3_-1": "44c66d35747ad076e0830bb023cb59bf1fd52acd37e5c77d5101699a369e3eb0",
     "4_-1": "2a470ed913dbd8fc7652841979aaa8d913a696ddc1e3b38bce7cad4a7688f1f3",
     "5_-1": "98528ca54905b059bb86338b8f95070e7ac2c51a5d3a36026ecc51d30b8707d2",
     "6_-1": "9ce69fb2f1b21b0ae0e7133420bf3d94ef046c001b5faae724f0893262337976",
@@ -415,5 +415,25 @@
     "5_5": "f6c7c021d2cc8a6974a9ee6d3a15cee9d070f18159dbcca15bfcb56071dc04d4",
     "6_5": "9ae3c032b661ff8d0c6c0d91cc8d7c0306879f52849a6825cb4b1323bb500a75",
     "7_5": "8ca0af8903948205c809b9e55263ca232d229461bc2bcb95c0d271e59501d9a9"
+  },
+  "lotteTower": {
+    "parentOrdinal": 807836,
+    "landmarkPointOrdinal": 155962,
+    "solidPartOrdinals": [
+      630750,
+      630751,
+      630752,
+      782246,
+      782247,
+      782274,
+      782275,
+      783526,
+      783527,
+      783528,
+      783529
+    ],
+    "coreHeightM": 520,
+    "crownHeightM": 554.5,
+    "method": "Solid part footprints from the pinned BBBike extract. Metre heights take priority. Floors-only tiers use the core average of 520 m over 123 above-ground levels. The cladding between discrete contours is generalized."
   }
 }

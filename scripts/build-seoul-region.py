@@ -28,6 +28,10 @@ X0, X1, Z0, Z1 = -56, 32, -48, 24
 BOUNDS = dict(minX=X0*SIZE, maxX=X1*SIZE, minZ=Z0*SIZE, maxZ=Z1*SIZE)
 ROADS = set('motorway motorway_link trunk trunk_link primary primary_link secondary secondary_link tertiary tertiary_link unclassified residential living_street service'.split())
 GREENS = {'park','garden','forest','grass','recreation_ground','wood','scrub','grassland','meadow'}
+# Verified solid (non-roof) component footprints inside Lotte World Tower,
+# source outline 807836 in the pinned archive. Separate roof planes describe
+# the curved cladding; the simulation represents the mapped stepped solids.
+LOTTE_SOLIDS = {630750,630751,630752,782246,782247,782274,782275,783526,783527,783528,783529}
 
 
 def compact(value):
@@ -162,7 +166,8 @@ def prepare(args):
             if geom_type not in ('Polygon','MultiPolygon'):
                 continue
             nature=next((t[k] for k in ['leisure','landuse','natural'] if t.get(k) in GREENS),None)
-            building=t.get('building') and t['building']!='no' and t.get('location')!='underground' and (number(t.get('layer')) or 0)>=0
+            tower_part = ordinal in LOTTE_SOLIDS and t.get('building:part')=='yes'
+            building=(tower_part or (t.get('building') and t['building']!='no')) and t.get('location')!='underground' and (number(t.get('layer')) or 0)>=0
             if not (building or nature):
                 continue
             for part,raw in enumerate([coords] if geom_type=='Polygon' else coords):
@@ -182,6 +187,11 @@ def prepare(args):
                     continue
                 owner=(math.floor(center.x/SIZE),math.floor(center.y/SIZE))
                 attr=attributes(t,{'building':'type','name':'name','height':'height','building:levels':'levels','min_height':'minHeight','building:min_level':'minLevel','building:material':'material','building:colour':'colour','roof:shape':'roofShape'},('height','levels','minHeight','minLevel'))
+                if tower_part:
+                    attr['buildingPart']='yes'
+                    # Use the solid core's reported 520 m and 123 levels to
+                    # estimate only those tier elevations tagged in levels.
+                    attr['storeyHeight']=round(520/123,6)
                 sid=ordinal if part==0 else f'{ordinal}/{part}'
                 index('b',[sid,attr,[centipoints(ring) for ring in [outer,*holes]]],cells,owner)
     for handle in opened.values():
@@ -239,6 +249,7 @@ def finish(args):
     m['regional']={'schema':1,'packTiles':PACK,'tileCount':(X1-X0)*(Z1-Z0)-len(m['tiles']),'packs':metadata,'waterOverrides':sorted(inner_wet),'source':'regional-provenance.json'}
     manifest_path.write_bytes((json.dumps(m,ensure_ascii=False,indent=2)+'\n').encode())
     provenance={'bounds':BOUNDS,'source':SOURCE_URL,'archiveSha256':SOURCE_HASH,'waterSource':'driving-map-sources.json','waterGeometrySha256':hashlib.sha256(args.water.read_bytes()).hexdigest(),'license':'ODbL-1.0','attribution':'© OpenStreetMap contributors, © OpenMapTiles, OpenFreeMap','units':'World x east, z south, metres. Vertices encoded as signed centimetre deltas. Four by four 512 m cells share one gzip JSON pack.','featureIdentity':'R and B identify the original one-based BBBike FeatureCollection ordinal, including component suffix for multipolygons; original OSM IDs are unavailable.','method':'Mapped surface roads and centered building footprints outside the detailed area. Full footprints, courtyards and lane tags retained. Height is estimated only when OSM has no height/level. Water and mapped green surfaces are clipped to each cell. No generated streets or building outlines.','uniqueRoadsTouchingOuterCells':prepared['counts'].get('r',0),'totals':totals,'archivedAt':'2026-11-10','packHashes':checksums}
+    provenance['lotteTower']={'parentOrdinal':807836,'landmarkPointOrdinal':155962,'solidPartOrdinals':sorted(LOTTE_SOLIDS),'coreHeightM':520,'crownHeightM':554.5,'method':'Solid part footprints from the pinned BBBike extract. Metre heights take priority. Floors-only tiers use the core average of 520 m over 123 above-ground levels. The cladding between discrete contours is generalized.'}
     (ASSETS/'regional-provenance.json').write_bytes((json.dumps(provenance,ensure_ascii=False,indent=2)+'\n').encode())
     print('published packs',len(metadata),dict(totals),'central water cells',len(inner_wet),flush=True)
 

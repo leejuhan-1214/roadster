@@ -119,7 +119,12 @@ export function buildCityTile(data,options={}){
     const points=cleanRing(source.points),footprint=area(points);if(points.length<3||footprint<1)return null;
     const center=points.reduce((c,p)=>[c[0]+p[0]/points.length,c[1]+p[1]/points.length],[0,0]);
     const inferred=footprint>900?30+hash(source.id)*45:footprint>250?15+hash(source.id)*25:7+hash(source.id)*12;
-    return {...source,points,holes:(source.holes||[]).map(cleanRing).filter(r=>r.length>=3),center,footprint,height:clamp(Number(source.height)||Number(source.levels)*3.3||inferred,3,280)};
+    const tagged=Number(source.height),storey=Number(source.storeyHeight)||3.3;
+    const floors=Number(source.levels)*storey;
+    const height=Number.isFinite(tagged)&&tagged>0?tagged:
+      Number.isFinite(floors)&&floors>0?floors:clamp(inferred,3,280);
+    const base=source.buildingPart?clamp(Number(source.minHeight)||Number(source.minLevel)*storey||0,0,height):0;
+    return {...source,points,holes:(source.holes||[]).map(cleanRing).filter(r=>r.length>=3),center,footprint,height,base};
   }
   for(const source of data.buildings||[]){
     if(excluded.has(String(source.id)))continue;const b=normalizedBuilding(source);if(!b)continue;
@@ -164,16 +169,22 @@ export function buildCityTile(data,options={}){
   for(const b of buildings){
     const tint=color(palette[Math.floor(hash(b.id)*palette.length)]),roofColor=tint.clone().multiplyScalar(.63),all=[...b.points,...b.holes.flat()];
     const faces=ShapeUtils.triangulateShape(b.points.map(a=>new Vector2(...a)),b.holes.map(h=>h.map(a=>new Vector2(...a))));
-    for(const f of faces){const tri=f.map(i=>[all[i][0],b.height,all[i][1]]);triangle('roof',[tri[0],tri[2],tri[1]],[0,1,0],roofColor,[[0,0],[1,1],[1,0]]);}
+    for(const f of faces){const tri=f.map(i=>[all[i][0],b.height,all[i][1]]);triangle('roof',[tri[0],tri[2],tri[1]],[0,1,0],roofColor,[[0,0],[1,1],[1,0]]);
+      if(b.base>0)triangle('roof',f.map(i=>[all[i][0],b.base,all[i][1]]),[0,-1,0],roofColor,[[0,0],[1,0],[1,1]]);}
     for(const [ringIndex,p]of [b.points,...b.holes].entries()){
     const signed=p.reduce((sum,a,i)=>{const c=p[(i+1)%p.length];return sum+a[0]*c[1]-c[0]*a[1];},0),orientation=(signed>0?1:-1)*(ringIndex===0?1:-1);let distance=0;
     for(let i=0;i<p.length;i++){
       const a=p[i],c=p[(i+1)%p.length],length=Math.hypot(c[0]-a[0],c[1]-a[1]);if(length<.03)continue;
-      const n=[(c[1]-a[1])/length*orientation,0,-(c[0]-a[0])/length*orientation],v=[[a[0],0,a[1]],[a[0],b.height,a[1]],[c[0],b.height,c[1]],[c[0],0,c[1]]],uv=[[distance/3.2,0],[distance/3.2,b.height/3.4],[(distance+length)/3.2,b.height/3.4],[(distance+length)/3.2,0]];
-      const kind=b.height>42&&b.footprint>220?'glass':'wall';if(orientation>0)quad(kind,v,n,tint,uv);else quad(kind,[...v].reverse(),n,tint,[...uv].reverse());distance+=length;
+      const n=[(c[1]-a[1])/length*orientation,0,-(c[0]-a[0])/length*orientation],v=[[a[0],b.base,a[1]],[a[0],b.height,a[1]],[c[0],b.height,c[1]],[c[0],b.base,c[1]]],uv=[[distance/3.2,b.base/3.4],[distance/3.2,b.height/3.4],[(distance+length)/3.2,b.height/3.4],[(distance+length)/3.2,b.base/3.4]];
+      const kind=b.material==='glass'||(b.height>42&&b.footprint>220)?'glass':'wall';if(orientation>0)quad(kind,v,n,tint,uv);else quad(kind,[...v].reverse(),n,tint,[...uv].reverse());distance+=length;
     }
     }
-    obstacles.push(...buildingColliders(b));
+    const colliders=buildingColliders(b);
+    if(b.base>0)for(const piece of colliders){
+      piece.center[1]=(b.height+b.base)/2;
+      piece.size[1]=b.height-b.base;
+    }
+    obstacles.push(...colliders);
   }
   // Navigation metadata must describe this tile only, even though road mesh
   // generation needs whole ways to preserve lane marking phase across tiles.
