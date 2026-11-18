@@ -1,11 +1,11 @@
-import { Vector3, Quaternion, Euler } from 'three';
+import { Vector3, Quaternion, Euler } from '../vendor/three.core.js';
 import {R,GAMMA,CV,nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 export {nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
 import {sampleRoadSurface,tireForceAtSlip,rideHeightAboveSurface} from './road-surface.js?v=20261118-review149';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261118-frameperf1';
-import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
+import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261118-study150';
 import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261115-fleet1';
 import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
 
@@ -17,7 +17,7 @@ import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layou
  */
 export const DEFAULTS = Object.freeze({
   ...AIR_SYSTEM_DEFAULTS,
-  dryMass: 1900, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
+  dryMass: 1900, ballastKg:0, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
   friction: 1.15, rollingResistance: .015, springK: 75000, damperC: 6000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
   gravity: 9.80665, dragScale: 1, valveTau: .03,
@@ -200,6 +200,8 @@ export class PhysicsSim {
     this.rocketProfile=isRocketProfile(p);
     this.thrusters=makeThrusters(this.rocketProfile,p);
     p.dryMass = Math.max(100, Number(p.dryMass) || DEFAULTS.dryMass);
+    // Point ballast is centered at the CG and adds no rotational inertia.
+    p.ballastKg = Number.isFinite(p.ballastKg) ? Math.max(0,p.ballastKg) : 0;
     p.tankVolume = clamp(Number(p.tankVolume) || DEFAULTS.tankVolume, .02, 2);
     p.tankPressureMPa = clamp(Number(p.tankPressureMPa) || DEFAULTS.tankPressureMPa, .101325, 80);
     p.initialTemperature = clamp(Number(p.initialTemperature) || 300, 150, 500);
@@ -237,7 +239,7 @@ export class PhysicsSim {
     const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
     this.initialGas = gas;
     this.initialEnergy = gas * CV * p.initialTemperature;
-    this.restHeight = .31 + p.wheelRadius + this.cg.y - (p.dryMass + gas) * p.gravity / (4 * p.springK);
+    this.restHeight = .31 + p.wheelRadius + this.cg.y - (this.loadedDryMass + gas) * p.gravity / (4 * p.springK);
     this.state = { pos: new Vector3(this.cg.x, this.restHeight, this.cg.z), vel: new Vector3(),
       q: new Quaternion(), omega: new Vector3(), gas, temp: p.initialTemperature,
       pressure: p.tankPressureMPa * 1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
@@ -249,7 +251,7 @@ export class PhysicsSim {
     if (preset === 'corner') this.state.vel.x = 12;
     if (preset === 'rolling') this.state.vel.x = 20;
     this.contactCount = preset === 'drop' || preset === 'flight' ? 0 : 4;
-    this.fanForce = 0; this.totalThrust = 0; this.maxThrust = 0;
+    this.fanForce = 0; this.totalThrust = 0; this.verticalThrustN = 0; this.maxThrust = 0;
     this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
     this.compressorState='off';this.compressorPowerW=0;this.compressorCompressionPowerW=0;this.compressorCoolingPowerW=0;this.compressorFlowKgS=0;this.compressorHeatW=0;this.tankHeatW=0;
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
@@ -265,7 +267,7 @@ export class PhysicsSim {
     this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
     for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
       w.surfaceY=this.surfaceHeightAt(this.state.pos.x+w.pos.x,this.state.pos.z+w.pos.z,this.state.pos.y+w.pos.y);
-      w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
+      w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (this.loadedDryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
     return this.state;
@@ -346,7 +348,8 @@ export class PhysicsSim {
     return height;
   }
 
-  get mass() { return Math.max(100, this.params.dryMass) + this.state.gas; }
+  get loadedDryMass() { return Math.max(100,this.params.dryMass)+this.params.ballastKg; }
+  get mass() { return this.loadedDryMass + this.state.gas; }
   get groundHeight() { return this.restHeight; }
   get bodyPosition() { return this.state.pos.clone().sub(this.cg.clone().applyQuaternion(this.state.q)); }
   step(dt, input = {}) {
@@ -505,9 +508,14 @@ export class PhysicsSim {
     const removable = s.pressure > ATMOSPHERE ? s.gas * (1 - (ATMOSPHERE / s.pressure) ** (1 / GAMMA)) : 0;
     const dm = Math.min(totalFlow * dt, Math.max(0, removable));
     const flowScale = totalFlow * dt > 0 ? dm / (totalFlow * dt) : 0;
+    this.verticalThrustN=0;
     for (const t of this.thrusters) {
       t.force *= flowScale; t.mdot *= flowScale; this.totalThrust += t.force;
-      if (t.force > 0) applyAt(t.dir.clone().multiplyScalar(t.force).applyQuaternion(s.q), t.pos.clone().applyQuaternion(s.q));
+      if (t.force > 0) {
+        const worldForce=t.dir.clone().multiplyScalar(t.force).applyQuaternion(s.q);
+        this.verticalThrustN+=worldForce.y;
+        applyAt(worldForce,t.pos.clone().applyQuaternion(s.q));
+      }
     }
     if (dm > 0) {
       const oldU = s.gas * CV * s.temp;

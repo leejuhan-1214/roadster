@@ -1,10 +1,11 @@
 import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-audit148';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-study150';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
-// All measurement updates run at the simulation's fixed 2 ms step. Force samples
+// Measurement updates run at the fixed physics step (normally 2 ms). Force samples
 // retain the maximum in each 10 ms chart bin; the summary never uses render rate.
 export const LANDING_STEP=.002;
+export const LANDING_AUDIT_STEPS=Object.freeze([LANDING_STEP,.001,.0005]);
 export const LANDING_MODEL_VERSION='1.46.0';
 export const LANDING_METHODS=Object.freeze([
   {id:'free',label:'자유낙하'},
@@ -13,17 +14,20 @@ export const LANDING_METHODS=Object.freeze([
   {id:'eco',label:'절약 착지'},
 ]);
 export const BRAKE_HEIGHT_FRACTIONS=Object.freeze([.1,.25,.5,.75,1]);
+export const ROADSTER_BALLAST_KG=Object.freeze([0,100,200]);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Number(value):fallback,min,max);
 
 export function landingSettings(options={}){
   const height=finite(options.height,3,0,Number.MAX_VALUE);
   return {...options,height,
+    physicsStep:LANDING_AUDIT_STEPS.includes(options.physicsStep)?options.physicsStep:LANDING_STEP,
     method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
     brakeHeight:finite(options.brakeHeight,2,0,Number.MAX_VALUE),
     targetSpeed:finite(options.targetSpeed,.5,.2,2),
     springK:finite(options.springK,75000,30000,150000),
     damperC:finite(options.damperC,6000,1000,15000),
+    ballastKg:ROADSTER_BALLAST_KG.includes(options.ballastKg)?options.ballastKg:0,
   };
 }
 
@@ -33,6 +37,10 @@ export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
   const active=fleet.find(vehicle=>vehicle.id===activeVehicleId)||fleet[0];
   if(!active)return [];
   const method=landingSettings(settings).method;
+  if(kind==='ballast'){
+    if(!fleet.some(vehicle=>vehicle.id==='roadster'))return [];
+    return LANDING_METHODS.flatMap(({id:method})=>ROADSTER_BALLAST_KG.map(ballastKg=>({vehicleId:'roadster',method,ballastKg})));
+  }
   if(kind==='brake-heights'){
     const height=landingSettings(settings).height;
     // Include an untreated baseline, then change only the brake trigger. Zero
@@ -54,7 +62,7 @@ export function landingClearance(sim){
 /** Resets the supplied vehicle using shared controlled environmental conditions. */
 export function releaseLandingVehicle(sim,options={}){
   const config=landingSettings(options);
-  Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,
+  Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,ballastKg:config.ballastKg,
     gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
     contactEnabled:true,friction:1.15,rollingResistance:.015,
     // Fixed level, centred loading isolates mass and chassis geometry differences.
@@ -84,6 +92,7 @@ export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
   const precontactSampleInterval=Math.max(.01,flightTimeout/4000);
   return {...config,modelVersion:LANDING_MODEL_VERSION,config:Object.freeze({...config}),startTime:sim.state.time,
     initialMass:sim.mass,initialGas:sim.state.gas,tankVolume:sim.params.tankVolume,
+    releaseVelocity:sim.state.vel.toArray(),
     tankPressureMPa:sim.params.tankPressureMPa,initialTemperature:sim.params.initialTemperature,
     // The energy datum is the CG height at level, unloaded tire contact.
     // After compression, gravitational energy relative to this datum can be negative.
@@ -97,6 +106,7 @@ export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
     ecoPredictedGas:economy?.predictedGas??null,ecoPlanFeasible:economy?.feasible??null,
     ecoPredictedTouchdownGas:economy?.predictedTouchdownGas??null,ecoProfile:economy?.profile??null,
     ecoCoastOnly:economy?.coastOnly??false,autoBrakeHeight:null,autoBrakeTime:null,ecoCoastTime:null,
+    firstAboveWeightTime:null,firstAboveWeightRatio:null,touchdownThrustWeightRatio:null,touchdownVelocityY:null,
     ecoMinimumCoastTime:economy?.minimumCoastTime??null,
     ecoPlanTimeMs,
     touchdownTime:null,touchdownSpeed:null,contactDuration:null,contactEndTime:null,contactEndVelocityY:null,
@@ -106,7 +116,7 @@ export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
     gasUsed:0,samples:[],sampleBucket:-1,settledFor:0,settled:false,result:null};
 }
 
-/** Feed into PhysicsSim.step(.002, ...), then call updateLandingRun. */
+/** The ordinary landing controller is sampled at 2 ms. */
 export function landingRunInput(run,sim,manualLift=false){
   const off={stabilize:false,lift:0,altHold:false,fan:false,wing:false,boost:false,
     throttle:0,brake:0,steer:0,coastRegen:false};
@@ -129,6 +139,10 @@ export function landingRunInput(run,sim,manualLift=false){
     run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.autoBrakeTime=run.elapsed;
   }
   if(run.method==='brake'&&!run.braking)return off;
+  if(run.method==='gentle'&&run.autoBrakeTime===null){
+    // This is the first controller instruction, which can initially command a coast.
+    run.autoBrakeTime=run.elapsed;run.autoBrakeHeight=Math.max(0,gap);
+  }
   // Anticipate valve delay without changing actual velocity. A braking run waits
   // for the chosen clearance; gentle descent starts shaping speed immediately.
   const lead=Math.max(.001,sim.params.valveTau)*2;
@@ -156,14 +170,15 @@ function complete(run,status){
 
 /** Summary peaks use every step, including body-ground correction impulses.
  * peakGroundForceN is the continuous suspension/skid force. The equivalent peak
- * additionally divides a numerical contact impulse by 2 ms: a discretized load,
+ * additionally divides a numerical contact impulse by its physics step: a discretized load,
  * NOT a resolved material stress or physically instantaneous impact-force peak.
  */
-export function updateLandingRun(run,sim,dt=LANDING_STEP){
+export function updateLandingRun(run,sim,dt=run.physicsStep??LANDING_STEP){
   if(run.done)return run;
-  if(Math.abs(dt-LANDING_STEP)>1e-10||Math.abs(sim.stepDuration-LANDING_STEP)>1e-10||
-    Math.abs(sim.state.time-run.startTime-run.elapsed-LANDING_STEP)>1e-9)
-    throw new RangeError('Landing measurements require fixed 0.002 s physics steps.');
+  const step=run.physicsStep??LANDING_STEP;
+  if(!Number.isFinite(dt)||Math.abs(dt-step)>1e-10||Math.abs(sim.stepDuration-step)>1e-10||
+    Math.abs(sim.state.time-run.startTime-run.elapsed-step)>1e-9)
+    throw new RangeError('Landing measurements require fixed '+step+' s physics steps.');
   run.elapsed=sim.state.time-run.startTime;
   if(run.manualLiftActive){run.manualLiftUsed=true;run.manualLiftDuration+=dt;}
   const ground=Math.max(0,sim.groundForceN),impulse=Math.max(0,sim.groundCorrectionImpulseNs);
@@ -182,6 +197,10 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   const acceleration=sim.resolvedAcceleration.clone();acceleration.y+=sim.params.gravity;
   const properG=acceleration.length()/Math.max(.001,sim.params.gravity);
   const clearance=landingClearance(sim);
+  // The solver applies the mean valve force across this interval using its
+  // midpoint mass. No ground reaction or incidental lateral thrust enters Ty.
+  const weightN=(massBefore+sim.mass)*.5*sim.params.gravity;
+  const thrustWeightRatio=weightN>0?sim.verticalThrustN/weightN:null;
   if(run.touchdownTime===null&&sim.params.contactEnabled){
     // Locate first geometric contact before numerical position projection.
     const unprojectedClearance=clearance+(sim.unprojectedPositionY-sim.state.pos.y);
@@ -191,11 +210,16 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
     else if(impulse>0)fraction=1; // tilted hull contacted first
     if(fraction!==null){
       run.touchdownTime=run.elapsed-dt+fraction*dt;
-      run.touchdownSpeed=Math.max(0,-(sim.preStepVelocityY+fraction*sim.state.acceleration.y*dt));
+      run.touchdownVelocityY=sim.preStepVelocityY+fraction*sim.state.acceleration.y*dt;
+      run.touchdownSpeed=Math.max(0,-run.touchdownVelocityY);
       run.touchdownMass=massBefore+fraction*(sim.mass-massBefore);
       run.touchdownKineticEnergyJ=.5*run.touchdownMass*run.touchdownSpeed**2;
       run.touchdownGasUsed=run.initialGas-(gasBefore+fraction*(sim.state.gas-gasBefore));
+      run.touchdownThrustWeightRatio=fraction>0?thrustWeightRatio:null;
     }
+  }
+  if(run.touchdownTime===null&&run.firstAboveWeightTime===null&&thrustWeightRatio>1){
+    run.firstAboveWeightTime=run.elapsed;run.firstAboveWeightRatio=thrustWeightRatio;
   }
   run.peakGroundForceN=Math.max(run.peakGroundForceN,ground);
   run.peakEquivalentGroundForceN=Math.max(run.peakEquivalentGroundForceN,equivalent);
@@ -209,7 +233,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
       // groundImpulseNs already integrates the entire resolved step, including
       // any instantaneous end-of-step ground correction. Record that same
       // endpoint instead of pretending the impulse has a fractional duration.
-      // This is the first near-stop/rebound sample at 2 ms resolution, not an
+      // This is the first near-stop/rebound sample at physics-step resolution, not an
       // analytic v=0 time. Keep its residual velocity so the interval is auditable.
       run.contactEndTime=run.elapsed;
       run.contactEndVelocityY=sim.state.vel.y;
@@ -224,12 +248,12 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
   if(run.touchdownTime!==null)run.reboundHeight=Math.max(run.reboundHeight,clearance);
   run.gasUsed=run.initialGas-sim.state.gas;
   // Preserve the full 10 ms contact trace, while long high-altitude approaches
-  // use bounded sparse samples. Every 2 ms step still contributes to all peaks.
+  // use bounded sparse samples. Every physics step still contributes to all peaks.
   const nearContact=run.touchdownTime!==null||clearance<=Math.max(2,-sim.state.vel.y*.3);
   const sampleInterval=nearContact?.01:run.precontactSampleInterval;
   // Start a fresh bin at contact: a landing reaction must never be attached
   // to a sample of the airborne vehicle. Each maximum carries the endpoint
-  // of the 2 ms measurement step that actually produced it.
+  // of the measurement step that actually produced it.
   const bucket=(run.touchdownTime===null?'flight:':'contact:')+sampleInterval+':'+Math.floor((run.elapsed+1e-9)/sampleInterval);
   if(bucket!==run.sampleBucket){
     const springState=landingSpringState(sim);
@@ -237,6 +261,7 @@ export function updateLandingRun(run,sim,dt=LANDING_STEP){
       groundForceN:ground,groundForcePeakTime:run.elapsed,
       equivalentGroundForceN:equivalent,equivalentGroundForcePeakTime:run.elapsed,
       gLoad:properG,gLoadPeakTime:run.elapsed,thrustN:sim.totalThrust,
+      verticalThrustN:sim.verticalThrustN,thrustWeightRatio,
       // compression comes from force evaluation; energy and stateCompression
       // describe the end-state pose at time, independently of the bin maxima.
       compression,stateCompression:springState.stateCompression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,

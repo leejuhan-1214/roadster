@@ -89,13 +89,19 @@ const MATCH_KEYS=Object.freeze(['groupId','vehicleId','height','targetSpeed','sp
   'initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature']);
 const hasConditions=result=>!!result?.groupId&&!!result?.vehicleId&&MATCH_KEYS.slice(2).every(key=>finite(result[key]));
 
+export function sameLandingModel(a,b){
+  // Older ordinary trials used the 2 ms solver with no added ballast.
+  return a.modelVersion===b.modelVersion&&(a.physicsStep??.002)===(b.physicsStep??.002)&&
+    (a.ballastKg??0)===(b.ballastKg??0);
+}
+
 /** Match a single vehicle, batch and controlled initial conditions. Invalid
  * contact results may be plotted, but cannot be Pareto candidates. This does
  * not supply a universal optimum or combine unlike vehicle masses.
  */
 export function landingTradeoff(results=[],reference=results[0]){
   if(!hasConditions(reference))return {rows:[],eligible:[],candidates:[],excluded:[]};
-  const rows=results.filter(result=>hasConditions(result)&&result.modelVersion===reference.modelVersion&&MATCH_KEYS.every(key=>result[key]===reference[key]));
+  const rows=results.filter(result=>hasConditions(result)&&sameLandingModel(result,reference)&&MATCH_KEYS.every(key=>result[key]===reference[key]));
   const eligible=rows.filter(result=>result.status==='landed'&&result.settled===true&&!result.bodyStrike&&
     !result.bottomedOut&&!result.manualLiftUsed&&landingTargetMet(result)&&
     finite(result.gasUsed)&&result.gasUsed>=0&&finite(result.peakEquivalentGroundForceN)&&result.peakEquivalentGroundForceN>0);

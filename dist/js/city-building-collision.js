@@ -1,4 +1,4 @@
-import {Vector3} from 'three';
+import {Vector3} from '../vendor/three.core.js';
 import {containsFootprint} from './city-footprint.js?v=20261110-seoul1';
 export {buildingColliders,containsFootprint} from './city-footprint.js?v=20261110-seoul1';
 const area=p=>Math.abs(p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1];},0))*.5;

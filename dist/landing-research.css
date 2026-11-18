@@ -1,4 +1,8 @@
 /* Research controls stay compact; explanations open only when requested. */
+.landing-copy-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:4px 0 14px}
+.landing-copy-tools button{padding:7px 12px;border:1px solid #52716d;border-radius:5px;background:#203a3c;color:#def7ef;font:inherit;cursor:pointer}
+.landing-copy-tools a,.landing-copy-tools [role=status]{color:#aedacd;font-size:12px}
+#landing-copy-text{box-sizing:border-box;width:100%;padding:8px;color:inherit;background:#101e25}
 .landing-study-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#b4d7cb;font-size:10px;line-height:1.5}
 .landing-study-top button{flex:none;min-height:32px;padding:6px 9px;border:1px solid #568478;border-radius:5px;background:#183a32;color:#c4f3df;font-size:10px}
 .landing-study-guide{border-top:1px solid #3c5965;padding-top:10px;color:#a5bdc9;font-size:10px;line-height:1.8}
@@ -32,3 +36,12 @@
 @media(max-width:800px){.landing-research{padding:12px}.landing-research-heading{flex-wrap:wrap}.landing-research-heading select{max-width:190px}.landing-research-plots{grid-template-columns:1fr}.landing-research-chart svg text{font-size:15px}.landing-research-cards p{margin-top:5px}.landing-tradeoff{font-size:10px}}
 @media(max-width:650px){.landing-research-cards{grid-template-columns:1fr}.landing-research-cards article{padding:11px 13px}.landing-research-cards strong{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.landing-research *{scroll-behavior:auto}}
+.landing-timeline-tools{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;margin:12px 0;color:#c7ded9;font-size:12px}
+.landing-timeline-tools label{display:flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap}
+.landing-timeline-tools select{min-width:0;max-width:100%;min-height:34px;color:#d6ede5;background:#12282f;border:1px solid #4c6d71;border-radius:5px}
+.landing-timeline-tools input{accent-color:#99e7c6}
+#landing-brake-timeline svg{max-height:375px}
+#landing-brake-timeline svg text{font:14px system-ui,sans-serif}
+#landing-audit select{max-width:100%;min-height:34px;background:#12282f;color:#d6ede5;border:1px solid #4c6d71;border-radius:5px;margin:8px 0}
+#landing-audit .landing-results-actions{justify-content:flex-start;flex-wrap:wrap}
+#landing-audit-status{font-size:12px;color:#b8d0ce}

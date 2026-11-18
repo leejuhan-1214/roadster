@@ -1,5 +1,5 @@
 import {isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
-import {nozzle} from './physics.js?v=20261118-review149';
+import {nozzle} from './physics.js?v=20261118-study150';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const upY=q=>1-2*(q.x*q.x+q.z*q.z);
 export const ROCKET_ROLL_MIN_HEIGHT=8;

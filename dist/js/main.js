@@ -3,17 +3,17 @@ import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-review149';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-study150';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261115-capacity375';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-review149';
-import {LandingUI} from './landing-ui.js?v=20261118-review149';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-study150';
+import {LandingUI} from './landing-ui.js?v=20261118-study150';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
-import {LandingPlanner} from './landing-preparation.js?v=20261118-review149';
+import {LandingPlanner} from './landing-preparation.js?v=20261118-study150';
 import {drawMappedStreets} from './city-minimap.js?v=20261118-frameperf1';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-review149';
-import {FlightScene} from './scene.js?v=20261118-review149';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-study150';
+import {FlightScene} from './scene.js?v=20261118-study150';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -61,6 +61,7 @@ function restoreLandingParams(session){
 function cancelLanding(message='실험 준비'){
   if(!landingSession)return;
   const session=landingSession;landingSession=null;landingRun=null;session.planning?.abort();restoreLandingParams(session);
+  if(session.kind==='ballast')updateLabMass();
   landingUI.setBusy(false,message);$('vehicle-select').disabled=vehicleLoading;setPaused(true);
 }
 function reset({cancel=true,clearMeasurement=true}={}){
@@ -114,6 +115,7 @@ async function nextLanding(session){
     Object.assign(sim.params,vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS),{
       tankVolume:session.originalParams.tankVolume,tankPressureMPa:session.originalParams.tankPressureMPa,initialTemperature:session.originalParams.initialTemperature});
     const trialSettings={...session.settings,...job,brakeHeight:job.brakeHeight??session.settings.brakeHeight,vehicleId:activeVehicle.id,title:activeVehicle.title};
+    if(session.kind==='ballast')updateLabMass(job.ballastKg);
     if(trialSettings.method==='eco'){
       session.planning=new AbortController();
       landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · 절약 착지 분사 시점 계산 중…');
@@ -128,7 +130,8 @@ async function nextLanding(session){
     if(matchMedia('(max-width:1000px)').matches)setSettingsPanel(false);
     restoreLabView({resetView:session.index===0});
     renderStates.reset(sim);setPaused(!!session.singleStepping);$('vehicle-select').disabled=true;
-    landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · '+activeVehicle.title+' · 착지 중');
+    const massLabel=session.kind==='ballast'?' · 추가 '+job.ballastKg+' kg':'';
+    landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · '+activeVehicle.title+massLabel+' · 착지 중');
   }catch(error){if(landingSession===session){cancelLanding('실험 중단 · '+error.message);reset({cancel:false});console.error(error);}}
 }
 function stepSimulation(){
@@ -158,9 +161,15 @@ function refreshVehiclePicker(){
   $('vehicle-select').innerHTML=choices.map(v=>'<option value="'+escape(v.id)+'">'+escape(v.title)+(mode==='lab'?' · '+Math.round(experimentMass(v).total).toLocaleString('ko-KR')+' kg':'')+'</option>').join('');
   $('vehicle-select').value=activeVehicle.id;
   $('vehicle-picker-label').textContent=mode==='lab'?'실험 차체 · 5종':'차체 선택';
+  updateLabMass();
+}
+function updateLabMass(ballastKg=0){
   const info=experimentIds.has(activeVehicle.id)?experimentMass(activeVehicle):null;
   $('lab-mass').hidden=mode!=='lab'||!info;
-  if(info){$('lab-mass-total').textContent=Math.round(info.total).toLocaleString('ko-KR')+' kg';$('lab-mass-detail').textContent='차체·장치 '+Math.round(activeVehicle.dryMass).toLocaleString('ko-KR')+' + 기체 '+Math.round(info.gas)+' kg'+(info.assumed?' · 질량 가정값':'');}
+  if(!info)return;
+  $('lab-mass-total').textContent=Math.round(info.total+ballastKg).toLocaleString('ko-KR')+' kg';
+  $('lab-mass-detail').textContent='차체·장치 '+Math.round(activeVehicle.dryMass).toLocaleString('ko-KR')+
+    (ballastKg?' + 추가 '+ballastKg:'')+' + 기체 '+Math.round(info.gas)+' kg'+(info.assumed?' · 질량 가정값':'');
 }
 function renderCityVehicleOptions(){
   const matches=searchCityVehicles(VEHICLES,$('city-vehicle-search').value),groups=new Map();
@@ -511,7 +520,7 @@ function setSettingsPanel(open){
 }
 function setupUI(){
   refreshVehiclePicker();
-  landingUI=new LandingUI({vehicles:EXPERIMENT_VEHICLES,onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onCompareFleetMethods:()=>startLanding('fleet-methods'),onCompareBrakeHeights:()=>startLanding('brake-heights'),onStop:stopLanding,onConfigure:()=>setSettingsPanel(true)});
+  landingUI=new LandingUI({vehicles:EXPERIMENT_VEHICLES,onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onCompareFleetMethods:()=>startLanding('fleet-methods'),onCompareBrakeHeights:()=>startLanding('brake-heights'),onCompareBallast:()=>startLanding('ballast'),onStop:stopLanding,onConfigure:()=>setSettingsPanel(true)});
   landingLiveUI=new LandingLiveUI($('telemetry'));
   scene.setLandingLearningVisible(landingLearningVisible);
   $('landing-speed').addEventListener('change',event=>{landingPlaybackRate=Number(event.target.value)||1;accumulator=0;});

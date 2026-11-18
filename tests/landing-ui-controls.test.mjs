@@ -85,5 +85,7 @@ test('one visible four-method button dispatches the common callback and the flee
     method.value='gentle';root.querySelector('#landing-study-preset').emit('click');
     assert.equal(method.value,'eco');assert.equal(ui.form.elements.namedItem('brakeHeight').disabled,true);
     compare.emit('click');assert.equal(methodCalls.length,2);assert.equal(methodCalls[1].height,3);assert.equal(dialogs.length,1);
+    root.querySelector('#landing-report-preset').emit('click');compare.emit('click');
+    assert.equal(methodCalls[2].height,20);assert.equal(methodCalls[2].targetSpeed,.5);
   }finally{globalThis.document=previousDocument;globalThis.FormData=previousFormData;}
 });
