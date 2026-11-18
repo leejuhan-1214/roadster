@@ -1,0 +1,59 @@
+#race-entrance-hint, #race-hud { color:#eef6f4; }
+#race-entrance-hint {
+  position:fixed; left:24px; bottom:218px; display:flex; gap:.5em; align-items:center;
+  padding:7px 10px; border-radius:5px; background:#10212bee; font-size:12px;
+  border-left:3px solid #fbc45b; pointer-events:none;
+}
+#race-entrance-hint span:first-child { color:#fbc45b; }
+#race-hud { --race-top:84px; pointer-events:none; }
+#race-hud button { pointer-events:auto; color:inherit; cursor:pointer; }
+.race-strip, .race-actions { position:fixed; top:var(--race-top); border-radius:8px; }
+.race-strip { left:22px; display:flex; overflow:hidden; background:#10202bf0; }
+.race-strip>div { padding:9px 15px; display:grid; gap:2px; }
+.race-strip>div+div { border-left:1px solid #87aea833; }
+.race-strip small, #race-finish small { color:#9ec3be; font-size:11px; }
+.race-strip strong { font:600 22px/1.15 var(--mono, monospace); font-variant-numeric:tabular-nums; }
+.race-strip>div:first-child strong { color:#97f6ca; }
+.race-strip i { font:normal 12px var(--mono, monospace); }
+.race-actions { right:22px; padding:3px; display:flex; background:#10202bf0; }
+.race-actions button, #race-finish button { background:transparent; border:0; border-radius:5px; padding:9px 12px; }
+.race-actions button+button { border-left:1px solid #60807977; }
+#race-signal, #race-finish { position:fixed; left:50%; top:45%; transform:translate(-50%,-50%); text-align:center; }
+#race-signal { font:800 clamp(50px,10vw,94px)/1 system-ui,sans-serif; color:white; text-shadow:0 2px 10px #061624,0 0 32px #081a29; }
+#race-finish { pointer-events:auto; min-width:240px; padding:24px; background:#10212bf5; border-radius:12px; }
+#race-finish strong { display:block; margin:8px 0; font-size:40px; color:#9bf2c7; }
+#race-finish p { margin:0 0 18px; font-variant-numeric:tabular-nums; }
+#race-finish button { border:1px solid #749c9380; margin:2px; }
+#race-finish #race-retry { background:#9bf2c7; color:#12252c; }
+#race-touch { display:none; }
+.city.racing :is(.city-location,#city-garage,#city-experiments,.cockpit-tools,#city-boundary,.city-touch,#race-entrance-hint,.city-map-wrap a) { display:none!important; }
+.city.racing .city-speedometer { width:auto; min-width:80px; bottom:24px; padding:7px 14px; }
+.city.racing .city-speedometer > :not(:first-child) { display:none!important; }
+.city.racing .city-map-wrap { display:block!important; bottom:24px; }
+#race-hud[hidden], #race-entrance-hint[hidden], #race-signal[hidden], #race-finish[hidden] { display:none; }
+@media (max-width:1000px) {
+  #race-entrance-hint { left:12px; bottom:166px; font-size:11px; }
+}
+@media (pointer:coarse), (max-width:700px), (max-height:560px) and (orientation:landscape) {
+  #race-hud { --race-top:var(--city-tools-top,82px); }
+  .race-strip { left:9px; }
+  .race-strip>div { padding:5px 7px; }
+  .race-strip small { font-size:9px; }
+  .race-strip strong { font-size:16px; }
+  .race-actions { right:8px; }
+  .race-actions button { font-size:11px; padding:8px 6px; }
+  #race-touch { display:flex; position:fixed; left:9px; right:9px; bottom:max(10px,env(safe-area-inset-bottom)); justify-content:space-between; }
+  #race-touch div { display:flex; gap:4px; }
+  #race-touch button { min-width:42px; height:44px; padding:4px; background:#152937e8; border:1px solid #a1bfb795; border-radius:7px; touch-action:none; user-select:none; }
+  #race-touch button.held { background:#35715c; }
+  .city.racing .city-map-wrap, .city.racing .city-speedometer { top:auto; bottom:64px; }
+  .city.racing .city-map-wrap canvas { width:105px; height:85px; }
+  #race-entrance-hint { left:10px; bottom:132px; max-width:54vw; font-size:10px; }
+}
+@media (max-height:560px) and (orientation:landscape) {
+  #race-entrance-hint { bottom:88px; }
+}
+
+@media (max-width:360px) {
+  #race-touch button { min-width:36px; font-size:10px; }
+}

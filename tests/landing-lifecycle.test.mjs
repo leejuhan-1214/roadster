@@ -44,7 +44,7 @@ function harness(){
     setLandingExperiment(config){calls.push({type:'experiment',config});},
     setExplode(){},restoreParts(){},focusPart(){},
   };
-  const c={mode:'lab',camera:'top',paused:false,cityLoading:false,vehicleLoading:false,vehicleLoadTask:null,
+  const c={race:null,mode:'lab',camera:'top',paused:false,cityLoading:false,vehicleLoading:false,vehicleLoadTask:null,
     activeVehicle:profile,lastLabVehicleId:'roadster',landingSession:null,landingRun:null,lastResult:null,
     selectedPartId:null,driveInput:{throttle:1},cityDistance:40,accumulator:.04,
     scene,sim,DEFAULTS,CITY_DRIVE_PARAMS,FACILITY_SOLIDS,vehicleProfile,vehiclePhysics,createLandingRun,

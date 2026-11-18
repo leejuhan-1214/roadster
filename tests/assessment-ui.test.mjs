@@ -32,7 +32,7 @@ test('city keyboard and touch controls ignore experiments and text fields and re
   assert.ok(source,'drive control setup is available for independent interaction testing');
   const listeners={},touchListeners={};
   const button={dataset:{drive:'KeyW'},classList:{add(){},remove(){}},setPointerCapture(){},addEventListener(type,callback){touchListeners[type]=callback;}};
-  const context={mode:'lab',paused:false,cityLoading:false,vehicleLoading:false,driveKeys:new Set(),DRIVE_KEYS:new Set(['KeyW','KeyS','Space']),
+  const context={race:null,mode:'lab',paused:false,cityLoading:false,vehicleLoading:false,driveKeys:new Set(),DRIVE_KEYS:new Set(['KeyW','KeyS','Space']),
     window:{addEventListener(type,callback){listeners[type]=callback;}},
     document:{querySelector(){return context.dialogOpen?{}:null;},addEventListener(){}},
     setPaused(value){context.paused=value;},$(){return {focus(){}};},$$(selector){assert.equal(selector,'[data-drive]');return [button];},dialogOpen:false};
@@ -63,7 +63,7 @@ function driveHarness(){
     buttons.set(code,{dataset:{drive:code},held,listeners,classList:{add(c){held.add(c);},remove(c){held.delete(c);}},
       setPointerCapture(){},addEventListener(type,callback){listeners[type]=callback;}});
   }
-  const context={mode:'city',paused:false,cityLoading:false,vehicleLoading:false,driveKeys:new Set(),
+  const context={race:null,mode:'city',paused:false,cityLoading:false,vehicleLoading:false,driveKeys:new Set(),
     DRIVE_KEYS:new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowLeft','ArrowRight','Space','KeyB']),
     dialogOpen:false,focusCount:0,window:{addEventListener(type,callback){keyboard[type]=callback;}},
     document:{querySelector(){return context.dialogOpen?{}:null;},addEventListener(type,callback){documentListeners[type]=callback;}},

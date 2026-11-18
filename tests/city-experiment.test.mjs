@@ -132,7 +132,7 @@ const stepSource=main.slice(main.indexOf('function stepSimulation()'),main.index
 function driveEntry(mode,guard=()=>true){
   const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0}),trial=new CityBrakeTrial();
   sim.reset('rolling');
-  const context=vm.createContext({mode,sim,brakeTrial:trial,LANDING_STEP:.002,
+  const context=vm.createContext({race:null,mode,sim,brakeTrial:trial,LANDING_STEP:.002,
     driver:new DrivingController(),driveKeys:new Set(['KeyB']),driveInput:{},driveGear:'D',
     citySettings:CITY_EXPERIMENT_DEFAULTS,activeVehicle:{id:'roadster'},cityDistance:0,
     freeDriving:()=>true,scene:{city:{streaming:{guard}}}});

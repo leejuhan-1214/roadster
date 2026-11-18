@@ -1,6 +1,7 @@
 // Rasterize the nearby mapped streets with a margin. Driving within that
 // margin only moves the crop; the heading marker still follows the vehicle.
-const scale=.53;
+export const CITY_MAP_SCALE=.53;
+const scale=CITY_MAP_SCALE;
 const roadBounds=new WeakMap();
 let streetLayer;
 

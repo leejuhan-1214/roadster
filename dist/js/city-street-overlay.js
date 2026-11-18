@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {pointOn,roadSegments,indexRoadSegments,planMedianPavement} from './city-median.js?v=20261118-frameperf1';
+import {planStationPortal,portalFurniture,createStationPortals,blocksStationApproach} from './station-portals.js?v=20261118-race152';
 export {roadSegments};
 
 // Street detail laid over the mapped roads, built in 256 m cells around the
@@ -60,9 +61,9 @@ function furnitureParts(plan,key){
  * that carriageway pairs and signal approaches across its edge are found.
  * Offsets are metres to the driver's right of the way's centre line.
  */
-export function planStreetCell(segments,points,bounds,{occupied=()=>false,key='cell'}={}){
+export function planStreetCell(segments,points,bounds,{occupied=()=>false,nearbySolids=[],key='cell'}={}){
   const inside=(x,z)=>x>=bounds.minX&&x<bounds.maxX&&z>=bounds.minZ&&z<bounds.maxZ;
-  const plan={...planMedianPavement(segments,inside),masts:[],entrances:[],colliders:[]};
+  const plan={...planMedianPavement(segments,inside),masts:[],entrances:[],colliders:[],gates:[]};
   for(const p of points.signals||[]){
     if(!inside(p[0],p[1]))continue;
     const approaches=[];
@@ -79,14 +80,23 @@ export function planStreetCell(segments,points,bounds,{occupied=()=>false,key='c
     }
     plan.masts.push(...approaches);
   }
+  const localEntrances=[];
   for(const e of points.entrances||[]){
-    const [x,z,ref,station]=e;if(!inside(x,z)||occupied(x,z))continue;
+    const [x,z,ref,station]=e;if(!inside(x,z))continue;
+    localEntrances.push(e);
+    if(occupied(x,z))continue;
     let nearest=null,distance=40;for(const s of segments){const d=distanceTo(x,z,s);if(d<distance){distance=d;nearest=s;}}
     if(!nearest||distance<nearest.width/2+.6)continue;
     const entrance={x,z,dx:nearest.dx,dz:nearest.dz,ref:String(ref||''),station:station||''};
     plan.entrances.push(entrance);
   }
   plan.furniture=furnitureParts(plan,key);
+  for(const entry of localEntrances){
+    const shelter=plan.entrances.find(e=>e.x===entry[0]&&e.z===entry[1]);
+    const near=[...plan.colliders,...nearbySolids].filter(o=>Math.abs(o.center[0]-entry[0])<o.size[0]/2+110&&Math.abs(o.center[2]-entry[1])<o.size[2]/2+110&&o.center[1]-o.size[1]/2<2.8);
+    const gate=planStationPortal(entry,segments,shelter,(...args)=>blocksStationApproach(near,...args),plan.gates);
+    if(gate){plan.gates.push(gate);plan.furniture.push(...portalFurniture(gate));}
+  }
   return plan;
 }
 
@@ -197,7 +207,7 @@ export function createStreetOverlay(city,points){
     return false;
   };
   const ready=b=>!city.streaming||[[b.minX,b.minZ],[b.maxX-1,b.minZ],[b.minX,b.maxZ-1],[b.maxX-1,b.maxZ-1]].every(([x,z])=>(x>=coreBounds.minX&&x<=coreBounds.maxX&&z>=coreBounds.minZ&&z<=coreBounds.maxZ)||city.streaming.hasAt(x,z)||!city.streaming.contains(x,z));
-  const cells=new Map(),checkSources=new Set();
+  const cells=new Map(),checkSources=new Set(),portals=createStationPortals(cells,points.entrances);
   let physics=null,tick=0,disposed=false,lastStream,lastRevision,settledX,settledZ;
   const boundsOf=(cx,cz)=>({minX:cx*STREET_CELL,maxX:(cx+1)*STREET_CELL,minZ:cz*STREET_CELL,maxZ:(cz+1)*STREET_CELL});
   const drop=cell=>{if(cell.colliders.length)physics?.removeObstacleChunk('street:'+cell.key);root.remove(cell.group);cell.group.userData.dispose();cells.delete(cell.key);checkSources.delete(cell.key);};
@@ -207,14 +217,20 @@ export function createStreetOverlay(city,points){
       if(!roadCache.has(roads))roadCache.set(roads,indexRoads(roads));
       segments.push(...(roadCache.get(roads).get(key)||[]));
     }
-    const plan=planStreetCell(segments,points,bounds,{occupied,key}),group=buildStreetCell(plan,materials);
+    const hasExits=points.entrances?.some(([x,z])=>x>=bounds.minX&&x<bounds.maxX&&z>=bounds.minZ&&z<bounds.maxZ);
+    const nearby=hasExits?(city.obstaclesNear?.((bounds.minX+bounds.maxX)/2,(bounds.minZ+bounds.maxZ)/2,STREET_CELL/2+60)||[]):[];
+    if(hasExits)for(const [tile,chunk] of city.streaming?.chunks||[]){
+      const b=city.streaming.manifest.tiles[tile]?.bounds;
+      if(b&&b.maxX>=bounds.minX-12&&b.minX<=bounds.maxX+12&&b.maxZ>=bounds.minZ-12&&b.minZ<=bounds.maxZ+12)nearby.push(...(chunk.obstacles||[]));
+    }
+    const plan=planStreetCell(segments,points,bounds,{occupied,nearbySolids:nearby,key}),group=buildStreetCell(plan,materials);
     const previous=cells.get(key);if(previous)drop(previous);
-    const cell={key,cx,cz,bounds,group,colliders:plan.colliders,sources,counts:{fills:plan.fills.length,masts:plan.masts.length,entrances:plan.entrances.length}};
+    const cell={key,cx,cz,bounds,group,gates:plan.gates,colliders:plan.colliders,sources,counts:{fills:plan.fills.length,masts:plan.masts.length,entrances:plan.entrances.length}};
     // Solids are registered before the meshes appear, as the map tiles do.
     if(physics&&cell.colliders.length)physics.setObstacleChunk('street:'+key,cell.colliders);
     root.add(group);cells.set(key,cell);return cell;
   };
-  return {root,cells,
+  return {root,cells,portals,
     /** Build at most one cell per call; cells behind the vehicle are released. */
     update(x,z){
       if(disposed)return;

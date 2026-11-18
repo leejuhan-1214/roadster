@@ -5,8 +5,9 @@ import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-city151';
 import {loadCityWorld} from './city-world.js?v=20261118-study150';
+import {createStationRaceWorld} from './station-race-world.js?v=20261118-race152';
 import {attachStreamingCity} from './city-streaming.js?v=20261118-frameperf1';
-import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-frameperf1';
+import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-race152';
 import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
@@ -363,6 +364,7 @@ export class FlightScene {
     if(shadowCamera){const extent=this.mode==='lab'?10:24;Object.assign(shadowCamera,{left:-extent,right:extent,top:extent,bottom:-extent});shadowCamera.updateProjectionMatrix();}
   }
   setMode(mode) {
+    if(this.stationRace&&mode!=='city')this.setStationRace(null);
     if(mode!==this.mode)this.resetPhysicalEffects?.();
     // Driving starts with the wheels and body assembled on the first frame.
     // Keep the inspector slider's target for the next visit.
@@ -378,7 +380,8 @@ export class FlightScene {
     if(this.labEnvironment){
       for(const object of this.labEnvironment)object.visible=mode!=='city'&&(mode!=='inspect'||!this.inspectionOccluders.includes(object));
     }
-    if(this.city)this.city.root.visible=mode==='city';
+    if(this.city)this.city.root.visible=mode==='city'&&!this.stationRace;
+    if(this.raceWorld)this.raceWorld.root.visible=mode==='city'&&!!this.stationRace;
     if(this.renderer){this.renderer.shadowMap.enabled=mode==='city'||mode==='lab'||this.quality==='detail';this.renderer.shadowMap.needsUpdate=true;}
     if(this.sun?.shadow){this.sun.shadow.camera.far=mode==='city'?650:150;this.sun.shadow.camera.updateProjectionMatrix();}
     this.configureLandingShadows?.();
@@ -390,6 +393,19 @@ export class FlightScene {
   }
   setLandingExperiment(config){this.resetPhysicalEffects?.();this.landingVisual?.setExperiment(config);if(!config)this.landingFocusOffset=null;}
   setLandingLearningVisible(visible){this.landingVisual?.setVisible(visible);}
+  setStationRace(race){
+    if(race&&!this.raceWorld){
+      const asphalt=this.city?.root.getObjectByName('OSM road network')?.material;
+      this.raceWorld=createStationRaceWorld(asphalt,this.city?.treeAsset?.library);
+      this.scene.add(this.raceWorld.root);
+    }
+    this.stationRace=race;
+    if(this.city)this.city.root.visible=this.mode==='city'&&!race;
+    if(this.raceWorld)this.raceWorld.root.visible=this.mode==='city'&&!!race;
+    if(race)this.raceWorld.update(race);
+    this.resetPhysicalEffects();this.tireEffects.reset();this.marks.count=0;this.markIndex=0;
+    this.renderer.shadowMap.needsUpdate=true;
+  }
   setCamera(camera) {
     if(this.mode==='city'&&camera==='orbit'&&this.cameraName==='hood'&&this.vehicle){
       const p=this.vehicle.root.position;this.controls.target.copy(p).add(new THREE.Vector3(0,.4,0));
@@ -406,7 +422,7 @@ export class FlightScene {
     if(this.cityPromise)return this.cityPromise;
     if(this.city)return this.city;
     this.cityPromise??=loadCityWorld().then(async city=>{
-      this.city=city;city.root.visible=this.mode==='city';this.scene.add(city.root);
+      this.city=city;city.root.visible=this.mode==='city'&&!this.stationRace;this.scene.add(city.root);
       for(const name of ['OSM building facades','OSM building roofs']){const mesh=city.root.getObjectByName(name);if(mesh)mesh.castShadow=true;}
       this.citySurfaces=await applyCitySurfaces(city,this.renderer);
       if(!this.citySurfaces.loaded)console.warn('촬영 재질 로드 실패 · 기본 재질 유지',this.citySurfaces.error);
@@ -457,7 +473,9 @@ export class FlightScene {
     const heading=Math.atan2(-tmpV.set(1,0,0).applyQuaternion(sim.state.q).z,tmpV.x);
     this.lastCameraHeading=heading;this.chaseBlend=1;
     this.cameraTarget.copy(p).add(new THREE.Vector3(0,.75,0));
-    this.camera.position.copy(p).add(new THREE.Vector3(-8,3.5,0).applyAxisAngle(UP,heading));
+    const offset=this.stationRace?new THREE.Vector3(-6.5,3.7,0):new THREE.Vector3(-8,3.5,0);
+    if(this.stationRace)this.cameraTarget.add(tmpV.set(1.7,0,0).applyAxisAngle(UP,heading));
+    this.camera.position.copy(p).add(offset.applyAxisAngle(UP,heading));
     this.cameraPosition.copy(this.camera.position);this.controls.target.copy(this.cameraTarget);this.camera.lookAt(this.cameraTarget);
   }
   frameLevelDemo(sim){
@@ -689,8 +707,11 @@ export class FlightScene {
     const visualClock=(this.physicsVisualClock??=new SimulationVisualClock()).advance(state.time,sim.state.time);
     if(visualClock.reset)this.clearExhaustParticles();
     this.telemetry=sim.telemetry?.()||{};
-    if(this.mode==='city'&&this.city?.treeAsset)updateTreeWind(this.city.treeAsset,sim.state.time,1.4+(sim.params.windX||0),.6+(sim.params.windZ||0));
-    if(this.mode==='city')this.city?.streetOverlay?.update(position.x,position.z);
+    if(this.mode==='city'){
+      if(this.city?.treeAsset)updateTreeWind(this.city.treeAsset,sim.state.time,1.4+(sim.params.windX||0),.6+(sim.params.windZ||0));
+      if(this.stationRace)this.raceWorld.update(this.stationRace);
+      else this.city?.streetOverlay?.update(position.x,position.z);
+    }
     this.vehicle.root.position.copy(bodyPosition);
     if(this.mode==='inspect')this.vehicle.root.quaternion.identity();else this.vehicle.root.quaternion.copy(q);
     if(Number.isFinite(options.explode))this.setExplode(options.explode);
@@ -835,6 +856,10 @@ export class FlightScene {
       const forward=new THREE.Vector3(1,0,0).applyQuaternion(sim.state.q);
       if(Math.hypot(forward.x,forward.z)>.15)this.lastCameraHeading=Math.atan2(-forward.z,forward.x);
       const heading=this.lastCameraHeading||0;
+      if(this.stationRace){
+        offset.set(-6.5-Math.min(speed*.035,1.8),3.7+Math.min(speed*.012,.7),0);
+        target.addScaledVector(forward,1.7+Math.min(speed*.035,1.4));target.y+=.45;
+      }
       offset.applyAxisAngle(UP,heading);
       this.camera.fov=43+Math.min(speed/7,6);
       if(this.mode==='city')this.camera.fov=52+Math.min(speed*.16,10);
@@ -917,6 +942,7 @@ export class FlightScene {
     this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();this.cockpitMirror?.dispose();
     this.canvas.removeEventListener('wheel',this._onWheel,true);this.touchPointers.clear();this.controls.dispose();
     if(this.stageVisual){disposeStageVisual(this.stageVisual);this.stageVisual=null;}
+    this.raceWorld?.dispose();
     this.citySurfaces?.dispose();if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}
     this.scene.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});
     for(const vehicle of this.vehicleCache?.values()||[])disposeVehicle(vehicle);this.vehicleCache?.clear();
