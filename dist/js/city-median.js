@@ -14,6 +14,26 @@ export function roadSegments(roads){
   }
   return segments;
 }
+// Keep a segment in both cells when its padded bounds end exactly on a cell
+// boundary. Neighbouring carriageways and kerb fixtures share those edges.
+export function indexRoadSegments(segments,cellSize,padding){
+  const cells=new Map();
+  for(const segment of segments){
+    const {a,b}=segment;
+    const minX=Math.ceil((Math.min(a[0],b[0])-padding)/cellSize)-1,maxX=Math.floor((Math.max(a[0],b[0])+padding)/cellSize);
+    const minZ=Math.ceil((Math.min(a[1],b[1])-padding)/cellSize)-1,maxZ=Math.floor((Math.max(a[1],b[1])+padding)/cellSize);
+    for(let cx=minX;cx<=maxX;cx++)for(let cz=minZ;cz<=maxZ;cz++){
+      const key=cx+','+cz;
+      if(!cells.has(key))cells.set(key,[]);
+      cells.get(key).push(segment);
+    }
+  }
+  return cells;
+}
+export function roadDistanceSquared(x,z,s){
+  const dx=x-s.a[0],dz=z-s.a[1],t=clamp(dx*s.dx+dz*s.dz,0,s.length);
+  return (dx-s.dx*t)**2+(dz-s.dz*t)**2;
+}
 export const pointOn=(s,t,offset=0)=>[s.a[0]+s.dx*t-s.dz*offset,s.a[1]+s.dz*t+s.dx*offset];
 // The opposite carriageway of a divided avenue, found on the driver's left.
 function sibling(s,segments){

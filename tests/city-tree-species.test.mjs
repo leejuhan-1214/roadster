@@ -13,6 +13,32 @@ const watch=(grove,x)=>{const camera=new THREE.PerspectiveCamera();camera.positi
 const release=root=>{root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});root.clear();};
 const scanned=()=>({height:4.6,levels:[0,1].map(()=>[{geometry:new THREE.BoxGeometry(1,4.6,1),material:new THREE.MeshStandardMaterial()}])});
 
+test('city loading yields between tree models and finishes the original full-detail library',async()=>{
+ const asset=scanned(),reference=createTreeLibrary({asset}).warm(),sliced=createTreeLibrary({asset});
+ try{
+  const progress=[];
+  const result=await sliced.warmForDisplay(()=>new Promise(resolve=>setImmediate(()=>{
+    progress.push(sliced.variantCount);resolve();
+  })),0);
+  assert.equal(result,sliced);assert.equal(progress[0],1);
+  assert.equal(progress.at(-1),reference.variantCount);
+  assert.equal(sliced.variantCount,31);
+  for(const id of grown)for(let i=0;i<TREE_VARIANTS;i++){
+    const a=sliced.variant(id,i),b=reference.variant(id,i);
+    assert.equal(a.height,b.height);assert.equal(a.leafCount,b.leafCount);
+    for(let lod=0;lod<a.levels.length;lod++){
+      const actual=a.levels[lod][0].geometry,expected=b.levels[lod][0].geometry;
+      for(const name of Object.keys(expected.attributes))assert.deepEqual(actual.attributes[name].array,expected.attributes[name].array);
+      assert.deepEqual(actual.index.array,expected.index.array);
+    }
+  }
+  assert.equal(sliced.variant('small').levels,asset.levels);
+ }finally{
+  sliced.dispose();reference.dispose();
+  for(const [part] of asset.levels){part.geometry.dispose();part.material.dispose();}
+ }
+});
+
 test('every species grows leafy trees, and no two seeds grow the same tree',()=>{
  assert.deepEqual(grown.slice().sort(),['cherry','ginkgo','metasequoia','pine','plane','zelkova']);
  const proportion={};

@@ -16,16 +16,32 @@ export function sampleRoadSurface(x,z,{roughness=1}={}){
  return {height:amp*envelope*value,normal:[-dhDx/length,1/length,-dhDz/length],gradient:[dhDx,dhDz]};
 }
 const zero=()=>({fx:0,fy:0,rolling:0,totalFx:0,magnitude:0,limit:0,peakLimit:0,utilization:0,sliding:false,slipDemand:0});
-export function tireContactForces(o={}){
+// Load, lateral slip and available grip are constant during the implicit
+// wheel-speed solve. Only longitudinal slip is sampled at each iteration.
+export function tireForceAtSlip(o={}){
  const p=getRoadSurface(o.surface),load=Math.max(0,num(o.normalLoad)),muPeak=Math.max(0,num(o.muPeak,p.muPeak));
- if(o.grounded===false||load===0||muPeak===0)return zero();
+ if(o.grounded===false||load===0||muPeak===0)return (slip,longitudinalOnly)=>longitudinalOnly?0:zero();
  const ratio=p.muPeak>0?p.muSlide/p.muPeak:.78,muSlide=clamp(num(o.muSlide,muPeak*ratio),0,muPeak);
  const crr=Math.max(0,num(o.rollingResistance,p.rollingResistance)),cx=Math.max(0,num(o.longitudinalStiffness,11000)),cy=Math.max(0,num(o.corneringStiffness,55000));
- const kappa=num(o.slipRatio),alpha=clamp(num(o.slipAngle),-1.45,1.45),speed=num(o.forwardSpeed);
- const demandX=cx*kappa,demandY=-cy*Math.tan(alpha),demand=Math.hypot(demandX,demandY),peakLimit=muPeak*load,q=demand/(3*peakLimit);
- let magnitude=0,limit=peakLimit;
- if(q<=1)magnitude=peakLimit*q*(3-q*(3-q));else{const transition=Math.exp(-(((q-1)/.8)**2));limit=load*(muSlide+(muPeak-muSlide)*transition);magnitude=limit;}
- let fx=demand>0?magnitude*demandX/demand:0,fy=demand>0?magnitude*demandY/demand:0,rolling=-crr*load*Math.tanh(speed/.6);
- const combined=Math.hypot(fx+rolling,fy);if(combined>limit&&combined>0){const scale=limit/combined;fx*=scale;fy*=scale;rolling*=scale;}
- const totalFx=fx+rolling;return {fx,fy,rolling,totalFx,magnitude:Math.hypot(totalFx,fy),limit,peakLimit,utilization:Math.hypot(totalFx,fy)/peakLimit,sliding:q>1,slipDemand:q};
+ const alpha=clamp(num(o.slipAngle),-1.45,1.45),speed=num(o.forwardSpeed);
+ const demandY=-cy*Math.tan(alpha),peakLimit=muPeak*load,rollingAtLoad=-crr*load*Math.tanh(speed/.6);
+ return function evaluate(slip,longitudinalOnly=false){
+   const demandX=cx*num(slip),demand=Math.hypot(demandX,demandY),q=demand/(3*peakLimit);
+   let magnitude=0,limit=peakLimit;
+   if(q<=1){
+     magnitude=peakLimit*q*(3-q*(3-q));
+   }else{
+     const transition=Math.exp(-(((q-1)/.8)**2));
+     limit=load*(muSlide+(muPeak-muSlide)*transition);magnitude=limit;
+   }
+   let fx=demand>0?magnitude*demandX/demand:0,fy=demand>0?magnitude*demandY/demand:0,rolling=rollingAtLoad;
+   const combined=Math.hypot(fx+rolling,fy);
+   if(combined>limit&&combined>0){
+     const scale=limit/combined;fx*=scale;fy*=scale;rolling*=scale;
+   }
+   if(longitudinalOnly)return fx;
+   const totalFx=fx+rolling,resultant=Math.hypot(totalFx,fy);
+   return {fx,fy,rolling,totalFx,magnitude:resultant,limit,peakLimit,utilization:resultant/peakLimit,sliding:q>1,slipDemand:q};
+ };
 }
+export function tireContactForces(o={}){return tireForceAtSlip(o)(o.slipRatio);}

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {pointOn,roadSegments,planMedianPavement} from './city-median.js?v=20261118-physics146';
+import {pointOn,roadSegments,indexRoadSegments,planMedianPavement} from './city-median.js?v=20261118-frameperf1';
 export {roadSegments};
 
 // Street detail laid over the mapped roads, built in 256 m cells around the
@@ -166,23 +166,30 @@ export function createStreetOverlay(city,points){
     furniture:new THREE.MeshStandardMaterial({color:0xffffff,roughness:.55,metalness:.4})};
   own.push(materials.furniture);
   // The centre district's own roads; streamed tiles leave that rectangle to it.
-  const core=roadSegments(city.source?.roads||city.roads||[]),coreBounds=city.bounds,cache=new WeakMap();
-  const near=(s,b,pad)=>Math.max(s.a[0],s.b[0])>=b.minX-pad&&Math.min(s.a[0],s.b[0])<=b.maxX+pad&&Math.max(s.a[1],s.b[1])>=b.minZ-pad&&Math.min(s.a[1],s.b[1])<=b.maxZ+pad;
-  // Roads of the centre district plus those of the streamed tiles that touch the cell.
-  const gather=bounds=>{
-    const segments=core.filter(s=>near(s,bounds,60)),sources=[];
-    const streaming=city.streaming;
-    if(streaming)for(const [key,chunk]of streaming.chunks){
-      const tile=streaming.manifest.tiles[key]?.bounds;if(!tile||tile.maxX<bounds.minX-60||tile.minX>bounds.maxX+60||tile.maxZ<bounds.minZ-60||tile.minZ>bounds.maxZ+60)continue;
-      if(!cache.has(chunk.roads))cache.set(chunk.roads,roadSegments(chunk.roads));
-      for(const s of cache.get(chunk.roads)){if(near(s,bounds,60))segments.push(s);}
-      sources.push(key);
+  const coreBounds=city.bounds,roadCache=new WeakMap();
+  const indexRoads=roads=>indexRoadSegments(roadSegments(roads),STREET_CELL,60);
+  const core=indexRoads(city.source?.roads||city.roads||[]);
+  function nearbySources(bounds){
+    const sources=[],streaming=city.streaming;
+    if(streaming)for(const [key,chunk] of streaming.chunks){
+      const tile=streaming.manifest.tiles[key]?.bounds;
+      if(tile&&tile.maxX>=bounds.minX-60&&tile.minX<=bounds.maxX+60&&tile.maxZ>=bounds.minZ-60&&tile.minZ<=bounds.maxZ+60)sources.push(chunk.roads);
     }
-    return {segments,signature:sources.sort().join('|')};
-  };
+    return sources;
+  }
+  const buildingsByCell=new Map();
+  for(const building of city.buildings||[]){
+    let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+    for(const [x,z] of building.points){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);}
+    for(let cx=Math.floor(minX/STREET_CELL);cx<=Math.floor(maxX/STREET_CELL);cx++)for(let cz=Math.floor(minZ/STREET_CELL);cz<=Math.floor(maxZ/STREET_CELL);cz++){
+      const key=cx+','+cz;
+      if(!buildingsByCell.has(key))buildingsByCell.set(key,[]);
+      buildingsByCell.get(key).push(building);
+    }
+  }
   const occupied=(x,z)=>{
     if(!(x>=coreBounds.minX&&x<=coreBounds.maxX&&z>=coreBounds.minZ&&z<=coreBounds.maxZ))return false;
-    for(const b of city.buildings||[]){
+    for(const b of buildingsByCell.get(Math.floor(x/STREET_CELL)+','+Math.floor(z/STREET_CELL))||[]){
       const p=b.points;let hit=false;
       for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])hit=!hit;
       if(hit)return true;
@@ -190,14 +197,19 @@ export function createStreetOverlay(city,points){
     return false;
   };
   const ready=b=>!city.streaming||[[b.minX,b.minZ],[b.maxX-1,b.minZ],[b.minX,b.maxZ-1],[b.maxX-1,b.maxZ-1]].every(([x,z])=>(x>=coreBounds.minX&&x<=coreBounds.maxX&&z>=coreBounds.minZ&&z<=coreBounds.maxZ)||city.streaming.hasAt(x,z)||!city.streaming.contains(x,z));
-  const cells=new Map();let physics=null,tick=0,disposed=false;
+  const cells=new Map(),checkSources=new Set();
+  let physics=null,tick=0,disposed=false,lastStream,lastRevision,settledX,settledZ;
   const boundsOf=(cx,cz)=>({minX:cx*STREET_CELL,maxX:(cx+1)*STREET_CELL,minZ:cz*STREET_CELL,maxZ:(cz+1)*STREET_CELL});
-  const drop=cell=>{physics?.removeObstacleChunk('street:'+cell.key);root.remove(cell.group);cell.group.userData.dispose();cells.delete(cell.key);};
-  const build=(cx,cz)=>{
-    const key=cx+','+cz,bounds=boundsOf(cx,cz),{segments,signature}=gather(bounds);
+  const drop=cell=>{if(cell.colliders.length)physics?.removeObstacleChunk('street:'+cell.key);root.remove(cell.group);cell.group.userData.dispose();cells.delete(cell.key);checkSources.delete(cell.key);};
+  const build=(cx,cz,bounds=boundsOf(cx,cz),sources=nearbySources(bounds))=>{
+    const key=cx+','+cz,segments=[...(core.get(key)||[])];
+    for(const roads of sources){
+      if(!roadCache.has(roads))roadCache.set(roads,indexRoads(roads));
+      segments.push(...(roadCache.get(roads).get(key)||[]));
+    }
     const plan=planStreetCell(segments,points,bounds,{occupied,key}),group=buildStreetCell(plan,materials);
     const previous=cells.get(key);if(previous)drop(previous);
-    const cell={key,cx,cz,bounds,group,colliders:plan.colliders,signature,counts:{fills:plan.fills.length,masts:plan.masts.length,entrances:plan.entrances.length}};
+    const cell={key,cx,cz,bounds,group,colliders:plan.colliders,sources,counts:{fills:plan.fills.length,masts:plan.masts.length,entrances:plan.entrances.length}};
     // Solids are registered before the meshes appear, as the map tiles do.
     if(physics&&cell.colliders.length)physics.setObstacleChunk('street:'+key,cell.colliders);
     root.add(group);cells.set(key,cell);return cell;
@@ -206,18 +218,39 @@ export function createStreetOverlay(city,points){
     /** Build at most one cell per call; cells behind the vehicle are released. */
     update(x,z){
       if(disposed)return;
-      const cx=Math.floor(x/STREET_CELL),cz=Math.floor(z/STREET_CELL),ring=Math.ceil(STREET_NEAR/STREET_CELL);let best=null;
-      for(let dx=-ring;dx<=ring;dx++)for(let dz=-ring;dz<=ring;dz++){
-        const key=(cx+dx)+','+(cz+dz),d=Math.hypot((cx+dx+.5)*STREET_CELL-x,(cz+dz+.5)*STREET_CELL-z);
-        if(d>STREET_NEAR||cells.has(key)||(best&&d>=best.d))continue;
-        if(ready(boundsOf(cx+dx,cz+dz)))best={cx:cx+dx,cz:cz+dz,d};
+      const streaming=city.streaming,revision=streaming?.revision;
+      tick++;
+      if(streaming!==lastStream||revision!==lastRevision||(streaming&&revision===undefined&&tick%20===0)){
+        lastStream=streaming;lastRevision=revision;settledX=undefined;
+        for(const key of cells.keys())checkSources.add(key);
       }
-      if(best){build(best.cx,best.cz);return;}
-      // Nothing new to build: release far cells and refresh one whose tiles changed.
-      if(++tick%20)return;
-      for(const cell of [...cells.values()]){
-        if(Math.hypot((cell.cx+.5)*STREET_CELL-x,(cell.cz+.5)*STREET_CELL-z)>STREET_DROP){drop(cell);continue;}
-        if(gather(cell.bounds).signature!==cell.signature){build(cell.cx,cell.cz);return;}
+      if(settledX!==x||settledZ!==z){
+        settledX=undefined;
+        const cx=Math.floor(x/STREET_CELL),cz=Math.floor(z/STREET_CELL),ring=Math.ceil(STREET_NEAR/STREET_CELL);
+        let best=null,bestDistance=Infinity;
+        for(let dx=-ring;dx<=ring;dx++)for(let dz=-ring;dz<=ring;dz++){
+          const nx=cx+dx,nz=cz+dz,distance=((nx+.5)*STREET_CELL-x)**2+((nz+.5)*STREET_CELL-z)**2;
+          if(distance>STREET_NEAR**2||distance>=bestDistance||cells.has(nx+','+nz))continue;
+          if(ready(boundsOf(nx,nz))){best={cx:nx,cz:nz};bestDistance=distance;}
+        }
+        // Release at most one distant cell per update, even after a teleport.
+        let released=false;
+        for(const cell of cells.values()){
+          if(((cell.cx+.5)*STREET_CELL-x)**2+((cell.cz+.5)*STREET_CELL-z)**2>STREET_DROP**2){
+            drop(cell);released=true;break;
+          }
+        }
+        if(best){build(best.cx,best.cz);return;}
+        if(released)return;
+        settledX=x;settledZ=z;
+      }
+      // Check just one older cell per frame after a map change. Road arrays
+      // are immutable for the lifetime of the tile that supplied them.
+      for(const key of checkSources){
+        checkSources.delete(key);
+        const cell=cells.get(key),sources=nearbySources(cell.bounds);
+        if(sources.length!==cell.sources.length||sources.some((roads,i)=>roads!==cell.sources[i]))build(cell.cx,cell.cz,cell.bounds,sources);
+        break;
       }
     },
     /** Follow the streamed map: (re)register the solids of every built cell, or let go of the simulation. */

@@ -11,6 +11,7 @@ export class RenderStateBuffer{
  constructor(sim){this.previous=pose();this.current=pose();this.output=pose();this.reset(sim);}
  reset(sim){capture(this.previous,sim);capture(this.current,sim);return this.sample(1);}
  beforeStep(){const swap=this.previous;this.previous=this.current;this.current=swap;}
+ captureStart(sim){capture(this.previous,sim);}
  afterStep(sim){capture(this.current,sim);}
  sample(alpha){
   const a=Math.max(0,Math.min(1,alpha)),p=this.previous,c=this.current,o=this.output;

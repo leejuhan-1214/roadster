@@ -49,6 +49,9 @@ export const TREE_SPECIES=Object.freeze({
   small:{label:'소형 활엽수',latin:'Poly Haven Tree Small 02',asset:true,bark:'furrow',barkColor:[.5,.46,.4],leaf:{summer:[1,1,1],autumn:[1,.96,.9]},crown:[.4,.4]},
 });
 const MODEL_HEIGHT=10;
+const variantKeys=Object.entries(TREE_SPECIES).flatMap(([id,spec])=>
+  Array.from({length:spec.asset?1:TREE_VARIANTS},(_,index)=>[id,index]));
+const yieldToBrowser=()=>globalThis.scheduler?.yield?.()||new Promise(resolve=>setTimeout(resolve,0));
 
 // ---------------------------------------------------------------------------
 // Skeleton: the same seed always grows the same tree.
@@ -358,8 +361,20 @@ export function createTreeLibrary({asset=null,season='summer',wind=null}={}){
       return variant;
     },
     get farGeometry(){return far??=farTreeGeometry();},
-    /** Grow every variant now (about 0.2 s) so that none is grown while driving. */
-    warm(){for(const id of Object.keys(TREE_SPECIES))for(let index=0;index<(TREE_SPECIES[id].asset?1:TREE_VARIANTS);index++)library.variant(id,index);return library.farGeometry&&library;},
+    warm(){
+      for(const [id,index] of variantKeys)library.variant(id,index);
+      far??=farTreeGeometry();return library;
+    },
+    // Finish every model before driving. Return control between batches so
+    // the loading screen can paint while the full-detail branches are grown.
+    async warmForDisplay(yieldTask=yieldToBrowser,budgetMs=6){
+      let start=performance.now();
+      for(const [id,index] of variantKeys){
+        library.variant(id,index);
+        if(performance.now()-start>=budgetMs){await yieldTask();start=performance.now();}
+      }
+      far??=farTreeGeometry();return library;
+    },
     farTint:id=>(FAR_TINT[currentSeason]||FAR_TINT.summer)[library.resolve(id)]||FAR_TINT.summer.small,
     setSeason(next){
       if(!TREE_SEASONS.includes(next)||next===currentSeason)return false;

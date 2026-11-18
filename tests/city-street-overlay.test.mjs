@@ -124,3 +124,23 @@ test('overlay cells follow the vehicle, register their solids and are released b
   assert.ok(![...overlay.cells.keys()].includes('0,0'));assert.ok(calls.filter(c=>c[0]==='remove').length>=withSolids);
   overlay.dispose();assert.equal(overlay.cells.size,0);assert.equal(root.children.includes(overlay.root),false);
 });
+
+test('settled street cells only revisit sources after a map change and replace affected geometry',()=>{
+  let sourceReads=0;
+  class TrackedMap extends Map {
+    [Symbol.iterator](){sourceReads++;return super[Symbol.iterator]();}
+  }
+  const bounds={minX:-512,maxX:512,minZ:-512,maxZ:512},chunks=new TrackedMap();
+  const streaming={chunks,revision:0,manifest:{tiles:{first:{bounds}}},hasAt:()=>true,contains:()=>true};
+  const overlay=createStreetOverlay({root:new THREE.Group(),bounds,source:{roads:[]},streaming},{});
+  function settle(){for(let i=0;i<100;i++)overlay.update(0,0);}
+  function fills(){return [...overlay.cells.values()].reduce((sum,c)=>sum+c.counts.fills,0);}
+  settle();assert.equal(fills(),0);
+  const before=sourceReads;settle();
+  assert.equal(sourceReads,before,'unchanged tiles cause no source rescan across idle frames');
+  chunks.set('first',{roads:avenue('시험대로')});streaming.revision++;
+  settle();assert.equal(fills(),2,'both carriageways span the cell boundary');
+  chunks.set('first',{roads:[]});streaming.revision++;
+  settle();assert.equal(fills(),0,'a replacement under the same tile key refreshes both cells');
+  overlay.dispose();
+});

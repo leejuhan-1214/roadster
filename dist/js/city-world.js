@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import {pavedMedianMask} from './city-median.js?v=20261118-physics146';
+import {pavedMedianMask,indexRoadSegments,roadDistanceSquared} from './city-median.js?v=20261118-frameperf1';
 import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
-import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261111-trees2';
+import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261118-frameperf1';
 import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-seoul1';
 import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-seoul1';
@@ -163,7 +163,10 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const spatialBuildings=new Map();
   for(const b of plan.buildings){const key=Math.floor(b.center[0]/60)+','+Math.floor(b.center[1]/60);if(!spatialBuildings.has(key))spatialBuildings.set(key,[]);spatialBuildings.get(key).push(b);}
   const occupied=(x,z)=>{if(x<plan.bounds.minX||x>=plan.bounds.maxX||z<plan.bounds.minZ||z>=plan.bounds.maxZ)return true;const gx=Math.floor(x/60),gz=Math.floor(z/60);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of spatialBuildings.get((gx+dx)+','+(gz+dz))||[])if(pointInPolygon(x,z,b.points))return true;return false;};
-  const onRoad=(x,z)=>plan.segments.some(s=>{const t=Math.max(0,Math.min(s.length,(x-s.a[0])*s.dx+(z-s.a[1])*s.dz));return Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t)<s.road.width/2+.5;});
+  const roadCellSize=96,roadPadding=48,empty=[];
+  const roadIndex=indexRoadSegments(plan.segments,roadCellSize,roadPadding);
+  const roadSegmentsNear=(x,z)=>roadIndex.get(Math.floor(x/roadCellSize)+','+Math.floor(z/roadCellSize))||empty;
+  const onRoad=(x,z)=>roadSegmentsNear(x,z).some(s=>roadDistanceSquared(x,z,s)<(s.road.width/2+.5)**2);
   let signs=0;
   for(const s of plan.segments){
     const width=s.road.width;pavement(walks,s.a,s.b,width+4.6,.005,sidewalkColor);pavement(streets,s.a,s.b,width,.014,asphaltColor);
@@ -229,7 +232,21 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const bins=new Map(),cell=80;
   plan.obstacles.forEach((box,index)=>{const [x,,z]=box.center,[w,,d]=box.size;for(let gx=Math.floor((x-w/2)/cell);gx<=Math.floor((x+w/2)/cell);gx++)for(let gz=Math.floor((z-d/2)/cell);gz<=Math.floor((z+d/2)/cell);gz++){const key=gx+','+gz;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(index);}});
   const obstaclesNear=(x,z,radius=80)=>{const indices=new Set();for(let gx=Math.floor((x-radius)/cell);gx<=Math.floor((x+radius)/cell);gx++)for(let gz=Math.floor((z-radius)/cell);gz<=Math.floor((z+radius)/cell);gz++)for(const index of bins.get(gx+','+gz)||[])indices.add(index);return [...indices].map(i=>plan.obstacles[i]);};
-  const nearestRoadName=(x,z)=>{let best=Infinity,name='강남역 주변';for(const s of plan.segments){const t=clamp((x-s.a[0])*s.dx+(z-s.a[1])*s.dz,0,s.length),d=Math.hypot(x-s.a[0]-s.dx*t,z-s.a[1]-s.dz*t);if(d<best&&s.road.name){best=d;name=s.road.name;}}return name;};
+  function nearestRoadName(x,z){
+    let best=Infinity,name='강남역 주변';
+    const consider=segments=>{
+      for(const s of segments){
+        if(!s.road.name)continue;
+        const distance=roadDistanceSquared(x,z,s);
+        if(distance<best){best=distance;name=s.road.name;}
+      }
+    };
+    consider(roadSegmentsNear(x,z));
+    // Far from any named street, the closest one can lie outside the cell's
+    // padding. Keep the exact answer for parks and unmapped courtyards.
+    if(best>roadPadding**2){best=Infinity;consider(plan.segments);}
+    return name;
+  }
   return {...plan,root,treeAsset,landmarkAssets,treeGroves,treePlacements:trees,obstaclesNear,nearestRoadName,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
 }
 export async function loadCityWorld(){

@@ -1,4 +1,4 @@
-import {nozzle, ATMOSPHERE} from './physics.js?v=20261118-physics146';
+import {nozzle, ATMOSPHERE} from './physics.js?v=20261118-frameperf1';
 import {contactFraction} from './landing-measurement.js?v=20261118-physics146';
 
 const G = 1.4, R = 287, STEP = .002;

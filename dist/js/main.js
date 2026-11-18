@@ -3,14 +3,16 @@ import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261114-air1';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-physics146';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-frameperf1';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261115-capacity375';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-physics146';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-frameperf1';
 import {LandingUI} from './landing-ui.js?v=20261118-physics146';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
-import {RenderStateBuffer} from './render-state.js?v=20261111-calibration1';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-physics146';
-import {FlightScene} from './scene.js?v=20261118-physics146';
+import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
+import {advanceFrame} from './frame-steps.js?v=20261118-frameperf1';
+import {drawMappedStreets} from './city-minimap.js?v=20261118-frameperf1';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-frameperf1';
+import {FlightScene} from './scene.js?v=20261118-frameperf1';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -101,7 +103,10 @@ async function nextLanding(session){
   if(!job){landingRun=null;setPaused(true);landingUI.setBusy(false,'측정 완료');$('vehicle-select').disabled=false;landingUI.showResults();return;}
   setPaused(true);landingUI.setProgress((session.index+1)+' / '+session.jobs.length+' · 차체 준비 중…');
   try{
-    if(!await selectVehicle(job.vehicleId,{forLanding:true}))throw new Error('차체를 불러오지 못했습니다.');
+    // Many consecutive trials test the same assembly. Keep its camera, paint
+    // and GPU buffers ready while createLandingRun resets the physical state.
+    const sameAssembly=activeVehicle.id===job.vehicleId&&scene.vehicle.profileId===job.vehicleId&&!scene.hasCustomModel;
+    if(!sameAssembly&&!await selectVehicle(job.vehicleId,{forLanding:true}))throw new Error('차체를 불러오지 못했습니다.');
     if(landingSession!==session)return;
     Object.assign(sim.params,vehiclePhysics(activeVehicle,scene.vehicle.geometryParams,DEFAULTS),{
       tankVolume:session.originalParams.tankVolume,tankPressureMPa:session.originalParams.tankPressureMPa,initialTemperature:session.originalParams.initialTemperature});
@@ -122,13 +127,12 @@ function stepSimulation(){
     driveInput=driver.update(driveKeys,sim,LANDING_STEP);if(mode!=='city'){driveInput.fan=false;driveInput.compressor=false;}if(driveInput.throttle)driveGear=driveInput.throttle<0?'R':'D';
     brakeTrial.sample(sim,{braking:driveKeys.has('KeyB'),drifting:driveKeys.has('ShiftLeft')||driveKeys.has('ShiftRight'),airborne:driver.airborne,settings:citySettings,vehicleId:activeVehicle.id});
     const previousX=sim.state.pos.x,previousZ=sim.state.pos.z;
-    renderStates.beforeStep();sim.step(LANDING_STEP,driveInput);
+    sim.step(LANDING_STEP,driveInput);
     if(mode==='city'&&scene.city?.streaming&&!scene.city.streaming.guard(sim.state,LANDING_STEP)){sim.state.pos.x=previousX;sim.state.pos.z=previousZ;}
-    renderStates.afterStep(sim);
     cityDistance+=Math.hypot(sim.state.vel.x,sim.state.vel.z)*LANDING_STEP;return;
   }
   if(!landingRun)return;
-  renderStates.beforeStep();sim.step(LANDING_STEP,landingRunInput(landingRun,sim,landingLiftHeld));renderStates.afterStep(sim);
+  sim.step(LANDING_STEP,landingRunInput(landingRun,sim,landingLiftHeld));
   updateLandingRun(landingRun,sim,LANDING_STEP);
   if(landingRun.done){
     const session=landingSession;
@@ -362,15 +366,10 @@ function setupDriveControls(){
 }
 function drawCityMap(t){
   const city=scene.city;if(!city)return;
-  const canvas=$('city-map'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,scale=.53;
+  const canvas=$('city-map'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   const x=sim.state.pos.x,z=sim.state.pos.z;
-  ctx.clearRect(0,0,w,h);ctx.fillStyle='#142029';ctx.fillRect(0,0,w,h);ctx.save();ctx.translate(w/2,h/2);
-  for(const road of city.roads||[]){
-    if(!road.points?.length)continue;
-    const bounds=road.mapBounds??=(road.points.reduce((b,p)=>({minX:Math.min(b.minX,p[0]),maxX:Math.max(b.maxX,p[0]),minZ:Math.min(b.minZ,p[1]),maxZ:Math.max(b.maxZ,p[1])}),{minX:Infinity,maxX:-Infinity,minZ:Infinity,maxZ:-Infinity}));
-    if(bounds.maxX<x-w/2/scale-30||bounds.minX>x+w/2/scale+30||bounds.maxZ<z-h/2/scale-30||bounds.minZ>z+h/2/scale+30)continue;ctx.beginPath();ctx.strokeStyle=road.width>14?'#839197':'#4e626d';ctx.lineWidth=Math.max(1.5,road.width*scale*.6);
-    for(let i=0;i<road.points.length;i++){const px=(road.points[i][0]-x)*scale,py=(road.points[i][1]-z)*scale;if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);}ctx.stroke();
-  }
+  drawMappedStreets(ctx,city.roads,x,z);
+  ctx.save();ctx.translate(w/2,h/2);
   ctx.rotate(Math.PI/2-t.attitude.yaw);ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(-6,6);ctx.lineTo(0,3);ctx.lineTo(6,6);ctx.closePath();ctx.fillStyle='#8bffe0';ctx.fill();ctx.restore();
   ctx.font='bold 12px sans-serif';ctx.fillStyle='#dce7e9';ctx.fillText('N',w-17,18);
 }
@@ -551,23 +550,30 @@ function setupUI(){
     else if(e.code==='KeyR')$('reset').click();else if(e.code==='KeyC')$('camera').click();else if(e.code==='KeyV')$('vectors').click();
     else if(e.code==='Escape'){$('left-panel').classList.remove('open');showCityExperiments(false);}
   });
-  document.addEventListener('visibilitychange',()=>{clearDriveInputs();accumulator=0;renderStates.reset(sim);lastStamp=0;});
+  document.addEventListener('visibilitychange',()=>{clearDriveInputs();accumulator=0;renderStates.reset(sim);lastStamp=0;frames=0;frameTimer=0;});
   window.addEventListener('resize',()=>{scene.resize();if(landingRun&&matchMedia('(max-width:1000px)').matches)$('left-panel').classList.remove('open');});
   $('world').addEventListener('pointerdown',()=>$('world').focus({preventScroll:true}));$('world').addEventListener('contextmenu',e=>e.preventDefault());
   scene.setHypothesesVisible(true);refreshPartCatalog();
   if(matchMedia('(max-width:1000px)').matches)$('left-panel').classList.add('open');
 }
 function animate(stamp){
-  const frameMs=lastStamp?stamp-lastStamp:16.67,elapsed=lastStamp?Math.min((stamp-lastStamp)/1000,.1):1/60;lastStamp=stamp;
+  requestAnimationFrame(animate);
+  if(document.hidden)return;
+  const frameMs=lastStamp?stamp-lastStamp:1000/60,elapsed=Math.min(frameMs/1000,.1);lastStamp=stamp;
   const blocked=!!document.querySelector('dialog[open]');
   if(blocked&&landingLiftHeld)clearLandingLift();
   if(mode==='city')scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z,sim.state.vel.x,sim.state.vel.z);
-  if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked&&!document.hidden){accumulator+=elapsed*(landingRun?landingPlaybackRate:1);let steps=0;while(accumulator>=LANDING_STEP&&steps<50&&!paused){stepSimulation();accumulator=Math.max(0,accumulator-LANDING_STEP);steps++;}}else accumulator=0;
-  if(!document.hidden)scene.observeFrame(frameMs);
+  if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked){
+    const debt=accumulator+elapsed*(landingRun?landingPlaybackRate:1);
+    const budgetMs=Math.min(16,Math.max(6,frameMs*.45));
+    accumulator=advanceFrame(debt,LANDING_STEP,budgetMs,
+      ()=>{stepSimulation();return !paused;},
+      ()=>renderStates.captureStart(sim),()=>renderStates.afterStep(sim));
+  }else accumulator=0;
+  scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,vectors:showVectors,explode:Number($('explode').value),paint:$('city-paint').value,wing:false,cutaway:mode==='lab'&&showLandingSuspension,renderState:renderStates.sample(paused||mode==='inspect'||blocked?1:accumulator/LANDING_STEP)});
-  if(stamp-lastUI>80){updateUI();lastUI=stamp;}frames++;frameTimer+=elapsed;
+  if(stamp-lastUI>80){updateUI();lastUI=stamp;}frames++;frameTimer+=frameMs/1000;
   if(frameTimer>.75){$('fps').textContent=Math.round(frames/frameTimer)+' FPS';frames=0;frameTimer=0;}
-  requestAnimationFrame(animate);
 }
 try{
   scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent=cameraLabel();});

@@ -63,5 +63,17 @@ test('complete city batches finite geometry and spatial lookup retains local col
     assert.ok(near.length>0&&near.length<1000);
     for(const box of city.obstacles){const [bx,,bz]=box.center;if(Math.abs(bx-x)<50&&Math.abs(bz-z)<50)assert.ok(near.includes(box));}
     assert.match(city.nearestRoadName(x,z),/강남/);
+    // At cell seams and far from the road grid, the indexed HUD lookup must
+    // agree with the nearest named segment in the complete mapped district.
+    for(const [px,pz] of [[96,0],[-96,-96],[0,0],[440,240],[-710,320],[1950,1200]]){
+      let best=Infinity,expected='강남역 주변';
+      for(const s of city.segments){
+        if(!s.road.name)continue;
+        const t=Math.max(0,Math.min(s.length,(px-s.a[0])*s.dx+(pz-s.a[1])*s.dz));
+        const distance=Math.hypot(px-s.a[0]-s.dx*t,pz-s.a[1]-s.dz*t);
+        if(distance<best){best=distance;expected=s.road.name;}
+      }
+      assert.equal(city.nearestRoadName(px,pz),expected);
+    }
   }finally{city.dispose();}
 });

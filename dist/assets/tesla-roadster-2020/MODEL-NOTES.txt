@@ -9,3 +9,14 @@ NOT the 2026 Rocket design. NOT Tesla official CAD or verified engineering geome
 Geometry and materials copied without modification. Runtime transforms, wheel animation, paint changes, and educational added thrusters are adaptations by Roadster Flight Lab.
 Original physical dimensions, mass, inertia, and aerodynamic data are NOT validated by this visual asset.
 Largest payload is scene.bin (22,263,040 bytes), under 25 MiB. All 9 texture dependencies are included.
+
+exterior-indices.bin is a display adaptation by Roadster Flight Lab, distributed under the same CC BY 4.0 license.
+The assembled exterior uses 130,398 triangles. The original 608,850 triangles remain available for inspection and close views.
+The adaptation reuses all 105 selectable meshes and their original vertices, normals, UV coordinates, and materials.
+Rebuild from the repository root with Node.js: npm install --no-save --package-lock=false meshoptimizer@1.0.1
+Then run: node scripts/build-roadster-display-lod.mjs
+The simplifier enforces fixed mesh boundaries, weights normals and UVs, targets a 0.004 relative attribute-aware error,
+and keeps small meshes intact. The browser reads the prepared index file and does not require meshoptimizer.
+Source scene.gltf SHA-256: 35a30bcf928e00f61f9034c3e496c1fcc83843e89167a1e8e7735f349c2a54d5
+Source scene.bin SHA-256: 8c72db1b2d4cc35af59a5987b0233a80697224b4739d15e9498d044860177518
+Derived exterior-indices.bin SHA-256: 338956d9863a85971b404f153124b9222fed3f3dab98f8c2ef40cd770c1c613b

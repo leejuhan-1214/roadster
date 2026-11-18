@@ -1,7 +1,7 @@
 // Pure CPU city construction. Native module workers cannot use the page import map.
 import {ShapeUtils,Vector2,Color} from '../vendor/three.module.js';
 import {buildingColliders} from './city-footprint.js';
-import {pavedMedianMask} from './city-median.js?v=20261118-physics146';
+import {pavedMedianMask} from './city-median.js?v=20261118-frameperf1';
 import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
 import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 

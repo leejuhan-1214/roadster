@@ -1,8 +1,8 @@
 import { Vector3, Quaternion, Euler } from 'three';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
-import {sampleRoadSurface,tireContactForces} from './road-surface.js?v=20261107-drive2';
+import {sampleRoadSurface,tireForceAtSlip} from './road-surface.js?v=20261118-frameperf1';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
-import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261109-city1';
+import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261118-frameperf1';
 import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
 import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261115-fleet1';
 import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
@@ -354,8 +354,8 @@ export class PhysicsSim {
   }
 
   /** Highest horizontal supporting surface below this wheel/fan reference point. */
-  surfaceHeightAt(x,z,referenceY=Infinity) {
-    let height=sampleRoadSurface(x,z,{roughness:this.params.roadRoughness}).height;
+  surfaceHeightAt(x,z,referenceY=Infinity,roadHeight=sampleRoadSurface(x,z,{roughness:this.params.roadRoughness}).height) {
+    let height=roadHeight;
     for(const box of this._obstaclesNear(x,z))if(x>=box.min.x&&x<=box.max.x&&z>=box.min.z&&z<=box.max.z&&
       box.max.y<=referenceY+.10&&box.max.y>height&&(!box.footprint||containsFootprint(box.footprint,x,z)))height=box.max.y;
     return height;
@@ -593,7 +593,7 @@ export class PhysicsSim {
       const wheel=this.wheels[index],rCenter=wheel.pos.clone().applyQuaternion(s.q),worldCenter=s.pos.clone().add(rCenter);
       const cornerVel=s.vel.clone().add(new Vector3().crossVectors(omegaWorld,rCenter));
       const road=sampleRoadSurface(worldCenter.x,worldCenter.z,{roughness:p.roadRoughness});
-      const surfaceY=this.surfaceHeightAt(worldCenter.x,worldCenter.z,worldCenter.y);
+      const surfaceY=this.surfaceHeightAt(worldCenter.x,worldCenter.z,worldCenter.y,road.height);
       const n=surfaceY>road.height+1e-8?UP.clone():new Vector3(...road.normal);
       wheel.surfaceY=surfaceY;wheel.normalX=n.x;wheel.normalY=n.y;wheel.normalZ=n.z;
       const compression=Math.max(0,p.wheelRadius-(worldCenter.y-surfaceY)*n.y);
@@ -611,11 +611,15 @@ export class PhysicsSim {
       const frictionBrake=Math.max(0,brakeAmount*wheel.absFactor*3100-Math.abs(drive.wheelRegenTorqueNm[index]))+rearHandbrake;
       const omegaFor=fx=>{let omega=wheel.omega+(driveTorque-fx*p.wheelRadius-.025*wheel.omega)/p.wheelInertia*dt;return Math.sign(omega)*Math.max(0,Math.abs(omega)-frictionBrake/p.wheelInertia*dt);};
       const profile=p.friction<=.2?'ice':p.friction<=.7?'wet':'dry';
-      const atForce=fx=>{const speed=(wheel.omega+omegaFor(fx))*.5*p.wheelRadius;return tireContactForces({surface:profile,normalLoad:normal,grounded:wheel.grounded,muPeak:Math.max(0,p.friction),rollingResistance:p.rollingResistance,forwardSpeed:ux,slipRatio:(speed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(speed)),slipAngle:Math.atan2(uy,Math.max(3,Math.abs(ux))),longitudinalStiffness:120000,corneringStiffness:70000});};
+      const contactAtSlip=tireForceAtSlip({surface:profile,normalLoad:normal,grounded:wheel.grounded,muPeak:Math.max(0,p.friction),rollingResistance:p.rollingResistance,forwardSpeed:ux,slipAngle:Math.atan2(uy,Math.max(3,Math.abs(ux))),longitudinalStiffness:120000,corneringStiffness:70000});
+      const slipAtForce=fx=>{
+        const speed=(wheel.omega+omegaFor(fx))*.5*p.wheelRadius;
+        return (speed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(speed));
+      };
       // Implicit wheel reaction makes realistic high slip stiffness stable at 500 Hz.
       let lo=-Math.max(0,p.friction)*normal,hi=-lo;
-      for(let k=0;k<(Math.abs(ux)<2?20:14)&&normal>0&&p.friction>0;k++){const mid=(lo+hi)*.5;const residual=mid-atForce(mid).fx;if(Math.abs(residual)<1e-7){lo=hi=mid;break;}if(residual>0)hi=mid;else lo=mid;}
-      const tire=atForce((lo+hi)*.5),fx=tire.fx,fy=tire.fy,rolling=tire.rolling;
+      for(let k=0;k<(Math.abs(ux)<2?20:14)&&normal>0&&p.friction>0;k++){const mid=(lo+hi)*.5;const residual=mid-contactAtSlip(slipAtForce(mid),true);if(Math.abs(residual)<1e-7){lo=hi=mid;break;}if(residual>0)hi=mid;else lo=mid;}
+      const tire=contactAtSlip(slipAtForce((lo+hi)*.5)),fx=tire.fx,fy=tire.fy,rolling=tire.rolling;
       const nextOmega=omegaFor(fx),patchSpeed=(wheel.omega+nextOmega)*.5*p.wheelRadius;
       wheel.slip=wheel.grounded?(patchSpeed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(patchSpeed)):0;
       wheel.sliding=wheel.grounded&&(tire.sliding||Math.abs(wheel.slip)>.2);maxSlip=Math.max(maxSlip,Math.abs(wheel.slip));
@@ -685,19 +689,25 @@ export class PhysicsSim {
       const normal=new Vector3(w.normalX,w.normalY,w.normalZ);
       const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);forward.addScaledVector(normal,-forward.dot(normal)).normalize();
       const side=new Vector3().crossVectors(forward,normal);
-      return {w,r,forward,side,j:new Vector3(w.forceX*dt,w.forceY*dt,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/p.wheelRadius+(w.rollingResistanceN||0))*dt};
+      const axes=[forward,side].map(axis=>{
+        const cross=new Vector3().crossVectors(r,axis);
+        const invRot=cross.clone().applyQuaternion(qi).divide(this.inertia).applyQuaternion(s.q);
+        return {axis,inverseEffectiveMass:inverseMass+cross.dot(invRot)};
+      });
+      return {w,r,forward,axes,j:new Vector3(w.forceX*dt,w.forceY*dt,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/p.wheelRadius+(w.rollingResistanceN||0))*dt};
     });
-    for(let pass=0;pass<6;pass++)for(const c of contacts)for(const axis of [c.forward,c.side]){
-      const velocity=s.vel.clone().add(new Vector3().crossVectors(s.omega.clone().applyQuaternion(s.q),c.r));
-      const cross=new Vector3().crossVectors(c.r,axis);
-      const invRot=cross.clone().applyQuaternion(qi).divide(this.inertia).applyQuaternion(s.q);
-      const candidate=c.j.clone().addScaledVector(axis,-velocity.dot(axis)/(inverseMass+cross.dot(invRot)));
+    const spin=new Vector3(),rotationalVelocity=new Vector3(),velocity=new Vector3();
+    const candidate=new Vector3(),change=new Vector3(),angularImpulse=new Vector3();
+    for(let pass=0;pass<6;pass++)for(const c of contacts)for(const {axis,inverseEffectiveMass} of c.axes){
+      spin.copy(s.omega).applyQuaternion(s.q);
+      velocity.copy(s.vel).add(rotationalVelocity.crossVectors(spin,c.r));
+      candidate.copy(c.j).addScaledVector(axis,-velocity.dot(axis)/inverseEffectiveMass);
       const longitudinal=candidate.dot(c.forward);
       candidate.addScaledVector(c.forward,clamp(longitudinal,-c.longLimit,c.longLimit)-longitudinal);
       if(candidate.length()>c.limit)candidate.setLength(c.limit);
-      const change=candidate.clone().sub(c.j);c.j.copy(candidate);
+      change.copy(candidate).sub(c.j);c.j.copy(candidate);
       s.vel.addScaledVector(change,inverseMass);
-      s.omega.add(new Vector3().crossVectors(c.r,change).applyQuaternion(qi).divide(this.inertia));
+      s.omega.add(angularImpulse.crossVectors(c.r,change).applyQuaternion(qi).divide(this.inertia));
     }
     for(const c of contacts){c.w.forceX=c.j.x/dt;c.w.forceY=c.j.y/dt;c.w.forceZ=c.j.z/dt;c.w.tireForceN=c.j.length()/dt;}
     const resultant=new Vector3();this.brakeForceN=0;

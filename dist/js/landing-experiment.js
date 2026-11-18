@@ -1,5 +1,5 @@
 import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-physics146';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-frameperf1';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // All measurement updates run at the simulation's fixed 2 ms step. Force samples

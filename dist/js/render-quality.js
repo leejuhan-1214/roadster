@@ -6,7 +6,10 @@ export function renderPixelRatio(width,height,deviceRatio=1,quality='smooth',bud
 export class RenderBudget{
  constructor(){this.pixels=600000;this.elapsed=0;this.totalMs=0;this.frames=0;this.cooldown=2;}
  observe(ms){
-  if(!Number.isFinite(ms)||ms<4||ms>100)return false;
+  // Keep sustained low frame rates in the feedback loop. A background-tab
+  // pause or debugger stop should not lower resolution on its own.
+  if(!Number.isFinite(ms)||ms<4||ms>=500)return false;
+  ms=Math.min(ms,100);
   const seconds=ms/1000;if(this.cooldown>0){this.cooldown-=seconds;return false;}
   this.elapsed+=seconds;this.totalMs+=ms;this.frames++;
   if(this.elapsed<2)return false;

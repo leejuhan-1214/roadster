@@ -4,14 +4,14 @@ import {LandingVisual} from './landing-visual.js?v=20261118-physics146';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-physics146';
-import {loadCityWorld} from './city-world.js?v=20261118-physics146';
-import {attachStreamingCity} from './city-streaming.js?v=20261118-physics146';
-import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-physics146';
-import {updateTreeWind} from './city-trees.js?v=20261111-trees2';
+import {loadCityWorld} from './city-world.js?v=20261118-frameperf1';
+import {attachStreamingCity} from './city-streaming.js?v=20261118-frameperf1';
+import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-frameperf1';
+import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';
-import {sampleRoadSurface} from './road-surface.js?v=20261107-drive2';
+import {sampleRoadSurface} from './road-surface.js?v=20261118-frameperf1';
 import {updateSuspension} from './suspension-model.js?v=20261118-physics146';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -19,11 +19,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261118-physics146';
 import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-physics146';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261118-physics146';
-import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-physics146';
+import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-frameperf1';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
-import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261107-drive2';
+import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261118-frameperf1';
 import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive2';
 import {createEnvironmentMaterials,surfaceUV} from './environment-materials.js?v=20261107-fleet1';
 import {createLandingDeck} from './landing-deck.js?v=20261118-physics146';
@@ -191,19 +191,19 @@ export class FlightScene {
     this.resize();
   }
 
-  setQuality(quality) {
+  setQuality(quality,root=this.scene) {
     this.quality=quality==='detail'?'detail':'smooth';
     this.renderer.shadowMap.enabled=this.mode==='city'||this.mode==='lab'||this.quality==='detail';
     this.renderer.shadowMap.needsUpdate=true;this.resize();
-    const materials=new Set();this.scene.traverse(o=>{if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
+    const materials=new Set();root.traverse(o=>{if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
     for(const m of materials){
       if(m.transmission>0||m.userData.detailTransmission>0){
         m.userData.detailTransmission??=m.transmission;m.userData.detailOpacity??=m.opacity;
-        m.transmission=this.quality==='detail'?m.userData.detailTransmission:0;
+        const transmission=this.quality==='detail'?m.userData.detailTransmission:0;
+        if(m.transmission!==transmission){m.transmission=transmission;m.needsUpdate=true;}
         m.opacity=this.quality==='detail'?m.userData.detailOpacity:Math.min(m.userData.detailOpacity,.48);
         m.forceSinglePass=this.quality!=='detail';
       }
-      m.needsUpdate=true;
     }
   }
 
@@ -305,13 +305,19 @@ export class FlightScene {
   resize() {
     const rect=this.canvas.getBoundingClientRect();const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
     const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000);
-    this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.inspectionViewport();this.camera.updateProjectionMatrix();
+    if(w!==this.bufferWidth||h!==this.bufferHeight||ratio!==this.bufferRatio){
+      this.renderer.setDrawingBufferSize(w,h,ratio);
+      this.bufferWidth=w;this.bufferHeight=h;this.bufferRatio=ratio;
+    }
+    this.camera.aspect=w/h;this.inspectionViewport();this.camera.updateProjectionMatrix();
   }
   updateRoadRelief(roughness=0){
     if(!this.roadRelief)return;
     // The backing plane must be below the troughs when relief is enabled.
     // A flat landing uses the exact same zero datum as the collision solver.
     this.groundSurface.position.y=roughness>0?-.008:0;
+    if(!roughness&&!this.hasRoadRelief)return;
+    this.hasRoadRelief=roughness>0;
     const a=this.roadRelief.geometry.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,sampleRoadSurface(a.getX(i),a.getZ(i),{roughness}).height);
     a.needsUpdate=true;this.roadRelief.geometry.computeVertexNormals();
   }
@@ -568,12 +574,13 @@ export class FlightScene {
     const previous=this.vehicle;
     vehicle.root.position.copy(previous.root.position);vehicle.root.quaternion.copy(previous.root.quaternion);
     this.scene.remove(previous.root);this.vehicle=vehicle;this.scene.add(vehicle.root);
+    vehicle.setExteriorDisplayLod?.(false);
     this.cockpit?.setVehicle(vehicle);
     if(![...this.vehicleCache.values()].includes(previous))disposeVehicle(previous);
     this.focusPart(null);this.lastPaint='';this.lastExplosion=undefined;this.lastFitExplosion=undefined;this.hasCustomModel=false;
     // Keep only three decoded assemblies resident when comparing a large fleet.
     while(this.vehicleCache.size>3){const id=this.vehicleCache.keys().next().value;const evicted=this.vehicleCache.get(id);this.vehicleCache.delete(id);disposeVehicle(evicted);}
-    this.setExplode(0,true);this.restoreParts();this.setQuality(this.quality);
+    this.setExplode(0,true);this.restoreParts();this.setQuality(this.quality,vehicle.root);
     if(this.customModel)this.customModel.visible=false;
     this.modelStatus={ok:true,loading:false,...vehicle.assetInfo,meshCount:vehicle.sourceMeshCount};
     return vehicle;
@@ -602,7 +609,7 @@ export class FlightScene {
       w.rotation.y=physicsWheel.steer||0;
       if(w.userData.spinGroup)w.userData.spinGroup.rotation.z=-(physicsWheel.spinAngle||0);
     }
-    updateSuspension(this.vehicle,this.mode==='inspect');
+    if(this.vehicle.parts.get('suspension')?.visible)updateSuspension(this.vehicle,this.mode==='inspect');
   }
 
   update(sim,dt,options={}) {
@@ -642,7 +649,7 @@ export class FlightScene {
     for(const unit of this.vehicle.driveRotors||[]){const phase=unit.wheelIndices.reduce((sum,i)=>sum+(wheels[i]?.spinAngle||0),0)/unit.wheelIndices.length;unit.rotor.rotation.z=-phase*(sim.params.gearRatio||9);unit.gear.rotation.z=phase;}
     for(let i=0;i<(this.vehicle.valveIndicators?.length||0);i++){const valve=this.vehicle.valveIndicators[i];valve.scale.y=.35+.65*(thrusters[i]?.opening||0);}
     const lamp=this.vehicle.tank?.userData.supplyLamp;if(lamp)lamp.scale.setScalar(.7+.3*Math.min(1,(sim.massFlowKgS||0)/50));
-    if(this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
+    if(this.mode!=='city'&&this.lastRoadRoughness!==sim.params.roadRoughness){this.lastRoadRoughness=sim.params.roadRoughness;this.updateRoadRelief(sim.params.roadRoughness);}
     this.roadRelief.visible=this.mode!=='city'&&sim.params.roadRoughness>0;
     this.landingDeck.visible=this.mode==='lab'&&!this.roadRelief.visible;
     if(this.vehicle.wing?.userData.foil)this.vehicle.wing.userData.foil.rotation.z=(sim.params?.wingEnabled===false?0:.05)+(options.wing?-.11:0);
@@ -684,10 +691,17 @@ export class FlightScene {
     }
     if(this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
     this.tireEffects.update(sim,view,this.mode==='city');
-    this.contactShadow.position.set(position.x,.016,position.z);
+    // Place soft contact occlusion on the surface supporting the tyres. A
+    // single plane cannot follow a kerb edge, so fade it across a height step.
+    let low=Infinity,high=-Infinity;
+    for(const wheel of wheels){low=Math.min(low,wheel.surfaceY);high=Math.max(high,wheel.surfaceY);}
+    const support=Number.isFinite(low)?low:0,spread=Number.isFinite(high-low)?high-low:0;
+    const height=Math.max(0,position.y-support-sim.restHeight);
+    this.contactShadow.position.set(position.x,support+.016,position.z);
     this.contactShadow.rotation.z=-Math.atan2(tmpV.set(1,0,0).applyQuaternion(q).z,tmpV.x);
-    this.contactShadow.material.opacity=(mode==='lab'?.28:.65)*Math.exp(-Math.max(0,position.y-.6)*.35);
-    const height=Math.max(0,position.y-.6);this.contactShadow.scale.setScalar(1+height*.065);
+    this.contactShadow.material.opacity=(mode==='lab'?.28:.65)*Math.exp(-height*.65)*Math.max(0,1-spread/.12);
+    const penumbra=1+Math.min(height,5)*.065;
+    this.contactShadow.scale.set(sim.params.bodyLength*1.32/6.5*penumbra,sim.params.bodyWidth*1.65/4*penumbra,1);
     if(this.sunDirection)this.sun.position.copy(position).addScaledVector(this.sunDirection,this.mode==='city'?300:50);
     else this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);
     this.sun.target.position.copy(position);this.sun.target.updateMatrixWorld();
@@ -698,10 +712,37 @@ export class FlightScene {
       for(const [id,g] of this.stageVisual.userData.obstacles){const mat=g.children[0]?.material;if(mat?.emissive){mat.emissive.setHex(0xff6e34);mat.emissiveIntensity=hit?.id===id?Math.max(0,1-(sim.state.time-hit.lastTime)/1.4)*.8:0;}}
     }
     this.updateCamera(view,dt);
+    if(this.vehicle.setExteriorDisplayLod){
+      const exterior=this.quality==='smooth'&&mode!=='inspect'&&!this.cutaway&&!insideCockpit&&!explode;
+      const distanceSq=this.camera.position.distanceToSquared(bodyPosition);
+      // Hysteresis keeps the source mesh stable when orbiting close to its body.
+      this.useExteriorLod=exterior&&distanceSq>(this.useExteriorLod?9:12.25);
+      this.vehicle.setExteriorDisplayLod(this.useExteriorLod);
+    }
     this.landingVisual?.update(sim,view,this.camera,mode);
     if(insideCockpit&&this.cockpit.mirrorSurface)this.cockpitMirror.update(this.renderer,this.scene,{bodyPosition,quaternion:q,eye:this.cockpit.seat.eye},dt,[this.vehicle.root,this.customModel,this.cockpit.root]);
-    this.shadowElapsed+=dt;if(this.renderer.shadowMap.enabled&&this.shadowElapsed>=(this.mode==='city'||this.mode==='lab'?1/12:1/20)){this.renderer.shadowMap.needsUpdate=true;this.shadowElapsed=0;}
+    this.updateShadowMap(dt,bodyPosition,q,wheels,explode);
     this.renderer.render(this.scene,this.camera);
+  }
+
+  updateShadowMap(dt,position,rotation,wheels,explode){
+    const map=this.renderer.shadowMap;
+    if(!map.enabled)return;
+    this.shadowElapsed+=dt;
+    const inspect=this.mode==='inspect';
+    if(!map.needsUpdate&&this.shadowElapsed<(inspect?1/20:1/12))return;
+    const last=this.shadowPose??={position:new THREE.Vector3(),rotation:new THREE.Quaternion(),wheels:new Float64Array(8)};
+    const moved=position.distanceToSquared(last.position)>.000025||1-Math.abs(rotation.dot(last.rotation))>.000001;
+    const wheelMoved=wheels.some((wheel,i)=>Math.abs((wheel.compression||0)-last.wheels[2*i])>.002||
+      Math.abs((wheel.steer||0)-last.wheels[2*i+1])>.01);
+    // City scenery streams in even while parked. Lab shadows only change
+    // when the body, suspension, inspection layout, or lighting changes.
+    if(!map.needsUpdate&&!moved&&!wheelMoved&&last.explode===explode&&last.cutaway===this.cutaway&&
+       last.sun===this.sunDirection&&!(this.mode==='city'&&this.shadowElapsed>=1)&&!inspect)return;
+    map.needsUpdate=true;this.shadowElapsed=0;
+    last.position.copy(position);last.rotation.copy(rotation);
+    last.explode=explode;last.cutaway=this.cutaway;last.sun=this.sunDirection;
+    wheels.forEach((wheel,i)=>{last.wheels[2*i]=wheel.compression||0;last.wheels[2*i+1]=wheel.steer||0;});
   }
 
   updateCamera(sim,dt) {
@@ -718,7 +759,10 @@ export class FlightScene {
       // Translate eye and pivot equally: driving follows without resetting the user's orbit.
       this.camera.position.add(tmpV.copy(this.cameraTarget).sub(this.controls.target));
       this.controls.target.copy(this.cameraTarget);this.camera.fov=43;this.camera.updateProjectionMatrix();
-      this.controls.update();return;
+      // OrbitControls also updates directly on pointer events. Keep its regular
+      // input response there and time-scale only the animation-frame damping.
+      this.controls.dampingFactor=1-Math.pow(.92,60*dt);
+      this.controls.update();this.controls.dampingFactor=.08;return;
     }
     const target=tmpV.copy(p);target.y+=.1;
     let offset;

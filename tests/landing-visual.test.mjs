@@ -135,3 +135,17 @@ test('landing framing fits car and metre ruler beside the telemetry panel and pr
   FlightScene.prototype.frameLandingStart.call(context,sim);
   assert.ok(context.camera.position.distanceTo(context.controls.target)<normalDistance*3,'high drops fit a local ruler window, not a 5 km scene');
 });
+test('laboratory shadow reuses the parked silhouette and redraws at touchdown or steering',()=>{
+  const map={enabled:true,needsUpdate:true};
+  const view={mode:'lab',renderer:{shadowMap:map},shadowElapsed:1,cutaway:false};
+  const position=new THREE.Vector3(0,20,0),rotation=new THREE.Quaternion();
+  const wheels=Array.from({length:4},()=>({compression:0,steer:0}));
+  const update=()=>FlightScene.prototype.updateShadowMap.call(view,1/60,position,rotation,wheels,0);
+  update();map.needsUpdate=false;for(let i=0;i<60;i++)update();
+  assert.equal(map.needsUpdate,false);
+  position.y-=.2;update();assert.equal(map.needsUpdate,true);
+  map.needsUpdate=false;wheels[0].compression=.05;
+  for(let i=0;i<6;i++)update();assert.equal(map.needsUpdate,true);
+  map.needsUpdate=false;wheels[0].steer=.2;
+  for(let i=0;i<6;i++)update();assert.equal(map.needsUpdate,true);
+});

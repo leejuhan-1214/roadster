@@ -122,6 +122,17 @@ test('a cancelled asynchronous model load cannot start or reframe its obsolete l
   assert.equal(calls.some(call=>call.type==='landing-frame'),false);
 });
 
+test('a consecutive trial with the displayed assembly reuses the model and starts back at release height',async()=>{
+  const {c,calls}=harness(),batch=session(c);
+  c.scene.vehicle.profileId='roadster';batch.index=1;c.landingSession=batch;
+  c.sim.state.pos.set(8,0,10);c.sim.state.vel.set(1,-4,2);c.sim.state.gas=3;
+  await c.nextLanding(batch);
+  assert.equal(calls.some(call=>call.type==='load'),false);
+  assert.ok(Math.abs(landingClearance(c.sim)-3)<1e-10);
+  assert.equal(c.sim.state.vel.length(),0);assert.equal(c.sim.state.gas,c.sim.initialGas);
+  assert.equal(c.landingRun.method,'brake');
+});
+
 test('returning to settings updates the available camera viewport and returns the form to its beginning',()=>{
   const {c,calls,node,open}=harness();node('left-panel').scrollTop=500;
   c.setSettingsPanel(false);

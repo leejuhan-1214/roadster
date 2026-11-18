@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {TREE_BASE_Y} from './city-tree-collision.js?v=20261111-trees2';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {createTreeLibrary,createSpeciesGroves} from './city-tree-species.js?v=20261111-trees2';
+import {createTreeLibrary,createSpeciesGroves} from './city-tree-species.js?v=20261118-frameperf1';
 
 export const TREE_LOD_DISTANCES=[0,85,280];
 export const TREE_TILE_SIZE=96;
@@ -90,7 +90,7 @@ export async function loadCityTreeAsset(){
   const asset={levels,height,wind,source:'https://polyhaven.com/a/tree_small_02',license:'CC0-1.0'};
   // The scanned tree is one kind among seven; the other six are grown per
   // species and share this asset's wind clock.
-  asset.library=createTreeLibrary({asset,wind}).warm();
+  asset.library=await createTreeLibrary({asset,wind}).warmForDisplay();
   return asset;
 }
 

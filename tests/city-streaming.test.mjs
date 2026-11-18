@@ -15,3 +15,18 @@ test('adjacent boundary crossing retains the old collision coverage while next t
 test('distant travel evicts GPU resources and loaded tile count stays bounded',async()=>{const f=fixture();await settle(f.s);assert.ok(f.s.chunks.size);const old=[...f.s.chunks.keys()];await settle(f.s,3500,-3500);assert.ok(old.every(k=>f.disposed.includes(k)));assert.ok(f.s.chunks.size<=49);f.s.dispose();assert.equal(f.s.chunks.size,0);});
 test('fetch failure retries with backoff without immediate per-frame retry loop',async()=>{let time=0,calls=0;const f=fixture({radius:0,concurrency:1,now:()=>time,load:async()=>{calls++;throw new Error('network');}});f.s.update(0,0);await flush();assert.equal(calls,1);for(let i=0;i<10;i++)f.s.update(0,0);await flush();assert.equal(calls,1);time=2001;f.s.update(0,0);await flush();assert.equal(calls,2);f.s.dispose();});
 test('dispose aborts requests and a late completion cannot resurrect tiles',async()=>{let resolve,signal;const f=fixture({load:(entry,key,s)=>{signal=s;return new Promise(r=>resolve=r);},concurrency:1});f.s.update(0,0);await flush();f.s.dispose();assert.ok(signal.aborted);resolve('late');await flush();assert.equal(f.s.chunks.size,0);assert.equal(f.s.staging.size,0);});
+
+test('crossing a district retires one old tile per frame and cancels retirement on a return trip',async()=>{
+  const f=fixture();await settle(f.s);
+  const keys=new Set(f.s.chunks.keys());assert.ok(keys.size>10);
+  f.s.update(3500,3500);assert.equal(f.evicted.length,1);
+  f.s.update(0,0);assert.equal(f.evicted.length,1,'kept tiles are immediately eligible again');
+  for(let frame=0;frame<180;frame++){
+    const before=f.evicted.length;
+    f.s.update(3500,3500);await flush();
+    assert.ok(f.evicted.length-before<=1);
+    assert.ok(f.s.chunks.size<=49);
+  }
+  assert.ok([...keys].every(key=>f.evicted.includes(key)));
+  f.s.dispose();
+});

@@ -1,6 +1,7 @@
 // Bounded, asynchronous real-map streaming. No geometry is generated in update().
 export function createTileScheduler({manifest,load,hydrate,onActivate=()=>{},onEvict=()=>{},now=()=>performance.now(),budgetMs=2,radius=2,concurrency=2}){
   const size=manifest.tileSize,entries=manifest.tiles,chunks=new Map(),pending=new Map(),staging=new Map(),failures=new Map();
+  const retiring=new Set();
   let wanted=new Set(),keep=new Set(),ordered=[],anchor='',disposed=false,revision=0,requests=0;
   const keyAt=(x,z)=>Math.floor(x/size)+'_'+Math.floor(z/size);
   function release(key){const chunk=chunks.get(key);if(!chunk)return;onEvict(key,chunk);chunk.dispose();chunks.delete(key);revision++;}
@@ -41,9 +42,17 @@ export function createTileScheduler({manifest,load,hydrate,onActivate=()=>{},onE
       });
       for(const [key,p]of pending)if(!wanted.has(key))p.controller.abort();
       for(const [key,h]of staging)if(!wanted.has(key)){h.dispose();staging.delete(key);}
-      for(const key of chunks.keys())if(!keep.has(key)&&!wanted.has(key))release(key);
+      retiring.clear();
+      for(const key of chunks.keys())if(!keep.has(key)&&!wanted.has(key))retiring.add(key);
     }
     const start=now();let steps=0;
+    // Disposing a whole trailing row at a 512 m boundary can stall drawing.
+    // Retire at most one per frame. This also caps resident chunks because
+    // at most one ready tile can be activated per update.
+    if(retiring.size){
+      const key=retiring.values().next().value;retiring.delete(key);release(key);
+      if(now()-start>=budgetMs){pump();return;}
+    }
     for(const key of ordered){
       const h=staging.get(key);if(!h)continue;
       try{

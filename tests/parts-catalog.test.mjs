@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { adaptRoadsterScene } from '../dist/js/roadster-model.js';
+import { installRoadsterDisplayLod } from '../dist/js/roadster-display-lod.js';
 import { createVehicle } from '../dist/js/vehicle.js';
 
 // Load the actual licensed model and binary geometry. Only image-backed materials
@@ -25,6 +26,27 @@ before(async () => {
   }));
   gltf = await loader.parseAsync(JSON.stringify(fixture), '');
   vehicle = adaptRoadsterScene(gltf.scene, createVehicle(), gltf.parser);
+});
+
+test('assembled display indices retain source vertices, texture normals, materials and wheel membership',async()=>{
+  const bytes=await readFile(new URL('../dist/assets/tesla-roadster-2020/exterior-indices.bin',import.meta.url));
+  installRoadsterDisplayLod(vehicle,bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));
+  const source=[...vehicle.detailParts.values()].filter(mesh=>mesh.userData.kind==='model')
+    .map(mesh=>({mesh,geometry:mesh.geometry,material:mesh.material,parent:mesh.parent}));
+  assert.equal(source.length,105);
+  const triangleCount=()=>source.reduce((sum,{mesh})=>sum+mesh.geometry.index.count/3,0);
+  assert.equal(triangleCount(),608850);
+  vehicle.setExteriorDisplayLod(true);
+  try{
+    assert.equal(triangleCount(),130398);
+    for(const {mesh,geometry,material,parent} of source){
+      assert.equal(mesh.material,material);assert.equal(mesh.parent,parent);
+      for(const [name,attr] of Object.entries(geometry.attributes))assert.equal(mesh.geometry.attributes[name],attr);
+      const vertices=geometry.attributes.position.count;
+      assert.ok(mesh.geometry.index.array.every(i=>i<vertices));
+    }
+  }finally{vehicle.setExteriorDisplayLod(false);}
+  for(const {mesh,geometry} of source)assert.equal(mesh.geometry,geometry);
 });
 
 test('every original Roadster mesh has a stable selectable entry without inventing a vehicle BOM', () => {
