@@ -12,7 +12,7 @@
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head><body class="quality-smooth">
 <canvas id="world" aria-label="착지 충격과 차체 구조를 관찰하는 3D 공간" tabindex="0"></canvas>
-<div id="boot" class="boot"><b>ROADSTER LANDING LAB</b><p id="boot-message">실험 공간을 준비하고 있습니다…</p></div>
+<div id="boot" class="boot"><b>ROADSTER LANDING LAB</b><p id="boot-message">실험 공간을 준비하고 있습니다…</p><button type="button" id="boot-retry" hidden>다시 불러오기</button></div>
 <header class="topbar glass"><div class="brand">ROADSTER<small>LANDING LAB</small></div>
 <nav class="mode-nav" aria-label="실험실 모드"><button class="active" data-mode="lab">01 <span>착지 실험</span></button><button data-mode="inspect">02 <span>구조 탐색</span></button><button data-mode="city">03 <span>도시 주행</span></button></nav>
 <div class="header-actions"><span id="live-label">실험 준비</span><button id="pause" class="icon-btn" aria-label="실험 재생" title="일시정지 / 재생 (P)" disabled>▶</button><button id="help" class="icon-btn" aria-label="사용 방법과 출처">?</button></div></header>
@@ -84,4 +84,23 @@
 <aside id="part-card" class="part-card glass" hidden><div class="panel-heading"><span id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 선택 닫기">×</button></div><h2 id="part-title"></h2><div id="part-mechanism" hidden><p id="part-description"></p><a id="part-source" target="_blank" rel="noopener noreferrer" hidden>구조 참고 자료 ↗</a><button id="part-motion" type="button" aria-pressed="false" hidden>작동 재생</button><button id="engine-strokes" type="button" aria-pressed="false" hidden>4행정 색상</button><div id="stroke-legend" aria-label="행정별 표시 색상" hidden></div></div><div class="part-actions"><button id="part-zoom">가까이 보기</button><button id="part-isolate" aria-pressed="false">이것만 보기</button><button id="part-hide">선택 숨기기</button></div></aside>
 <div class="view-tools glass"><button id="camera" title="카메라 전환 (C)">◉ <span id="camera-label">자유 카메라</span></button><button id="vectors" aria-pressed="false" title="힘 벡터 (V)">↗ 힘 벡터</button><button id="reset" title="실험 초기화 (R)">↺ 초기화</button><div class="landing-playback" id="landing-playback"><button id="landing-suspension" aria-pressed="false" title="차체 외장을 열어 바퀴·서스펜션의 움직임 관찰">서스펜션</button><label for="landing-speed">실험 재생</label><select id="landing-speed" aria-label="착지 실험 재생 속도"><option value="1">1×</option><option value="0.25">0.25×</option><option value="0.1">0.1×</option></select><button id="landing-step" disabled title="일시정지한 착지 실험을 2ms 진행">+2 ms</button></div></div><span id="fps" class="frame-note"></span><div id="toast" class="toast" role="status"></div>
 <dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.54.0</div></dialog>
-<script type="module" src="./js/main.js?v=20261118-model154"></script></body></html>
+<script type="module" id="app-entry" src="./js/main.js?v=20261118-model154"></script>
+<script>
+  const entry = document.getElementById('app-entry');
+  const retry = document.getElementById('boot-retry');
+  const retryKey = 'roadster-entry-retry-154';
+  retry.addEventListener('click', () => location.reload());
+  entry.addEventListener('error', () => {
+    document.getElementById('boot-message').textContent = '3D 화면에 필요한 파일을 받지 못했습니다.';
+    retry.hidden = false;
+    try {
+      if (navigator.onLine && !sessionStorage.getItem(retryKey)) {
+        sessionStorage.setItem(retryKey, '1');
+        location.reload();
+      }
+    } catch {}
+  });
+  entry.addEventListener('load', () => {
+    try { sessionStorage.removeItem(retryKey); } catch {}
+  });
+</script></body></html>
