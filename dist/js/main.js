@@ -9,7 +9,7 @@ import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,land
 import {LandingUI} from './landing-ui.js?v=20261118-physics146';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
-import {advanceFrame} from './frame-steps.js?v=20261118-frameperf1';
+import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {drawMappedStreets} from './city-minimap.js?v=20261118-frameperf1';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-frameperf1';
 import {FlightScene} from './scene.js?v=20261118-frameperf1';
@@ -565,7 +565,9 @@ function animate(stamp){
   if(mode==='city')scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z,sim.state.vel.x,sim.state.vel.z);
   if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked){
     const debt=accumulator+elapsed*(landingRun?landingPlaybackRate:1);
-    const budgetMs=Math.min(16,Math.max(6,frameMs*.45));
+    // A missed refresh gives the integrator more time. A fixed small budget
+    // at 5–15 FPS can otherwise make the vehicle barely move between frames.
+    const budgetMs=Math.min(100,Math.max(6,frameMs*.55));
     accumulator=advanceFrame(debt,LANDING_STEP,budgetMs,
       ()=>{stepSimulation();return !paused;},
       ()=>renderStates.captureStart(sim),()=>renderStates.afterStep(sim));

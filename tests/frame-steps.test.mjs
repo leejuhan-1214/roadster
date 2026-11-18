@@ -34,3 +34,14 @@ test('a slow contact frame retains debt while returning to the renderer',()=>{
   state.frame(debt,100,6);
   assert.equal(state.steps,6);
 });
+
+test('can repay an interrupted slow frame within the normal maximum steps per draw',()=>{
+  const state=clock(2);
+  let debt=state.frame(.1,8);
+  assert.equal(state.steps,5);
+  debt=state.frame(debt+.1,100);
+  assert.equal(state.steps,55);
+  debt=state.frame(debt,100);
+  assert.ok(Math.abs(state.steps*step+debt-.2)<1e-12);
+  assert.ok(debt<step);
+});
