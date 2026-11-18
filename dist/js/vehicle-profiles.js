@@ -1,5 +1,5 @@
-import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261111-drivefix1';
-import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261109-assessment1';
+import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261118-city151';
+import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261118-city151';
 import {ROCKET_PARAMS} from './rocket-layout.js?v=20261115-capacity375';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.

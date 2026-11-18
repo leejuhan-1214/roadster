@@ -3,7 +3,7 @@ import {CockpitView} from './cockpit-view.js?v=20261118-review149';
 import {LandingVisual} from './landing-visual.js?v=20261118-review149';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-physics146';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-city151';
 import {loadCityWorld} from './city-world.js?v=20261118-study150';
 import {attachStreamingCity} from './city-streaming.js?v=20261118-frameperf1';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-frameperf1';
@@ -17,9 +17,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261118-physics146';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-physics146';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-city151';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261118-physics146';
-import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-frameperf1';
+import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-city151';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
@@ -364,6 +364,9 @@ export class FlightScene {
   }
   setMode(mode) {
     if(mode!==this.mode)this.resetPhysicalEffects?.();
+    // Driving starts with the wheels and body assembled on the first frame.
+    // Keep the inspector slider's target for the next visit.
+    if(this.mode==='inspect'&&mode!=='inspect')this.explodeProgress=0;
     this.mode=mode;this.cockpitDrag=null;if(mode!=='city'){if(this.cockpit)this.cockpit.root.visible=false;if(this.vehicle)this.vehicle.root.visible=true;}this.controls.enabled=true;this.controls.enableZoom=mode!=='inspect';this.controls.minDistance=mode==='inspect'?.25:3;
     this.pinchDistance=0;
     if(this.landingVisual)this.landingVisual.root.visible=mode==='lab'&&this.landingVisual.enabled;

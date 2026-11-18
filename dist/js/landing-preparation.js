@@ -1,5 +1,5 @@
 import {economyInitialState,measureEconomyPlan} from './landing-economy.js?v=20261118-study150';
-import {landingClearance,releaseLandingVehicle,recordLandingRelease} from './landing-experiment.js?v=20261118-study150';
+import {landingClearance,releaseLandingVehicle,recordLandingRelease} from './landing-experiment.js?v=20261118-city151';
 
 // Reuse a warm worker between trials. Only numeric release conditions cross
 // the thread boundary. The running vehicle remains on the simulation thread.

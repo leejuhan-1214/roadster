@@ -24,7 +24,7 @@ export const DEFAULTS = Object.freeze({
   wheelRadius: .36, wheelInertia: 2.6, gearRatio: 9, driveEfficiency: .94,
   batteryKWh: 200, roadRoughness:0, tractionControl:true, absEnabled:true, feedLossCoefficient:1000, contactEnabled: true, aeroEnabled: true,
   cgX: 0, cgY: 0, cgZ: 0, inertiaRoll: 900, inertiaYaw: 3400, inertiaPitch: 3500,
-  wheelbase: 2.8, trackWidth: 1.88,
+  wheelbase: 2.8, trackWidth: 1.88, parkedWheelMounts:false,
   bodyLength: BODY_ENVELOPE.half[0] * 2, bodyWidth: BODY_ENVELOPE.half[2] * 2,
   bodyHeight: BODY_ENVELOPE.half[1] * 2, bodyCenterY: BODY_ENVELOPE.center[1],
   liftX:LIFT_LAYOUT.x,liftY:LIFT_LAYOUT.y,liftZ:LIFT_LAYOUT.z,
@@ -219,8 +219,27 @@ export class PhysicsSim {
     this.bodyBoxCenter.set(0,p.bodyCenterY,0);
     this.cg.set(p.cgX, p.cgY, p.cgZ);
     this.inertia.set(p.inertiaRoll, p.inertiaYaw, p.inertiaPitch);
+    this.groundSupportGroups=[];
+    for(const xSign of [-1,1])for(const ySign of [-1,1])for(const zSign of [-1,1]){
+      const quadrant=(xSign>0?2:0)+(zSign>0?1:0);
+      const points=p.parkedWheelMounts&&ySign<0?p.cityGroundSupports?.[quadrant]:null;
+      const locations=points?.length?points:[[xSign*this.bodyHalf[0],p.bodyCenterY+ySign*this.bodyHalf[1],zSign*this.bodyHalf[2]]];
+      this.groundSupportGroups.push(locations.map(p=>new Vector3(...p).sub(this.cg)));
+    }
+    this.groundLevers=this.groundSupportGroups.map(()=>new Vector3());
+    const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
+    const staticSag=(this.loadedDryMass + gas)*p.gravity/(4*p.springK);
+    // Fitted city meshes depict a parked car: its hub already carries the
+    // static spring load. Extend the unloaded suspension by that deflection so
+    // simulating the load returns the wheel to its authored arch position.
+    const corners=p.parkedWheelMounts&&Array.isArray(p.cityWheelGeometry)&&p.cityWheelGeometry.length===4&&
+      p.cityWheelGeometry.every(w=>w&&[w.x,w.y,w.z,w.radius].every(Number.isFinite)&&w.radius>0)?p.cityWheelGeometry:null;
+    const extension=p.parkedWheelMounts?staticSag:0;
     this.wheels.forEach((w, i) => {
-      w.pos.set(i < 2 ? p.wheelbase / 2 : -p.wheelbase / 2, -.31, i % 2 ? p.trackWidth / 2 : -p.trackWidth / 2).sub(this.cg);
+      const corner=corners?.[i];
+      w.radius=corner?.radius??p.wheelRadius;
+      w.pos.set(corner?.x??(i<2?p.wheelbase/2:-p.wheelbase/2),
+        (corner?.y??-.31)-extension,corner?.z??(i%2?p.trackWidth/2:-p.trackWidth/2)).sub(this.cg);
       w.isFront = i < 2;
     });
     this.gimbalX=0;this.gimbalZ=0;this.gimbalDirection.set(0,1,0);
@@ -236,10 +255,10 @@ export class PhysicsSim {
       else t.mountPosition.set(i%2?-p.yawX:p.yawX,p.yawY,(i===6||i===9)?p.yawZ:-p.yawZ);
       t.pos.copy(t.mountPosition).sub(this.cg);if(t.group==='lift')t.dir.set(0,1,0);
     });
-    const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
     this.initialGas = gas;
     this.initialEnergy = gas * CV * p.initialTemperature;
-    this.restHeight = .31 + p.wheelRadius + this.cg.y - (this.loadedDryMass + gas) * p.gravity / (4 * p.springK);
+    this.restHeight=corners?corners.reduce((sum,w)=>sum+w.radius-w.y,0)/4+this.cg.y:
+      .31+extension+p.wheelRadius+this.cg.y-staticSag;
     this.state = { pos: new Vector3(this.cg.x, this.restHeight, this.cg.z), vel: new Vector3(),
       q: new Quaternion(), omega: new Vector3(), gas, temp: p.initialTemperature,
       pressure: p.tankPressureMPa * 1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
@@ -265,9 +284,10 @@ export class PhysicsSim {
     this.manifoldPressure=this.state.pressure;this.massFlowKgS=0;this.electricPowerW=0;this.regenPowerW=0;this.driveLossW=0;this.tractionCut=1;
     this.history = [];
     this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
-    for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
+    for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0;
+      w.compression = this.contactCount ? Math.max(0,w.radius-(this.state.pos.y+w.pos.y)) : 0;
       w.surfaceY=this.surfaceHeightAt(this.state.pos.x+w.pos.x,this.state.pos.z+w.pos.z,this.state.pos.y+w.pos.y);
-      w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (this.loadedDryMass + gas) * p.gravity / 4 : 0;
+      w.omega = preset === 'corner' ? 12 / w.radius : preset === 'rolling' ? 20 / w.radius : 0; w.load = this.contactCount ? (this.loadedDryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
     return this.state;
@@ -361,7 +381,7 @@ export class PhysicsSim {
 
   _step(dt, input) {
     const p = this.params, s = this.state;
-    const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
+    const groundLevers=p.contactEnabled||input.fan?this._groundLevers():null;
     this.lastInput = input;
     const velocityBefore=s.vel.clone();this.preStepVelocityY=s.vel.y;this.stepDuration=dt;
     // Refilling is an explicit parked operation. Intaking ambient air increases
@@ -549,10 +569,21 @@ export class PhysicsSim {
     this.fanForce = 0;
     this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
     if(input.fan){
-      const fanSurface=this.surfaceHeightAt(s.pos.x,s.pos.z,s.pos.y-this.restHeight);
+      const fanSurface=this.surfaceHeightAt(s.pos.x,s.pos.z,s.pos.y);
       const clearance = Math.max(0, s.pos.y - this.restHeight - fanSurface);
+      let fanBudgetW=Math.max(0,dischargeLimitW-electricPower);
+      if(p.parkedWheelMounts&&p.fanMaxForce>0){
+        // Keep suction from loading the chassis onto the pavement. Use the
+        // oriented collision hull, so pitch and roll also reduce the room
+        // available before the lowest bumper/side touches down.
+        let lowest=Infinity;for(const r of groundLevers)lowest=Math.min(lowest,r.y);
+        const travel=Math.max(0,s.pos.y+lowest-fanSurface-.02);
+        const fraction=Math.min(1,4*p.springK*travel/p.fanMaxForce);
+        // poweredGroundFan's pressure is proportional to shaft power^(2/3).
+        fanBudgetW=Math.min(fanBudgetW,p.fanPowerKW*1000*fraction**1.5);
+      }
       const fan=poweredGroundFan({enabled:!!input.fan,clearance,upY:bodyUp.y,dt,
-        batteryJ:Math.max(0,s.batteryJ-electricPower*dt),powerBudgetW:Math.max(0,dischargeLimitW-electricPower)},p);
+        batteryJ:Math.max(0,s.batteryJ-electricPower*dt),powerBudgetW:fanBudgetW},p);
       this.fanForce=fan.forceN;this.fanPowerW=fan.powerW;this.fanPressurePa=fan.pressurePa;this.fanAirflowM3S=fan.airflowM3S;this.fanSeal=fan.seal;
       electricPower+=fan.powerW;
       applyAt(bodyUp.clone().multiplyScalar(-this.fanForce), new Vector3(-.10, -.25, 0).sub(this.cg).applyQuaternion(s.q));
@@ -579,7 +610,7 @@ export class PhysicsSim {
     for(const w of this.wheels){const target=p.absEnabled!==false&&Math.max(brakeAmount,coastBrake)>0&&Math.abs(bodyVelocity.x)>2?clamp(1+((w.slip||0)*Math.sign(bodyVelocity.x)+.16)*7,.08,1):1;w.absFactor+=(target-w.absFactor)*(1-Math.exp(-dt/.025));}
     const absScale=Math.min(...this.wheels.map(w=>w.absFactor));
     const oldWheelOmega=this.wheels.map(w=>w.omega);
-    const wheelOmegaBound=this.wheels.map(w=>Math.max(Math.abs(w.omega),s.vel.clone().add(new Vector3().crossVectors(omegaWorld,w.pos.clone().applyQuaternion(s.q))).length()/p.wheelRadius));
+    const wheelOmegaBound=this.wheels.map(w=>Math.max(Math.abs(w.omega),s.vel.clone().add(new Vector3().crossVectors(omegaWorld,w.pos.clone().applyQuaternion(s.q))).length()/w.radius));
     const driveParameters=electricPower>0?{...p,batteryMaxDischargeKW:Math.max(0,dischargeLimitW-electricPower)/1000}:p;
     const drive=evaluateElectricDrive({wheelOmega:oldWheelOmega,wheelOmegaBound,throttle:throttle*this.tractionCut,brake:Math.max(brakeAmount,coastBrake)*absScale,batteryEnergyJ:Math.max(0,s.batteryJ-electricPower*dt),dt},driveParameters);
     for(let index=0;index<this.wheels.length;index++){
@@ -589,7 +620,7 @@ export class PhysicsSim {
       const surfaceY=this.surfaceHeightAt(worldCenter.x,worldCenter.z,worldCenter.y,road.height);
       const n=surfaceY>road.height+1e-8?UP.clone():new Vector3(...road.normal);
       wheel.surfaceY=surfaceY;wheel.normalX=n.x;wheel.normalY=n.y;wheel.normalZ=n.z;
-      const compression=Math.max(0,p.wheelRadius-(worldCenter.y-surfaceY)*n.y);
+      const compression=Math.max(0,wheel.radius-(worldCenter.y-surfaceY)*n.y);
       wheel.compression=compression;wheel.grounded=!!p.contactEnabled&&compression>0;
       const centreRadius=Math.abs(steering)>1e-7?p.wheelbase/Math.tan(Math.abs(steering)):Infinity;
       const mountZ=wheel.pos.z+this.cg.z,wheelRadiusToTurn=centreRadius+Math.sign(steering)*mountZ;
@@ -602,18 +633,18 @@ export class PhysicsSim {
       const driveTorque=drive.wheelTorqueNm[index];
       const rearHandbrake=wheel.isFront?0:handbrakeAmount*5200;
       const frictionBrake=Math.max(0,brakeAmount*wheel.absFactor*3100-Math.abs(drive.wheelRegenTorqueNm[index]))+rearHandbrake;
-      const omegaFor=fx=>{let omega=wheel.omega+(driveTorque-fx*p.wheelRadius-.025*wheel.omega)/p.wheelInertia*dt;return Math.sign(omega)*Math.max(0,Math.abs(omega)-frictionBrake/p.wheelInertia*dt);};
+      const omegaFor=fx=>{let omega=wheel.omega+(driveTorque-fx*wheel.radius-.025*wheel.omega)/p.wheelInertia*dt;return Math.sign(omega)*Math.max(0,Math.abs(omega)-frictionBrake/p.wheelInertia*dt);};
       const profile=p.friction<=.2?'ice':p.friction<=.7?'wet':'dry';
       const contactAtSlip=tireForceAtSlip({surface:profile,normalLoad:normal,grounded:wheel.grounded,muPeak:Math.max(0,p.friction),rollingResistance:p.rollingResistance,forwardSpeed:ux,slipAngle:Math.atan2(uy,Math.max(3,Math.abs(ux))),longitudinalStiffness:120000,corneringStiffness:70000});
       const slipAtForce=fx=>{
-        const speed=(wheel.omega+omegaFor(fx))*.5*p.wheelRadius;
+        const speed=(wheel.omega+omegaFor(fx))*.5*wheel.radius;
         return (speed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(speed));
       };
       // Implicit wheel reaction makes realistic high slip stiffness stable at 500 Hz.
       let lo=-Math.max(0,p.friction)*normal,hi=-lo;
       for(let k=0;k<(Math.abs(ux)<2?20:14)&&normal>0&&p.friction>0;k++){const mid=(lo+hi)*.5;const residual=mid-contactAtSlip(slipAtForce(mid),true);if(Math.abs(residual)<1e-7){lo=hi=mid;break;}if(residual>0)hi=mid;else lo=mid;}
       const tire=contactAtSlip(slipAtForce((lo+hi)*.5)),fx=tire.fx,fy=tire.fy,rolling=tire.rolling;
-      const nextOmega=omegaFor(fx),patchSpeed=(wheel.omega+nextOmega)*.5*p.wheelRadius;
+      const nextOmega=omegaFor(fx),patchSpeed=(wheel.omega+nextOmega)*.5*wheel.radius;
       wheel.slip=wheel.grounded?(patchSpeed-ux)/Math.max(2.5,Math.abs(ux),Math.abs(patchSpeed)):0;
       wheel.sliding=wheel.grounded&&(tire.sliding||Math.abs(wheel.slip)>.2);maxSlip=Math.max(maxSlip,Math.abs(wheel.slip));
       wheel.rollingResistanceN=Math.abs(rolling);this.rollingResistanceN+=wheel.rollingResistanceN;wheel.tireForceN=tire.magnitude;
@@ -635,8 +666,7 @@ export class PhysicsSim {
 
     // Body skid contact is separate from suspension; forces and impulses are explicit.
     if (p.contactEnabled) {
-      for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
-        const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q);
+      for (const r of groundLevers) {
         const penetration = .006 - (s.pos.y + r.y);
         if (penetration > 0) {
           const contactVel = s.vel.clone().add(new Vector3().crossVectors(omegaWorld, r));
@@ -677,7 +707,7 @@ export class PhysicsSim {
     const s=this.state,p=this.params;
     if(!(input.brake>0)||!(p.friction>0)||Math.hypot(s.vel.x,s.vel.z)>.5)return;
     const qi=s.q.clone().invert(),inverseMass=1/this.mass;
-    const contacts=this.wheels.filter(w=>w.load>1&&Math.abs(w.omega*p.wheelRadius)<.1).map(w=>{
+    const contacts=this.wheels.filter(w=>w.load>1&&Math.abs(w.omega*w.radius)<.1).map(w=>{
       const r=w.pos.clone().applyQuaternion(s.q);r.y=w.surfaceY-s.pos.y;
       const normal=new Vector3(w.normalX,w.normalY,w.normalZ);
       const forward=new Vector3(Math.cos(w.steer),0,-Math.sin(w.steer)).applyQuaternion(s.q);forward.addScaledVector(normal,-forward.dot(normal)).normalize();
@@ -687,7 +717,7 @@ export class PhysicsSim {
         const invRot=cross.clone().applyQuaternion(qi).divide(this.inertia).applyQuaternion(s.q);
         return {axis,inverseEffectiveMass:inverseMass+cross.dot(invRot)};
       });
-      return {w,r,forward,axes,j:new Vector3(w.forceX*dt,w.forceY*dt,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/p.wheelRadius+(w.rollingResistanceN||0))*dt};
+      return {w,r,forward,axes,j:new Vector3(w.forceX*dt,w.forceY*dt,w.forceZ*dt),limit:p.friction*w.load*dt,longLimit:(w.brakeTorque/w.radius+(w.rollingResistanceN||0))*dt};
     });
     const spin=new Vector3(),rotationalVelocity=new Vector3(),velocity=new Vector3();
     const candidate=new Vector3(),change=new Vector3(),angularImpulse=new Vector3();
@@ -760,13 +790,27 @@ export class PhysicsSim {
     }
   }
 
+  _groundLevers() {
+    const q=this.state.q;
+    const x=2*(q.x*q.y+q.w*q.z),y=1-2*(q.x*q.x+q.z*q.z),z=2*(q.y*q.z-q.w*q.x);
+    for(let i=0;i<this.groundSupportGroups.length;i++){
+      const group=this.groundSupportGroups[i];
+      let point=group[0],lowest=x*point.x+y*point.y+z*point.z;
+      for(let j=1;j<group.length;j++){
+        const p=group[j],height=x*p.x+y*p.y+z*p.z;
+        if(height<lowest){point=p;lowest=height;}
+      }
+      this.groundLevers[i].copy(point).applyQuaternion(q);
+    }
+    return this.groundLevers;
+  }
+
   _resolveGround() {
     const s = this.state;
-    const BODY_HALF=this.bodyHalf, BODY_BOX_CENTER=this.bodyBoxCenter;
     const vertices=[];
     let lowest = Infinity;
-    for (const x of [-BODY_HALF[0], BODY_HALF[0]]) for (const y of [BODY_BOX_CENTER.y-BODY_HALF[1], BODY_BOX_CENTER.y+BODY_HALF[1]]) for (const z of [-BODY_HALF[2], BODY_HALF[2]]) {
-      const r = new Vector3(x, y, z).sub(this.cg).applyQuaternion(s.q), height = s.pos.y + r.y;
+    for (const r of this._groundLevers()) {
+      const height = s.pos.y + r.y;
       vertices.push({r,height});lowest=Math.min(lowest,height);
     }
     if (lowest >= 0) return;

@@ -104,6 +104,13 @@ test('explode setter synchronizes an optional callback while mode changes reserv
   FlightScene.prototype.setMode.call(view, 'inspect');
   assert.equal(view.controls.enableZoom, false);
   assert.equal(view.controls.enabled, true);
+  for(const mode of ['city','lab']){
+    FlightScene.prototype.setMode.call(view,'inspect');
+    view.explodeProgress=.9;view.explodeTarget=1;
+    FlightScene.prototype.setMode.call(view,mode);
+    assert.equal(view.explodeProgress,0,'the first live frame must use assembled wheels');
+    assert.equal(view.explodeTarget,1,'preserve the inspection setting when returning');
+  }
   FlightScene.prototype.setMode.call(view, 'drive');
   assert.equal(view.controls.enableZoom, true);
   assert.equal(view.selectedPart, null);

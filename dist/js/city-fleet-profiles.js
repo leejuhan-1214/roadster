@@ -178,6 +178,12 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/volvo-v40.glb",
     "yaw": -1.5707963267948966,
     "adapter": {
+      "wheelTriangles": {
+        "Object_11": {"rolling": [[1162,1170], [1289,1297], [1305,1313], [1339,1347]]},
+        "Object_15": {"rolling": [[2958,3728]]},
+        "Object_16": {"rolling": [[314,1084], [1644,2414]]},
+        "Object_17": {"rolling": [[0,770]]}
+      },
       "wheelNames": [
         "Object_2",
         "Object_5"
@@ -380,6 +386,10 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/audi-a1.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
+      "wheelTriangles": {
+        "Material2_1": {"rolling": [[85,89], [109,123], [249,273], [353,401], [474,1071], [1128,1204], [1387,1523], [1566,2521], [2588,2705], [2775,2779], [2795,2871], [2893,3126], [4095,4229]]},
+        "Material3_4": {"rolling": [[0,104], [254,356], [550,994], [2520,2598], [7274,7718], [10670,10728], [11209,11267], [11691,11768], [12585,12589], [12855,12883], [12981,13013], [13027,13035], [13065,13193], [13439,13463], [13515,13539], [14273,14369], [16947,17099], [17885,17981], [21744,21760], [22628,22644], [22812,22964]]}
+      },
       "wheelNames": [
         "Material2_8",
         "Material2_9",
@@ -1036,7 +1046,7 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/ford-focus.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
-      "wheelPattern": "^(TIRE_|WHEEL_|RIMLO|INNERW|IN_WH|LUGS)",
+      "wheelPattern": "^(TIRE_|WHEEL_|RIMLO|INNERW|INNER14_|IN_WH|LUGS)",
       "tirePattern": "^TIRE_",
       "splitX": -1.0598377997439455e-7,
       "splitZ": -8.957402541920346e-8
@@ -1262,6 +1272,9 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/hyundai-i30.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
+      "wheelTriangles": {
+        "Material2_18": {"rolling": [[70,426], [2322,10322], [10586,10591]], "carrierRemainder": true}
+      },
       "wheelNames": [
         "Material3_45",
         "Material3_46",
@@ -1389,6 +1402,9 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/kia-sportage.glb",
     "yaw": 3.141592653589793,
     "adapter": {
+      "wheelTriangles": {
+        "CAR_kia_sportage_mat_0_0": {"rolling": [[0,1861]]}
+      },
       "wheelNames": [
         "CAR_Bestune_B70_mat_74_0",
         "CAR_Bestune_B70_mat_74_0_1"
@@ -2313,12 +2329,12 @@ export const CITY_VEHICLES = [
     "url": "../assets/vehicles/bugatti-chiron.glb",
     "yaw": 3.141592653589793,
     "adapter": {
+      "wheelDetailNames": ["Object_48"],
       "wheelNames": [
         "Object_9",
         "Object_45",
         "Object_46",
-        "Object_47",
-        "Object_48"
+        "Object_47"
       ],
       "tireNames": [
         "Object_45"

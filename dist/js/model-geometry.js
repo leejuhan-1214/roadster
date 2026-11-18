@@ -37,9 +37,13 @@ export function transformedGeometry(original,matrix){
 // Some artists use one mesh for two or four wheels. Partition its existing
 // triangles, preserving normals, UVs, materials and index topology. No new tires
 // are invented and no non-wheel triangles are selected without manifest review.
-export function splitWheelGeometry(geometry,splitX=0,splitZ=0,wheelBoxes=null){
+export function splitWheelGeometry(geometry,splitX=0,splitZ=0,wheelBoxes=null,triangleRoles=null){
   const position=geometry.getAttribute('position'),index=geometry.getIndex();
   const count=index?index.count:position.count,buckets=[[],[],[],[],[]],point=new THREE.Vector3();
+  // Reviewed source triangle spans are half-open. They preserve complete rims
+  // even where brake hardware and the body occupy the same wheel bounds.
+  const {rolling=[],carrierRemainder=false}=triangleRoles||{};
+  if(carrierRemainder)for(let i=0;i<4;i++)buckets.push([]);
   const groups=geometry.groups.length?geometry.groups:[{start:0,count,materialIndex:0}];
   for(const group of groups)for(let t=group.start;t<Math.min(count,group.start+group.count);t+=3){
     const vertices=[0,1,2].map(k=>index?index.getX(t+k):t+k);
@@ -47,7 +51,11 @@ export function splitWheelGeometry(geometry,splitX=0,splitZ=0,wheelBoxes=null){
     // Only reviewed mixed meshes use tire bounds. Keep the remaining original
     // triangles as a body piece, including badges sharing the wheel material.
     const wheel=wheelBoxes?wheelBoxes.findIndex(box=>vertices.every(i=>box.containsPoint(point.fromBufferAttribute(position,i)))):(x>splitX?0:2)+(z>splitZ?1:0);
-    buckets[wheel<0?4:wheel].push({vertices,materialIndex:group.materialIndex});
+    let bucket=wheel<0?4:wheel;
+    if(triangleRoles&&!rolling.some(([first,end])=>t>=3*first&&t<3*end)){
+      bucket=carrierRemainder?5+wheel:4;
+    }
+    buckets[bucket].push({vertices,materialIndex:group.materialIndex});
   }
   return buckets.map((triangles,wheel)=>{
     if(!triangles.length)return null;
@@ -70,6 +78,6 @@ export function splitWheelGeometry(geometry,splitX=0,splitZ=0,wheelBoxes=null){
       out.setAttribute(name,new THREE.Float32BufferAttribute(values,attribute.itemSize));
     }
     out.setIndex(indices);out.computeBoundingBox();out.computeBoundingSphere();
-    return {geometry:out,wheel:wheel===4?-1:wheel};
+    return {geometry:out,wheel:wheel===4?-1:wheel>=5?wheel-5:wheel,fixed:wheel>=5};
   }).filter(Boolean);
 }

@@ -48,7 +48,8 @@ export const EXTRA_VEHICLES = [
     "url": "../assets/vehicles/ford-mustang.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
-      "wheelPattern": "^GT500Wheel",
+      "wheelPattern": "^GT500(Wheel|Hub)",
+      "fixedWheelPattern": "^GT500Hub",
       "tirePattern": "_tire_0",
       "brakePattern": "WheelBrake",
       "splitX": 2.33,
@@ -174,6 +175,9 @@ export const EXTRA_VEHICLES = [
     "url": "../assets/vehicles/nissan-gt-r.glb",
     "yaw": 1.5707963267948966,
     "adapter": {
+      "wheelTriangles": {
+        "Object_11": {"rolling": [[1202,1813]]}
+      },
       "wheelNames": [
         "Object_13",
         "Object_14"

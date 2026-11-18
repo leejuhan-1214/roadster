@@ -65,6 +65,7 @@ export function releaseLandingVehicle(sim,options={}){
   Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,ballastKg:config.ballastKg,
     gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
     contactEnabled:true,friction:1.15,rollingResistance:.015,
+    parkedWheelMounts:false,cityWheelGeometry:null,cityGroundSupports:null,
     // Fixed level, centred loading isolates mass and chassis geometry differences.
     cgX:0,cgY:0,cgZ:0});
   sim.setObstacles([]);sim.reset('ground');

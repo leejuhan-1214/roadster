@@ -5,12 +5,32 @@ import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {createVehicle} from './vehicle.js?v=20261118-physics146';
 import {createHypothesisCatalogEntry,hypothesisExplosionStage} from './parts-catalog.js?v=20261118-physics146';
-import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261109-wheel2';
+import {transformedGeometry,splitWheelGeometry,matchesSource} from './model-geometry.js?v=20261118-city151';
 import {straightenWheelAxes} from './wheel-alignment.js?v=20261109-wheel1';
 
 const ids=['wheel-fl','wheel-fr','wheel-rl','wheel-rr'];
 const labels=['앞 왼쪽','앞 오른쪽','뒤 왼쪽','뒤 오른쪽'];
 const hardware=['tank','battery','suspension','thrusters','wing','drive-front','drive-rear-left','drive-rear-right','power-electronics'];
+
+// Keep a small set of actual underside vertices. Copying the lowest bolt or
+// sill height to the four extreme bumper corners creates phantom ground hits
+// whenever a car pitches or rolls on its suspension.
+function undersideSamples(records,bounds){
+  const length=Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x)),width=Math.max(Math.abs(bounds.min.z),Math.abs(bounds.max.z));
+  if(!(length>0&&width>0))return null;
+  const bins=Array.from({length:4},()=>Array(6).fill(null));
+  for(const record of records){
+    if(record.wheel>=0)continue;
+    const vertices=record.geometry.attributes.position;
+    for(let i=0;i<vertices.count;i++){
+      const x=vertices.getX(i),y=vertices.getY(i),z=vertices.getZ(i);
+      const quadrant=bins[(x>=0?2:0)+(z>=0?1:0)];
+      const slot=2*Math.min(2,Math.floor(3*Math.abs(x)/length))+Math.min(1,Math.floor(2*Math.abs(z)/width));
+      if(!quadrant[slot]||y<quadrant[slot][1])quadrant[slot]=[x,y,z];
+    }
+  }
+  return bins.map(quadrant=>quadrant.filter(Boolean));
+}
 function wheelRoot(object,profile){
   for(let n=object;n;n=n.parent){
     if(profile.id==='ferrari'&&/^wheel_(fl|fr|rl|rr)$/.test(n.name))return n;
@@ -37,6 +57,12 @@ export function adaptRealVehicle(source,profile){
     const names=(Array.isArray(o.material)?o.material:[o.material]).map(m=>m.name);
     if(profile.adapter){
       if(matchesSource(o,profile.adapter,'wheelDetail')){mixedWheelDetails.push({geometry,original:o,materialNames:names,tire:false,brake:false});return;}
+      const triangleRoles=profile.adapter.wheelTriangles?.[o.name];
+      if(triangleRoles){
+        const pieces=splitWheelGeometry(geometry,profile.adapter.splitX,profile.adapter.splitZ,null,triangleRoles);
+        for(const piece of pieces)records.push({...piece,original:o,materialNames:names,tire:false,brake:false});
+        geometry.dispose();return;
+      }
       const isWheel=matchesSource(o,profile.adapter,'wheel'),tire=matchesSource(o,profile.adapter,'tire'),brake=matchesSource(o,profile.adapter,'brake');
       const fixed=matchesSource(o,profile.adapter,'fixedWheel');
       const pieces=isWheel?splitWheelGeometry(geometry,profile.adapter.splitX||0,profile.adapter.splitZ||0):[{geometry,wheel:-1}];
@@ -113,12 +139,13 @@ export function adaptRealVehicle(source,profile){
   for(const id of hardware){const part=fallback.parts.get(id);root.add(part);parts.set(id,part);part.userData.kind='hypothesis';part.userData.explodeStage=hypothesisExplosionStage(id);part.traverse(o=>{if(o.isMesh)o.userData.partId=id;});detailParts.set(id,part);catalog.push(createHypothesisCatalogEntry(id));}
   // Dispose the unused procedural shell. Hardware has already been detached.
   disposeVehicle(fallback,root);
-  const radius=boxes.reduce((s,b)=>s+(b.max.y-b.min.y)*scale/2,0)/4;
+  const cityWheelGeometry=anchors.map(({x,y,z},i)=>({x,y,z,radius:(boxes[i].max.y-boxes[i].min.y)*scale/2}));
+  const radius=cityWheelGeometry.reduce((sum,w)=>sum+w.radius,0)/4;
   const width=anchors.reduce((s,a)=>s+Math.abs(a.z),0)/2;
   const size=hullBounds.getSize(new THREE.Vector3());
   // Envelope spans symmetric axle origin. Tires are handled by wheel contacts.
   const geometryParams={wheelbase:profile.wheelbase,trackWidth:width,wheelRadius:radius,bodyLength:2*Math.max(Math.abs(hullBounds.min.x),Math.abs(hullBounds.max.x)),bodyWidth:size.z,bodyHeight:size.y,bodyCenterY:(hullBounds.min.y+hullBounds.max.y)/2};
-  return {root,parts,detailParts,catalog,wheels,paintMaterials,geometryParams,profileId:profile.id,sourceMeshCount:records.length,
+  return {root,parts,detailParts,catalog,wheels,paintMaterials,geometryParams,cityWheelGeometry,cityGroundSupports:undersideSamples(records,hullBounds),profileId:profile.id,sourceMeshCount:records.length,
     wing:parts.get('wing'),tank:parts.get('tank'),compressor:fallback.compressor,battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,valveIndicators:fallback.valveIndicators,
     assetInfo:{title:profile.title,author:profile.author,license:profile.license,neutralWheelAxes}};
 }
