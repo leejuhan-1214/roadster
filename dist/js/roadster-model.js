@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { installRoadsterDisplayLod } from './roadster-display-lod.js?v=20261118-frameperf1';
+import { installRoadsterDisplayLod } from './roadster-display-lod.js?v=20261118-circuit155';
 import { createModelCatalogEntry, modelObjectExplosion, createHypothesisCatalogEntry, hypothesisExplosionStage } from './parts-catalog.js?v=20261118-model154';
 
 // Licensed visual asset only. Geometry never supplies mass, inertia or aerodynamics.
@@ -154,7 +154,7 @@ export function adaptRoadsterScene(source,fallback,sourceParser={}) {
 
 export async function loadRoadsterVehicle(fallback,onProgress) {
   const url=new URL('../assets/tesla-roadster-2020/scene.gltf',import.meta.url).href;
-  const indices=new URL('../assets/tesla-roadster-2020/exterior-indices.bin',import.meta.url);
+  const indices=new URL('../assets/tesla-roadster-2020/exterior-indices.bin?v=20261118-155',import.meta.url);
   const [gltf,buffer]=await Promise.all([
     new GLTFLoader().loadAsync(url,onProgress),
     fetch(indices).then(response=>response.ok?response.arrayBuffer():null).catch(()=>null)

@@ -1,3 +1,4 @@
+import {createRoadDrawRanges} from './city-road-detail.js?v=20261118-circuit155';
 import {updateDrivetrainSection,setEngineStrokeDisplay} from './drivetrain-section.js?v=20261118-model154';
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
 import {CockpitView} from './cockpit-view.js?v=20261118-review149';
@@ -5,11 +6,12 @@ import {LandingVisual} from './landing-visual.js?v=20261118-review149';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261118-flight153';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-model154';
-import {loadCityWorld} from './city-world.js?v=20261118-flight153';
-import {createStationRaceWorld} from './station-race-world.js?v=20261118-model154';
-import {attachStreamingCity} from './city-streaming.js?v=20261118-frameperf1';
-import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-model154';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-circuit155';
+import {loadCityWorld} from './city-world.js?v=20261118-circuit155';
+import {stationRaceWorldStages} from './station-race-world.js?v=20261118-circuit155';
+import {StationRace} from './station-race.js?v=20261118-circuit155';
+import {attachStreamingCity} from './city-streaming.js?v=20261118-circuit155';
+import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-circuit155';
 import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261118-model154';
@@ -20,13 +22,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261118-model154';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-model154';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-circuit155';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261118-model154';
-import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-model154';
+import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-circuit155';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
-import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261118-frameperf1';
+import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261118-circuit155';
 import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive2';
 import {createEnvironmentMaterials,surfaceUV} from './environment-materials.js?v=20261107-fleet1';
 import {createLandingDeck} from './landing-deck.js?v=20261118-model154';
@@ -121,12 +123,24 @@ function partViewAreas(canvas){
   return {w,h,areas:areas.length?areas:[{left:0,right:w,top:0,bottom:h}]};
 }
 
+// Renderer traversal normally composes every descendant even when a complete
+// world or assembly is hidden. These roots are presentation-only. Explicit
+// geometry/inspection queries still use Three's regular updateWorldMatrix.
+function updateVisibleMatrices(force){
+  if(this.visible)THREE.Object3D.prototype.updateMatrixWorld.call(this,force);
+  else this.matrixWorldNeedsUpdate=true;
+}
+function skipHiddenBranch(root){
+  if(root?.children.length&&root.updateMatrixWorld===THREE.Object3D.prototype.updateMatrixWorld)
+    root.updateMatrixWorld=updateVisibleMatrices;
+}
+
 export class FlightScene {
   constructor(canvas,onPartSelect=()=>{},onInspectExplode=()=>{},onCameraChange=()=>{}) {
     this.canvas=canvas;this.onPartSelect=onPartSelect;this.mode='drive';this.cameraName='chase';this.elapsed=0;this.lastPaint='';
     this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;this.physicsVisualClock=new SimulationVisualClock();this.jetEmissionCarry=[];
     this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=true;this.touchPointers=new Map();this.pinchDistance=0;
-    this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+    this.renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.0;
@@ -206,6 +220,7 @@ export class FlightScene {
     this.createEnvironment();this.roadRelief.userData.dynamicGeometry=true;this.environmentDrawsSaved=batchStaticEnvironment(this.scene);
     this.inspectionOccluders=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.groundSurface&&o!==this.roadRelief&&o!==this.contactShadow);
     this.labEnvironment=this.scene.children.filter(o=>o!==this.sky&&!o.isLight&&o!==this.sun.target&&o!==this.contactShadow);
+    this.labEnvironment.forEach(skipHiddenBranch);
     this.skyReady=loadRealSky(this.scene,this.renderer).then(sky=>{
       this.realSky=sky;this.sky.visible=false;this.sunDirection=sky.sunDirection;
       this.syncCircuitLighting();
@@ -213,14 +228,14 @@ export class FlightScene {
     }).catch(error=>{console.warn('실사 하늘 로드 실패 · 기본 하늘 유지',error);});
     this.landingDeck=createLandingDeck(this.environmentMaterials.concrete);this.landingDeck.visible=false;this.scene.add(this.landingDeck);
     this.vehicle=createVehicle();this.scene.add(this.vehicle.root);
-    this.cockpit=new CockpitView();this.cockpitMirror=new CockpitMirror();this.cockpit.setMirrorTexture(this.cockpitMirror.texture);this.scene.add(this.cockpit.root);
+    this.cockpit=new CockpitView();this.cockpitMirror=new CockpitMirror();this.cockpit.setMirrorTexture(this.cockpitMirror.texture);this.scene.add(this.cockpit.root);skipHiddenBranch(this.cockpit.root);
     this.selectedBox=new THREE.BoxHelper(this.vehicle.root,0x64ebd7);this.selectedBox.visible=false;this.selectedBox.material.transparent=true;this.selectedBox.material.opacity=.55;this.scene.add(this.selectedBox);
     this.createParticles();this.jets=[];this.forceArrows=[];this.lastMark=new THREE.Vector3(999,999,999);this.createMarks();
     this.gravityArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1.5,0xff9478,.18,.1);this.scene.add(this.gravityArrow);
     this.fanArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1,0xf6c75f,.18,.1);this.scene.add(this.fanArrow);
     this.contactArrows=Array.from({length:4},()=>{const a=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0x6bb7ff,.15,.07);this.scene.add(a);return a;});
     this.frictionArrows=Array.from({length:4},()=>{const a=new THREE.ArrowHelper(UP,new THREE.Vector3(),1,0xffb052,.14,.07);a.visible=false;this.scene.add(a);return a;});
-    this.landingVisual=new LandingVisual();this.scene.add(this.landingVisual.root);
+    this.landingVisual=new LandingVisual();this.scene.add(this.landingVisual.root);skipHiddenBranch(this.landingVisual.root);
     this.resize();
   }
 
@@ -230,6 +245,10 @@ export class FlightScene {
     this.renderer.shadowMap.needsUpdate=true;this.resize();
     const materials=new Set();root.traverse(o=>{if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
     for(const m of materials){
+      if(m.transparent&&m.side===THREE.DoubleSide){
+        m.userData.detailSinglePass??=m.forceSinglePass;
+        m.forceSinglePass=this.quality==='smooth'||m.userData.detailSinglePass;
+      }
       if(m.transmission>0||m.userData.detailTransmission>0){
         m.userData.detailTransmission??=m.transmission;m.userData.detailOpacity??=m.opacity;
         const transmission=this.quality==='detail'?m.userData.detailTransmission:0;
@@ -249,7 +268,7 @@ export class FlightScene {
     this.scene.add(sky);this.sky=sky;
     this.scene.add(new THREE.HemisphereLight(0xd9e6f2,0x45413b,1.45));
     this.sun=new THREE.DirectionalLight(0xfff0d8,3.1);this.sun.position.set(-20,34,26);this.sun.castShadow=true;
-    this.sun.shadow.mapSize.set(1024,1024);Object.assign(this.sun.shadow.camera,{near:1,far:150,left:-24,right:24,top:24,bottom:-24});
+    this.sun.shadow.mapSize.set(768,768);Object.assign(this.sun.shadow.camera,{near:1,far:150,left:-24,right:24,top:24,bottom:-24});
     this.sunDirection=this.sun.position.clone().normalize();
     this.sun.shadow.normalBias=.012;this.scene.add(this.sun,this.sun.target);
     const rim=new THREE.DirectionalLight(0xd0e3f0,.45);rim.position.set(20,8,-25);this.scene.add(rim);
@@ -429,12 +448,54 @@ export class FlightScene {
     const sky=this.sky.material.uniforms;
     sky.top.value.setHex(dusk?0x1e344b:0x5683a6);sky.bottom.value.setHex(dusk?0x82949e:0xc3cdcf);
   }
-  setStationRace(race){
-    if(race&&!this.raceWorld){
+  prepareRaceStage(){
+    if(this.raceWorld)return true;
+    if(!this.raceBuild){
       const asphalt=this.city?.root.getObjectByName('OSM road network')?.material;
-      this.raceWorld=createStationRaceWorld(asphalt,this.city?.treeAsset?.library);
-      this.scene.add(this.raceWorld.root);
+      this.raceBuild=stationRaceWorldStages(asphalt,this.city?.treeAsset?.library);
     }
+    const {done,value}=this.raceBuild.next();
+    if(done){this.raceBuild=null;this.raceWorld=value;skipHiddenBranch(value.root);this.scene.add(value.root);}
+    return done;
+  }
+  warmStationRace(city){
+    if(!city||this.raceWorld||this.raceWarmPending)return;
+    const idle=cb=>window.requestIdleCallback?window.requestIdleCallback(cb,{timeout:220}):window.setTimeout(cb,40);
+    this.raceWarmPending=true;
+    const stillDriving=()=>this.city===city&&this.mode==='city'&&!this.stationRace;
+    const build=()=>{
+      this.raceWarmPending=false;
+      if(!stillDriving()||this.raceWorld)return;
+      if(!this.prepareRaceStage()){this.warmStationRace(city);return;}
+      const world=this.raceWorld;
+      // Stage the actual starting cars while the hidden track waits for entry.
+      const grid=new StationRace();
+      world.update(grid);
+      world.rivalModelsReady.then(()=>idle(()=>{
+        if(!stillDriving())return;
+        this.renderer.compile(world.root,this.camera,this.scene);
+        // The three detailed cars share texture objects. Upload each starting-grid
+        // texture only once, with an opportunity to draw the city between uploads.
+        const textures=new Set();
+        for(const name of [...grid.rivals.map(r=>r.name),'Circuit grass','Track asphalt','Circuit safety wall']){
+          world.root.getObjectByName(name)?.traverse(o=>{
+            for(const m of Array.isArray(o.material)?o.material:[o.material]){
+              if(m)for(const t of Object.values(m))if(t?.isTexture&&t.image&&!t.isRenderTargetTexture)textures.add(t);
+            }
+          });
+        }
+        const queue=[...textures];
+        const upload=()=>{
+          if(!stillDriving())return;
+          if(queue.length){this.renderer.initTexture(queue.shift());if(queue.length)idle(upload);}
+        };
+        if(queue.length)idle(upload);
+      }));
+    };
+    idle(build);
+  }
+  setStationRace(race){
+    if(race)while(!this.prepareRaceStage()){/* finish any remaining city preparation */}
     this.stationRace=race;
     this.syncCircuitLighting();
     if(this.city)this.city.root.visible=this.mode==='city'&&!race;
@@ -456,19 +517,23 @@ export class FlightScene {
     this.cameraName=camera;this.controls.maxPolarAngle=Math.PI*.485;this.controls.enabled=camera==='orbit';this.controls.enableZoom=this.mode!=='inspect';
   }
   async loadCity(){
+    if(this.city?.streetOverlay)this.warmStationRace(this.city);
     if(this.cityPromise)return this.cityPromise;
     if(this.city)return this.city;
     this.cityPromise??=loadCityWorld().then(async city=>{
-      this.city=city;city.root.visible=this.mode==='city'&&!this.stationRace;this.scene.add(city.root);
+      this.city=city;skipHiddenBranch(city.root);city.root.visible=this.mode==='city'&&!this.stationRace;this.scene.add(city.root);
       for(const name of ['OSM building facades','OSM building roofs']){const mesh=city.root.getObjectByName(name);if(mesh)mesh.castShadow=true;}
       this.citySurfaces=await applyCitySurfaces(city,this.renderer);
       if(!this.citySurfaces.loaded)console.warn('촬영 재질 로드 실패 · 기본 재질 유지',this.citySurfaces.error);
       await attachStreamingCity(city,{treeAsset:city.treeAsset});
+      this.updateRoadDrawRanges=createRoadDrawRanges(city);
+      this.updateRoadDrawRanges(city.spawn.position[0],city.spawn.position[2],0,this.quality==='detail');
       // Centre pavement of divided avenues, signals and subway entrances follow the same map and physics.
       try{
         const overlay=await loadStreetOverlay(city),bind=city.streaming.bindPhysics,dispose=city.dispose.bind(city);
         city.streetOverlay=overlay;city.streaming.bindPhysics=sim=>{bind(sim);overlay.bindPhysics(sim);};city.dispose=()=>{overlay.dispose();dispose();};
       }catch(error){console.warn('도로 세부 로드 실패 · 기본 도로 유지',error);}
+      if(city.streetOverlay)this.warmStationRace(city);
       return city;
     }).catch(error=>{if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}this.cityPromise=null;throw error;});
     return this.cityPromise;
@@ -505,7 +570,7 @@ export class FlightScene {
   frameLandingStart(sim,options={}){FlightScene.prototype.frameLabVehicle.call(this,sim,{...options,landing:true});}
   frameCityStart(sim){
     this.cockpit?.recenter();this.cockpitDrag=null;
-    this.camera.far=3500;this.camera.updateProjectionMatrix();
+    this.camera.far=this.quality==='smooth'?1050:3500;this.camera.updateProjectionMatrix();
     const p=sim.bodyPosition||sim.state.pos;
     const heading=Math.atan2(-tmpV.set(1,0,0).applyQuaternion(sim.state.q).z,tmpV.x);
     this.lastCameraHeading=heading;this.chaseBlend=1;
@@ -712,6 +777,7 @@ export class FlightScene {
       prepareAssessmentVehicle(vehicle);
       prepareRocketRetrofit(vehicle);
       configureVehicleFit(vehicle,profile);
+      for(const part of vehicle.parts.values())skipHiddenBranch(part);
       vehicle.profileId=profile.id;this.vehicleCache.set(profile.id,vehicle);
     }
     this.vehicleCache.delete(profile.id);this.vehicleCache.set(profile.id,vehicle);
@@ -768,15 +834,17 @@ export class FlightScene {
     const bodyPosition=options.renderState?.bodyPosition||sim.bodyPosition||position.clone().sub(cg.clone().applyQuaternion(q));
     const thrusters=options.renderState?.thrusters||sim.thrusters;
     const view={state,bodyPosition,wheels,thrusters};
-    // Mechanical cutaway groups stay inside the opaque shell during driving.
-    if(this.mode!=='inspect'&&!this.cutaway)for(const part of this.vehicle.internalParts||[])part.visible=false;
     const visualClock=(this.physicsVisualClock??=new SimulationVisualClock()).advance(state.time,sim.state.time);
     if(visualClock.reset)this.clearExhaustParticles();
     this.telemetry=sim.telemetry?.()||{};
     if(this.mode==='city'){
       if(this.city?.treeAsset)updateTreeWind(this.city.treeAsset,sim.state.time,1.4+(sim.params.windX||0),.6+(sim.params.windZ||0));
-      if(this.stationRace)this.raceWorld.update(this.stationRace);
-      else this.city?.streetOverlay?.update(position.x,position.z);
+      if(this.stationRace)this.raceWorld.update(this.stationRace,position);
+      else {
+        this.city?.updateDetail?.(position.x,position.z,(this.quality==='smooth'?110:215)+Math.min(300,Math.max(0,position.y-5)));
+        this.updateRoadDrawRanges?.(position.x,position.z,position.y,this.quality==='detail');
+        this.city?.streetOverlay?.update(position.x,position.z);
+      }
     }
     this.vehicle.root.position.copy(bodyPosition);
     if(this.mode==='inspect')this.vehicle.root.quaternion.identity();else this.vehicle.root.quaternion.copy(q);
@@ -1052,6 +1120,7 @@ export class FlightScene {
     this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();this.cockpitMirror?.dispose();
     this.canvas.removeEventListener('wheel',this._onWheel,true);this.touchPointers.clear();this.controls.dispose();
     if(this.stageVisual){disposeStageVisual(this.stageVisual);this.stageVisual=null;}
+    this.raceBuild?.return();this.raceBuild=null;
     this.raceWorld?.dispose();
     this.citySurfaces?.dispose();if(this.city){this.scene.remove(this.city.root);this.city.dispose();this.city=null;}
     this.scene.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});

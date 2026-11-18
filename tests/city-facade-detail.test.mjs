@@ -39,3 +39,24 @@ test('streamed districts can centre facade detail on their local area',()=>{
     assert.ok(new Box3().setFromObject(nearby).min.x>9989);
   }finally{dispose(distant);dispose(nearby);}
 });
+
+test('moving between streets submits only nearby frontage instances and restores their tints',()=>{
+  const left=fixture(),right=fixture(240);right.building.id='east';
+  const root=createStreetDetails([left.building,right.building],[left.road,right.road]);
+  try{
+    const glazing=root.getObjectByName('podium-glazing'),initialCount=root.userData.instances;
+    assert.ok(root.updateDetail(0,0,75));
+    const count=glazing.count,tint=glazing.instanceColor.array.slice(0,count*3);
+    assert.equal(root.userData.activeBuildings,1);assert.ok(root.userData.instances<initialCount);
+    assert.equal(root.updateDetail(1,0,75),false);
+    assert.ok(root.updateDetail(240,0,75));
+    assert.ok(glazing.instanceMatrix.array[12]>225);
+    assert.notDeepEqual(glazing.instanceColor.array.slice(0,count*3),tint);
+    root.updateDetail(700,0,75);
+    assert.equal(root.userData.drawCalls,0);assert.equal(root.userData.instances,0);
+    root.updateDetail(0,0,75);
+    assert.deepEqual(glazing.instanceColor.array.slice(0,count*3),tint);
+    assert.ok(Math.abs(glazing.instanceMatrix.array[12])<15);
+    assert.equal(glazing.count,count);assert.ok(root.userData.drawCalls<=6);
+  }finally{dispose(root);}
+});

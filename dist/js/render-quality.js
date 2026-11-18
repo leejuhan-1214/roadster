@@ -4,7 +4,7 @@ export function renderPixelRatio(width,height,deviceRatio=1,quality='smooth',bud
  return quality==='detail'?native:Math.min(native,Math.sqrt(budget/Math.max(1,width*height)));
 }
 export class RenderBudget{
- constructor(){this.pixels=600000;this.elapsed=0;this.totalMs=0;this.frames=0;this.cooldown=2;}
+ constructor(){this.pixels=600000;this.elapsed=0;this.totalMs=0;this.frames=0;this.cooldown=.7;}
  observe(ms){
   // Keep sustained low frame rates in the feedback loop. A background-tab
   // pause or debugger stop should not lower resolution on its own.
@@ -12,9 +12,10 @@ export class RenderBudget{
   ms=Math.min(ms,100);
   const seconds=ms/1000;if(this.cooldown>0){this.cooldown-=seconds;return false;}
   this.elapsed+=seconds;this.totalMs+=ms;this.frames++;
-  if(this.elapsed<2)return false;
+  if(this.elapsed<1.2||this.frames<9)return false;
   const mean=this.totalMs/this.frames;this.elapsed=0;this.totalMs=0;this.frames=0;
-  if(mean>21&&this.pixels>360000){this.pixels=Math.max(360000,Math.round(this.pixels*.8));this.cooldown=3;return true;}
+  const floor=mean>38?225000:360000;
+  if(mean>21&&this.pixels>floor){this.pixels=Math.max(floor,Math.round(this.pixels*(mean>38?.68:.8)));this.cooldown=1.2;return true;}
   if(mean<17.2&&this.pixels<600000){this.pixels=Math.min(600000,Math.round(this.pixels*1.05));this.cooldown=10;return true;}
   return false;
  }

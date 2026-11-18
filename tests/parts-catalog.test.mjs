@@ -1,11 +1,13 @@
 import test, { before } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { adaptRoadsterScene } from '../dist/js/roadster-model.js';
 import { installRoadsterDisplayLod } from '../dist/js/roadster-display-lod.js';
 import { createVehicle } from '../dist/js/vehicle.js';
+import {disposeVehicle} from '../dist/js/real-vehicle-model.js';
 
 // Load the actual licensed model and binary geometry. Only image-backed materials
 // are replaced, since these Node tests intentionally do not create a DOM/WebGL.
@@ -28,25 +30,78 @@ before(async () => {
   vehicle = adaptRoadsterScene(gltf.scene, createVehicle(), gltf.parser);
 });
 
-test('assembled display indices retain source vertices, texture normals, materials and wheel membership',async()=>{
+test('assembled batches preserve every reduced triangle, attribute, material and wheel pivot',async t=>{
   const bytes=await readFile(new URL('../dist/assets/tesla-roadster-2020/exterior-indices.bin',import.meta.url));
   installRoadsterDisplayLod(vehicle,bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));
   const source=[...vehicle.detailParts.values()].filter(mesh=>mesh.userData.kind==='model')
-    .map(mesh=>({mesh,geometry:mesh.geometry,material:mesh.material,parent:mesh.parent}));
+    .map(mesh=>({mesh,geometry:mesh.geometry,material:mesh.material,parent:mesh.parent,layers:mesh.layers.mask}));
   assert.equal(source.length,105);
-  const triangleCount=()=>source.reduce((sum,{mesh})=>sum+mesh.geometry.index.count/3,0);
-  assert.equal(triangleCount(),608850);
+  assert.equal(source.reduce((sum,{geometry})=>sum+geometry.index.count/3,0),608850);
+  const originalIndices=new Map();
+  for(let i=0;i<bytes.readUInt32LE(4);i++){
+    const entry=8+24*i,length=bytes.readUInt32LE(entry+12),width=bytes.readUInt32LE(entry+16),start=bytes.readUInt32LE(entry+20);
+    const indices=Array.from({length},(_,j)=>bytes.readUIntLE(start+j*width,width));
+    originalIndices.set(bytes.readUInt32LE(entry),indices);
+  }
+  // Compare the actual submitted triangles, including all UVs, normals and
+  // tangents. Artist submeshes with one material/pivot keep their draw order.
+  function fingerprints(draws,expected){
+    const hashes=new Map();
+    for(const {mesh} of draws){
+      const geometry=mesh.geometry,attributes=Object.entries(geometry.attributes).sort(([a],[b])=>a.localeCompare(b));
+      const key=[mesh.parent.id,mesh.material.id,...attributes.map(([n])=>n)].join('|');
+      if(!hashes.has(key))hashes.set(key,createHash('sha256'));
+      const indices=expected&&originalIndices.get(mesh.userData.sourceMeshIndex)||geometry.index.array;
+      const size=attributes.reduce((s,[,a])=>s+a.itemSize,0);
+      const data=new Float32Array(size*indices.length);
+      let target=0;
+      for(const vertex of indices)for(const [,a] of attributes)
+        for(let c=0;c<a.itemSize;c++)data[target++]=a.array[vertex*a.itemSize+c];
+      hashes.get(key).update(Buffer.from(data.buffer));
+    }
+    return new Map([...hashes].map(([key,h])=>[key,h.digest('hex')]));
+  }
+  const expected=fingerprints(source,true);
   vehicle.setExteriorDisplayLod(true);
   try{
-    assert.equal(triangleCount(),130398);
-    for(const {mesh,geometry,material,parent} of source){
+    const drawn=source.filter(({mesh})=>mesh.layers.isEnabled(0));
+    assert.equal(drawn.reduce((sum,{mesh})=>sum+mesh.geometry.index.count/3,0),48592);
+    assert.deepEqual(fingerprints(drawn,false),expected);
+    assert.ok(drawn.length<=70);
+    t.diagnostic('assembled source draws '+source.length+' → '+drawn.length);
+    for(const {mesh,material,parent} of source){
       assert.equal(mesh.material,material);assert.equal(mesh.parent,parent);
-      for(const [name,attr] of Object.entries(geometry.attributes))assert.equal(mesh.geometry.attributes[name],attr);
-      const vertices=geometry.attributes.position.count;
-      assert.ok(mesh.geometry.index.array.every(i=>i<vertices));
+      if(material.transparent)assert.ok(mesh.layers.isEnabled(0),'glass retains independent sorting');
     }
   }finally{vehicle.setExteriorDisplayLod(false);}
-  for(const {mesh,geometry} of source)assert.equal(mesh.geometry,geometry);
+  for(const {mesh,geometry,layers} of source){
+    assert.equal(mesh.geometry,geometry);assert.equal(mesh.layers.mask,layers);
+  }
+});
+
+test('cached batches restore part visibility and dispose active and inactive geometry exactly once',async()=>{
+  const bytes=await readFile(new URL('../dist/assets/tesla-roadster-2020/exterior-indices.bin',import.meta.url));
+  for(const active of [false,true]){
+    const model=adaptRoadsterScene(gltf.scene,createVehicle(),gltf.parser);
+    const parts=[...model.detailParts.values()].filter(mesh=>mesh.userData.kind==='model');
+    const originals=new Map(parts.map(mesh=>[mesh,mesh.geometry]));
+    const geometry=new Set(originals.values());
+    installRoadsterDisplayLod(model,bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));
+    model.setExteriorDisplayLod(true);
+    const packed=parts.find(mesh=>mesh.layers.isEnabled(0)&&mesh.geometry.attributes.position!==originals.get(mesh).attributes.position);
+    assert.ok(packed);
+    for(const mesh of parts)geometry.add(mesh.geometry);
+    const skipped=parts.find(mesh=>!mesh.layers.isEnabled(0));
+    skipped.visible=false;
+    model.setExteriorDisplayLod(false);
+    assert.equal(skipped.visible,false,'inspection visibility survives switching geometry');
+    assert.ok(skipped.layers.isEnabled(0));
+    model.setExteriorDisplayLod(active);
+    const releases=new Map([...geometry].map(g=>[g,0]));
+    for(const g of geometry)g.addEventListener('dispose',()=>releases.set(g,releases.get(g)+1));
+    disposeVehicle(model);
+    assert.ok([...releases.values()].every(n=>n===1));
+  }
 });
 
 test('every original Roadster mesh has a stable selectable entry without inventing a vehicle BOM', () => {

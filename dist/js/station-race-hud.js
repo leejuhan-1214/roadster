@@ -1,15 +1,13 @@
-import {RACE_COURSE, sampleCourse} from './station-race.js?v=20261118-model154';
-import {AIR_GATES,AIR_CEILING,airLaneOffset} from './station-race-air.js?v=20261118-flight1531';
+import {RACE_COURSE, sampleCourse} from './station-race.js?v=20261118-circuit155';
+import {AIR_APPROACH,AIR_CEILING} from './station-race-air.js?v=20261118-circuit155';
 
 const byId = id => document.getElementById(id);
 const path = Array.from({length:160}, (_,i) => sampleCourse(i*RACE_COURSE.length/160));
 const xs = path.map(p=>p.x), zs = path.map(p=>p.z);
 const bounds = {left:Math.min(...xs), right:Math.max(...xs), top:Math.min(...zs), bottom:Math.max(...zs)};
-const airPath=path.flatMap(p=>{
-  const lateral=airLaneOffset(p.distance,RACE_COURSE.length);
-  return lateral==null?[]:[sampleCourse(p.distance,lateral)];
-});
-const rings=AIR_GATES.map(gate=>sampleCourse(RACE_COURSE.gates[gate.index].distance,gate.lateral));
+const rings=RACE_COURSE.gates.filter(gate=>gate.air);
+const firstRing=rings[0].distance;
+const airPath=Array.from({length:13},(_,i)=>sampleCourse(firstRing-AIR_APPROACH+i*(AIR_APPROACH+rings.at(-1).distance-firstRing)/12));
 
 function clock(seconds) {
   const tenths = Math.floor(seconds*10);
@@ -40,20 +38,28 @@ export function updateRaceHUD(race,telemetry,driver) {
     byId('race-flight-state').textContent=race.rivalSupport?'차량 위':driver.landingAssist?'착지 중':driver.altHold?'높이 유지':driver.airborne?'비행':'지상';
     byId('race-flight-height').textContent=Math.max(0,telemetry.heightAboveSurface).toFixed(1)+' m';
     byId('race-flight-gas').textContent='기체 '+Math.round(telemetry.gasKg)+' kg';
-    byId('race-ring-count').textContent='이번 랩 공중 링 '+race.airGatesThisLap+' / '+rings.length;
+    byId('race-ring-count').textContent='필수 비행 '+race.airGatesThisLap+' / '+rings.length;
     const high=telemetry.altitude+telemetry.groundHeight>AIR_CEILING;
     const hint=byId('race-flight-hint');
     hint.classList.toggle('race-descend',high);
-    hint.textContent=high?'하강 후 체크포인트 통과':driver.airborne?'A/D 옆이동 · H 높이 유지':'Space 상승 · 하늘색 링';
+    const distance=Math.max(0,Math.round(race.airGateDistance||0));
+    if(high)hint.textContent='높이를 낮춰 체크포인트 통과';
+    else if(race.airSectionStatus==='missed')hint.textContent='미통과 · 이륙 지점부터 다시';
+    else if(race.airGatesThisLap===rings.length)hint.textContent='필수 비행 완료 · 지상 코스';
+    else if(race.airSectionStatus==='approach'||race.airSectionStatus==='flying'){
+      hint.textContent=(driver.airborne?'다음 링 ':'Space 상승 · 첫 링 ')+distance+' m · 링 중앙 조준';
+    }else hint.textContent=(firstRing/1000).toFixed(2)+' km 지점 · Space로 이륙';
+    byId('race-restart').hidden=telemetry.gasKg>=100||done||race.airGatesThisLap===rings.length;
     byId('race-land').hidden=!driver.airborne&&!driver.landingAssist&&!driver.altHold;
     byId('race-land').setAttribute('aria-pressed',driver.landingAssist);
   }
   byId('race-finish').hidden = !done;
   byId('race-recover').disabled = race.phase!=='racing';
   if (done) {
+    byId('race-restart').hidden=true;
     byId('race-result-place').textContent = race.rank+'위 / 4대';
     byId('race-result-time').textContent = RACE_COURSE.laps+'랩 기록 '+clock(race.finishTime)
-      +(race.bestAirLap?' · 한 랩 최다 공중 링 '+race.bestAirLap+'/'+rings.length:'');
+      +' · 필수 링 '+race.airGatesPassed+' / '+(rings.length*RACE_COURSE.laps);
   }
 }
 
@@ -69,16 +75,16 @@ export function drawRaceMap(ctx, race, player, yaw) {
   for (let i=0;i<path.length;i++) {
     if (!i) ctx.moveTo(path[i].x,path[i].z); else ctx.lineTo(path[i].x,path[i].z);
   }
-  ctx.closePath(); ctx.lineJoin='round'; ctx.lineWidth=RACE_COURSE.width; ctx.strokeStyle='#45606d'; ctx.stroke();
+  ctx.closePath(); ctx.lineJoin='round'; ctx.lineWidth=Math.max(RACE_COURSE.width,2.5/scale); ctx.strokeStyle='#45606d'; ctx.stroke();
   ctx.beginPath();
   airPath.forEach((p,i)=>{if(i)ctx.lineTo(p.x,p.z);else ctx.moveTo(p.x,p.z);});
   ctx.lineWidth=2.2/scale;ctx.setLineDash([3/scale,3/scale]);ctx.strokeStyle='#60dbec';ctx.stroke();ctx.setLineDash([]);
   for(const p of rings){
     ctx.beginPath();ctx.arc(p.x,p.z,3/scale,0,Math.PI*2);ctx.fillStyle='#10212b';ctx.fill();ctx.stroke();
   }
-  const gate=RACE_COURSE.gates[race.nextGate], dx=Math.sin(gate.heading)*9, dz=Math.cos(gate.heading)*9;
+  const gate=RACE_COURSE.gates[race.nextGate], dx=Math.sin(gate.heading)*4/scale, dz=Math.cos(gate.heading)*4/scale;
   ctx.beginPath(); ctx.moveTo(gate.x-dx,gate.z-dz); ctx.lineTo(gate.x+dx,gate.z+dz);
-  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.4/scale; ctx.stroke();
   for (const car of race.rivals) {
     ctx.beginPath(); ctx.arc(car.x,car.z,3.4/scale,0,Math.PI*2);
     ctx.fillStyle='#'+car.color.toString(16).padStart(6,'0'); ctx.fill();

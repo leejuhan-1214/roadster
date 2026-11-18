@@ -154,3 +154,21 @@ test('settled street cells only revisit sources after a map change and replace a
   settle();assert.equal(fills(),0,'a replacement under the same tile key refreshes both cells');
   overlay.dispose();
 });
+
+test('small motions reuse the settled search and load the approaching cell at the true radius',()=>{
+  let readyCalls=0;
+  const streaming={chunks:new Map(),revision:0,manifest:{tiles:{}},hasAt(){readyCalls++;return false;},contains:()=>true};
+  const remote={minX:4000,maxX:4100,minZ:4000,maxZ:4100};
+  const overlay=createStreetOverlay({root:new THREE.Group(),bounds:remote,source:{roads:[]},streaming},{});
+  overlay.update(0,0);const initial=readyCalls;
+  for(let i=1;i<=20;i++)overlay.update(i/10,0);
+  assert.ok(initial>0);assert.equal(readyCalls,initial);
+  streaming.hasAt=()=>true;streaming.revision++;
+  for(let i=0;i<60;i++)overlay.update(0,0);
+  const threshold=640-Math.sqrt(STREET_NEAR**2-128**2);
+  for(let i=0;i<60;i++)overlay.update(threshold-.01,0);
+  assert.equal(overlay.cells.has('2,0'),false);
+  for(let i=0;i<8;i++)overlay.update(threshold+.01,0);
+  assert.equal(overlay.cells.has('2,0'),true);
+  overlay.dispose();
+});

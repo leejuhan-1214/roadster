@@ -1,3 +1,5 @@
+import {PhysicsSim} from '../dist/js/physics.js';
+import {courseCurvature} from '../dist/js/station-race-course.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {RACE_COURSE as course, sampleCourse, StationRace} from '../dist/js/station-race.js';
@@ -10,16 +12,22 @@ function startRace() {
 
 function drive(race, from, to, speed = 20, lateral = -3.15) {
   const step = Math.sign(to - from);
+  const nozzles=new PhysicsSim();
+  nozzles.state.pos.set(0,1000,0);
+  nozzles.contactCount=0;nozzles.bodyGroundContacts=0;nozzles.massFlowKgS=35;nozzles.verticalThrustN=26000;
   let distance = from;
   while (Math.abs(to - distance) > 1e-8 && race.phase === 'racing') {
     const metres = step * Math.min(1, Math.abs(to - distance));
     distance += metres;
-    assert.equal(race.update(Math.abs(metres) / speed, sampleCourse(distance, lateral)), null);
+    assert.equal(race.update(Math.abs(metres) / speed, {...sampleCourse(distance, lateral),y:4}, nozzles), null);
   }
 }
 
 test('circuit forms a continuous loop with forward tangents, signed right offsets and ordered gates', () => {
-  assert.ok(course.length > 450 && course.length < 500);
+  assert.ok(Math.abs(course.length-4381)<1e-8);
+  assert.equal(course.bends.length,14);
+  assert.equal(course.width,16);
+  assert.ok(course.bends.some(b=>b.curvature<0)&&course.bends.some(b=>b.curvature>0));
   assert.equal(course.gates[0].x, 0); assert.equal(course.gates[0].z, 0);
   for (let d = -20; d < course.length * 2; d += 2.5) {
     const a = sampleCourse(d);
@@ -48,7 +56,7 @@ test('grid, clock, and rival speeds wait for green and the countdown consumes on
 });
 
 test('all successive gates and two complete laps are required, with interpolated finish time and immutable final place', () => {
-  for (const [speed, expectedRank] of [[24, 1], [16, 2], [8, 4]]) {
+  for (const [speed, expectedRank] of [[50, 1], [36.4, 2], [28, 4]]) {
     const race = startRace();
     drive(race, -6, 2, speed);
     assert.equal(race.completedGates, 1); assert.equal(race.nextGate, 1); assert.equal(race.lap, 1);
@@ -91,32 +99,50 @@ test('leaving the track footprint recovers to the last accepted gate and the tim
   assert.ok(Math.abs(race.elapsed - start - 1.3) < 1e-10);
   assert.ok(race.rivals[0].distance > rivalStart);
   assert.ok(Math.abs(recovery.distance - course.gates[2].distance - 1.5) < 1e-9);
-  const infield = {x: 0, z: -49};
+  const infield = sampleCourse(course.gates[2].distance + 2,18);
   race.update(1, infield);
   const exit = race.update(1, sampleCourse(course.gates[5].distance));
   assert.deepEqual(exit, recovery); assert.equal(race.nextGate, 3);
 });
 
-test('three autonomous opponents slow for bends, can pass, and remain separated through the race and after finishing', () => {
+test('GT opponents brake before the bends, take all mandatory flight gates and coast to a stop after two laps', () => {
   const race = startRace();
-  let minSeparation = Infinity;
-  const laneOrders = new Set();
-  let maxSpeed = 0;
-  for (let i = 0; i < 90 * 25; i++) {
-    race.update(1 / 25, race.startPose);
-    const rivals = race.rivals;
-    laneOrders.add(rivals.slice().sort((a, b) => b.distance - a.distance).map(c => c.id).join());
-    for (let j = 0; j < rivals.length; j++) {
-      const car = rivals[j];
-      assert.ok(Math.abs(car.lateral) + 1.3 < course.width / 2);
-      maxSpeed = Math.max(maxSpeed, car.speed);
-      for (const other of rivals.slice(j + 1)) {
-        minSeparation = Math.min(minSeparation, Math.hypot(car.x - other.x, car.z - other.z));
+  const order = new Set(), peak=race.rivals.map(()=>0);
+  let minSeparation=Infinity, highestTightCornerSpeed=0;
+  const h=.04;
+  for(let i=0;i<300/h;i++){
+    race.update(h,race.startPose);
+    order.add(race.rivals.slice().sort((a,b)=>b.distance-a.distance).map(car=>car.id).join());
+    for(const [j,car] of race.rivals.entries()){
+      assert.ok(Math.abs(car.lateral)+1.3<course.width/2);
+      if(car.finishTime===null){
+        peak[j]=Math.max(peak[j],car.speed);
+        if(Math.abs(courseCurvature(car.distance))>1/72)highestTightCornerSpeed=Math.max(highestTightCornerSpeed,car.speed);
       }
+      for(const other of race.rivals.slice(j+1))minSeparation=Math.min(minSeparation,Math.hypot(car.x-other.x,car.z-other.z));
     }
   }
-  assert.ok(laneOrders.size >= 3 && maxSpeed > 20);
-  assert.ok(minSeparation > 4.5);
-  assert.equal(race.rank, 4); assert.equal(race.phase, 'racing');
-  assert.ok(race.rivals.every(car => car.finishTime > 45 && car.finishTime < 80 && car.speed === 0));
+  assert.ok(peak.every(speed=>speed>56),'all three exceed 200 km/h on an open straight');
+  assert.ok(highestTightCornerSpeed<32 && highestTightCornerSpeed>20,'braking limits entry speed into tight corners');
+  assert.ok(order.size>=2 && minSeparation>4.5);
+  assert.ok(race.rivals.every(r=>r.airGatesPassed===6 && r.finishTime>190 && r.finishTime<275 && r.speed===0));
+  assert.equal(race.rank,4);assert.equal(race.phase,'racing');
+});
+
+test('a rival knocked below the first ring has to brake, reverse, and fly through again to score', () => {
+  const race=startRace(),car=race.rivals[0],first=course.gates.find(g=>g.air);
+  const h=.02;
+  while(car.distance<first.distance-3)race.update(h,race.startPose);
+  car.heave=0;car.vy=0;
+  while(car.distance<first.distance)race.update(h,race.startPose);
+  assert.equal(car.airGatesPassed,0);
+  assert.ok(Number.isFinite(car.retryGateDistance));
+  let reversed=false;
+  for(let i=0;i<90/h && car.airGatesPassed===0;i++){
+    const x=car.x,z=car.z;
+    race.update(h,race.startPose);
+    if(car.speed<0)reversed=true;
+    assert.ok(Math.hypot(car.x-x,car.z-z)<1.4,'recovery keeps finite horizontal speed');
+  }
+  assert.ok(reversed);assert.equal(car.airGatesPassed,1);assert.equal(car.retryGateDistance,null);
 });

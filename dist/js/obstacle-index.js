@@ -1,16 +1,20 @@
 // Static X/Z broad phase. Keep original ordering so contact resolution agrees
 // with the unindexed solver, including overlaps at grid boundaries.
 export function createObstacleIndex(obstacles,cellSize=32){
-  const cells=new Map(),large=[];
-  obstacles.forEach((box,index)=>{
-    const minX=Math.floor(box.min.x/cellSize),maxX=Math.floor(box.max.x/cellSize);
-    const minZ=Math.floor(box.min.z/cellSize),maxZ=Math.floor(box.max.z/cellSize);
-    if((maxX-minX+1)*(maxZ-minZ+1)>4096){large.push(index);return;}
-    for(let x=minX;x<=maxX;x++)for(let z=minZ;z<=maxZ;z++){
-      const key=x+','+z;if(!cells.has(key))cells.set(key,[]);cells.get(key).push(index);
-    }
-  });
-  return {obstacles,cells,large,cellSize,recent:[]};
+  const index={obstacles,cells:new Map(),large:[],cellSize,recent:[]};
+  obstacles.forEach((box,id)=>indexObstacle(index,box,id));
+  return index;
+}
+
+export function indexObstacle({cells,large,cellSize},box,id){
+  const minX=Math.floor(box.min.x/cellSize),maxX=Math.floor(box.max.x/cellSize);
+  const minZ=Math.floor(box.min.z/cellSize),maxZ=Math.floor(box.max.z/cellSize);
+  if((maxX-minX+1)*(maxZ-minZ+1)>4096){large.push(id);return;}
+  for(let x=minX;x<=maxX;x++)for(let z=minZ;z<=maxZ;z++){
+    const key=x+','+z;
+    if(!cells.has(key))cells.set(key,[]);
+    cells.get(key).push(id);
+  }
 }
 
 export function queryObstacles(index,x,z,radius=0){

@@ -1,17 +1,18 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-model154';
+import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261118-circuit155';
 
 // Race decoration is local to the fictional track. The warm and cool guides
 // attach to the inner face of the concrete on both sides and share its vertices.
 export function addCircuitLighting(root,obstacles){
   const width=RACE_COURSE.width/2,rails=[],railColors=[],spill=[],spillColors=[];
-  const color=new THREE.Color(),count=Math.ceil(RACE_COURSE.length/5);
+  const color=new THREE.Color(),count=circuitStations.length-1;
   for(const sign of [-1,1]){
     color.setHex(sign===1?0xff8156:0x64d9ef);
     for(let i=0;i<count;i++){
-      const start=i*RACE_COURSE.length/count,end=(i+1)*RACE_COURSE.length/count;
-      const near=sign*(width+2.389),a=sampleCourse(start,near),b=sampleCourse(end,near);
+      const start=circuitStations[i],end=circuitStations[i+1];
+      const guide=s=>sign*(width+runoffWidth(s,sign)-.011);
+      const a=sampleCourse(start,guide(start)),b=sampleCourse(end,guide(end));
       for(const [p,y] of [[a,.58],[b,.58],[a,.66],[b,.58],[b,.66],[a,.66]]){
         rails.push(p.x,y,p.z);railColors.push(color.r,color.g,color.b);
       }
@@ -20,7 +21,7 @@ export function addCircuitLighting(root,obstacles){
       const bands=[[2.38,.22],[1.65,.10],[.8,.036],[-1.45,0]];
       for(let j=0;j<bands.length-1;j++){
         for(const [s,k] of [[start,j],[end,j],[start,j+1],[end,j],[end,j+1],[start,j+1]]){
-          const [offset,strength]=bands[k],p=sampleCourse(s,sign*(width+offset));
+          const [offset,strength]=bands[k],p=sampleCourse(s,sign*(width+runoffWidth(s,sign)-2.4+offset));
           spill.push(p.x,.025,p.z);spillColors.push(color.r,color.g,color.b,strength);
         }
       }

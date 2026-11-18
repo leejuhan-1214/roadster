@@ -1,4 +1,5 @@
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {prepareExtraLandmarkDetail} from './city-landmark-detail.js?v=20261118-circuit155';
 
 const ASSETS=new URL('../assets/city-buildings/',import.meta.url);
 let pending;
@@ -12,7 +13,8 @@ export function loadExtraGangnamBuildings(){
     const root=gltf.scene;root.name='Gangnam original landmark reconstructions';
     root.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;node.frustumCulled=true;}});
     root.userData={...root.userData,source:'Original exterior reconstructions from public references',modelCount:manifest.modelCount,triangles:manifest.triangles};
-    return {root,replacedBuildingIds:new Set(manifest.replacedBuildingIds),removedBuildingIds:manifest.removedBuildingIds,buildingHeightOverrides:manifest.buildingHeightOverrides,additionalBuildings:manifest.additionalBuildings,collisionSolids:manifest.collisionSolids,skipCollisionBuildingIds:manifest.skipCollisionBuildingIds,manifest};
+    const updateDetail=prepareExtraLandmarkDetail(root,manifest.models);
+    return {root,updateDetail,replacedBuildingIds:new Set(manifest.replacedBuildingIds),removedBuildingIds:manifest.removedBuildingIds,buildingHeightOverrides:manifest.buildingHeightOverrides,additionalBuildings:manifest.additionalBuildings,collisionSolids:manifest.collisionSolids,skipCollisionBuildingIds:manifest.skipCollisionBuildingIds,manifest};
   }).catch(error=>{pending=undefined;throw error;});
   return pending;
 }

@@ -1,8 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PhysicsSim} from '../dist/js/physics.js';
+import {prepareObstacleChunk} from '../dist/js/obstacle-chunk.js';
+import {createCityTileHydrator} from '../dist/js/city-tile-mesh.js';
 
 const box=(id,x,z,width=8,depth=8)=>({id,center:[x,4,z],size:[width,8,depth]});
+
+test('streamed collision indexing is sliced and the finished index is published intact',()=>{
+  const boxes=Array.from({length:330},(_,i)=>box('part-'+i,i*5,0));
+  const tile=createCityTileHydrator({id:'dense',origin:[0,0],meshes:[],trees:[],obstacles:boxes,roads:[]},{prepareCollision:true});
+  const sim=new PhysicsSim();sim.setObstacles([]);
+  let steps=0;
+  while(!tile.done){
+    const before=tile.collision.obstacles.length;tile.step();steps++;
+    assert.ok(tile.collision.obstacles.length>before&&tile.collision.obstacles.length-before<=64);
+    assert.equal(sim.surfaceHeightAt(0,0,20),0);
+  }
+  assert.ok(steps>=6);assert.ok(sim.setObstacleChunk('dense',boxes,tile.collision));
+  assert.equal(sim.obstacleChunks.get('dense').index,tile.collision.index);
+  assert.equal(sim.surfaceHeightAt(0,0,20),8);
+  const unfinished=prepareObstacleChunk(boxes);unfinished.step(10);
+  sim.setObstacleChunk('fallback',boxes,unfinished);
+  assert.equal(sim.obstacleChunks.get('fallback').obstacles.length,boxes.length);
+  assert.notEqual(sim.obstacleChunks.get('fallback').index,unfinished.index);
+  tile.dispose();
+});
 
 test('tile updates retain prepared core and unchanged tile grids, plus impact history',()=>{
   const sim=new PhysicsSim(),core=Array.from({length:500},(_,i)=>box('core-'+i,1000+i*10,1000));

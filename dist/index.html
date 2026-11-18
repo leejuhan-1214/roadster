@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="application-version" content="1.54.0">
+<meta name="application-version" content="1.55.0">
 <meta name="theme-color" content="#0b151e"><meta name="description" content="5종 차체의 착지 4방식을 같은 높이에서 비교하고 77종 차량으로 실제 강남역 도로에서 자유롭게 주행합니다.">
 <title>Roadster Landing Lab — 착지 충격 실험</title>
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
@@ -65,7 +65,7 @@
     <div><small>랩</small><strong id="race-lap">1 / 2</strong></div>
     <div><small>경과 시간</small><strong id="race-clock">0:00.0</strong></div>
   </div>
-  <div class="race-actions glass"><button id="race-recover" title="마지막 통과 지점으로 (R)">트랙 복귀</button><button id="race-exit">도시로</button></div>
+  <div class="race-actions glass"><button id="race-recover" title="마지막 통과 지점으로 (R)">트랙 복귀</button><button id="race-restart" hidden>새 경주</button><button id="race-exit">도시로</button></div>
   <div id="race-flight" class="glass">
     <div class="race-flight-row"><b id="race-flight-state">지상</b><span id="race-flight-height">0.0 m</span><span id="race-flight-gas"></span><button id="race-land" aria-pressed="false" hidden>착지 보조</button></div>
     <div class="race-flight-row"><span id="race-ring-count"></span><span id="race-flight-hint"></span></div>
@@ -83,8 +83,8 @@
 </section>
 <aside id="part-card" class="part-card glass" hidden><div class="panel-heading"><span id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 선택 닫기">×</button></div><h2 id="part-title"></h2><div id="part-mechanism" hidden><p id="part-description"></p><a id="part-source" target="_blank" rel="noopener noreferrer" hidden>구조 참고 자료 ↗</a><button id="part-motion" type="button" aria-pressed="false" hidden>작동 재생</button><button id="engine-strokes" type="button" aria-pressed="false" hidden>4행정 색상</button><div id="stroke-legend" aria-label="행정별 표시 색상" hidden></div></div><div class="part-actions"><button id="part-zoom">가까이 보기</button><button id="part-isolate" aria-pressed="false">이것만 보기</button><button id="part-hide">선택 숨기기</button></div></aside>
 <div class="view-tools glass"><button id="camera" title="카메라 전환 (C)">◉ <span id="camera-label">자유 카메라</span></button><button id="vectors" aria-pressed="false" title="힘 벡터 (V)">↗ 힘 벡터</button><button id="reset" title="실험 초기화 (R)">↺ 초기화</button><div class="landing-playback" id="landing-playback"><button id="landing-suspension" aria-pressed="false" title="차체 외장을 열어 바퀴·서스펜션의 움직임 관찰">서스펜션</button><label for="landing-speed">실험 재생</label><select id="landing-speed" aria-label="착지 실험 재생 속도"><option value="1">1×</option><option value="0.25">0.25×</option><option value="0.1">0.1×</option></select><button id="landing-step" disabled title="일시정지한 착지 실험을 2ms 진행">+2 ms</button></div></div><span id="fps" class="frame-note"></span><div id="toast" class="toast" role="status"></div>
-<dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.54.0</div></dialog>
-<script type="module" id="app-entry" src="./js/main.js?v=20261118-model154"></script>
+<dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.55.0</div></dialog>
+<script type="module" id="app-entry" src="./js/main.js?v=20261118-circuit155"></script>
 <script>
   const entry = document.getElementById('app-entry');
   const retry = document.getElementById('boot-retry');

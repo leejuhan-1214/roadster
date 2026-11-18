@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {distanceSelection,footprintBounds,uploadPrefix} from './city-detail-distance.js?v=20261118-circuit155';
 
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 const hash=id=>{
@@ -20,7 +21,7 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set(),de
     ['entrance-canopies',0x626d72,.6,.35],
     ['roof-parapets',0x8c9394,.88,.05],
   ];
-  const batches=definitions.map(()=>[]),dummy=new THREE.Object3D();let instanceCount=0,buildingCount=0;
+  const batches=definitions.map(()=>[]),dummy=new THREE.Object3D(),frontages=[];let instanceCount=0,buildingCount=0;
   const add=(batch,x,y,z,w,h,d,angle,color)=>{
     if(instanceCount>=MAX_INSTANCES||![x,y,z,w,h,d,angle].every(Number.isFinite)||w<=0||h<=0||d<=0)return;
     batches[batch].push({x,y,z,w,h,d,angle,color});instanceCount++;
@@ -37,7 +38,7 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set(),de
   };
   const candidates=buildings.filter(b=>{
     const c=b.center||[0,0];
-    return !excludedIds.has(b.id)&&Math.hypot(c[0]-detailCenter[0],c[1]-detailCenter[1])<=detailRadius&&b.height>=7&&b.points?.length>=3;
+    return !excludedIds.has(b.id)&&!excludedIds.has(String(b.id))&&Math.hypot(c[0]-detailCenter[0],c[1]-detailCenter[1])<=detailRadius&&b.height>=7&&b.points?.length>=3;
   }).sort((a,b)=>Math.hypot(a.center[0]-detailCenter[0],a.center[1]-detailCenter[1])-Math.hypot(b.center[0]-detailCenter[0],b.center[1]-detailCenter[1]));
   for(const b of candidates){
     if(instanceCount>MAX_INSTANCES-160)break;
@@ -59,6 +60,7 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set(),de
       .sort((a,c)=>(a.road.distance-a.facing*5)-(c.road.distance-c.facing*5))[0];
     if(!front)continue;
     buildingCount++;
+    const starts=batches.map(batch=>batch.length);
     const v=hash(b.id),tint=new THREE.Color().setHSL(.56+v*.05,.12,.7+v*.12);
     const {length,dx,dz,nx,nz,x,z,angle}=front;
     const at=(batch,along,y,w,h,depth,offset,color)=>add(batch,x+dx*along+nx*offset,y,z+dz*along+nz*offset,w,h,depth,angle,color);
@@ -110,8 +112,11 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set(),de
       if(e.length<4)continue;
       add(5,e.x-e.nx*.16,b.height+.28,e.z-e.nz*.16,e.length-.15,.56,.32,e.angle,tint);
     }
+    const area=footprintBounds(points);
+    const bounds=new THREE.Box3(new THREE.Vector3(area.minX,0,area.minZ),new THREE.Vector3(area.maxX,b.height+1,area.maxZ));
+    frontages.push({...area,bounds:bounds.expandByScalar(.35),starts,ends:batches.map(batch=>batch.length)});
   }
-  const geometry=new THREE.BoxGeometry(1,1,1);
+  const geometry=new THREE.BoxGeometry(1,1,1),buffers=[];
   for(let i=0;i<batches.length;i++){
     const transforms=batches[i];if(!transforms.length)continue;
     const [name,color,roughness,metalness]=definitions[i];
@@ -121,9 +126,35 @@ export function createStreetDetails(buildings,segments,{excludedIds=new Set(),de
       const t=transforms[n];dummy.position.set(t.x,t.y,t.z);dummy.rotation.set(0,t.angle,0);dummy.scale.set(t.w,t.h,t.d);dummy.updateMatrix();
       mesh.setMatrixAt(n,dummy.matrix);mesh.setColorAt(n,t.color||new THREE.Color(0xffffff));
     }
-    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
     mesh.computeBoundingSphere();mesh.receiveShadow=true;mesh.castShadow=false;root.add(mesh);
+    buffers.push({i,mesh,matrices:mesh.instanceMatrix.array.slice(),colors:mesh.instanceColor.array.slice()});
   }
   root.userData={kind:'original-inferred-facades',buildings:buildingCount,instances:instanceCount,triangles:instanceCount*12,drawCalls:root.children.length,maximumProjectionMetres:.1};
+  root.userData.availableInstances=instanceCount;
+  root.updateDetail=distanceSelection(frontages,selected=>{
+    const bounds=new THREE.Box3();let activeInstances=0,activeBatches=0,activeBuildings=0;
+    for(let b=0;b<frontages.length;b++)if(selected[b]){bounds.union(frontages[b].bounds);activeBuildings++;}
+    for(const {i,mesh,matrices,colors} of buffers){
+      let count=0;
+      for(let b=0;b<frontages.length;b++){
+        if(!selected[b])continue;
+        const start=frontages[b].starts[i],end=frontages[b].ends[i];
+        if(start===end)continue;
+        mesh.instanceMatrix.array.set(matrices.subarray(start*16,end*16),count*16);
+        mesh.instanceColor.array.set(colors.subarray(start*3,end*3),count*3);
+        count+=end-start;
+      }
+      mesh.count=count;mesh.visible=count>0;
+      uploadPrefix(mesh.instanceMatrix,count*16);uploadPrefix(mesh.instanceColor,count*3);
+      if(count>0){
+        mesh.boundingBox??=new THREE.Box3();mesh.boundingBox.copy(bounds);
+        bounds.getBoundingSphere(mesh.boundingSphere);
+      }
+      activeInstances+=count;if(count>0)activeBatches++;
+    }
+    Object.assign(root.userData,{activeBuildings,instances:activeInstances,triangles:activeInstances*12,drawCalls:activeBatches});
+  });
   return root;
 }

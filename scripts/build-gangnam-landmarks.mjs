@@ -21,7 +21,7 @@ const buildings=[{...gt,kind:'gt',label:'GT Tower East'},...samsungSources.map((
   kind:'samsung',label:b.name,variant:i}))];
 const root=new THREE.Group();root.name='Gangnam original landmark reconstructions';
 const buckets=new Map();
-const collisionSolids=[];let currentBuilding='';
+const collisionSolids=[];let currentBuilding='',coarseWalls;
 const materials={
   glass:new THREE.MeshPhysicalMaterial({name:'Architectural blue reflective glass',color:0xffffff,vertexColors:true,metalness:.38,roughness:.19,clearcoat:.85,clearcoatRoughness:.14}),
   frame:new THREE.MeshStandardMaterial({name:'Silver curtain-wall mullions',color:0xc4ced3,metalness:.72,roughness:.37}),
@@ -81,6 +81,7 @@ function collideBox(f,x,y,z,w,h,d){
   }
 }
 function curtainBox(f,x,y,z,w,h,d,{levels=Math.max(2,Math.round(h/4)),vertical=false,seed=0,canopy=false}={}){
+  coarseWalls.push([x,y,z,w,h,d]);
   const bottom=y-h/2,top=y+h/2;
   collideBox(f,x,y,z,w,h,d);
   box(f,x,y,z,w,h,d,'dark');
@@ -162,7 +163,13 @@ function samsungTower(b,f){
   box(f,-w*.28,podium+.20,-d*.34,w*.30,.30,d*.20,'garden');
   for(const offset of [-.15,.15])box(f,offset*w,podium+.45,-d*.40,w*.13,.8,d*.09,'roof');
 }
-for(const b of buildings){currentBuilding=b.id;const f=frameFor(b);if(b.kind==='gt')gtTower(b,f);else samsungTower(b,f);b.modelFrame={center:f.center,angle:f.angle,width:f.width,depth:f.depth};}
+for(const b of buildings){
+  currentBuilding=b.id;coarseWalls=b.coarseWalls=[];
+  const starts=Object.fromEntries(['glass','frame'].map(key=>[key,buckets.get(key)?.indices.length||0]));
+  const f=frameFor(b);if(b.kind==='gt')gtTower(b,f);else samsungTower(b,f);
+  b.modelFrame={center:f.center,angle:f.angle,width:f.width,depth:f.depth};
+  b.detailRanges=Object.fromEntries(Object.entries(starts).map(([key,start])=>[key,[start,buckets.get(key).indices.length-start]]));
+}
 let triangles=0;
 for(const [name,b]of buckets){
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(b.positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(b.normals,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(b.uvs,2));geometry.setAttribute('color',new THREE.Float32BufferAttribute(b.colors,3));geometry.setIndex(b.indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();
@@ -181,7 +188,7 @@ const manifest={version:1,title:'Original Gangnam landmark reconstructions',gene
   limitations:'Recognizable exterior massing and facade rhythm; not survey/CAD accuracy. KPF tower offsets, setbacks and podium proportions are visual approximations. Samsung Life uses the documented 150 m high wing above its 136 m relation; the small 504227064 wing has an assumed 12 m fallback height. GT collision uses a straight shaft approximation of its wavy facade. No interiors.',
   geometry:{file:'original-landmarks.glb',bytes:glb.length,sha256:createHash('sha256').update(glb).digest('hex'),triangles,drawCalls:root.children.length},
   sources:[{title:'GT Tower East — Convexarchitecten',url:'https://convexarchitecten.nl/projecten/kantoren/gt-tower-east',facts:'Wavy glass tower; official diagram shows 2.5 wave lengths in five 24 m sections and diagonal facade displacement marked 1.8 m and 2.4 m.'},{title:'Samsung Seocho — KPF',url:'https://www.kpf.com/project/samsung-seocho',facts:'Interrelated joined volumes, distinct vertical and horizontal mullion systems, public plaza and podium volumes.'},{title:'OpenStreetMap',url:'https://www.openstreetmap.org/copyright',facts:'Geographical footprints, orientation, height and level tags; ODbL.'}],
-  buildings:buildings.map(({id,name,label,kind,height,documentedBaseHeight,levels,points,rings,componentIds=[],modelFrame})=>({id,name:label||name,kind,height,documentedBaseHeight,levels,points,rings,componentIds,modelFrame})),
+  buildings:buildings.map(({id,name,label,kind,height,documentedBaseHeight,levels,points,rings,componentIds=[],modelFrame,coarseWalls,detailRanges})=>({id,name:label||name,kind,height,documentedBaseHeight,levels,points,rings,componentIds,modelFrame,coarseWalls,detailRanges})),
   additionalBuildings,removedBuildingIds,
   replacedBuildingIds:[...new Set([gt.id,...additionalBuildings.map(b=>b.id),...removedBuildingIds,...lifeWings.map(b=>b.id)])],
   collisionSolids,skipCollisionBuildingIds:[gt.id,...additionalBuildings.map(b=>b.id),...removedBuildingIds,...lifeWings.map(b=>b.id)],

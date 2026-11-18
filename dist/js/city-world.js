@@ -3,9 +3,9 @@ import {pavedMedianMask,indexRoadSegments,roadDistanceSquared} from './city-medi
 import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
 import {createTreeGroves,loadCityTreeAsset} from './city-trees.js?v=20261118-frameperf1';
 import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
-import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261110-seoul1';
-import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261110-seoul1';
-import {createStreetDetails} from './city-facades.js?v=20261110-seoul1';
+import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261118-circuit155';
+import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261118-circuit155';
+import {createStreetDetails} from './city-facades.js?v=20261118-circuit155';
 import {buildingColliders} from './city-building-collision.js?v=20261118-study150';
 
 const UP=new THREE.Vector3(0,1,0),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -221,8 +221,14 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   }
   root.add(mesh(walks,walkMaterial,'real road sidewalks'),mesh(streets,roadMaterial,'OSM road network'),mesh(paint,paintMaterial,'lane markings and crossings'),mesh(walls,wallMaterial,'OSM building facades'),mesh(roofs,roofMaterial,'OSM building roofs'));
   const curtainWalls=mesh(glassWalls,glassMaterial,'office curtain walls');curtainWalls.castShadow=true;root.add(curtainWalls);
-  root.add(createStreetDetails(plan.buildings,plan.segments,{excludedIds:landmarkIds}));
+  const facades=createStreetDetails(plan.buildings,plan.segments,{excludedIds:landmarkIds});
+  root.add(facades);
   for(const asset of landmarkAssets)if(asset.root)root.add(asset.root);
+  function updateDetail(x,z,radius=105){
+    facades.updateDetail(x,z,radius);
+    for(const asset of landmarkAssets)asset.updateDetail?.(x,z,radius);
+  }
+  updateDetail(plan.spawn.position[0],plan.spawn.position[2]);
   const steel=new THREE.MeshStandardMaterial({color:0x74818a,roughness:.55,metalness:.55}),light=new THREE.MeshStandardMaterial({color:0xe0e8df,emissive:0xa9b5a3,emissiveIntensity:.25,roughness:.55});
   instanced(root,new THREE.CylinderGeometry(1,1,1,6),steel,poles,'streetlight poles');instanced(root,new THREE.BoxGeometry(1,1,1),steel,arms,'streetlight arms');instanced(root,new THREE.BoxGeometry(1,1,1),light,lamps,'streetlight lamps');
   const treeGroves=createTreeGroves(treeAsset,trees);root.add(treeGroves);
@@ -247,7 +253,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
     if(best>roadPadding**2){best=Infinity;consider(plan.segments);}
     return name;
   }
-  return {...plan,root,treeAsset,landmarkAssets,treeGroves,treePlacements:trees,obstaclesNear,nearestRoadName,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
+  return {...plan,root,treeAsset,landmarkAssets,treeGroves,treePlacements:trees,obstaclesNear,nearestRoadName,updateDetail,dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geometries.add(o.geometry);for(const m of o.material?(Array.isArray(o.material)?o.material:[o.material]):[])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const t of textures)t.dispose();}};
 }
 export async function loadCityWorld(){
   const [response,treeAsset,landmarks,extraBuildings]=await Promise.all([fetch(new URL('../assets/city/gangnam.json',import.meta.url)),loadCityTreeAsset(),loadGangnamLandmarks(),loadExtraGangnamBuildings()]);

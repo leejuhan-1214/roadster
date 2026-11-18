@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-model154';
-import {AIR_GATES,airLaneOffset} from './station-race-air.js?v=20261118-flight1531';
-import {addCircuitLighting} from './circuit-lighting.js?v=20261118-model154';
+import {RACE_COURSE,sampleCourse,projectToCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261118-circuit155';
+import {AIR_APERTURE,AIR_APPROACH} from './station-race-air.js?v=20261118-circuit155';
+import {addCircuitLighting} from './circuit-lighting.js?v=20261118-circuit155';
 
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js';
 
@@ -17,15 +17,16 @@ function mesh(parent,geometry,mat,name){
 }
 
 // Every strip closes at the same arc length used by the AI and checkpoint model.
-function ribbon(root,name,mat,inner,outer,height,segmentLength,tileSize=3,alternate=false){
-  const count=Math.ceil(RACE_COURSE.length/segmentLength);
+function ribbon(root,name,mat,inner,outer,height,stations=circuitStations,tileSize=3,alongUV=false){
   const positions=[],uv=[],indices=[];
-  for(let i=0;i<=count;i++){
-    const s=i*RACE_COURSE.length/count;
-    for(const side of [inner,outer]){
-      const {x,z}=sampleCourse(s,side);positions.push(x,height,z);uv.push(x/tileSize,z/tileSize);
+  for(const [i,s] of stations.entries()){
+    for(const [j,offset] of [inner,outer].entries()){
+      const lateral=typeof offset==='function'?offset(s):offset;
+      const {x,z}=sampleCourse(s,lateral);
+      positions.push(x,height,z);
+      if(alongUV)uv.push(s/tileSize,j);else uv.push(x/tileSize,z/tileSize);
     }
-    if(i<count&&(!alternate||i%2===0)){
+    if(i+1<stations.length){
       const a=2*i;indices.push(a,a+1,a+2,a+1,a+3,a+2);
     }
   }
@@ -34,6 +35,15 @@ function ribbon(root,name,mat,inner,outer,height,segmentLength,tileSize=3,altern
   geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   geometry.setIndex(indices);geometry.computeVertexNormals();
   return mesh(root,geometry,mat,name);
+}
+
+function kerbMaterial(){
+  const pixels=new Uint8Array([195,46,43,255,226,223,206,255]);
+  const map=new THREE.DataTexture(pixels,2,1);
+  map.colorSpace=THREE.SRGBColorSpace;map.wrapS=THREE.RepeatWrapping;
+  map.magFilter=THREE.NearestFilter;map.minFilter=THREE.LinearMipmapLinearFilter;
+  map.generateMipmaps=true;map.needsUpdate=true;
+  return material(0xffffff,{map});
 }
 
 function precastWallMaterial(){
@@ -57,18 +67,21 @@ function precastWallMaterial(){
 
 // Follow the same corner vertices in the rendered walls and their collision prisms.
 function boundary(root,obstacles,side,concrete){
-  const near=side*(halfWidth+2.4),far=side*(halfWidth+2.84),height=.84;
-  const count=Math.ceil(RACE_COURSE.length/5),positions=[],indices=[],uv=[];
+  const count=circuitStations.length-1,height=.84,positions=[],indices=[],uv=[];
+  const edgePoints=d=>{
+    const near=halfWidth+runoffWidth(d,side);
+    return [sampleCourse(d,side*near),sampleCourse(d,side*(near+.44))];
+  };
   for(let i=0;i<=count;i++){
-    const s=i*RACE_COURSE.length/count;
-    const a=sampleCourse(s,near),b=sampleCourse(s,far);
+    const s=circuitStations[i],u=s/5;
+    const [a,b]=edgePoints(s);
     positions.push(a.x,0,a.z,a.x,height,a.z,b.x,height,b.z,b.x,0,b.z);
-    uv.push(i,0,i,.4,i,.6,i,1);
+    uv.push(u,0,u,.4,u,.6,u,1);
     if(i===count)continue;
     const j=i*4;
     for(let k=0;k<3;k++)indices.push(j+k,j+k+1,j+k+4,j+k+1,j+k+5,j+k+4);
-    const e=(i+1)*RACE_COURSE.length/count,c=sampleCourse(e,far),d=sampleCourse(e,near);
-    const footprint=[a,b,c,d].map(p=>[p.x,p.z]);
+    const [d,c]=edgePoints(circuitStations[i+1]);
+    const footprint=[a,b,c,d].map(p=>[Math.fround(p.x),Math.fround(p.z)]);
     const xs=footprint.map(p=>p[0]),zs=footprint.map(p=>p[1]);
     const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
     obstacles.push({kind:'prism',id:'race-barrier-'+side+'-'+i,footprint,
@@ -84,7 +97,7 @@ function boundary(root,obstacles,side,concrete){
 function billBoard(root,text,w,h,x,y,z,heading,background,foreground){
   if(typeof document==='undefined')return;
   const canvas=document.createElement('canvas');
-  canvas.width=1024;canvas.height=Math.max(64,Math.round(1024*h/w));
+  canvas.width=w>6?512:128;canvas.height=Math.max(40,Math.round(canvas.width*h/w));
   const ctx=canvas.getContext('2d');
   ctx.fillStyle=background;ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle=foreground;ctx.font='bold '+Math.round(canvas.height*.62)+'px sans-serif';
@@ -93,6 +106,46 @@ function billBoard(root,text,w,h,x,y,z,heading,background,foreground){
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
   const panel=mesh(root,new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:texture}),text);
   panel.position.set(x,y,z);panel.rotation.y=heading-Math.PI/2;
+}
+
+// One atlas and one batched sign mesh per bend. Real-distance boards on the
+// outside of each braking zone are legible on approach without a HUD.
+function addBrakeBoards(root){
+  if(typeof document==='undefined')return;
+  const signs=['150','100','50','‹‹','››',...RACE_COURSE.bends.map(b=>'T'+b.turn)];
+  const columns=4,rows=Math.ceil(signs.length/columns),px=128,py=80;
+  const canvas=document.createElement('canvas');
+  canvas.width=px*columns;canvas.height=py*rows;
+  const ctx=canvas.getContext('2d');
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 53px sans-serif';
+  for(const [i,label] of signs.entries()){
+    const x=(i%columns)*px,y=Math.floor(i/columns)*py;
+    ctx.fillStyle=i<3?'#efeadc':'#213238';ctx.fillRect(x,y,px,py);
+    ctx.fillStyle=i<3?'#1d2224':'#ffdd76';ctx.fillText(label,x+px/2,y+py*.53,px-10);
+  }
+  const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=2;
+  const mat=new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide});
+  for(const b of RACE_COURSE.bends){
+    const pos=[],uv=[],indices=[],side=Math.sign(b.curvature);
+    const board=(d,label,w,h)=>{
+      const p=sampleCourse(d,side*(halfWidth+runoffWidth(d,side)+1.6));
+      const index=signs.indexOf(label),x=index%columns,y=Math.floor(index/columns);
+      const base=pos.length/3;
+      for(const [j,k] of [[0,0],[1,0],[0,1],[1,1]]){
+        const across=(j-.5)*w;
+        pos.push(p.x+Math.sin(p.heading)*across,1.2+k*h,p.z+Math.cos(p.heading)*across);
+        uv.push((x+.015+j*.97)/columns,1-(y+.985-k*.97)/rows);
+      }
+      indices.push(base,base+1,base+2,base+2,base+1,base+3);
+    };
+    for(const metres of [150,100,50])board(b.start-metres,String(metres),2.05,1.25);
+    board(b.start-7,'T'+b.turn,2.1,1.3);
+    board(b.start+b.length*.43,side===1?'‹‹':'››',2.8,1);
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);
+    mesh(root,g,mat,'Braking boards T'+b.turn);
+  }
 }
 
 // Static gantry, grandstands, grid paint and pit buildings share one draw.
@@ -106,7 +159,7 @@ function facilities(root,obstacles){
   box(0,6.4,0,.55,1.4,2*halfWidth+4,dark);
   for(const side of [-1,1])obstacles.push({id:'starting-gantry-post-'+side,center:[0,3.2,side*(halfWidth+1.4)],size:[.6,6.4,.6]});
   obstacles.push({id:'starting-gantry-header',center:[0,6.4,0],size:[.55,1.4,2*halfWidth+4]});
-  billBoard(root,'STATION CIRCUIT',16,1.35,-.29,6.4,0,0,'#152b30','#9df5dc');
+  billBoard(root,'STATION GRAND PRIX',16,1.35,-.29,6.4,0,0,'#152b30','#9df5dc');
   const columns=32,size=2*halfWidth/columns;
   for(let column=0;column<columns;column++)for(let row=0;row<3;row++)
     box((row-1)*size,.014,-halfWidth+(column+.5)*size,size,.014,size,(row+column)%2===0?white:dark);
@@ -115,7 +168,7 @@ function facilities(root,obstacles){
     box(p.x+2.1,.019,p.z,.15,.012,2.85,white);
     for(const sign of [-1,1])box(p.x+1.57,.019,p.z+sign*1.37,1.15,.012,.12,white);
   }
-  for(const center of [-26,14]){
+  for(const center of [-158,-118,-78,-38,2,42,82,122]){
     const front=halfWidth+7;
     for(let i=0;i<5;i++){
       const y=.4+i*.63,z=front+i*1.12;
@@ -126,28 +179,16 @@ function facilities(root,obstacles){
     box(center,6.65,front+3.7,36,.32,10.6,0x7e8f90);
     for(const dx of [-15,-5,5,15])box(center+dx,3.2,front+6,.22,6.4,.25,steel);
   }
-  const pit=-(halfWidth+8.6);
-  box(-3,1.8,pit,35,3.6,7,0xa9aca6);box(-3,3.82,pit,36,.38,8.2,steel);
-  for(let i=0;i<7;i++)box(-18+i*5,1.45,pit+3.52,4,2.9,.1,0x394e55);
-  box(17,3.75,pit,6.1,7.5,6.75,0xb8aaa0);box(17,6,pit+3.38,5.8,1.9,.12,0x344e58);
-  box(17,7.65,pit,7,.35,7.8,white);
-  for(const gate of RACE_COURSE.gates.slice(1)){
-    const p=sampleCourse(gate.distance,halfWidth+3.6);
-    box(p.x,1.45,p.z,.15,2.9,.17,steel,p.heading);
-    billBoard(root,String(gate.index).padStart(2,'0'),1.45,.88,p.x,2.62,p.z,p.heading,'#1b4146','#c8fff0');
+  const pit=-(halfWidth+15);
+  box(-32,.008,pit+6.4,250,.018,6.3,0x535b59);
+  for(let garage=0;garage<4;garage++){
+    const x=-100+garage*39;
+    box(x,2.3,pit,38,4.6,9.2,0xb2b8b4);box(x,4.8,pit,39,.38,10.5,steel);
+    box(x,5.8,pit,37,1.7,8.6,0x485e65);box(x,6.8,pit,39,.24,9.4,white);
+    for(let i=0;i<7;i++)box(x-15+i*5,1.48,pit+4.61,4,2.96,.1,0x394e55);
   }
-  // Warn on the approach to each bend. Place boards outside the safety wall.
-  let onBend=false;
-  for(let s=0;s<RACE_COURSE.length;s+=3){
-    const p=sampleCourse(s),ahead=sampleCourse(s+3);
-    const turning=Math.abs(Math.sin(ahead.heading-p.heading))>.015;
-    if(turning&&!onBend){
-      const sign=sampleCourse(s-4,halfWidth+3.4);
-      box(sign.x,1.5,sign.z,.2,3,.22,steel,sign.heading);
-      billBoard(root,'❮  ❮  ❮',4.1,1.48,sign.x,2.75,sign.z,sign.heading,'#182429','#ffe07a');
-    }
-    onBend=turning;
-  }
+  box(46,5,pit,7.8,10,8.8,0xb8aaa0);box(46,7.8,pit+4.42,6.6,2.7,.12,0x344e58);
+  box(46,10.1,pit,8.9,.38,9.8,white);
   for(let i=0;i<15;i++){
     const d=i*RACE_COURSE.length/15,p=sampleCourse(d,halfWidth+6.7);
     box(p.x,5,p.z,.18,10,.18,steel,p.heading);
@@ -160,6 +201,8 @@ function facilities(root,obstacles){
 
 function hills(root){
   const positions=[],colors=[],indices=[],land=new THREE.Color(),samples=192;
+  const e=RACE_COURSE.extent,cx=(e.minX+e.maxX)/2,cz=(e.minZ+e.maxZ)/2;
+  const rx=(e.maxX-e.minX)/2+210,rz=(e.maxZ-e.minZ)/2+220;
   const bands=[[230,-.6,0,0x566458],[292,3,.19,0x475d54],[345,8,.49,0x465a54],
     [405,14,.80,0x475b58],[455,19,1,0x47595b],[525,12,.72,0x506164],[640,3,.36,0x58676b]];
   for(const [ring,[radius,seat,relief,color]] of bands.entries()){
@@ -167,7 +210,7 @@ function hills(root){
       const a=2*Math.PI*i/samples,t=a+.08*Math.sin(a*3+.23*ring);
       const ridge=9*Math.sin(t*4+.7)+6*Math.cos(t*7-.35)+3.3*Math.sin(t*13)+1.4*Math.cos(t*28);
       const r=radius+relief*(12*Math.cos(t*6)+6*Math.sin(t*13));
-      positions.push(Math.cos(a)*r,seat+relief*ridge,Math.sin(a)*r-48);
+      positions.push(cx+Math.cos(a)*(rx+r-180),seat+relief*ridge*2.2,cz+Math.sin(a)*(rz+r-180));
       land.setHex(color).multiplyScalar(1+relief*(.045*Math.cos(t*17)+.027*Math.sin(t*31)));
       colors.push(land.r,land.g,land.b);
       if(ring){
@@ -190,7 +233,7 @@ function turfMaterial(){
     pixels.set([88+tone,105+tone,69+tone*.7,255],i*4);
   }
   const map=new THREE.DataTexture(pixels,size,size);
-  map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(110,110);
+  map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(210,210);
   map.colorSpace=THREE.SRGBColorSpace;map.magFilter=THREE.LinearFilter;
   map.minFilter=THREE.LinearMipmapLinearFilter;map.generateMipmaps=true;map.needsUpdate=true;
   return material(0xffffff,{map});
@@ -202,23 +245,27 @@ function tracksideTrees(root,library){
   const grove=new THREE.Group();
   if(!library)return grove;
   const matrix=new THREE.Object3D(),tint=new THREE.Color();
-  const placements=[[],[]];
-  for(let i=0;i<64;i++){
-    const outer=i<44,k=outer?i:i-44;
-    const distance=(k+.32)*RACE_COURSE.length/(outer?44:20);
-    const side=outer?34+9*Math.sin(i*1.8):-27-5*Math.sin(i*2.3);
-    const p=sampleCourse(distance,side);
-    if(Math.abs(p.x)<40&&p.z>-28&&p.z<30)continue;
-    placements[i%2].push({p,i});
+  const clusters=new Map();
+  for(let i=0;i<295;i++){
+    const outer=i<175,k=outer?i:i-175;
+    const d=(k+.32)*RACE_COURSE.length/(outer?175:120),side=outer?1:-1;
+    const offset=side*(halfWidth+runoffWidth(d,side)+13+8*Math.sin(i*1.8));
+    const p=sampleCourse(d,offset),clearance=projectToCourse(p).error;
+    if(clearance<halfWidth+10||Math.abs(p.x)<200&&Math.abs(p.z)<42)continue;
+    const tx=Math.floor(p.x/320),tz=Math.floor(p.z/320),species=i%2?'pine':'zelkova';
+    const key=tx+','+tz+','+species;
+    if(!clusters.has(key))clusters.set(key,{tx,tz,species,points:[]});
+    clusters.get(key).points.push({p,i});
   }
-  for(const [index,species] of ['zelkova','pine'].entries()){
-    const variant=library.variant(species,0),points=placements[index];
+  for(const {tx,tz,species,points} of clusters.values()){
+    const variant=library.variant(species,0);
     for(const part of variant.levels[1]){
       const trees=new THREE.InstancedMesh(part.geometry,part.material,points.length);
       trees.name='Circuit '+species;trees.receiveShadow=true;
+      trees.userData.clusterX=(tx+.5)*320;trees.userData.clusterZ=(tz+.5)*320;
       points.forEach(({p,i},n)=>{
         matrix.position.set(p.x,-.03,p.z);matrix.rotation.y=i*2.4;
-        matrix.scale.setScalar((6.8+4.6*(.5+.5*Math.sin(i*4.94)))/variant.height);matrix.updateMatrix();
+        matrix.scale.setScalar((7+5*(.5+.5*Math.sin(i*4.94)))/variant.height);matrix.updateMatrix();
         trees.setMatrixAt(n,matrix.matrix);trees.setColorAt(n,tint.setScalar(.85+.11*Math.cos(i)));
       });
       trees.computeBoundingSphere();grove.add(trees);
@@ -241,14 +288,15 @@ function shell(sections){
   g.setIndex(indices);g.computeVertexNormals();return g;
 }
 
-// The aqua marks are optical timing gates, open to aircraft and road cars.
+// The three optical timing planes mark the required compressed-air flight.
 // All dimensions use the same apertures tested by the sporting logic.
 function airCourse(root){
   const group=new THREE.Group();group.name='Roadster air route';root.add(group);
   const frames=[];
-  for(const gate of AIR_GATES){
-    const p=sampleCourse(RACE_COURSE.gates[gate.index].distance,gate.lateral);
-    const frame=new THREE.Group();frame.name='Air gate '+gate.index;frame.position.set(p.x,0,p.z);frame.rotation.y=p.heading;
+  for(const courseGate of RACE_COURSE.gates.filter(gate=>gate.air)){
+    const gate=AIR_APERTURE;
+    const p=sampleCourse(courseGate.distance,gate.lateral);
+    const frame=new THREE.Group();frame.name='Air gate '+courseGate.index;frame.userData.gateIndex=courseGate.index;frame.position.set(p.x,0,p.z);frame.rotation.y=p.heading;
     group.add(frame);
     const parts=[];
     const bar=(y,z,h,w)=>parts.push(new THREE.BoxGeometry(.16,h,w).translate(0,y,z));
@@ -265,17 +313,16 @@ function airCourse(root){
     frames.push(frame);
   }
   const dashes=[];
-  for(let distance=0;distance<RACE_COURSE.length;distance+=5){
-    const offset=airLaneOffset(distance,RACE_COURSE.length);
-    if(offset===null)continue;
-    const p=sampleCourse(distance,offset);
+  const gates=RACE_COURSE.gates.filter(gate=>gate.air);
+  for(let distance=gates[0].distance-AIR_APPROACH;distance<=gates.at(-1).distance+24;distance+=5){
+    const p=sampleCourse(distance,0);
     dashes.push(new THREE.BoxGeometry(1.6,.016,.19).rotateY(p.heading).translate(p.x,.032,p.z));
   }
   const path=mergeGeometries(dashes);
   for(const piece of dashes)piece.dispose();
   mesh(group,path,material(0x5bb9c8),'Aerial route ground trace');
-  const sign=sampleCourse(RACE_COURSE.length*.355,halfWidth+3.8);
-  billBoard(group,'공중 게이트  ·  SPACE ↑',7.3,1.4,sign.x,3.18,sign.z,sign.heading,'#113746','#94f2ff');
+  const sign=sampleCourse(gates[0].distance-AIR_APPROACH,halfWidth+3.8);
+  billBoard(group,'필수 비행  ·  SPACE ↑',7.3,1.4,sign.x,3.18,sign.z,sign.heading,'#113746','#94f2ff');
   return frames;
 }
 
@@ -305,8 +352,16 @@ function rivalCar(color){
     mesh(spin,tire,rubber,'Tyre').castShadow=true;mesh(spin,hub,alloy,'Alloy wheel');
     wheels.push({pivot,spin,front:x>0});
   }
-  const mount=new THREE.Group(),patches=createTireContactShadows();mount.add(root,patches);
-  const car={root:mount,placeholder:root,wheels,patches};fitTirePatches(car);return car;
+  const mount=new THREE.Group(),patches=createTireContactShadows();
+  const cones=[];
+  for(const x of [-1.32,1.35])for(const z of [-.73,.73]){
+    cones.push(new THREE.CylinderGeometry(.042,.17,1,8,1,true).translate(x,-.5,z));
+  }
+  const jetGeometry=mergeGeometries(cones);cones.forEach(g=>g.dispose());
+  const jets=new THREE.Mesh(jetGeometry,new THREE.MeshBasicMaterial({color:0xb7e4ec,transparent:true,opacity:.23,depthWrite:false,side:THREE.DoubleSide}));
+  jets.name='Rival lift exhaust';jets.visible=false;jets.position.y=.24;
+  mount.add(root,patches,jets);
+  const car={root:mount,placeholder:root,wheels,fallbackWheels:wheels,patches,jets};fitTirePatches(car);return car;
 }
 
 function fitTirePatches(car){
@@ -319,31 +374,62 @@ function fitTirePatches(car){
     car.wheels.map(w=>({radius:w.radius||.345})),'city');
 }
 
-export function createStationRaceWorld(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
-  ()=>import('./rival-exterior.js?v=20261118-model154').then(m=>m.loadRivalExterior())}={}){
+export function createStationRaceWorld(...args){
+  const stages=stationRaceWorldStages(...args);
+  let stage;
+  do{stage=stages.next();}while(!stage.done);
+  return stage.value;
+}
+
+// City driving prepares one batch per idle slice. A portal reached early can
+// finish the same iterator synchronously, preserving the single world and its assets.
+export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
+  ()=>import('./rival-exterior.js?v=20261118-circuit155').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
   root.name='Station Circuit';root.visible=false;
-  const ground=mesh(root,new THREE.PlaneGeometry(1500,1500),turfMaterial(),'Circuit grass');
-  ground.rotation.x=-Math.PI/2;ground.position.y=-.025;
+  const bounds=RACE_COURSE.extent;
+  const grassWidth=bounds.maxX-bounds.minX+1500,grassDepth=bounds.maxZ-bounds.minZ+1500;
+  const grass=turfMaterial();
+  // Turf is the circuit backdrop. Draw it first without claiming road depth;
+  // a single kilometre-scale surface otherwise masks asphalt at grazing angles.
+  grass.depthWrite=false;
+  const ground=mesh(root,new THREE.PlaneGeometry(grassWidth,grassDepth,Math.ceil(grassWidth/80),Math.ceil(grassDepth/80)),grass,'Circuit grass');
+  ground.renderOrder=-10;ground.rotation.x=-Math.PI/2;
+  ground.position.set((bounds.minX+bounds.maxX)/2,-.11,(bounds.minZ+bounds.maxZ)/2);
+  yield;
   // The city offsets road paint towards the camera to resolve overlapping OSM
   // streets. The circuit is continuous so keep paint and kerbs above asphalt.
   const asphalt=roadMaterial?roadMaterial.clone():material(0x484d52);
   asphalt.polygonOffset=false;asphalt.vertexColors=false;
   if(roadMaterial)asphalt.color.multiplyScalar(.74);
-  ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,.001,2,roadMaterial?.map?.image?4:2);
-  const paintedWhite=material(white),paintedRed=material(red),apron=material(0x797c76);
-  const precast=precastWallMaterial();
+  ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,.001,circuitStations,roadMaterial?.map?.image?4:2);
+  const paintedWhite=material(white),kerb=kerbMaterial(),apron=material(0x7e8580);
+  const precast=precastWallMaterial(),bendDetails=[];
   for(const side of [-1,1]){
-    const curb=[side*halfWidth,side*(halfWidth+.76)].sort((a,b)=>a-b);
     const edge=[side*(halfWidth-.12),side*(halfWidth+.02)].sort((a,b)=>a-b);
-    const runOff=[side*(halfWidth+.74),side*(halfWidth+2.95)].sort((a,b)=>a-b);
-    ribbon(root,'Run-off',apron,...runOff,.003,2);
-    ribbon(root,'Kerb white',paintedWhite,...curb,.009,2.8);
-    ribbon(root,'Kerb red',paintedRed,...curb,.014,2.8,3,true);
-    ribbon(root,'White edge line',paintedWhite,...edge,.018,2);boundary(root,obstacles,side,precast);
+    const inner=side*(halfWidth+.12),outer=d=>side*(halfWidth+runoffWidth(d,side)+.5);
+    ribbon(root,'Run-off',apron,side<0?outer:inner,side<0?inner:outer,.003);
+    ribbon(root,'White edge line',paintedWhite,...edge,.02);boundary(root,obstacles,side,precast);
+    yield;
   }
-  facilities(root,obstacles);hills(root);addCircuitLighting(root,obstacles);
+  for(const bend of RACE_COURSE.bends){
+    const details=new THREE.Group();details.name='Corner '+bend.turn;root.add(details);
+    const end=bend.start+bend.length,stations=[bend.start-12,...circuitStations.filter(d=>d>=bend.start&&d<=end),end+12];
+    for(const side of [-1,1]){
+      const offsets=[side*(halfWidth+.12),side*(halfWidth+1.08)].sort((a,b)=>a-b);
+      ribbon(details,'Striped kerb',kerb,...offsets,.028,stations,5,true);
+    }
+    const p=sampleCourse(bend.start+bend.length/2);
+    bendDetails.push({details,x:p.x,z:p.z});
+  }
+  addBrakeBoards(root);
+  yield;
+  facilities(root,obstacles);hills(root);
+  yield;
+  addCircuitLighting(root,obstacles);
+  yield;
   const airFrames=airCourse(root);
+  yield;
   const grove=tracksideTrees(root,treeLibrary);
   const nextGate=new THREE.Group();nextGate.name='Next checkpoint';root.add(nextGate);
   let exterior=null,disposed=false;
@@ -362,15 +448,27 @@ export function createStationRaceWorld(roadMaterial,treeLibrary,{loadExterior=ty
     const fin=mesh(nextGate,new THREE.BoxGeometry(.17,.42,.9),markerMaterial,'Checkpoint flag');
     fin.position.set(0,2.02,side*(halfWidth+.47));
   }
-  function update(race){
+  function update(race,viewer=sampleCourse(race.progress)){
+    for(const {details,x,z} of bendDetails)details.visible=(viewer.x-x)**2+(viewer.z-z)**2<800**2;
+    for(const trees of grove.children)trees.visible=(viewer.x-trees.userData.clusterX)**2+(viewer.z-trees.userData.clusterZ)**2<810**2;
     for(let i=0;i<race.rivals.length;i++){
       const rival=race.rivals[i];
       if(!cars[i]){cars[i]=rivalCar(rival.color);cars[i].color=rival.color;root.add(cars[i].root);if(exterior)dress(cars[i]);}
       const car=cars[i];car.root.name=rival.name;car.root.position.set(rival.x,rival.heave||0,rival.z);car.root.rotation.y=rival.heading;
+      const distanceSq=(rival.x-viewer.x)**2+(rival.z-viewer.z)**2;
+      car.root.visible=distanceSq<750**2;
+      if(!car.root.visible)continue;
+      if(car.skin){
+        const close=distanceSq<(car.skin.root.visible?180:155)**2;
+        car.skin.root.visible=close;car.placeholder.visible=!close;
+        car.wheels=close?car.skin.wheels:car.fallbackWheels;
+      }
       const ahead=sampleCourse(rival.distance+2,rival.lateral);
       const angle=ahead.heading-rival.heading;
       const steer=rival.steerAngle??Math.atan2(Math.sin(angle),Math.cos(angle))*1.35;
-      const heave=rival.heave||0,scale=car.skin?.root.scale.x||1;
+      const heave=rival.heave||0,scale=car.skin?.root.visible?car.skin.root.scale.x:1;
+      car.jets.visible=rival.liftAcceleration>0&&heave>.04;
+      if(car.jets.visible)car.jets.scale.y=Math.min(.24+heave,.12+rival.liftAcceleration*.085);
       car.patches.position.y=-heave;car.patches.material.opacity=Math.max(0,1-Math.max(0,heave)/.14)**2;
       for(const {spin,pivot,front,radius=.345,baseY} of car.wheels){
         spin.rotation.z=-(rival.wheelDistance??rival.distance)/radius;pivot.rotation.y=front?steer:0;
@@ -379,7 +477,7 @@ export function createStationRaceWorld(roadMaterial,treeLibrary,{loadExterior=ty
     }
     const gate=RACE_COURSE.gates[race.nextGate];
     for(let i=0;i<airFrames.length;i++){
-      const active=race.nextGate===AIR_GATES[i].index;
+      const active=race.nextGate===airFrames[i].userData.gateIndex;
       airFrames[i].children[0].material.emissiveIntensity=active?1.6:.55;
     }
     nextGate.visible=!!gate&&race.phase==='racing';

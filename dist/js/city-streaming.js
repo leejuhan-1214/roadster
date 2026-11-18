@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import {createTileScheduler} from './city-tile-scheduler.js?v=20261118-frameperf1';
-import {createCityTileHydrator} from './city-tile-mesh.js?v=20261118-frameperf1';
+import {createTileScheduler} from './city-tile-scheduler.js?v=20261118-circuit155';
+import {createCityTileHydrator} from './city-tile-mesh.js?v=20261118-circuit155';
 export const CITY_CHUNK_SIZE=512;
 export const CITY_CHUNK_RADIUS=2;
+const GUARD_CORNERS=[[-8,-8],[8,-8],[-8,8],[8,8]];
 const within=(x,z,b)=>x>=b.minX&&x<b.maxX&&z>=b.minZ&&z<b.maxZ;
 function tileWorker(options){
  let worker=null,serial=0;const pending=new Map();
@@ -31,18 +32,26 @@ export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new U
  let physics=null,lastRevision=-1,blocked='',disposed=false;
  const scheduler=createTileScheduler({manifest,
   load:(entry,key,signal)=>worker.load(new URL(entry.url,manifestUrl).href,{id:key,bounds:entry.bounds,origin:[(entry.bounds.minX+entry.bounds.maxX)/2,(entry.bounds.minZ+entry.bounds.maxZ)/2]},signal),
-  hydrate:payload=>createCityTileHydrator(payload,{materials,treeAsset}),
-  onActivate:(key,chunk)=>{physics?.setObstacleChunk('seoul:'+key,chunk.obstacles);root.add(chunk.root);},
+  hydrate:payload=>createCityTileHydrator(payload,{materials,treeAsset,prepareCollision:true}),
+  onActivate:(key,chunk)=>{physics?.setObstacleChunk('seoul:'+key,chunk.obstacles,chunk.collision);root.add(chunk.root);},
   onEvict:(key,chunk)=>{physics?.removeObstacleChunk('seoul:'+key);root.remove(chunk.root);}
  });
  const readyAt=(x,z)=>within(x,z,city.bounds)||scheduler.hasAt(x,z);
- function roadsChanged(){if(lastRevision===scheduler.revision)return;lastRevision=scheduler.revision;city.roads=coreRoads.concat(...[...scheduler.chunks.values()].map(c=>c.roads));}
+ let mappedRoads=coreRoads;
+ Object.defineProperty(city,'roads',{configurable:true,enumerable:true,get(){
+  if(lastRevision!==scheduler.revision){
+   lastRevision=scheduler.revision;
+   mappedRoads=coreRoads.concat(...[...scheduler.chunks.values()].map(c=>c.roads));
+  }
+  return mappedRoads;
+ }});
  const streaming={...scheduler,root,manifest,get requests(){return scheduler.requests;},get wanted(){return scheduler.wanted;},get revision(){return scheduler.revision;},get status(){return blocked;},get maxChunks(){return 49;},
-  update(x,z,vx=0,vz=0){scheduler.update(x,z,vx,vz);roadsChanged();},
-  bindPhysics(sim){physics=sim;if(sim)for(const [key,c]of scheduler.chunks)sim.setObstacleChunk('seoul:'+key,c.obstacles);},
+  update:scheduler.update,
+  bindPhysics(sim){physics=sim;if(sim)for(const [key,c]of scheduler.chunks)sim.setObstacleChunk('seoul:'+key,c.obstacles,c.collision);},
   guard(state,dt){
    blocked='';const x=state.pos.x+state.vel.x*dt,z=state.pos.z+state.vel.z*dt;
-   for(const [dx,dz]of [[-8,-8],[8,-8],[-8,8],[8,8]]){
+   if(within(x-8,z-8,city.bounds)&&within(x+8,z+8,city.bounds)&&scheduler.contains(x-8,z-8)&&scheduler.contains(x+8,z+8))return true;
+   for(const [dx,dz]of GUARD_CORNERS){
     if(!scheduler.contains(x+dx,z+dz)){blocked='실제 지도 범위 끝 · R 출발점';break;}
     if(!readyAt(x+dx,z+dz)){blocked=scheduler.failures.size?'지도 재시도 중 · 잠시 정지':'다음 실제 지도 로딩 중';break;}
    }
@@ -57,6 +66,6 @@ export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new U
    if(d<best){best=d;name=r.name||'서울 도로';}
   }}return name;
  };
- const originalDispose=city.dispose.bind(city);city.dispose=()=>{if(disposed)return;disposed=true;scheduler.dispose();worker.dispose();city.root.remove(root);originalDispose();};
+ const originalDispose=city.dispose.bind(city);city.dispose=()=>{if(disposed)return;disposed=true;scheduler.dispose();worker.dispose();city.root.remove(root);Object.defineProperty(city,'roads',{configurable:true,enumerable:true,writable:true,value:coreRoads});originalDispose();};
  city.streaming=streaming;streaming.update(city.spawn.position[0],city.spawn.position[2]);return city;
 }

@@ -37,9 +37,9 @@ for (const [id, mesh] of gltf.meshes.entries()) {
     if (uv) attributes.set(uv.subarray(i * 2, i * 2 + 2), i * stride + 3);
   }
   const weights = uv ? [.025,.025,.025,.01,.01] : [.025,.025,.025];
-  const target = Math.max(300, Math.floor(indices.length * .16 / 3) * 3);
+  const target = Math.max(210, Math.floor(indices.length * .065 / 3) * 3);
   const [reduced] = MeshoptSimplifier.simplifyWithAttributes(
-    Uint32Array.from(indices), positions, 3, attributes, stride, weights, null, target, .004, ['LockBorder']);
+    Uint32Array.from(indices), positions, 3, attributes, stride, weights, null, target, .008, ['LockBorder','Permissive']);
   displayTriangles += reduced.length / 3;
   if (reduced.length === indices.length) continue;
   const encoded = vertices > 65535 ? reduced : Uint16Array.from(reduced);

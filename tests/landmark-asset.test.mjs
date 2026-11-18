@@ -2,12 +2,67 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {prepareLandmarkDetail,prepareExtraLandmarkDetail} from '../dist/js/city-landmark-detail.js';
 
 const dir=new URL('../dist/assets/city-buildings/',import.meta.url);
 const manifest=JSON.parse(await readFile(new URL('manifest.json',dir),'utf8'));
 const glb=await readFile(new URL('original-landmarks.glb',dir));
 const jsonLength=glb.readUInt32LE(12),gltf=JSON.parse(glb.subarray(20,20+jsonLength).toString());
 const binary=glb.subarray(20+jsonLength+8);
+
+async function parseScene(bytes){
+  return (await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.length),'')).scene;
+}
+
+test('distant landmarks keep the GT wave and stepped Samsung towers within six drawing batches',async()=>{
+  const scene=await parseScene(glb),update=prepareLandmarkDetail(scene,manifest.buildings);
+  const triangleCount=()=>{
+    let count=0;
+    scene.traverseVisible(mesh=>{if(mesh.isMesh)count+=Math.min(mesh.geometry.index.count,mesh.geometry.drawRange.count)/3;});
+    return count;
+  };
+  update(4000,4000,75);
+  const farCount=triangleCount(),far=scene.getObjectByName('Distant landmark glass');
+  assert.ok(farCount<1100&&farCount>500);assert.ok(far.visible);
+  const frame=manifest.buildings[0].modelFrame,positions=far.geometry.attributes.position;
+  const uniqueOffsets=new Set();
+  for(let i=0;i<positions.count;i++){
+    if(positions.getZ(i)>50||positions.getY(i)<9||positions.getY(i)>128)continue;
+    const dx=positions.getX(i)-frame.center[0],dz=positions.getZ(i)-frame.center[1];
+    const u=dx*Math.cos(frame.angle)+dz*Math.sin(frame.angle);
+    uniqueOffsets.add(Math.round((Math.abs(u)-frame.width/2)*10)/10);
+  }
+  assert.ok(uniqueOffsets.size>=9,'the far tower still curves between its extrema');
+  let nearGlass;scene.traverse(mesh=>{if(mesh.material?.name==='Architectural blue reflective glass')nearGlass=mesh;});
+  for(const building of manifest.buildings){
+    // A tiny radius isolates one building; resetting also clears hysteresis.
+    update(4000,4000,1);update(...building.modelFrame.center,1);
+    assert.equal(nearGlass.geometry.drawRange.count,building.detailRanges.glass[1]);
+    assert.ok(triangleCount()>farCount&&triangleCount()<manifest.geometry.triangles);
+  }
+  update(0,0,1000);
+  assert.equal(triangleCount(),manifest.geometry.triangles);assert.equal(far.visible,false);
+  update(4000,4000,75);assert.equal(triangleCount(),farCount);
+  let meshes=0;scene.traverse(m=>{if(m.isMesh)meshes++;});assert.equal(meshes,6);
+});
+
+test('Kyobo and Boutique Monaco switch trim independently while the facade mass stays visible',async()=>{
+  const bytes=await readFile(new URL('extra-landmarks.glb',dir)),scene=await parseScene(bytes);
+  const {models}=JSON.parse(await readFile(new URL('extra-landmarks.json',dir),'utf8'));
+  const update=prepareExtraLandmarkDetail(scene,models);
+  const counts=()=>scene.children.map(group=>{
+    let trim=0,body=0;group.traverseVisible(mesh=>{
+      if(mesh.isMesh){if(mesh.material.name==='Window frames')trim++;else body++;}
+    });return [trim,body];
+  });
+  update(4000,4000,50);
+  for(const [trim,body] of counts()){assert.equal(trim,0);assert.ok(body>0);}
+  for(let i=0;i<models.length;i++){
+    update(...models[i].center,50);
+    assert.equal(counts()[i][0],1);assert.equal(counts()[1-i][0],0);
+  }
+});
 function accessor(index){
   const a=gltf.accessors[index],b=gltf.bufferViews[a.bufferView],components={SCALAR:1,VEC2:2,VEC3:3,VEC4:4}[a.type];
   const Type={5123:Uint16Array,5125:Uint32Array,5126:Float32Array}[a.componentType];

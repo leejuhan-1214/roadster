@@ -4,8 +4,9 @@ export {nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
 import {sampleRoadSurface,tireForceAtSlip,rideHeightAboveSurface} from './road-surface.js?v=20261118-review149';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
-import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261118-frameperf1';
-import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261118-study150';
+import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261118-circuit155';
+import {prepareObstacle,prepareObstacleChunk} from './obstacle-chunk.js?v=20261118-circuit155';
+import {containsFootprint,prismContact} from './city-building-collision.js?v=20261118-study150';
 import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261115-fleet1';
 import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
 
@@ -305,36 +306,21 @@ export class PhysicsSim {
 
   _prepareObstacles(boxes) {
     if(!Array.isArray(boxes))throw new TypeError('Obstacles must be an array.');
-    return boxes.map((box,i)=>{
-      if(!Array.isArray(box.center)||!Array.isArray(box.size)||box.center.length!==3||box.size.length!==3||
-         !box.center.every(Number.isFinite)||!box.size.every(n=>Number.isFinite(n)&&n>0))
-        throw new TypeError('Each obstacle needs finite center[3] and positive size[3].');
-      const center=new Vector3(...box.center),half=new Vector3(...box.size).multiplyScalar(.5);
-      const footprint=box.kind==='prism'||box.footprint?preparePrism(box):null;
-      if(footprint){
-        const xs=footprint.map(p=>p[0]),zs=footprint.map(p=>p[1]);
-        center.x=(Math.min(...xs)+Math.max(...xs))/2;center.z=(Math.min(...zs)+Math.max(...zs))/2;
-        half.x=(Math.max(...xs)-Math.min(...xs))/2;half.z=(Math.max(...zs)-Math.min(...zs))/2;
-      }
-      return {id:box.id??String(i),treeId:box.treeId??null,center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
-    });
+    return boxes.map(prepareObstacle);
   }
 
   /** Register one immutable streamed tile, leaving the core and other grids intact.
    * Call before attaching the corresponding mesh. Replacement is atomic: malformed
    * data leaves the previous tile active, and contacts/history survive streaming.
    */
-  setObstacleChunk(key,boxes) {
+  setObstacleChunk(key,boxes,prepared=null) {
     if(typeof key!=='string'||!key)throw new TypeError('An obstacle chunk needs a nonempty string key.');
     const previous=this.obstacleChunks.get(key);
     if(previous&&previous.source===boxes)return false;
-    const obstacles=this._prepareObstacles(boxes),index=createObstacleIndex(obstacles);
-    const bounds={minX:Infinity,maxX:-Infinity,minZ:Infinity,maxZ:-Infinity};
-    for(const box of obstacles){
-      bounds.minX=Math.min(bounds.minX,box.min.x);bounds.maxX=Math.max(bounds.maxX,box.max.x);
-      bounds.minZ=Math.min(bounds.minZ,box.min.z);bounds.maxZ=Math.max(bounds.maxZ,box.max.z);
+    if(!prepared?.done||prepared.source!==boxes){
+      prepared=prepareObstacleChunk(boxes);prepared.step(Infinity);
     }
-    this.obstacleChunks.set(key,{source:boxes,obstacles,index,bounds});
+    this.obstacleChunks.set(key,prepared);
     this._refreshObstacleList();return true;
   }
 

@@ -1,15 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createTileScheduler} from '../dist/js/city-tile-scheduler.js';
+import {Group} from 'three';
+import {attachStreamingCity} from '../dist/js/city-streaming.js';
 const manifest={tileSize:512,bounds:{minX:-5120,maxX:5120,minZ:-5120,maxZ:5120},tiles:{}};
 for(let x=-10;x<10;x++)for(let z=-10;z<10;z++)manifest.tiles[x+'_'+z]={bounds:{minX:x*512,maxX:(x+1)*512,minZ:z*512,maxZ:(z+1)*512}};
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
+test('streaming guard checks the full car margin before crossing the core or map edge',async()=>{
+  const coreRoads=[{id:'core-road'}],world={root:new Group(),roads:coreRoads,buildings:[],bounds:{minX:-10,maxX:10,minZ:-10,maxZ:10},spawn:{position:[0,0,0]},nearestRoadName:()=>'',dispose(){}};
+  const data={schemaVersion:1,tileSize:512,tiles:{},bounds:{minX:-100,maxX:100,minZ:-100,maxZ:100}};
+  await attachStreamingCity(world,{manifestUrl:new URL('data:application/json,'+encodeURIComponent(JSON.stringify(data)))});
+  const state={pos:{x:0,z:0},vel:{x:0,z:0}};
+  assert.equal(world.streaming.guard(state,.002),true);
+  state.pos.x=2;state.vel.x=1;assert.equal(world.streaming.guard(state,.002),false);
+  assert.equal(state.vel.x,0);assert.match(world.streaming.status,/로딩/);
+  state.pos.x=200;assert.equal(world.streaming.guard(state,.002),false);assert.match(world.streaming.status,/범위 끝/);
+  world.dispose();assert.equal(world.roads,coreRoads);
+});
 function fixture(options={}){const disposed=[],activated=[],evicted=[];let steps=0;const s=createTileScheduler({manifest,load:async(e,key)=>key,hydrate:key=>{let n=0;return{key,step(){steps++;return ++n===3;},dispose(){disposed.push(key);}};},onActivate:(key,h)=>{assert.equal(s.chunks.has(key),false);activated.push(key);},onEvict:key=>evicted.push(key),...options});return{s,disposed,activated,evicted,get steps(){return steps;}};}
 async function settle(s,x=0,z=0,n=100){for(let i=0;i<n;i++){s.update(x,z);await flush();}}
 test('movement enqueues work and returns without synchronously loading or building geometry',async()=>{let calls=0;const f=fixture({load:async()=>{calls++;return'x';}});f.s.update(0,0);assert.equal(calls,0);assert.equal(f.steps,0);assert.equal(f.s.pending.size,2);await flush();assert.equal(calls,2);f.s.dispose();});
 test('per-frame hydration is bounded and collision callback precedes chunk exposure',async()=>{const f=fixture();f.s.update(0,0);await flush();for(let i=0;i<8;i++){const before=f.steps;f.s.update(0,0);assert.ok(f.steps-before<=2);await flush();}assert.ok(f.activated.length);f.s.dispose();});
 test('bounded real map has no fabricated tiles beyond its source coverage',async()=>{const f=fixture();f.s.update(800000,-900000);await flush();assert.equal(f.s.pending.size,0);assert.equal(f.s.wanted.size,0);assert.equal(f.s.contains(5120,0),false);assert.equal(f.s.contains(-5120,0),true);f.s.dispose();});
 test('negative coordinates use floor indexing and forward direction adds prefetch row',()=>{const f=fixture();assert.equal(f.s.keyAt(-.1,-.1),'-1_-1');f.s.update(0,0,40,0);assert.ok(f.s.wanted.has('3_0'));assert.ok(f.s.wanted.has('-2_0'));f.s.dispose();});
+test('a settled tile does no queue or clock work until the motion or tile changes',async()=>{
+  let clocks=0;const f=fixture({now(){clocks++;return 0;}});
+  await settle(f.s,64,64);const before=clocks,requests=f.s.requests;
+  for(let i=0;i<500;i++)f.s.update(64+i*.1,64,6,0);
+  assert.equal(clocks,before);assert.equal(f.s.requests,requests);
+  f.s.update(114,64,9,0);
+  assert.ok(f.s.requests>requests);assert.ok(f.s.wanted.has('3_0'));
+  f.s.dispose();
+});
 test('stale results after movement are discarded and do not block re-request',async()=>{const tasks=[];const f=fixture({concurrency:1,load:(entry,key,signal)=>new Promise(resolve=>tasks.push({key,resolve,signal}))});f.s.update(0,0);await flush();const first=tasks[0];f.s.update(3500,3500);assert.ok(first.signal.aborted);first.resolve(first.key);await flush();assert.equal(f.s.staging.has(first.key),false);f.s.update(0,0);await flush();assert.equal(tasks.length,2);tasks[1].resolve(tasks[1].key);await flush();assert.equal(f.s.staging.size,1);f.s.dispose();});
 test('adjacent boundary crossing retains the old collision coverage while next tiles build',async()=>{const f=fixture();await settle(f.s,500,0);assert.ok(f.s.chunks.has('0_0'));f.s.update(513,0);assert.ok(f.s.chunks.has('0_0'));assert.equal(f.evicted.includes('0_0'),false);f.s.dispose();});
 test('distant travel evicts GPU resources and loaded tile count stays bounded',async()=>{const f=fixture();await settle(f.s);assert.ok(f.s.chunks.size);const old=[...f.s.chunks.keys()];await settle(f.s,3500,-3500);assert.ok(old.every(k=>f.disposed.includes(k)));assert.ok(f.s.chunks.size<=49);f.s.dispose();assert.equal(f.s.chunks.size,0);});

@@ -43,7 +43,7 @@ function group(root,parts,id,position,offset){
   root.add(g);parts.set(id,g);return g;
 }
 
-export function adaptRealVehicle(source,profile){
+export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
   // Undo the artist's parked steering pose, preserving the body proportions.
   if(profile.id==='bmw')source.traverse(o=>{if(wheelRoot(o,profile)===o)o.quaternion.identity();});
   source.updateMatrixWorld(true);
@@ -137,6 +137,10 @@ export function adaptRealVehicle(source,profile){
     else{hullBounds.union(r.geometry.boundingBox);(interior?cabin:body).add(obj);}
     detailParts.set(id,obj);catalog.push({id,title,kind:'model',category,categoryLabel:{wheels:'바퀴·브레이크',interior:'실내',glazing:'유리·렌즈',powertrain:'동력계',exterior:'외장'}[category],sourceName:r.original.name,sourceObjectName:r.original.parent?.name||r.original.name,materialNames:r.materialNames,sourceUrl:profile.source});
   });
+  const cityWheelGeometry=anchors.map(({x,y,z},i)=>({x,y,z,radius:(boxes[i].max.y-boxes[i].min.y)*scale/2}));
+  // Traffic and race actors animate only this exterior. Avoid constructing
+  // and discarding the experiment chassis and per-wheel suspension rig.
+  if(exteriorOnly)return {root,parts,wheels,paintMaterials,cityWheelGeometry};
   const fallback=createVehicle({suspensionAnchors:anchors,suspensionProfileId:profile.id});
   for(const id of hardware){
     const part=fallback.parts.get(id);if(!part)continue;
@@ -146,7 +150,6 @@ export function adaptRealVehicle(source,profile){
   }
   // Dispose the unused procedural shell. Hardware has already been detached.
   disposeVehicle(fallback,root);
-  const cityWheelGeometry=anchors.map(({x,y,z},i)=>({x,y,z,radius:(boxes[i].max.y-boxes[i].min.y)*scale/2}));
   const radius=cityWheelGeometry.reduce((sum,w)=>sum+w.radius,0)/4;
   const width=anchors.reduce((s,a)=>s+Math.abs(a.z),0)/2;
   const size=hullBounds.getSize(new THREE.Vector3());
@@ -167,8 +170,8 @@ export function disposeVehicle(vehicle,retainedRoot=null){
   for(const t of textures)t.dispose();
 }
 
-export async function loadRealVehicle(profile){
+export async function loadRealVehicle(profile,options){
   const draco=new DRACOLoader();draco.setDecoderPath(new URL('../vendor/addons/libs/draco/gltf/',import.meta.url).href);
   const loader=new GLTFLoader().setDRACOLoader(draco).setMeshoptDecoder(MeshoptDecoder);
-  try{const gltf=await loader.loadAsync(new URL(profile.url,import.meta.url).href);return adaptRealVehicle(gltf.scene,profile);}finally{draco.dispose();}
+  try{const gltf=await loader.loadAsync(new URL(profile.url,import.meta.url).href);return adaptRealVehicle(gltf.scene,profile,options);}finally{draco.dispose();}
 }
