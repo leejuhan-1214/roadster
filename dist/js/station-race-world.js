@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-flight153';
-import {AIR_GATES,airLaneOffset} from './station-race-air.js?v=20261118-flight153';
+import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-flight1531';
+import {AIR_GATES,airLaneOffset} from './station-race-air.js?v=20261118-flight1531';
 
 const halfWidth=RACE_COURSE.width/2;
 const white=0xf1eee1,red=0xc63e37,dark=0x212c32,steel=0x829499,mint=0x5cf2cb;

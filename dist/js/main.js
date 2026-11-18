@@ -12,10 +12,10 @@ import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {LandingPlanner} from './landing-preparation.js?v=20261118-city151';
 import {drawMappedStreets} from './city-minimap.js?v=20261118-race152';
-import {StationRace} from './station-race.js?v=20261118-flight153';
-import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-flight153';
+import {StationRace} from './station-race.js?v=20261118-flight1531';
+import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-flight1531';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-city151';
-import {FlightScene} from './scene.js?v=20261118-flight153';
+import {FlightScene} from './scene.js?v=20261118-flight1531';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';

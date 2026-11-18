@@ -24,7 +24,7 @@ export function airLaneOffset(distance,courseLength){
 }
 
 export function insideRaceEnvelope(projection,y,course){
-  if(!Number.isFinite(y)||y>AIR_CEILING||y<-.5)return false;
+  if(!Number.isFinite(y)||y<-.5)return false;
   if(projection.error<=course.width/2+1.5)return true;
   if(y<2.5||y>9.5)return false;
   const lane=airLaneOffset(projection.distance,course.length);

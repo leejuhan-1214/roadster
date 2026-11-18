@@ -78,13 +78,13 @@ test('crossing start in reverse, skipping a gate, and relapping by crossing the 
   assert.equal(race.completedGates, 1); assert.equal(race.lap, 1);
 });
 
-test('leaving the track or flying above the course ceiling recovers to the last accepted gate and the timer and opponents continue', () => {
+test('leaving the track footprint recovers to the last accepted gate and the timer and opponents continue', () => {
   const race = startRace();
   drive(race, -6, course.gates[2].distance + 2);
   const gateCount = race.completedGates;
   const start = race.elapsed;
   const rivalStart = race.rivals[0].distance;
-  const above = {...sampleCourse(course.gates[2].distance + 2, -3.15), y: 27};
+  const above = {...sampleCourse(course.gates[2].distance + 2, 17), y: 27};
   assert.equal(race.update(.5, above), null);
   const recovery = race.update(.8, above);
   assert.ok(recovery); assert.equal(race.completedGates, gateCount);

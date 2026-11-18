@@ -32,10 +32,23 @@ test('the infield branch opens at the air gate altitude and stays closed to shor
   assert.equal(insideRaceEnvelope(branch,16,RACE_COURSE),false);
   assert.equal(insideRaceEnvelope({...branch,lateral:14},6,RACE_COURSE),false);
   assert.equal(insideRaceEnvelope({...branch,distance:0},6,RACE_COURSE),false);
-  assert.equal(insideRaceEnvelope({...branch,error:2,lateral:2},AIR_CEILING+1,RACE_COURSE),false);
+  assert.equal(insideRaceEnvelope({...branch,error:2,lateral:2},AIR_CEILING+1,RACE_COURSE),true);
   assert.equal(throughAirGate(6,-11,.6),false);
   assert.equal(throughAirGate(6,3,6),false);
   assert.equal(throughAirGate(6,-11,6),true);
+});
+
+test('a roll above timing height stays airborne; a high gate crossing requires a new lower forward pass',()=>{
+  const race=new StationRace();race.update(3,race.startPose);
+  const step=(x,y,dt=.12)=>race.update(dt,{...sampleCourse(x,-3.15),y});
+  assert.equal(step(-1,36),null);
+  assert.equal(step(-1,36,2),null,'holding above the road does not reset the car');
+  // Cross at 30 m, then descend to 18 m before the end of this step.
+  assert.equal(step(2,18),null);assert.equal(race.nextGate,0);
+  assert.equal(step(3,4),null);assert.equal(race.completedGates,0);
+  assert.equal(step(-1,4),null);assert.equal(race.completedGates,0,'reverse crossing is unscored');
+  assert.equal(step(1,4),null);assert.equal(race.nextGate,1);
+  assert.equal(race.airGatesPassed,0);
 });
 
 test('recovery cannot double-count an air gate and a ground-only second lap preserves the first-lap best',()=>{

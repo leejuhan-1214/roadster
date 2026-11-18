@@ -1,5 +1,5 @@
-import {RACE_COURSE, sampleCourse} from './station-race.js?v=20261118-flight153';
-import {AIR_GATES,airLaneOffset} from './station-race-air.js?v=20261118-flight153';
+import {RACE_COURSE, sampleCourse} from './station-race.js?v=20261118-flight1531';
+import {AIR_GATES,AIR_CEILING,airLaneOffset} from './station-race-air.js?v=20261118-flight1531';
 
 const byId = id => document.getElementById(id);
 const path = Array.from({length:160}, (_,i) => sampleCourse(i*RACE_COURSE.length/160));
@@ -41,7 +41,10 @@ export function updateRaceHUD(race,telemetry,driver) {
     byId('race-flight-height').textContent=Math.max(0,telemetry.heightAboveSurface).toFixed(1)+' m';
     byId('race-flight-gas').textContent='기체 '+Math.round(telemetry.gasKg)+' kg';
     byId('race-ring-count').textContent='이번 랩 공중 링 '+race.airGatesThisLap+' / '+rings.length;
-    byId('race-flight-hint').textContent=driver.airborne?'A/D 옆이동 · H 높이 유지':'Space 상승 · 하늘색 링';
+    const high=telemetry.altitude+telemetry.groundHeight>AIR_CEILING;
+    const hint=byId('race-flight-hint');
+    hint.classList.toggle('race-descend',high);
+    hint.textContent=high?'하강 후 체크포인트 통과':driver.airborne?'A/D 옆이동 · H 높이 유지':'Space 상승 · 하늘색 링';
     byId('race-land').hidden=!driver.airborne&&!driver.landingAssist&&!driver.altHold;
     byId('race-land').setAttribute('aria-pressed',driver.landingAssist);
   }

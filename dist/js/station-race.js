@@ -1,5 +1,5 @@
 import {resolveRivalContact,resolveRivalPair} from './race-contact.js?v=20261118-flight153';
-import {insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261118-flight153';
+import {AIR_CEILING, insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261118-flight1531';
 
 const TURN_RADIUS = 32;
 const QUARTER_TURN = Math.PI * TURN_RADIUS / 2;
@@ -95,6 +95,7 @@ function crossingFraction(a, b, gate) {
   const z = a.z + (b.z - a.z) * fraction;
   const lateral=(x-gate.x)*sin+(z-gate.z)*cos;
   const y=(a.y??0)+((b.y??0)-(a.y??0))*fraction;
+  if(y>AIR_CEILING)return null;
   const air=throughAirGate(gate.index,lateral,y);
   return air||Math.abs(lateral)<=WIDTH/2 ? {fraction,air} : null;
 }
