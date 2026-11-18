@@ -1,4 +1,5 @@
-const DEFAULT_BOUNDS={minX:-5120,maxX:5120,minZ:-5120,maxZ:5120};
+const CORE_ROAD_BOUNDS={minX:-5120,maxX:5120,minZ:-5120,maxZ:5120};
+const DEFAULT_BOUNDS={minX:-28672,maxX:16384,minZ:-24576,maxZ:12288};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const colours={outside:'#101c23',land:'#1b2d33',blocks:'#30454a',water:'#15516b',shore:'#427e8d',island:'#38594e',bridge:'#bbe0df',route:'#ffb968',car:'#84f4d6'};
 const roadKinds=['local','tertiary','secondary','primary','motorway'];
@@ -25,10 +26,10 @@ export class SeoulViewport {
     this.x=(b.minX+b.maxX)/2;this.z=(b.minZ+b.maxZ)/2;
     this.scale=this.minScale;this.mode='overview';this.placeId=null;
   }
-  focus(x,z,id,mode){
+  focus(x,z,id,mode,span=1150){
     if(!Number.isFinite(x)||!Number.isFinite(z))return;
     this.x=x;this.z=z;this.placeId=id;this.mode=mode;
-    this.scale=clamp(Math.max(this.minScale*3,Math.min(this.width,this.height)/1150),this.minScale,this.maxScale);
+    this.scale=clamp(Math.max(this.minScale*3,Math.min(this.width,this.height)/span),this.minScale,this.maxScale);
   }
   at(px,py){return [this.x+(px-this.width/2)/this.scale,this.z+(py-this.height/2)/this.scale];}
   moveAnchor(point,px,py){
@@ -95,10 +96,28 @@ function roadGroup(kind=''){
 function contains(f,x,z){
   if(x<f.minX||x>f.maxX||z<f.minZ||z>f.maxZ)return false;
   const points=f.points;let inside=false;
-  for(let i=0,j=points.length-1;i<points.length;j=i++){
-    const a=points[i],b=points[j];
-    if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;
+  const crosses=i=>{
+    const a=points[i],b=points[i===0?points.length-1:i-1];
+    return (a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0];
+  };
+  if(points.length<120){
+    for(let i=0;i<points.length;i++)if(crosses(i))inside=!inside;
+    return inside;
   }
+  // The Han winds across much of Seoul. A point can be inside its bounding
+  // rectangle even when it is kilometres from the river. Only edges crossing
+  // the point's latitude can affect the exact point-in-polygon result.
+  if(!f.edgeRows){
+    f.rowHeight=Math.max(90,(f.maxZ-f.minZ)/160);f.edgeRows=[];
+    for(let i=0;i<points.length;i++){
+      const a=points[i][1],b=points[i?i-1:points.length-1][1];
+      if(a===b)continue;
+      const lo=Math.floor((Math.min(a,b)-f.minZ)/f.rowHeight),hi=Math.floor((Math.max(a,b)-f.minZ)/f.rowHeight);
+      for(let j=lo;j<=hi;j++)(f.edgeRows[j]||=[]).push(i);
+    }
+  }
+  const row=Math.floor((z-f.minZ)/f.rowHeight);
+  for(const i of f.edgeRows[row]||[])if(crosses(i))inside=!inside;
   return inside;
 }
 function indexMap(data){
@@ -106,9 +125,15 @@ function indexMap(data){
   for(const road of data.roads||[])if(road.points?.length>1)groups[roadGroup(road.kind)].push(feature(road.points));
   const water=(data.water||[]).map(feature),riverLabels=data.riverLabels||[data.riverLabel].filter(Boolean);
   const mainRiver=water.filter(f=>riverLabels.some(([x,z])=>contains(f,x,z)));
-  return {bounds:data.bounds||DEFAULT_BOUNDS,water,mainRiver,islands:(data.islands||[]).map(feature),
+  const bridges=data.bridges||[];
+  const places=(data.landmarks||[]).slice();
+  for(const bridge of bridges){
+    const pt=bridge.label||bridge.points?.[Math.floor(bridge.points.length/2)];
+    if(pt)places.push({id:bridge.id,name:bridge.name,x:pt[0],z:pt[1],kind:'bridge',group:bridge.group,priority:bridge.priority});
+  }
+  return {bounds:data.bounds||DEFAULT_BOUNDS,detailBounds:data.detailBounds||CORE_ROAD_BOUNDS,water,mainRiver,islands:(data.islands||[]).map(feature),
     roads:groups.map(group=>new Layer(group)),blocks:new Layer((data.blocks||[]).map(feature)),bridges:data.bridges||[],
-    landmarks:data.landmarks||[],riverLabels};
+    places,riverLabels};
 }
 function rectFor(view){
   return {minX:view.x-view.width/(2*view.scale),maxX:view.x+view.width/(2*view.scale),
@@ -117,11 +142,60 @@ function rectFor(view){
 function project(view,x,z){
   return [(x-view.x)*view.scale+view.width/2,(z-view.z)*view.scale+view.height/2];
 }
+function destinationSpan(map,x,z,id){
+  const b=map?.detailBounds;
+  if(!b)return 1150;
+  const bridge=map.bridges.find(bridge=>bridge.id===id);
+  if(bridge){
+    let reach=0;
+    for(const [px,pz] of bridge.points)reach=Math.max(reach,Math.abs(px-x),Math.abs(pz-z));
+    return Math.max(1150,reach*2.3);
+  }
+  if(x>=b.minX&&x<=b.maxX&&z>=b.minZ&&z<=b.maxZ)return 1150;
+  // A campus, park or airport can have its representative point far inside
+  // its grounds. Include its mapped approach roads when a driver selects it.
+  const radius=3000,box={minX:x-radius,maxX:x+radius,minZ:z-radius,maxZ:z+radius};
+  const nearest=[];
+  for(const layer of map.roads)layer.each(box,({points})=>{
+    let best=Infinity;
+    for(let i=1;i<points.length;i++){
+      const a=points[i-1],b=points[i],dx=b[0]-a[0],dz=b[1]-a[1],length=dx*dx+dz*dz;
+      const t=length?clamp(((x-a[0])*dx+(z-a[1])*dz)/length,0,1):0;
+      best=Math.min(best,(a[0]+t*dx-x)**2+(a[1]+t*dz-z)**2);
+    }
+    if(nearest.length<4||best<nearest[3]){
+      nearest.push(best);nearest.sort((a,b)=>a-b);if(nearest.length>4)nearest.pop();
+    }
+  });
+  const distance=Math.sqrt(nearest.at(-1)??radius**2);
+  return clamp(3.2*(distance+160),1500,7800);
+}
 function trace(ctx,points,close=false){
   if(!points?.length)return;
   ctx.moveTo(points[0][0],points[0][1]);
   for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
   if(close)ctx.closePath();
+}
+function usesLocalRoads(map,view,box){
+  if(!map)return true;
+  if(view.scale>=.7)return true;
+  const b=map.detailBounds;
+  return view.scale>=.11&&(box.minX<b.minX||box.maxX>b.maxX||box.minZ<b.minZ||box.maxZ>b.maxZ);
+}
+function drawLocalRoads(ctx,view,map,roads,box){
+  if(!roads||!usesLocalRoads(map,view,box))return;
+  ctx.beginPath();
+  for(const road of roads){
+    if(!road.points?.length||map&&roadGroup(road.type)>0)continue;
+    let f=roadBoxes.get(road);if(!f){f=feature(road.points);roadBoxes.set(road,f);}
+    if(!intersects(box,f))continue;
+    if(map){
+      const b=map.detailBounds,inCore=f.minX>=b.minX&&f.maxX<=b.maxX&&f.minZ>=b.minZ&&f.maxZ<=b.maxZ;
+      if(inCore&&(road.type!=='service'||view.scale<.7))continue;
+    }
+    trace(ctx,f.points);
+  }
+  ctx.lineWidth=Math.max(.9/view.scale,3);ctx.strokeStyle=pen[0];ctx.stroke();
 }
 function drawBase(ctx,view,map,localRoads,locator=false){
   const {width:w,height:h,scale:s}=view,box=rectFor(view),b=map?.bounds||DEFAULT_BOUNDS;
@@ -130,37 +204,30 @@ function drawBase(ctx,view,map,localRoads,locator=false){
   ctx.beginPath();ctx.rect(b.minX,b.minZ,b.maxX-b.minX,b.maxZ-b.minZ);ctx.clip();
   ctx.fillStyle=colours.land;ctx.fillRect(b.minX,b.minZ,b.maxX-b.minX,b.maxZ-b.minZ);
   if(map){
-    if(!locator){
+    if(!locator&&s>=.022){
       ctx.beginPath();
       map.blocks.each(box,f=>{if(Math.max(f.maxX-f.minX,f.maxZ-f.minZ)*s>2)trace(ctx,f.points,true);});
       ctx.fillStyle=colours.blocks;ctx.fill();
     }
     ctx.lineJoin='round';ctx.lineCap='round';
-    ctx.beginPath();for(const f of map.water)if(intersects(box,f))trace(ctx,f.points,true);
+    ctx.beginPath();for(const f of map.water)if(intersects(box,f)&&Math.max(f.maxX-f.minX,f.maxZ-f.minZ)*s>1)trace(ctx,f.points,true);
     ctx.fillStyle=colours.water;ctx.fill();ctx.lineWidth=.85/s;ctx.strokeStyle=colours.shore;ctx.stroke();
-    ctx.beginPath();for(const f of map.islands)if(intersects(box,f))trace(ctx,f.points,true);
+    ctx.beginPath();for(const f of map.islands)if(intersects(box,f)&&Math.max(f.maxX-f.minX,f.maxZ-f.minZ)*s>1)trace(ctx,f.points,true);
     ctx.fillStyle=colours.island;ctx.fill();
-    if(!locator)for(let group=0;group<map.roads.length;group++){
-      if(group===0&&s<.125||group===1&&s<.058)continue;
-      ctx.beginPath();map.roads[group].each(box,f=>trace(ctx,f.points));
-      ctx.strokeStyle=pen[group];ctx.lineWidth=Math.max(weights[group]/s,(group+1)*1.8);ctx.stroke();
-    }
   }
-  // The regional dataset already covers drivable streets. Only add tiny
-  // service lanes from streamed tiles at the closest street-level zoom.
-  if(!locator&&(!map||s>=.7)&&localRoads){
-    ctx.beginPath();
-    for(const road of localRoads){
-      if(!road.points?.length||map&&road.type!=='service')continue;
-      let f=roadBoxes.get(road);if(!f){f=feature(road.points);roadBoxes.set(road,f);}
-      if(intersects(box,f))trace(ctx,road.points);
+  if(!locator){
+    drawLocalRoads(ctx,view,map,localRoads,box);
+    if(map)for(let group=0;group<map.roads.length;group++){
+      if(group===0&&s<.125||group===1&&s<.058||group===2&&s<.019)continue;
+      ctx.beginPath();map.roads[group].each(box,f=>trace(ctx,f.points));
+      const weight=weights[group]*clamp(s/.042,.46,1);
+      ctx.strokeStyle=pen[group];ctx.lineWidth=Math.max(weight/s,(group+1)*1.8);ctx.stroke();
     }
-    ctx.lineWidth=Math.max(.9/s,3);ctx.strokeStyle=pen[0];ctx.stroke();
   }
   if(map){
     ctx.beginPath();for(const bridge of map.bridges)trace(ctx,bridge.points);
-    ctx.strokeStyle='#112c39';ctx.lineWidth=(locator?1.6:3.5)/s;ctx.stroke();
-    ctx.strokeStyle=colours.bridge;ctx.lineWidth=(locator?.8:1.45)/s;ctx.stroke();
+    ctx.strokeStyle='#112c39';ctx.lineWidth=(locator||s<.025?1.6:3.5)/s;ctx.stroke();
+    ctx.strokeStyle=colours.bridge;ctx.lineWidth=(locator||s<.025?.8:1.45)/s;ctx.stroke();
   }
   ctx.restore();
 }
@@ -181,15 +248,34 @@ function baseLayer(host,view,cache,map,roads,ratio){
   const {x,z,scale:s,width:w,height:h}=view;
   const margin=48;
   // Stream revisions should only invalidate local maps which display their roads.
-  const source=!map||s>=.7?roads:null;
+  const padded={x,z,scale:s,width:w+2*margin,height:h+2*margin};
+  const source=usesLocalRoads(map,padded,rectFor(padded))?roads:null;
   if(!cache.layer||cache.map!==map||cache.roads!==source||cache.width!==w||cache.height!==h||cache.scale!==s||
      cache.ratio!==ratio||Math.abs((x-cache.x)*s)>margin-2||Math.abs((z-cache.z)*s)>margin-2){
     const layer=cache.layer||canvasLayer(host);layer.width=Math.ceil((w+2*margin)*ratio);layer.height=Math.ceil((h+2*margin)*ratio);
     const ctx=layer.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);
-    drawBase(ctx,{x,z,scale:s,width:w+2*margin,height:h+2*margin},map,source);
+    drawBase(ctx,padded,map,source);
     Object.assign(cache,{x,z,scale:s,ratio,width:w,height:h,map,roads:source,layer});
   }
   return [(margin+(x-cache.x)*s)*ratio,(margin+(z-cache.z)*s)*ratio];
+}
+function regionBase(host,ctx,v,map,cache,ratio){
+  const b=map.bounds,dx=b.maxX-b.minX,dz=b.maxZ-b.minZ;
+  if(v.scale>.034||Math.max(dx,dz)<18000)return false;
+  // Keep a complete regional image at the current level of detail. Dragging or
+  // pinching around the city mostly copies pixels, even in a high-DPI browser.
+  if(cache.map!==map||cache.ratio!==ratio||v.scale>cache.scale*1.55||v.scale<cache.scale/1.55){
+    const layer=cache.layer||canvasLayer(host),density=Math.min(ratio,1800/(Math.max(dx,dz)*v.scale));
+    const w=dx*v.scale,h=dz*v.scale;
+    layer.width=Math.ceil(w*density);layer.height=Math.ceil(h*density);
+    const ink=layer.getContext('2d');ink.setTransform(layer.width/w,0,0,layer.height/h,0,0);
+    drawBase(ink,{x:(b.minX+b.maxX)/2,z:(b.minZ+b.maxZ)/2,scale:v.scale,width:w,height:h},map,null);
+    Object.assign(cache,{layer,map,scale:v.scale,ratio});
+  }
+  const [px,py]=project(v,b.minX,b.minZ);
+  ctx.fillStyle=colours.outside;ctx.fillRect(0,0,v.width,v.height);
+  ctx.drawImage(cache.layer,px,py,dx*v.scale,dz*v.scale);
+  return true;
 }
 function plotRoute(ctx,view,route){
   if(!route?.length)return;
@@ -263,15 +349,9 @@ function mapLabels(ctx,view,map,vehicle,compact,reserved=[]){
   const [carX,carY]=project(view,vehicle.x,vehicle.z);
   occupied.push([carX-8,carY-9,carX+8,carY+9],[0,h-24,Math.min(w*.32,77),h]);
   const visible=(px,py)=>px>2&&py>2&&px<w-2&&py<h-2;
-  const places=map.landmarks.map(p=>({id:p.id,name:p.name,x:p.x,z:p.z,kind:p.kind}));
   const selectedBridge=map.bridges.find(b=>b.id===view.placeId);
-  for(const b of map.bridges){
-    const stacked=b.group==='banpo-crossing';
-    if(stacked&&(selectedBridge?.group===b.group?b.id!==selectedBridge.id:b.id==='jamsu'))continue;
-    const point=b.label||b.points?.[Math.floor(b.points.length/2)];
-    const name=stacked&&selectedBridge?.group!==b.group?'반포대교·잠수교':b.name;
-    if(point)places.push({id:b.id,name,x:point[0],z:point[1],kind:'bridge'});
-  }
+  const box=rectFor(view);
+  const places=map.places.filter(p=>p.x>=box.minX&&p.x<=box.maxX&&p.z>=box.minZ&&p.z<=box.maxZ);
   if(selectedBridge){
     ctx.save();ctx.beginPath();
     selectedBridge.points.forEach(([x,z],i)=>{const p=project(view,x,z);if(i)ctx.lineTo(...p);else ctx.moveTo(...p);});
@@ -280,9 +360,13 @@ function mapLabels(ctx,view,map,vehicle,compact,reserved=[]){
     ctx.stroke();ctx.restore();
   }
   places.sort((a,b)=>Number(b.id===view.placeId)-Number(a.id===view.placeId)||
+    (b.priority||0)-(a.priority||0)||
     Number(b.kind==='bridge')-Number(a.kind==='bridge')||(a.x-vehicle.x)**2+(a.z-vehicle.z)**2-((b.x-vehicle.x)**2+(b.z-vehicle.z)**2));
   let riverDrawn=false;
   for(const p of places){
+    const stacked=p.group==='banpo-crossing';
+    if(stacked&&(selectedBridge?.group===p.group?p.id!==selectedBridge.id:p.id==='jamsu'))continue;
+    const label=stacked&&selectedBridge?.group!==p.group?'반포대교·잠수교':p.name;
     if(!riverDrawn&&p.id!==view.placeId){riverLabel(ctx,view,map,occupied);riverDrawn=true;}
     const [x,y]=project(view,p.x,p.z);if(!visible(x,y))continue;
     if(compact&&reserved.some(box=>overlaps([x-3,y-3,x+3,y+3],box)))continue;
@@ -294,13 +378,16 @@ function mapLabels(ctx,view,map,vehicle,compact,reserved=[]){
     }
     if(selected){ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.lineWidth=1.5;ctx.strokeStyle='#fff4d9';ctx.stroke();}
     const font=selected?'bold 13px sans-serif':compact?'600 10px sans-serif':bridge?'600 11px sans-serif':'600 12px sans-serif';
-    ctx.font=font;const width=ctx.measureText(p.name).width;
+    ctx.font=font;const width=ctx.measureText(label).width;
     const hit={id:p.id,x:p.x,z:p.z,px:x,py:y};hits.push(hit);
-    const offset=selected?11:6;
-    for(const [left,cy] of [[x+offset,y],[x-offset-width,y],[x-width/2,y-13],[x-width/2,y+13]]){
+    const besideCar=Math.abs(x-carX)<15&&Math.abs(y-carY)<15;
+    const offset=besideCar?16:selected?11:6,above=besideCar?21:13;
+    for(const [left,cy] of [[x+offset,y],[x-offset-width,y],[x-width/2,y-above],[x-width/2,y+above]]){
       const rect=[left-2,cy-7,left+width+2,cy+7];
       if(rect[0]<2||rect[2]>w-2||rect[1]<2||rect[3]>h-2||occupied.some(a=>overlaps(a,rect)))continue;
-      text(ctx,p.name,left,cy,fill,'left',font);occupied.push(rect);hit.rect=rect;break;
+      text(ctx,label,left,cy,fill,'left',font);
+      occupied.push(view.scale<.03?[rect[0]-4,rect[1]-2,rect[2]+4,rect[3]+2]:rect);
+      hit.rect=rect;break;
     }
   }
   if(!riverDrawn)riverLabel(ctx,view,map,occupied);
@@ -345,7 +432,7 @@ function portalMarkers(ctx,v,vehicle){
 }
 
 export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{}}){
-  const view=new SeoulViewport(),miniCache={},largeCache={},locatorCache={};
+  const view=new SeoulViewport(),miniCache={},largeCache={},locatorCache={},regionCache={};
   const originalMini={width:miniCanvas.width,height:miniCanvas.height};
   let dataset=null,map=null,vehicle=null,large=false,racing=false,frame=null,active=true,hits=[];
   let lastVehicle=null,lastTap=null,drag=null;
@@ -365,8 +452,10 @@ export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{
   function paint(canvas,v,cache,ratio,compact){
     const ctx=canvas.getContext('2d'),w=v.width,h=v.height;
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    const [sx,sy]=baseLayer(canvas,v,cache,map,vehicle.roads,ratio);
-    ctx.drawImage(cache.layer,sx,sy,w*ratio,h*ratio,0,0,w,h);
+    if(compact||!map||!regionBase(canvas,ctx,v,map,regionCache,ratio)){
+      const [sx,sy]=baseLayer(canvas,v,cache,map,vehicle.roads,ratio);
+      ctx.drawImage(cache.layer,sx,sy,w*ratio,h*ratio,0,0,w,h);
+    }
     plotRoute(ctx,v,vehicle.route);
     const reserved=[[0,0,24,28]];
     if(compact){
@@ -407,7 +496,7 @@ export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{
   }
   function fit(){view.fit();change();}
   function locate(){if(vehicle){view.focus(vehicle.x,vehicle.z,null,'follow');change();}}
-  function focus(x,z,id=null){view.focus(x,z,id,'place');change();}
+  function focus(x,z,id=null){view.focus(x,z,id,'place',destinationSpan(map,x,z,id));change();}
   function zoomBy(factor,px,py){
     if(!Number.isFinite(factor)||factor<=0)return;
     view.zoom(factor,px,py);change();

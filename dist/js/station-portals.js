@@ -100,9 +100,20 @@ function crosses(previous,current,gate,halfWidth){
   return y>=-.3&&y<=2.5&&Math.abs(-(ax+t*sx)*gate.dz+(az+t*sz)*gate.dx)<=halfWidth;
 }
 
+// Split alternating east/west and north/south at the median. Distant hints are
+// still exact when a driver is well outside a station's neighborhood.
+function stationTree(entries,depth=0){
+  if(!entries.length)return null;
+  const axis=depth%2?'z':'x';
+  entries.sort((a,b)=>a[axis]-b[axis]);
+  const middle=Math.floor(entries.length/2);
+  return {axis,gate:entries[middle],low:stationTree(entries.slice(0,middle),depth+1),
+    high:stationTree(entries.slice(middle+1),depth+1)};
+}
+
 export function createStationPortals(cells,entrances=[]){
   let suppressed=null;
-  const distant=entrances.map(([x,z,ref,station])=>({x,z,id:idFor(x,z),label:labelFor(station,ref)}));
+  const distant=stationTree(entrances.map(([x,z,ref,station])=>({x,z,id:idFor(x,z),label:labelFor(station,ref)})));
   function nearest(x,z){
     let best=null,dist2=Infinity;
     for(const cell of cells.values())for(const gate of cell.gates){
@@ -111,10 +122,16 @@ export function createStationPortals(cells,entrances=[]){
     }
     // Outside the built cells, guide the driver to the next mapped exit
     // until its road geometry and exact gate position stream into view.
-    if(!best||dist2>350**2)for(const gate of distant){
+    function visit(node){
+      if(!node)return;
+      const {gate,axis}=node;
       const distance=(gate.x-x)**2+(gate.z-z)**2;
       if(distance<dist2){best=gate;dist2=distance;}
+      const delta=axis==='x'?x-gate.x:z-gate.z;
+      visit(delta<0?node.low:node.high);
+      if(delta*delta<dist2)visit(delta<0?node.high:node.low);
     }
+    if(!best||dist2>350**2)visit(distant);
     return best?{...best,distance:Math.sqrt(dist2)}:null;
   }
   return {

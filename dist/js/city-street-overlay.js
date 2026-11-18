@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {pointOn,roadSegments,indexRoadSegments,planMedianPavement} from './city-median.js?v=20261118-frameperf1';
-import {planStationPortal,portalFurniture,createStationPortals,blocksStationApproach} from './station-portals.js?v=20261118-race152';
+import {planStationPortal,portalFurniture,createStationPortals,blocksStationApproach} from './station-portals.js?v=20261119-wide157';
 export {roadSegments};
 
 // Street detail laid over the mapped roads, built in 256 m cells around the
@@ -316,7 +316,7 @@ export function createStreetOverlay(city,points){
     bindPhysics(sim){physics=sim||null;if(physics)for(const cell of cells.values())if(cell.colliders.length)physics.setObstacleChunk('street:'+cell.key,cell.colliders);},
     dispose(){if(disposed)return;disposed=true;for(const cell of [...cells.values()])drop(cell);city.root.remove(root);materials.boxGeometry.dispose();materials.warningPavers.dispose();for(const m of own)m.dispose();}};
 }
-export async function loadStreetOverlay(city,url=new URL('../assets/city/street-points.json',import.meta.url)){
+export async function loadStreetOverlay(city,url=new URL('../assets/city/street-points.json?v=20261119-wide157',import.meta.url)){
   const response=await fetch(url);if(!response.ok)throw new Error('도로 세부 위치 HTTP '+response.status);
   return createStreetOverlay(city,await response.json());
 }

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {createTileScheduler} from './city-tile-scheduler.js?v=20261118-circuit155';
 import {createCityTileHydrator} from './city-tile-mesh.js?v=20261118-circuit155';
+import {indexRegionalTiles} from './city-regional-packs.js?v=20261119-wide157';
 export const CITY_CHUNK_SIZE=512;
 export const CITY_CHUNK_RADIUS=2;
 const GUARD_CORNERS=[[-8,-8],[8,-8],[-8,8],[8,8]];
@@ -8,7 +9,7 @@ const within=(x,z,b)=>x>=b.minX&&x<b.maxX&&z>=b.minZ&&z<b.maxZ;
 function tileWorker(options){
  let worker=null,serial=0;const pending=new Map();
  function start(){
-  if(worker)return;worker=new Worker(new URL('./city-tile-worker.js?v=20261118-frameperf1',import.meta.url),{type:'module'});
+  if(worker)return;worker=new Worker(new URL('./city-tile-worker.js?v=20261119-wide157',import.meta.url),{type:'module'});
   worker.postMessage({type:'init',options});
   worker.onmessage=({data})=>{const p=pending.get(data.id);if(!p)return;pending.delete(data.id);p.cleanup();data.error?p.reject(new Error(data.error)):p.resolve(data.payload);};
   worker.onerror=error=>{for(const p of pending.values()){p.cleanup();p.reject(new Error(error.message||'Map worker failed'));}pending.clear();worker?.terminate();worker=null;};
@@ -20,9 +21,10 @@ function tileWorker(options){
  });},dispose(){worker?.terminate();worker=null;for(const p of pending.values()){p.cleanup();p.reject(new DOMException('Disposed','AbortError'));}pending.clear();}};
 }
 /** Real OSM coverage is finite. Missing tiles never become invented streets. */
-export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new URL('../assets/city/seoul/manifest.json',import.meta.url)}={}){
+export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new URL('../assets/city/seoul/manifest.json?v=20261119-wide157',import.meta.url)}={}){
  const response=await fetch(manifestUrl);if(!response.ok)throw new Error('서울 지도 목록 HTTP '+response.status);
  const manifest=await response.json();if(manifest.schemaVersion!==1||manifest.tileSize!==CITY_CHUNK_SIZE)throw new Error('Unsupported Seoul map schema');
+ indexRegionalTiles(manifest);
  const base=city.root.children.find(o=>o.geometry?.type==='PlaneGeometry'&&!o.name);
  if(base){base.geometry.dispose();base.geometry=new THREE.PlaneGeometry(city.bounds.maxX-city.bounds.minX,city.bounds.maxZ-city.bounds.minZ);base.position.x=(city.bounds.minX+city.bounds.maxX)/2;base.position.z=(city.bounds.minZ+city.bounds.maxZ)/2;}
  const root=new THREE.Group();root.name='actual Seoul map tiles';city.root.add(root);
@@ -31,7 +33,10 @@ export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new U
  const worker=tileWorker({coreBounds:city.bounds,excludeBuildingIds:city.buildings.map(b=>String(b.id))});
  let physics=null,lastRevision=-1,blocked='',disposed=false;
  const scheduler=createTileScheduler({manifest,
-  load:(entry,key,signal)=>worker.load(new URL(entry.url,manifestUrl).href,{id:key,bounds:entry.bounds,origin:[(entry.bounds.minX+entry.bounds.maxX)/2,(entry.bounds.minZ+entry.bounds.maxZ)/2]},signal),
+  load:(entry,key,signal)=>{
+   const absolute=relative=>relative?new URL(relative,manifestUrl).href:null;
+   return worker.load(absolute(entry.url),{id:key,bounds:entry.bounds,origin:[(entry.bounds.minX+entry.bounds.maxX)/2,(entry.bounds.minZ+entry.bounds.maxZ)/2],pack:absolute(entry.pack||entry.waterPack),cell:entry.cell},signal);
+  },
   hydrate:payload=>createCityTileHydrator(payload,{materials,treeAsset,prepareCollision:true}),
   onActivate:(key,chunk)=>{physics?.setObstacleChunk('seoul:'+key,chunk.obstacles,chunk.collision);root.add(chunk.root);},
   onEvict:(key,chunk)=>{physics?.removeObstacleChunk('seoul:'+key);root.remove(chunk.root);}

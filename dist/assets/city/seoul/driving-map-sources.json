@@ -13,68 +13,251 @@
     "northMetresPerDegree": 111320,
     "northIsNegativeZ": true
   },
+  "bounds": {
+    "minX": -28672,
+    "maxX": 16384,
+    "minZ": -24576,
+    "maxZ": 12288
+  },
+  "detailBounds": {
+    "minX": -5120,
+    "maxX": 5120,
+    "minZ": -5120,
+    "maxZ": 5120
+  },
   "roadsAndBlocks": {
     "source": "provenance.json",
     "coreSource": "../provenance.json",
-    "method": "Real road centrelines clipped to simulation coverage. Surface-road faces enclosing mapped buildings supply generalized urban blocks. These are not cadastral parcels. Underground roads are omitted from the surface map."
+    "method": "The central 10.24 km square preserves real street centrelines and road faces enclosing mapped buildings. The regional overview adds mapped motorway to tertiary streets and larger road faces enclosing residential, industrial or commercial land use. Local street detail outside the core streams with the driving scene. These generalized blocks are not cadastral parcels. Underground streets are omitted from the surface map."
   },
   "water": {
-    "layer": "OpenMapTiles water, zoom 13",
+    "layer": "OpenMapTiles water, transportation and landuse, zoom 12",
     "schema": "https://openmaptiles.org/schema/",
     "tiles": [
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6985/3173.pbf",
-        "sha256": "1ab9cd727005422e1fda5a9dedf14830d37cf9721c7a8f428f48fbffbf4ea26e"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3489/1583.pbf",
+        "sha256": "4b3cbb89ee3044a12bf1949b2009212a574afe147d85c1b097788711b1b95976"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6985/3174.pbf",
-        "sha256": "837e3fb7992d366c02f36a2168b3c9640ea6c5dddfeddd802ccd761f8075995c"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3489/1584.pbf",
+        "sha256": "c529db58d0bca2bc3379a7ee62d3e32a70a0777adeda155ad0ca618078a011c3"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6985/3175.pbf",
-        "sha256": "f025b5a0839fda3fd064ea7703e6b04163ce8b13853546e7d6c0130ddbfd965d"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3489/1585.pbf",
+        "sha256": "2b1b8b583d294dd84b6a9036339e6285bf5f097582918a909d3b7781ffa3a219"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6986/3173.pbf",
-        "sha256": "b987263c50f1d83a5d1c87dfba79e3f80752fc477a7f4db7d4c9042b1be0108f"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3489/1586.pbf",
+        "sha256": "a864291a6d6b87f3ed8121bd1b4284146bf32084907d4bcdb3b15e0e71704889"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6986/3174.pbf",
-        "sha256": "0ede2b1a4b7c78d0273bec3d437daa9ab50ce8093b7531f009f8c2bedb702036"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3489/1587.pbf",
+        "sha256": "97c3dd5b355c4de11ec68e59fc41bfd636f8958d32d6856859b9416e631793bc"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6986/3175.pbf",
-        "sha256": "468d2f275e7489b59df0cc9ccbe458268eef5408a1afe69b22b5f34d065fe066"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3489/1588.pbf",
+        "sha256": "6d61440e05667de0eaa23f672434a565f0dfa76b79405368b0dc0527827c0ccb"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6987/3173.pbf",
-        "sha256": "17715851bf56eb633a07c6b8c45d89896454798d667d4d9c9b73309409d906c9"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3490/1583.pbf",
+        "sha256": "f6b73a1c746f233cda10077ddd5e82bf4cea178492d510ca0ab84e70fea4dc90"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6987/3174.pbf",
-        "sha256": "ad90b00fe9d42c311e2e5e256611d3d1761d97f4af10ec729bfabe599e05abc2"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3490/1584.pbf",
+        "sha256": "57d28bfb3b4f2e27dcf5b98544309a3e43a91e9e3f68666ba6ab7cb0af9389a1"
       },
       {
-        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6987/3175.pbf",
-        "sha256": "e681a8509018e4acea37ac83a688b3c72574a82134dd05d65524ce79d79de277"
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3490/1585.pbf",
+        "sha256": "7d85c6ffab4946df0155425663204615c78244f86388e81289d01d8c51d3a3a5"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3490/1586.pbf",
+        "sha256": "9dd56733319132a0e2217864341d69bd5d0d2f6a6292c309882502925f39acd1"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3490/1587.pbf",
+        "sha256": "dc9fb63f105d292f8881feeca0c3f6daf6f0deed70d5131483dfc30be1e4d090"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3490/1588.pbf",
+        "sha256": "f237046c710d9af99f5c1a47d84a31a7e20e019a831e9654bb7bcb96fd25fab4"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3491/1583.pbf",
+        "sha256": "86a1604dcc46977de047f2c8bf1a3717afec33da9c046def6908511c0c49ef48"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3491/1584.pbf",
+        "sha256": "59b57defe248b5614d460f3dcc4ec9d3b04ffb9bdb6ee5c4df4389ab92eaccfc"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3491/1585.pbf",
+        "sha256": "5902e0c0612c85330264e7cea164c814f05a886091067e641c0328b9b1d9ea65"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3491/1586.pbf",
+        "sha256": "2344b9127725b044ee97e1f61119a5b1c4f1f582c0ba6944683b2d5bbce17075"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3491/1587.pbf",
+        "sha256": "1d9efbf6d10fb5bd2c5633a2e58aba1461b46add8c2eb65c77428e3296efcde1"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3491/1588.pbf",
+        "sha256": "29051439805ee591c22f2d4fd54de40ab582c6cb548fb6f8f293630adf7860ec"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3492/1583.pbf",
+        "sha256": "eb7bc44c2ce3466b0f22062e78c4e05dea6e33920131216939d34363ad193a36"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3492/1584.pbf",
+        "sha256": "04899a5600e50c16dc7064c75783f2c9b9d6eac0fbf5bdd95c1026366cefe907"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3492/1585.pbf",
+        "sha256": "4ed9a249f799d40c42272c5167d8f1a40c263514abce6a9b8c343efd58ab9bad"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3492/1586.pbf",
+        "sha256": "1d37b0903fbaa4f18b6f97d456bd9a58835827a76ba8e524aca390def5eba18c"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3492/1587.pbf",
+        "sha256": "ce9508b0fa3bec142540d578d2249b951621982ad175cef23e4d9aff864d9a07"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3492/1588.pbf",
+        "sha256": "508e2506fdedb5a1712d5622e46b1d78c0ab74efbe2b0eaaab1d55a7d68a678f"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3493/1583.pbf",
+        "sha256": "24c7022ce3dab7b401cef6724fdab65429a64b159fd5139e03958795e6f810ad"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3493/1584.pbf",
+        "sha256": "c5a4bbf5cadd9105eb5f6d4225894c2afa980858311651d02309c47baf8de366"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3493/1585.pbf",
+        "sha256": "2b7a2a0d79a36dd4ee23fcfebb82b437fb511ab0bde392415cca1927d14b6f5b"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3493/1586.pbf",
+        "sha256": "43754c7c7da6043e5fc95f9c807ca572fd363c66d4f1f7e354767155e1c05cde"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3493/1587.pbf",
+        "sha256": "84c1154264eaf0c5760a426b5ce48245255b2118047866182ebefdacdb4266b3"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3493/1588.pbf",
+        "sha256": "fd51f9afc847068a14b4ca574dd7017db97be0cfed4c66c673d89bcebb17ed32"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3494/1583.pbf",
+        "sha256": "5707494100b1f944cbedbd4352e486578843ab3df1e56c472aed68707116af3c"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3494/1584.pbf",
+        "sha256": "da12fe6732b14f3caec635b7371b271e591badce2f6c2d549a6177bcfafcb504"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3494/1585.pbf",
+        "sha256": "7b17b95a6441b8a0d55668e8f384e4d2f22e63971e4cfb744d5c6e6293867406"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3494/1586.pbf",
+        "sha256": "e2d5bee7a49ed51da6c01a4608473019d84d9a9791d5f6185cb6ada55bc21bd5"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3494/1587.pbf",
+        "sha256": "f18764495b2c38eae97568468562fbfbcd2e9b9fa4e3e1593608f7d54c48b1bf"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3494/1588.pbf",
+        "sha256": "501eb99583a6d47b3322c04837dcfe39ed477a99c0bc1021a8ac8e8025ccfe36"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3495/1583.pbf",
+        "sha256": "84edc29cb8baa357aa81e3e3e8a8f595461c16b34196b10a19fcd383f7935af2"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3495/1584.pbf",
+        "sha256": "de3d1ab6f265862d241933def9282f18690d5245e2a07d2cd5cd80e3387354bd"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3495/1585.pbf",
+        "sha256": "9f098c8d0a4fd36d7408a5ec362c23e0529804ce2e66ce0df89a8ad703cb0c5d"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3495/1586.pbf",
+        "sha256": "4368c28e2449724de7d6d0a804f752b06757b2c993f8b0e1c37d997171ed79da"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3495/1587.pbf",
+        "sha256": "83c7a49c5bd8c3e05bd08b80c8b9e8bcd46e7bd0fd4fdbe9587fd95d5e9210f6"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/12/3495/1588.pbf",
+        "sha256": "f44efa0d9995712a81888737cce9764fdcffab906a15117f7d7dbb13fd0f0fd2"
       }
     ],
-    "method": "Tile buffers removed, shorelines dissolved and clipped to playable area, metre-rounded with holes retained."
+    "method": "Map tile buffers removed, shorelines dissolved and clipped to playable area, metre-rounded with holes retained."
   },
   "bridgesAndPlaces": {
     "snapshot": "https://download.bbbike.org/osm/bbbike/Seoul/Seoul.osm.geojson.xz",
     "sha256": "1636b1c963d8a6168ddff76d1ba5cb43470e0309b65b1090750040b1e2cee9af",
     "originalSourceFeatureOrdinal": {
       "강남": 54680,
+      "롯데월드타워": 155962,
+      "올림픽공원": 280200,
+      "서울월드컵경기장": 280835,
+      "경복궁 근정전": 280985,
+      "서울시청": 281999,
+      "국회의사당": 312298,
       "세빛섬": 320147,
+      "흥인지문": 332777,
+      "창덕궁 인정전": 374119,
+      "도봉구청": 374401,
+      "노원구청": 374415,
+      "서울식물원": 430497,
+      "김포국제공항": 519948,
+      "동대문디자인플라자": 610296,
+      "여의도공원": 662619,
+      "잠실대교": 700245,
       "영동대교": 768993,
       "동작대교": 776831,
       "한남대교": 776832,
+      "김포대교": 777161,
+      "양화대교": 777162,
+      "마포대교": 777163,
+      "천호대교": 777164,
+      "서강대교": 777398,
+      "원효대교": 777399,
+      "구리암사대교": 777400,
+      "한강대교": 782295,
+      "한강철교": 782299,
+      "방화대교": 807989,
+      "가양대교": 830296,
+      "성산대교": 830297,
       "동호대교": 830298,
+      "마곡대교": 900142,
+      "당산철교": 900143,
+      "잠실철교": 900144,
       "성수대교": 916685,
       "청담대교": 916686,
+      "올림픽대교": 922183,
+      "광진교": 950092,
       "반포대교": 955908,
-      "잠수교": 962279
+      "잠수교": 962279,
+      "남산서울타워": 1115516,
+      "서울숲": 1187946,
+      "고덕토평대교": 1247559,
+      "강동대교": 1293334,
+      "월드컵대교": 1333523,
+      "숭례문": 1368204,
+      "행주대교": 1383872
     },
     "method": "Bridge centre paths are sampled from mapped deck outlines. Jamsu sits on the lower level of Banpo. Bridge labels are positioned on the Han River crossing. Other landmark anchors lie on a named station point or building/site geometry."
   },
@@ -83,6 +266,10 @@
     "https://hangang.seoul.go.kr/www/contents/657.do?mid=454",
     "https://www.coex.co.kr/guide/directions/",
     "https://www.sac.or.kr/site/main/content/guide",
-    "https://www.museum.go.kr/MUSEUM/contents/M0106010000.do?menuId=subway-map"
+    "https://www.museum.go.kr/MUSEUM/contents/M0106010000.do?menuId=subway-map",
+    "https://english.seoul.go.kr/service/amusement/hangang/overview/",
+    "https://english.seoul.go.kr/yanghwadaegyo-bridge/",
+    "https://english.seoul.go.kr/wp-content/uploads/2026/03/seoulguidebook_eng.pdf",
+    "https://english.visitseoul.net/City-Hall-Area/Namsan-Seoul-Tower/ENP000036"
   ]
 }

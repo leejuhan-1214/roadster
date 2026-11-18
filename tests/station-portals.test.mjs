@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {gunzipSync} from 'node:zlib';
 import {Vector3} from 'three';
+import {decodeRegionalPack,indexRegionalTiles} from '../dist/js/city-regional-packs.js';
 import {roadSegments} from '../dist/js/city-median.js';
 import {createCityWorld} from '../dist/js/city-world.js';
 import {createStreetOverlay} from '../dist/js/city-street-overlay.js';
@@ -12,6 +14,33 @@ import {CITY_DRIVE_PARAMS,DrivingController} from '../dist/js/driving-input.js';
 const street=roadSegments([{type:'primary',width:16,points:[[-100,0],[100,0]],oneway:false}]);
 const from=(g,forward,lateral=0,y=.65)=>({x:g.x+g.dx*forward-g.dz*lateral,y,z:g.z+g.dz*forward+g.dx*lateral});
 const portalsFor=gates=>createStationPortals(new Map([['cell',{gates}]]));
+
+test('City Hall, Jamsil and Gimpo Airport show local exits before and after their road geometry arrives',async()=>{
+  const dir=new URL('../dist/assets/city/',import.meta.url);
+  const points=JSON.parse(await readFile(new URL('street-points.json',dir),'utf8'));
+  const manifest=JSON.parse(await readFile(new URL('seoul/manifest.json',dir),'utf8'));
+  indexRegionalTiles(manifest);
+  const cells=new Map(),portals=createStationPortals(cells,points.entrances);
+  for(const [x,z,name] of [[-4371.8,-7614.3,'시청'],[6403.1,-1703.2,'잠실'],[-19980,-7170,'김포공항']]){
+    cells.clear();
+    const mapped=portals.nearest(x,z);
+    assert.ok(mapped.label.startsWith(name+'역 '));assert.ok(mapped.distance<130);
+    const e=points.entrances.find(row=>row[0]===mapped.x&&row[1]===mapped.z);
+    const entry=manifest.tiles[Math.floor(e[0]/512)+'_'+Math.floor(e[1]/512)];
+    const bytes=await readFile(new URL('seoul/'+entry.pack.split('?')[0],dir));
+    const tile=decodeRegionalPack(JSON.parse(gunzipSync(bytes)))[entry.cell];
+    const gate=planStationPortal(e,roadSegments(tile.roads));
+    assert.ok(gate&&Math.hypot(gate.x-e[0],gate.z-e[1])<150);
+    cells.set('near',{gates:[gate]});
+    assert.equal(portals.nearest(x,z).id,gate.id);
+    assert.equal(portals.crossing(from(gate,-5),from(gate,5)),gate);
+  }
+  cells.clear();
+  for(const [x,z] of [[-28700,-23000],[16000,12000],[30,-40],[-20000,-7000]]){
+    const expected=Math.min(...points.entrances.map(p=>Math.hypot(p[0]-x,p[1]-z)));
+    assert.ok(Math.abs(portals.nearest(x,z).distance-expected)<1e-5);
+  }
+});
 
 test('only a ground-level approach into the marked kerb or real stairwell starts a race',()=>{
   const gate=planStationPortal([8,25,'8','강남'],street,{dx:1,dz:0}),portals=portalsFor([gate]);

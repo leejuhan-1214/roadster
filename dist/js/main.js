@@ -14,12 +14,12 @@ import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-phys
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {LandingPlanner} from './landing-preparation.js?v=20261118-city151';
-import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261118-atlas156';
+import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261119-wide157';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace} from './station-race.js?v=20261118-circuit155';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-circuit155';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-circuit155';
-import {FlightScene} from './scene.js?v=20261118-circuit155';
+import {FlightScene} from './scene.js?v=20261119-wide157';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -59,7 +59,7 @@ function setPaused(value){
   paused=race?.phase==='finished'||value;if(!value&&landingSession)landingSession.singleStepping=false;if(value){clearLandingLift();clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
   $('pause').textContent=paused?'▶':'Ⅱ';$('pause').disabled=!landingRun&&!freeDriving();
   $('pause').setAttribute('aria-label',(mode==='city'?'주행':'실험')+(paused?' 재생':' 일시정지'));
-  $('live-label').textContent=mode==='city'?(cityLoading?'도시 불러오는 중':race?.phase==='finished'?'경주 완주':paused?'일시정지':race?'서킷 경주':'강남역 자유 주행'):landingRun?(paused?'일시정지':'측정 중'):mode==='inspect'?'구조 탐색':freeDriving()?'자유 조종':'실험 준비';
+  $('live-label').textContent=mode==='city'?(cityLoading?'도시 불러오는 중':race?.phase==='finished'?'경주 완주':paused?'일시정지':race?'서킷 경주':'서울 자유 주행'):landingRun?(paused?'일시정지':'측정 중'):mode==='inspect'?'구조 탐색':freeDriving()?'자유 조종':'실험 준비';
 }
 function parkAt(pose){
   sim.rivalSupport=false;
@@ -104,7 +104,7 @@ function leaveRace(){
   mapSession.sample(sim.state.pos.x,sim.state.pos.z);mapPanel.setRaceActive(false);
   scene.city.streetOverlay?.portals?.suppress(gate);
   showRaceHUD(false);setPaused(false);
-  $('world').setAttribute('aria-label','강남역 실제 도로 기반 자유 주행');
+  $('world').setAttribute('aria-label','서울 실제 도로 기반 자유 주행');
   $('world').focus({preventScroll:true});
 }
 function restoreLandingParams(session){
@@ -297,7 +297,7 @@ async function setMode(next){
   $('inspect-panel').hidden=mode!=='inspect';$('lab-panel').hidden=mode!=='lab';$('part-card').hidden=true;selectedPartId=null;
   $('city-hud').hidden=mode!=='city';$('city-loading').hidden=!cityLoading;
   $('panel-toggle').textContent=mode==='inspect'?'☷ 부품 목록':'☷ 실험 설정';$('camera-label').textContent=cameraLabel();
-  $('world').setAttribute('aria-label',mode==='city'?'강남역 실제 도로 기반 자유 주행':'착지 충격과 차체 구조를 관찰하는 3D 공간');
+  $('world').setAttribute('aria-label',mode==='city'?'서울 실제 도로 기반 자유 주행':'착지 충격과 차체 구조를 관찰하는 3D 공간');
   if(mode==='city'){
     mapPanel.load();
     try{await scene.loadCity();if(epoch!==modeEpoch)return;cityLoading=false;$('city-loading').hidden=true;reset({cancel:false,restoreCityPlace:true});$('world').focus({preventScroll:true});}

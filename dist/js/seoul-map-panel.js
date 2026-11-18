@@ -1,6 +1,6 @@
-import {createSeoulDrivingMap} from './seoul-driving-map.js?v=20261118-atlas156';
+import {createSeoulDrivingMap} from './seoul-driving-map.js?v=20261119-wide157';
 
-const dataUrl=new URL('../assets/city/seoul/driving-map.json?v=20261118-atlas156',import.meta.url);
+const dataUrl=new URL('../assets/city/seoul/driving-map.json?v=20261119-wide157',import.meta.url);
 
 export function createSeoulMapPanel({beforeOpen,afterClose}){
   const byId=id=>document.getElementById(id);

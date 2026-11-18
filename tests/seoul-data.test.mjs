@@ -23,10 +23,10 @@ function assertSourceIdentity(feature) {
   }
 }
 
-test('real Seoul map is a complete bounded 10.24 km square with verified tile hashes', () => {
+test('the original detailed Seoul tiles still cover the complete inner square with verified hashes', () => {
   assert.deepEqual(manifest.origin, [37.4979, 127.0276]);
   assert.equal(manifest.tileSize, 512);
-  assert.deepEqual(manifest.bounds, { minX: -5120, maxX: 5120, minZ: -5120, maxZ: 5120 });
+  assert.deepEqual(manifest.detailBounds, { minX: -5120, maxX: 5120, minZ: -5120, maxZ: 5120 });
   assert.equal(entries.length, 400);
   for (let iz = -10; iz < 10; iz++) for (let ix = -10; ix < 10; ix++) assert.ok(tileMap.has(`${ix}_${iz}`));
   let bytes = 0;

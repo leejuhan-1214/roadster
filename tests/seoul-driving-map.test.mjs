@@ -21,8 +21,8 @@ test('north-up overview contains the full mapped area in both aspect ratios; whe
   }
 });
 
-function environment(t){
-  let frame=0;const queue=new Map();
+function environment(t,recordBase=false){
+  let frame=0;const queue=new Map(),baseStrokes=[];
   const old={};
   for(const key of ['requestAnimationFrame','cancelAnimationFrame','devicePixelRatio']){
     old[key]=Object.getOwnPropertyDescriptor(globalThis,key);
@@ -43,12 +43,15 @@ function environment(t){
       focus(){},setPointerCapture(id){capture.add(id);},hasPointerCapture(id){return capture.has(id);},releasePointerCapture(id){capture.delete(id);}
     };
     const draw={canvas:c,beginPath(){path=[];},moveTo(x,y){path.push(['M',x,y]);},lineTo(x,y){path.push(['L',x,y]);},
-      stroke(){if(this.strokeStyle==='#ffb968')strokes.push(path.slice());},fillText(s){labels.push(s);},measureText(s){return {width:s.length*8};}};
+      stroke(){
+        if(this.strokeStyle==='#ffb968')strokes.push(path.slice());
+        if(recordBase&&['#455b60','#839395'].includes(this.strokeStyle))baseStrokes.push(path.slice());
+      },fillText(s){labels.push(s);},measureText(s){return {width:s.length*8};}};
     c.getContext=()=>ctx;
     const ctx=new Proxy(draw,{get:(o,k)=>k in o?o[k]:(()=>{})});
     return c;
   }
-  return {canvas,flush};
+  return {canvas,flush,baseStrokes};
 }
 const data={bounds,water:[[[-5100,-4000],[5100,-4000],[5100,-3000],[-5100,-3000]]],riverLabel:[-2700,-3500],
   islands:[],blocks:[[[-80,-80],[0,-80],[0,0],[-80,0]]],roads:[{kind:'secondary',points:[[-4000,0],[4000,0]]}],
@@ -101,6 +104,32 @@ test('all mapped destinations remain individually identifiable on a narrow scree
     map.focus(x,z,place.id);flush();
     assert.equal(map.view.placeId,place.id);assert.ok(large.labels.includes(place.name),place.name);
     if(place.group==='banpo-crossing')assert.ok(!large.labels.includes('반포대교·잠수교'));
+    if(place.label){
+      const [left,top]=map.view.at(0,0),[right,bottom]=map.view.at(map.view.width,map.view.height);
+      assert.ok(place.points.every(([px,pz])=>px>left&&px<right&&pz>top&&pz<bottom),place.name+' entire deck');
+    }
   }
+  map.dispose();
+});
+
+test('citywide pan and small zoom steps reuse the regional image; outskirts show the streamed residential streets on arrival',t=>{
+  const {canvas,flush,baseStrokes}=environment(t,true),large=canvas(830,550);
+  const map=createSeoulDrivingMap({miniCanvas:canvas(138,106),largeCanvas:large});
+  const region={minX:-28672,maxX:16384,minZ:-24576,maxZ:12288};
+  const outerRoad={type:'residential',points:[[-18011,-9631],[-17942,-9638]]};
+  const nextRoad={type:'residential',points:[[-18026,-9622],[-17960,-9610]]};
+  const pose={x:-18000,z:-9600,yaw:1,route:[],roads:[outerRoad]};
+  map.setData({...data,bounds:region,detailBounds:bounds,roads:[{kind:'primary',points:[[-18005,-9900],[-17321,-9123]]}]});
+  const drawn=(x,z)=>baseStrokes.some(path=>path.some(p=>p[0]==='M'&&p[1]===x&&p[2]===z));
+  map.update(pose);flush();assert.ok(drawn(...outerRoad.points[0]),'first streamed local road');
+  baseStrokes.length=0;map.update({...pose,roads:[outerRoad,nextRoad]});flush();
+  assert.ok(drawn(...nextRoad.points[0]),'new streamed tile updates a stationary minimap');
+  map.open();flush();
+  assert.ok(map.view.at(0,0)[0]<region.minX&&map.view.at(830,550)[1]>region.maxZ);
+  baseStrokes.length=0;large.emit('keydown',{key:'ArrowRight'});flush();
+  map.zoomBy(1.18);flush();assert.equal(baseStrokes.length,0,'regional base reused while panning and pinching');
+  map.focus(-16000,-9600,'outlying-place');flush();
+  assert.ok(map.view.at(0,0)[0]<-18005,'selected grounds include the distant approach road');
+  map.locate();flush();assert.deepEqual([map.view.x,map.view.z],[pose.x,pose.z]);
   map.dispose();
 });

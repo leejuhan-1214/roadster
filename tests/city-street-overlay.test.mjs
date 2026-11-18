@@ -18,9 +18,10 @@ const avenue=name=>[road(1,name,[[9,100],[9,-100]]),road(2,name,[[-9,-100],[-9,1
 test('bundled subway entrances and signal positions match their provenance record',async()=>{
   const provenance=JSON.parse(await readFile(new URL('street-points.provenance.json',dir),'utf8'));
   assert.equal(provenance.sha256,createHash('sha256').update(text).digest('hex'));
-  assert.equal(points.license,'ODbL-1.0');assert.match(points.attribution,/OpenStreetMap/);assert.ok(points.sourceTimestamp);
+  assert.equal(points.license,'ODbL-1.0');assert.match(points.attribution,/OpenStreetMap/);assert.ok(points.sourceTimestamps.centralOSM);
   assert.equal(provenance.counts.entrances,points.entrances.length);assert.equal(provenance.counts.signals,points.signals.length);
-  assert.ok(points.entrances.length>300&&points.signals.length>150&&Buffer.byteLength(text)<40000);
+  assert.ok(points.entrances.length>1800&&points.signals.length>1200&&Buffer.byteLength(text)<500000);
+  assert.equal(provenance.central.counts.entrances,411);assert.equal(provenance.central.counts.signals,257);
   const b=points.bounds;
   for(const [x,z]of [...points.entrances,...points.signals])assert.ok(x>=b.minX&&x<b.maxX&&z>=b.minZ&&z<b.maxZ);
   const gangnam=points.entrances.filter(e=>e[3]==='강남').map(e=>Number(e[2])).sort((p,q)=>p-q);
