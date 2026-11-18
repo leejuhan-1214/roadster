@@ -3,9 +3,10 @@ import {CockpitView} from './cockpit-view.js?v=20261118-review149';
 import {LandingVisual} from './landing-visual.js?v=20261118-review149';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
+import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261118-flight153';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-city151';
-import {loadCityWorld} from './city-world.js?v=20261118-study150';
-import {createStationRaceWorld} from './station-race-world.js?v=20261118-race152';
+import {loadCityWorld} from './city-world.js?v=20261118-flight153';
+import {createStationRaceWorld} from './station-race-world.js?v=20261118-flight153';
 import {attachStreamingCity} from './city-streaming.js?v=20261118-frameperf1';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261118-race152';
 import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
@@ -129,6 +130,16 @@ export class FlightScene {
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.0;
     this.renderBudget=new RenderBudget();this.quality='smooth';this.renderer.shadowMap.enabled=false;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.shadowElapsed=1;
+    const shadowMap=this.renderer.shadowMap,renderShadows=shadowMap.render.bind(shadowMap);
+    // Three builds the camera's visible draw list before its directional depth
+    // pass. The driver's own exterior belongs in that depth pass even though it
+    // must stay out of the windshield and mirror colour passes.
+    shadowMap.render=(lights,world,camera)=>{
+      const exterior=this.cockpitShadowCaster;
+      if(!exterior||!shadowMap.needsUpdate||camera!==this.camera)return renderShadows(lights,world,camera);
+      const previous=exterior.visible;exterior.visible=true;
+      try{return renderShadows(lights,world,camera);}finally{exterior.visible=previous;}
+    };
     this.scene=new THREE.Scene();this.scene.fog=new THREE.FogExp2(0xb6c4c9,0.0025);
     this.camera=new THREE.PerspectiveCamera(43,1,.08,1500);this.camera.position.set(7.7,3.8,7.5);
     this.controls=new OrbitControls(this.camera,canvas);this.controls.enableDamping=true;this.controls.dampingFactor=.08;
@@ -238,7 +249,8 @@ export class FlightScene {
     this.scene.add(new THREE.HemisphereLight(0xd9e6f2,0x45413b,1.45));
     this.sun=new THREE.DirectionalLight(0xfff0d8,3.1);this.sun.position.set(-20,34,26);this.sun.castShadow=true;
     this.sun.shadow.mapSize.set(1024,1024);Object.assign(this.sun.shadow.camera,{near:1,far:150,left:-24,right:24,top:24,bottom:-24});
-    this.sun.shadow.bias=-.00025;this.sun.shadow.normalBias=.025;this.scene.add(this.sun,this.sun.target);
+    this.sunDirection=this.sun.position.clone().normalize();
+    this.sun.shadow.normalBias=.012;this.scene.add(this.sun,this.sun.target);
     const rim=new THREE.DirectionalLight(0xd0e3f0,.45);rim.position.set(20,8,-25);this.scene.add(rim);
     const ground=mesh(new THREE.PlaneGeometry(1800,1800),this.environmentMaterials.pavement,0,0,0,this.scene);ground.rotation.x=-Math.PI/2;ground.castShadow=false;ground.userData.dynamicGeometry=true;this.groundSurface=ground;
     const padRing=ring(25,.11,0x9babaa,.7);padRing.position.y=.006;this.scene.add(padRing);
@@ -256,7 +268,7 @@ export class FlightScene {
     this.roadRelief=new THREE.Mesh(relief,this.environmentMaterials.pavement);this.roadRelief.receiveShadow=true;this.scene.add(this.roadRelief);
     this.createArchitecture();
     const shadowTx=canvasTexture((ctx,w,h)=>{const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(.45,'rgba(0,0,0,.24)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);},128,128);
-    this.contactShadow=new THREE.Mesh(new THREE.PlaneGeometry(6.5,4),new THREE.MeshBasicMaterial({map:shadowTx,transparent:true,depthWrite:false,opacity:.85}));this.contactShadow.rotation.x=-Math.PI/2;this.scene.add(this.contactShadow);
+    this.contactShadow=createTireContactShadows();this.scene.add(this.contactShadow);
     // Shared contact occlusion keeps fixed structures seated even in smooth mode,
     // where full dynamic shadow rendering is deliberately disabled.
     const grounded=FACILITY_SOLIDS.filter(d=>d.center[1]-d.size[1]/2<.05);
@@ -745,6 +757,7 @@ export class FlightScene {
       if(compressor.userData.statusLight)compressor.userData.statusLight.material.emissiveIntensity=active?1.4:0;
     }
     const insideCockpit=this.mode==='city'&&this.cameraName==='hood';
+    this.cockpitShadowCaster=insideCockpit?(this.hasCustomModel?this.customModel:this.vehicle.root):null;
     // Use the inspected original cabin, or its model-specific reference interior.
     // Cloned inside materials preserve the shared exterior and explosion view.
     this.vehicle.root.visible=(!this.hasCustomModel||this.mode==='inspect')&&!insideCockpit;
@@ -773,20 +786,8 @@ export class FlightScene {
     }
     if(this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
     this.tireEffects.update(sim,view,this.mode==='city');
-    // Place soft contact occlusion on the surface supporting the tyres. A
-    // single plane cannot follow a kerb edge, so fade it across a height step.
-    let low=Infinity,high=-Infinity;
-    for(const wheel of wheels){low=Math.min(low,wheel.surfaceY);high=Math.max(high,wheel.surfaceY);}
-    const support=Number.isFinite(low)?low:0,spread=Number.isFinite(high-low)?high-low:0;
-    const height=Math.max(0,position.y-support-sim.restHeight);
-    this.contactShadow.position.set(position.x,support+.016,position.z);
-    this.contactShadow.rotation.z=-Math.atan2(tmpV.set(1,0,0).applyQuaternion(q).z,tmpV.x);
-    this.contactShadow.material.opacity=(mode==='lab'?.28:.65)*Math.exp(-height*.65)*Math.max(0,1-spread/.12);
-    const penumbra=1+Math.min(height,5)*.065;
-    this.contactShadow.scale.set(sim.params.bodyLength*1.32/6.5*penumbra,sim.params.bodyWidth*1.65/4*penumbra,1);
-    if(this.sunDirection)this.sun.position.copy(position).addScaledVector(this.sunDirection,this.mode==='city'?300:50);
-    else this.sun.position.set(position.x-20,34+Math.min(position.y,20),position.z+26);
-    this.sun.target.position.copy(position);this.sun.target.updateMatrixWorld();
+    updateTireContactShadows(this.contactShadow,position,q,wheels,sim.wheels,mode);
+    this.positionSun(position,wheels);
     this.sky.position.set(position.x,position.y,position.z);
     if(this.stageVisual){
       updateStageVisual(this.stageVisual,options.stageProgress||0,this.elapsed);
@@ -807,23 +808,59 @@ export class FlightScene {
     this.renderer.render(this.scene,this.camera);
   }
 
+  positionSun(position,wheels){
+    const sun=this.sun,dir=this.sunDirection,camera=sun.shadow.camera,city=this.mode==='city';
+    const distance=city?300:50,texel=(camera.right-camera.left)/sun.shadow.mapSize.x;
+    // Snap translations to whole shadow texels in the light's image plane.
+    // Fixed street scenery keeps its shadow coordinates while the car moves.
+    const right=tmpV.set(dir.z,0,-dir.x).normalize();
+    const up=tmpV2.crossVectors(dir,right);
+    const x=position.dot(right),y=position.dot(up);
+    sun.target.position.copy(position).addScaledVector(right,Math.round(x/texel)*texel-x).addScaledVector(up,Math.round(y/texel)*texel-y);
+    sun.position.copy(sun.target.position).addScaledVector(dir,distance);
+    sun.target.updateMatrixWorld();
+    let road=Infinity;
+    for(const wheel of wheels)road=Math.min(road,wheel.surfaceY);
+    if(!Number.isFinite(road))road=0;
+    const required=distance+Math.max(0,position.y-road)/Math.max(.1,dir.y)+8;
+    const far=Math.max(city?650:150,Math.ceil(required/25)*25);
+    if(camera.far!==far){camera.far=far;camera.updateProjectionMatrix();}
+    // Depth bias is a fraction of this orthographic near/far range; a fixed
+    // fraction shifts a city's tyre silhouettes by centimetres at low sun.
+    sun.shadow.bias=-.004/(far-camera.near);
+  }
+
   updateShadowMap(dt,position,rotation,wheels,explode){
     const map=this.renderer.shadowMap;
     if(!map.enabled)return;
     this.shadowElapsed+=dt;
     const inspect=this.mode==='inspect';
-    if(!map.needsUpdate&&this.shadowElapsed<(inspect?1/20:1/12))return;
+    if(!map.needsUpdate&&inspect&&this.shadowElapsed<1/20)return;
     const last=this.shadowPose??={position:new THREE.Vector3(),rotation:new THREE.Quaternion(),wheels:new Float64Array(8)};
     const moved=position.distanceToSquared(last.position)>.000025||1-Math.abs(rotation.dot(last.rotation))>.000001;
     const wheelMoved=wheels.some((wheel,i)=>Math.abs((wheel.compression||0)-last.wheels[2*i])>.002||
       Math.abs((wheel.steer||0)-last.wheels[2*i+1])>.01);
     // City scenery streams in even while parked. Lab shadows only change
     // when the body, suspension, inspection layout, or lighting changes.
-    if(!map.needsUpdate&&!moved&&!wheelMoved&&last.explode===explode&&last.cutaway===this.cutaway&&
+    const rivals=this.stationRace?.rivals;
+    let rivalMoved=false;
+    if(rivals){
+      const poses=last.rivals??=new Float64Array(rivals.length*4);
+      for(let i=0;i<rivals.length;i++){
+        const r=rivals[i],j=4*i;
+        const nearNow=Math.abs(r.x-position.x)<=40&&Math.abs(r.z-position.z)<=40;
+        const nearLast=Math.abs(poses[j]-position.x)<=40&&Math.abs(poses[j+1]-position.z)<=40;
+        if(!nearNow&&!nearLast)continue;
+        if(Math.abs(poses[j]-r.x)>.015||Math.abs(poses[j+1]-r.z)>.015||Math.abs(poses[j+2]-r.heading)>.008||
+           Math.abs(poses[j+3]-(r.heave||0))>.004)rivalMoved=true;
+      }
+    }
+    if(!map.needsUpdate&&!moved&&!wheelMoved&&!rivalMoved&&last.explode===explode&&last.cutaway===this.cutaway&&
        last.sun===this.sunDirection&&!(this.mode==='city'&&this.shadowElapsed>=1)&&!inspect)return;
     map.needsUpdate=true;this.shadowElapsed=0;
     last.position.copy(position);last.rotation.copy(rotation);
     last.explode=explode;last.cutaway=this.cutaway;last.sun=this.sunDirection;
+    rivals?.forEach((r,i)=>{const j=i*4;last.rivals[j]=r.x;last.rivals[j+1]=r.z;last.rivals[j+2]=r.heading;last.rivals[j+3]=r.heave||0;});
     wheels.forEach((wheel,i)=>{last.wheels[2*i]=wheel.compression||0;last.wheels[2*i+1]=wheel.steer||0;});
   }
 
@@ -937,6 +974,7 @@ export class FlightScene {
   }
   dispose() {
     this.landingVisual?.dispose();
+    this.contactShadow?.material.map.dispose();
     this.canvas.removeEventListener('pointerdown',this._onDown,true);this.canvas.removeEventListener('pointerup',this._onUp,true);
     this.canvas.removeEventListener('pointermove',this._onMove,true);this.canvas.removeEventListener('pointercancel',this._onCancel,true);
     this.canvas.removeEventListener('dblclick',this._onDoubleClick);window.removeEventListener('blur',this._onBlur);this.cockpit?.dispose();this.cockpitMirror?.dispose();

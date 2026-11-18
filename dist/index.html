@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="application-version" content="1.52.0">
+<meta name="application-version" content="1.53.0">
 <meta name="theme-color" content="#0b151e"><meta name="description" content="5종 차체의 착지 4방식을 같은 높이에서 비교하고 77종 차량으로 실제 강남역 도로에서 자유롭게 주행합니다.">
 <title>Roadster Landing Lab — 착지 충격 실험</title>
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
 <link rel="stylesheet" href="./style.css?v=20261118-audit148">
 <link rel="stylesheet" href="./landing-live.css?v=20261112-lab1">
 <link rel="stylesheet" href="./landing-research.css?v=20261118-study150">
-<link rel="stylesheet" href="./station-race.css?v=20261118-race152">
+<link rel="stylesheet" href="./station-race.css?v=20261118-flight153">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head><body class="quality-smooth">
 <canvas id="world" aria-label="착지 충격과 차체 구조를 관찰하는 3D 공간" tabindex="0"></canvas>
@@ -65,18 +65,22 @@
     <div><small>경과 시간</small><strong id="race-clock">0:00.0</strong></div>
   </div>
   <div class="race-actions glass"><button id="race-recover" title="마지막 통과 지점으로 (R)">트랙 복귀</button><button id="race-exit">도시로</button></div>
+  <div id="race-flight" class="glass">
+    <div class="race-flight-row"><b id="race-flight-state">지상</b><span id="race-flight-height">0.0 m</span><span id="race-flight-gas"></span><button id="race-land" aria-pressed="false" hidden>착지 보조</button></div>
+    <div class="race-flight-row"><span id="race-ring-count"></span><span id="race-flight-hint"></span></div>
+  </div>
   <div id="race-signal" role="status" hidden></div>
   <div id="race-finish" class="glass" role="region" aria-label="경주 결과" hidden>
     <small>서킷 완주</small><strong id="race-result-place"></strong><p id="race-result-time"></p>
     <button id="race-retry">다시 경주</button><button id="race-return">역으로 돌아가기</button>
   </div>
   <div id="race-touch" aria-label="경주 운전 조작">
-    <div><button data-drive="KeyA" aria-label="왼쪽 조향">◀</button><button data-drive="KeyD" aria-label="오른쪽 조향">▶</button><button data-drive="ShiftLeft">드리프트</button></div>
-    <div><button data-drive="KeyB">제동</button><button data-drive="KeyW">가속</button><button data-drive="KeyF">부스트</button><button data-drive="KeyS">후진</button></div>
+    <div class="race-pad"><div><button data-drive="KeyQ" aria-label="공중 왼쪽 회전">Q 회전</button><button data-drive="KeyE" aria-label="공중 오른쪽 회전">E 회전</button><button data-drive="KeyX">공중제비</button></div><div><button data-drive="KeyA" aria-label="왼쪽 조향 또는 공중 왼쪽 이동">◀</button><button data-drive="KeyD" aria-label="오른쪽 조향 또는 공중 오른쪽 이동">▶</button><button data-drive="ShiftLeft">드리프트</button></div></div>
+    <div class="race-pad"><div><button data-drive="Space" aria-label="누르는 동안 상승 분사">상승</button><button data-drive="KeyH" aria-label="현재 높이 유지 전환">높이 유지</button></div><div><button data-drive="KeyB">제동</button><button data-drive="KeyW">가속</button><button data-drive="KeyF">부스트</button><button data-drive="KeyS">후진</button></div></div>
   </div>
 </section>
 </section>
 <aside id="part-card" class="part-card glass" hidden><div class="panel-heading"><span id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 선택 닫기">×</button></div><h2 id="part-title"></h2><div class="part-actions"><button id="part-zoom">가까이 보기</button><button id="part-isolate" aria-pressed="false">이것만 보기</button><button id="part-hide">선택 숨기기</button></div></aside>
 <div class="view-tools glass"><button id="camera" title="카메라 전환 (C)">◉ <span id="camera-label">자유 카메라</span></button><button id="vectors" aria-pressed="false" title="힘 벡터 (V)">↗ 힘 벡터</button><button id="reset" title="실험 초기화 (R)">↺ 초기화</button><div class="landing-playback" id="landing-playback"><button id="landing-suspension" aria-pressed="false" title="차체 외장을 열어 바퀴·서스펜션의 움직임 관찰">서스펜션</button><label for="landing-speed">실험 재생</label><select id="landing-speed" aria-label="착지 실험 재생 속도"><option value="1">1×</option><option value="0.25">0.25×</option><option value="0.1">0.1×</option></select><button id="landing-step" disabled title="일시정지한 착지 실험을 2ms 진행">+2 ms</button></div></div><span id="fps" class="frame-note"></span><div id="toast" class="toast" role="status"></div>
-<dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.52.0</div></dialog>
-<script type="module" src="./js/main.js?v=20261118-race152"></script></body></html>
+<dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.53.0</div></dialog>
+<script type="module" src="./js/main.js?v=20261118-flight153"></script></body></html>

@@ -15,7 +15,7 @@ const approach=(value,target,amount)=>value+clamp(target-value,-amount,amount);
 const held=(keys,...codes)=>codes.some(code=>keys.has(code));
 // A grounded hull still supports the car when its tires are unloaded (for
 // example on a curb). Do not turn that contact into an unsolicited flight.
-const hasBodySupport=sim=>sim.bodyGroundContacts>0||sim.groundCorrectionImpulseNs>0;
+const hasBodySupport=sim=>sim.bodyGroundContacts>0||sim.groundCorrectionImpulseNs>0||sim.rivalSupport===true;
 const hasSettledSupport=sim=>sim.contactCount===4||hasBodySupport(sim);
 
 export class DrivingController {

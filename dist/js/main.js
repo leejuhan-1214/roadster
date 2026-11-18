@@ -3,7 +3,7 @@ import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-city151';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-flight153';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261118-city151';
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-city151';
 import {LandingUI} from './landing-ui.js?v=20261118-city151';
@@ -12,11 +12,10 @@ import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {LandingPlanner} from './landing-preparation.js?v=20261118-city151';
 import {drawMappedStreets} from './city-minimap.js?v=20261118-race152';
-import {StationRace} from './station-race.js?v=20261118-race152';
-import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-race152';
-import {resolveRivalContact} from './race-contact.js?v=20261118-race152';
+import {StationRace} from './station-race.js?v=20261118-flight153';
+import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-flight153';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-city151';
-import {FlightScene} from './scene.js?v=20261118-race152';
+import {FlightScene} from './scene.js?v=20261118-flight153';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -38,7 +37,6 @@ let citySettings=normalizeCityExperiment({});
 const brakeTrial=new CityBrakeTrial();
 const driveKeys=new Set(),worldUp=new Vector3(0,1,0);
 let driver=new DrivingController(),race=null,cityReturn=null;
-const raceDriveKeys=new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowLeft','ArrowDown','ArrowRight','KeyF','KeyB','ShiftLeft','ShiftRight']);
 const previousCityPosition=new Vector3();
 let clearDriveInputs=()=>driveKeys.clear();
 let landingLiftHeld=false,clearLandingLift=()=>{landingLiftHeld=false;};
@@ -57,6 +55,7 @@ function setPaused(value){
   $('live-label').textContent=mode==='city'?(cityLoading?'도시 불러오는 중':race?.phase==='finished'?'경주 완주':paused?'일시정지':race?'서킷 경주':'강남역 자유 주행'):landingRun?(paused?'일시정지':'측정 중'):mode==='inspect'?'구조 탐색':freeDriving()?'자유 조종':'실험 준비';
 }
 function parkAt(pose){
+  sim.rivalSupport=false;
   const {pos,vel,q,omega}=sim.state;
   pos.set(pose.x,sim.restHeight,pose.z);q.setFromAxisAngle(worldUp,pose.heading);
   vel.set(0,0,0);omega.set(0,0,0);
@@ -77,8 +76,8 @@ function startRace(gate){
   driver=new DrivingController();cityDistance=0;
   scene.setStationRace(race);sim.setObstacles(scene.raceWorld.obstacles);
   parkAt(race.startPose);setPaused(false);
-  showRaceHUD(true);updateRaceHUD(race);
-  $('world').setAttribute('aria-label','AI 차량 3대와 2랩을 달리는 서킷');
+  showRaceHUD(true);updateRaceHUD(race,sim.telemetry(),driver);
+  $('world').setAttribute('aria-label','AI 차량 3대와 지상 트랙과 공중 링을 지나는 2랩 서킷');
   $('world').focus({preventScroll:true});
 }
 function recoverRace(){
@@ -199,8 +198,7 @@ function stepSimulation(){
     const previousY=sim.state.pos.y;
     sim.step(LANDING_STEP,driveInput);
     if(race){
-      for(const rival of race.rivals)resolveRivalContact(sim,rival,LANDING_STEP);
-      const recovery=race.update(LANDING_STEP,sim.state.pos);
+      const recovery=race.update(LANDING_STEP,sim.state.pos,sim);
       if(recovery){parkAt(recovery);toast('코스 이탈 · 마지막 통과 지점으로 복귀');}
       if(race.phase==='finished'){setPaused(true);updateRaceHUD(race);}
       return;
@@ -428,9 +426,9 @@ function setupDriveControls(){
   // Resets, pauses and focus changes clear the contributing sources as well
   // as the shared input Set, preventing stale input from reappearing later.
   clearDriveInputs=clear;
-  const readyToDrive=code=>{
+  const readyToDrive=()=>{
     if(!freeDriving()||cityLoading||vehicleLoading||document.querySelector('dialog[open]'))return false;
-    if(race&&(race.phase==='finished'||!raceDriveKeys.has(code)))return false;
+    if(race?.phase==='finished')return false;
     if(paused)setPaused(false);
     return true;
   };
@@ -441,7 +439,7 @@ function setupDriveControls(){
     if(!freeDriving()||!DRIVE_KEYS.has(e.code)||editable(e.target)||activatesControl(e)||document.querySelector('dialog[open]')||e.ctrlKey||e.metaKey||e.altKey)return;
     e.preventDefault();
     // Only a new press may take control after a pause, reset or focus change.
-    if(!e.repeat&&readyToDrive(e.code)){keyboardKeys.add(e.code);sync();}
+    if(!e.repeat&&readyToDrive()){keyboardKeys.add(e.code);sync();}
   });
   window.addEventListener('keyup',e=>{
     if(!DRIVE_KEYS.has(e.code))return;
@@ -457,7 +455,7 @@ function setupDriveControls(){
       sync();
     };
     button.addEventListener('pointerdown',e=>{
-      if(!readyToDrive(button.dataset.drive))return;e.preventDefault();$('world').focus({preventScroll:true});
+      if(!readyToDrive())return;e.preventDefault();$('world').focus({preventScroll:true});
       button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{code:button.dataset.drive,button});sync();
     });
     for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,release);
@@ -477,7 +475,7 @@ function drawCityMap(t){
 function updateCityHUD(t){
   $('city-camera').textContent=camera==='orbit'?'◉ 자유':camera==='hood'?'◉ 운전석':'◉ 추적';
   $('city-speed').textContent=Math.round(t.horizontalSpeed*3.6);$('city-gear').textContent=t.horizontalSpeed<.1&&!driveInput.throttle?'N':driveGear;
-  if(race){updateRaceHUD(race);drawCityMap(t);return;}
+  if(race){updateRaceHUD(race,t,driver);drawCityMap(t);return;}
   const near=scene.city?.streetOverlay?.portals?.nearest(sim.state.pos.x,sim.state.pos.z);
   $('race-entrance-hint').hidden=!near;
   if(near){
@@ -589,7 +587,7 @@ function renderGuide(tab='controls'){
   $('guide-content').innerHTML=tab==='sources'?'<p>공기 장치: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md" target="_blank" rel="noopener noreferrer">테슬라 특허·공식 자료와 구현 가정</a></p><p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>2020 Roadster 외형을 포함한 77종에 공통 가상 추진 장치를 적용했습니다. 이 장치는 각 실차의 기본 사양이 아닙니다. 실험 5종은 동일한 375 kg 초기 공기를 사용하며 차체별 분사 위치가 다릅니다. <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>4방식 비교로 자유 낙하·추력 제동·완만한 하강·절약 착지를 같은 조건에서 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 시점 복원 · V: 물리 표시 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 각 차체는 Space로 충분히 상승한 뒤 X를 누르면 분사로 한 바퀴 회전한 뒤 자세를 회복합니다. 질량·관성·높이·기체 조건이 부족하면 시작하지 않습니다. B는 회전을 취소하고 제동합니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. 팬 접지 보조는 지상 가속·제동 때 바닥의 공기를 빼서 접지력을 높이며 배터리를 사용합니다. 공중 부양은 별도의 압축기체 노즐이 담당합니다. 공기 충전을 켜면 정차·분사 종료 후 배터리로 주변 공기를 압축해 탱크를 채웁니다. 충전은 압축에 필요한 일과 냉각을 계산하며 운용 기준인 99%에서 멈춥니다. 300 kW 압축기와 5 kW 냉각 보조장치는 가정값이며 실제 자동차의 탑재 사양이 아닙니다. 화면의 예상 시간은 현재 기체량·온도·배터리를 반영합니다. R은 출발점·탱크·배터리를 초기화하는 시뮬레이션 복귀입니다. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
   if(tab==='controls'&&mode==='city'){
     const info=document.createElement('p');
-    info.textContent='서킷 경주 · 미니맵의 금색 마름모를 찾아 도로에서 역 출입구 쪽으로 들어가세요. AI 3대와 2랩을 달립니다. R은 마지막 통과 지점으로 복귀, 도시로 버튼은 역 출구 옆 도로로 복귀합니다.';
+    info.textContent='서킷 경주 · 미니맵의 금색 마름모를 찾아 도로에서 역 출입구 쪽으로 들어가세요. AI 3대와 2랩을 달립니다. Space 상승, 공중 A/D 옆이동, Q/E 회전, H 높이 유지, F 부스트, X 공중제비를 사용하세요. 하늘색 링은 선택 경로입니다. R은 마지막 통과 지점으로 복귀, 도시로 버튼은 역 출구 옆 도로로 복귀합니다.';
     $('guide-content').prepend(info);
   }
 }
@@ -619,6 +617,11 @@ function setupUI(){
   $('race-recover').addEventListener('click',recoverRace);
   $('race-exit').addEventListener('click',leaveRace);
   $('race-return').addEventListener('click',leaveRace);
+  $('race-land').addEventListener('click',()=>{
+    if(race?.phase!=='racing')return;
+    clearDriveInputs();driver.toggleLandingAssist(sim);setPaused(false);
+    $('world').focus({preventScroll:true});
+  });
   $('race-retry').addEventListener('click',()=>{if(race)startRace(cityReturn.gate);});
   $('city-controls').addEventListener('click',()=>{clearDriveInputs();showCityExperiments(false);const shown=document.body.classList.toggle('show-drive-controls');$('city-controls').setAttribute('aria-pressed',shown);if(shown&&cockpitPanelsOpen)toggleCockpitPanels(false);});
   $('city-camera').addEventListener('click',()=>$('camera').click());

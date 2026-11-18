@@ -154,7 +154,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const asphaltTexture=cityTexture('asphalt'),wallTexture=cityTexture('wall'),concreteTexture=cityTexture('concrete');
   const material=(color,extra={})=>new THREE.MeshStandardMaterial({color,vertexColors:true,roughness:.9,...extra});
   const roadMaterial=material(0xffffff,{map:asphaltTexture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4}),walkMaterial=material(0xffffff,{map:concreteTexture,side:THREE.DoubleSide}),paintMaterial=material(0xffffff,{side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-8}),wallMaterial=material(0xffffff,{map:wallTexture,roughness:.68}),roofMaterial=material(0xffffff);
-  const base=new THREE.Mesh(new THREE.PlaneGeometry(plan.bounds.maxX-plan.bounds.minX+500,plan.bounds.maxZ-plan.bounds.minZ+500),new THREE.MeshStandardMaterial({color:0x92968a,roughness:1}));base.rotation.x=-Math.PI/2;base.position.y=-.04;root.add(base);
+  const base=new THREE.Mesh(new THREE.PlaneGeometry(plan.bounds.maxX-plan.bounds.minX+500,plan.bounds.maxZ-plan.bounds.minZ+500),new THREE.MeshStandardMaterial({color:0x92968a,roughness:1}));base.rotation.x=-Math.PI/2;base.position.y=-.04;base.receiveShadow=true;root.add(base);
   const glassMaterial=material(0xffffff,{map:cityTexture('glass'),roughness:.24,metalness:.28,envMapIntensity:.9});
   const streets=accumulator(),walks=accumulator(),paint=accumulator(),walls=accumulator(),glassWalls=accumulator(),roofs=accumulator();
   const junctionByKey=new Map(plan.junctions.map(j=>[j.point.map(n=>n.toFixed(1)).join(','),j]));

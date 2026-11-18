@@ -25,8 +25,11 @@ test('the visible circuit walls close on both sides and share the solver footpri
   }
   for(let s=0;s<RACE_COURSE.length;s+=2){
     const p=sampleCourse(s);
-    assert.ok(world.obstacles.every(o=>!containsFootprint(o.footprint,p.x,p.z)));
+    assert.ok(world.obstacles.filter(o=>o.footprint).every(o=>!containsFootprint(o.footprint,p.x,p.z)));
   }
+  const header=world.obstacles.find(o=>o.id==='starting-gantry-header');
+  assert.ok(header.center[1]-header.size[1]/2>5.5,'ground traffic passes below the sign');
+  assert.equal(sim.surfaceHeightAt(0,0,1),0,'an overhead sign does not lift the road beneath a car');
   world.dispose();
 });
 

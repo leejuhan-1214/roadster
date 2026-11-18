@@ -57,3 +57,28 @@
 @media (max-width:360px) {
   #race-touch button { min-width:36px; font-size:10px; }
 }
+#race-flight {
+  position:fixed; left:22px; top:calc(var(--race-top) + 67px);
+  border-radius:7px; padding:7px 11px; background:#10202bea;
+  font-size:11px; line-height:1.45; font-variant-numeric:tabular-nums;
+}
+.race-flight-row { display:flex; align-items:center; gap:9px; }
+.race-flight-row+.race-flight-row { margin-top:3px; }
+#race-ring-count { color:#79e6ed; }
+#race-flight-hint { color:#c0d2d8; font-size:10px; }
+#race-land { padding:3px 7px; border:1px solid #6c9a96; border-radius:4px; background:#253b45; }
+#race-land[aria-pressed=true] { color:#10212b; background:#9bf2c7; }
+#race-land[hidden], #race-flight[hidden], #race-touch[hidden] { display:none; }
+@media (pointer:coarse), (max-width:700px), (max-height:560px) and (orientation:landscape) {
+  #race-flight { top:calc(var(--race-top) + 49px); left:9px; padding:4px 7px; font-size:10px; }
+  #race-flight-hint { display:none; }
+  #race-touch .race-pad { flex-direction:column; gap:4px; }
+  #race-touch .race-pad:last-child { align-items:flex-end; }
+  #race-touch button { padding:3px; font-size:10px; }
+  .city.racing .city-map-wrap, .city.racing .city-speedometer { bottom:112px; }
+}
+@media (max-height:440px) and (orientation:landscape) {
+  .city.racing .city-map-wrap { left:auto; right:9px; bottom:auto; top:calc(var(--race-top) + 42px); }
+  .city.racing .city-map-wrap canvas { width:79px; height:64px; }
+  .city.racing .city-speedometer { bottom:108px; padding:3px 8px; }
+}

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-race152';
+import {RACE_COURSE,sampleCourse} from './station-race.js?v=20261118-flight153';
+import {AIR_GATES,airLaneOffset} from './station-race-air.js?v=20261118-flight153';
 
 const halfWidth=RACE_COURSE.width/2;
 const white=0xf1eee1,red=0xc63e37,dark=0x212c32,steel=0x829499,mint=0x5cf2cb;
@@ -71,7 +72,7 @@ function billBoard(root,text,w,h,x,y,z,heading,background,foreground){
 }
 
 // Static gantry, grandstands, grid paint and pit buildings share one draw.
-function facilities(root){
+function facilities(root,obstacles){
   const blocks=[],tmp=new THREE.Object3D();
   function box(x,y,z,l,h,w,color,yaw=0){
     tmp.position.set(x,y,z);tmp.rotation.set(0,yaw,0);tmp.scale.set(l,h,w);tmp.updateMatrix();
@@ -79,6 +80,8 @@ function facilities(root){
   }
   for(const side of [-1,1])box(0,3.2,side*(halfWidth+1.4),.6,6.4,.6,steel);
   box(0,6.4,0,.55,1.4,2*halfWidth+4,dark);
+  for(const side of [-1,1])obstacles.push({id:'starting-gantry-post-'+side,center:[0,3.2,side*(halfWidth+1.4)],size:[.6,6.4,.6]});
+  obstacles.push({id:'starting-gantry-header',center:[0,6.4,0],size:[.55,1.4,2*halfWidth+4]});
   billBoard(root,'STATION CIRCUIT',16,1.35,-.29,6.4,0,0,'#152b30','#9df5dc');
   const columns=32,size=2*halfWidth/columns;
   for(let column=0;column<columns;column++)for(let row=0;row<3;row++)
@@ -209,19 +212,57 @@ function shell(sections){
   g.setIndex(indices);g.computeVertexNormals();return g;
 }
 
+// The aqua marks are optical timing gates, open to aircraft and road cars.
+// All dimensions use the same apertures tested by the sporting logic.
+function airCourse(root){
+  const group=new THREE.Group();group.name='Roadster air route';root.add(group);
+  const frames=[];
+  for(const gate of AIR_GATES){
+    const p=sampleCourse(RACE_COURSE.gates[gate.index].distance,gate.lateral);
+    const frame=new THREE.Group();frame.name='Air gate '+gate.index;frame.position.set(p.x,0,p.z);frame.rotation.y=p.heading;
+    group.add(frame);
+    const parts=[];
+    const bar=(y,z,h,w)=>parts.push(new THREE.BoxGeometry(.16,h,w).translate(0,y,z));
+    for(const sign of [-1,1]){
+      const lateral=sign*(gate.halfWidth+.10);
+      const side=(gate.maxY-gate.minY)/2-.25;
+      for(const edge of [-1,1])bar((gate.minY+gate.maxY)/2+edge*(side/2+.25),lateral,side,.20);
+      bar(gate.maxY+.10,sign*(gate.halfWidth/2+.28),.20,gate.halfWidth-.36);
+      bar(gate.minY-.07,sign*(gate.halfWidth/2+.28),.14,gate.halfWidth-.36);
+    }
+    const geo=mergeGeometries(parts);
+    for(const part of parts)part.dispose();
+    mesh(frame,geo,material(0x54deef,{emissive:0x196c86,emissiveIntensity:.9,roughness:.38}),'Air timing aperture');
+    frames.push(frame);
+  }
+  const dashes=[];
+  for(let distance=0;distance<RACE_COURSE.length;distance+=5){
+    const offset=airLaneOffset(distance,RACE_COURSE.length);
+    if(offset===null)continue;
+    const p=sampleCourse(distance,offset);
+    dashes.push(new THREE.BoxGeometry(1.6,.016,.19).rotateY(p.heading).translate(p.x,.032,p.z));
+  }
+  const path=mergeGeometries(dashes);
+  for(const piece of dashes)piece.dispose();
+  mesh(group,path,material(0x5bb9c8),'Aerial route ground trace');
+  const sign=sampleCourse(RACE_COURSE.length*.355,halfWidth+3.8);
+  billBoard(group,'공중 게이트  ·  SPACE ↑',7.3,1.4,sign.x,3.18,sign.z,sign.heading,'#113746','#94f2ff');
+  return frames;
+}
+
 function rivalCar(color){
   const root=new THREE.Group(),wheels=[];
   root.name='AI GT';
   const paint=material(color,{roughness:.34,metalness:.5}),glass=material(0x20303d,{roughness:.19,metalness:.65});
   const body=mesh(root,shell([[-2.16,.38,.82,.78,.76],[-1.65,.32,.96,.99,.87],[-.55,.31,1.0,.96,.88],[.65,.30,.94,.96,.87],[1.7,.32,.79,.98,.86],[2.2,.39,.64,.81,.75]]),paint,'GT bodywork');
   body.castShadow=true;
-  mesh(root,shell([[-1.55,.91,.92,.80,.78],[-.79,.92,1.39,.82,.58],[-.05,.91,1.4,.83,.60],[.89,.89,.92,.80,.77]]),glass,'Windshield and side glass');
+  mesh(root,shell([[-1.55,.91,.92,.80,.78],[-.79,.92,1.39,.82,.58],[-.05,.91,1.4,.83,.60],[.89,.89,.92,.80,.77]]),glass,'Windshield and side glass').castShadow=true;
   function parts(name,mat,boxes){
     const sources=boxes.map(([x,y,z,l,h,w])=>new THREE.BoxGeometry(l,h,w).translate(x,y,z));
     const geometry=mergeGeometries(sources);sources.forEach(g=>g.dispose());return mesh(root,geometry,mat,name);
   }
-  parts('Roof and rear wing pylons',paint,[[-.42,1.404,0,.8,.05,1.2],[-1.72,.98,-.56,.12,.35,.1],[-1.72,.98,.56,.12,.35,.1]]);
-  parts('Splitter, wing and diffuser',material(0x172024),[[1.92,.32,0,.55,.08,1.85],[-1.85,1.18,0,.45,.095,2.12],[-2.06,.37,0,.32,.14,1.75]]);
+  parts('Roof and rear wing pylons',paint,[[-.42,1.404,0,.8,.05,1.2],[-1.72,.98,-.56,.12,.35,.1],[-1.72,.98,.56,.12,.35,.1]]).castShadow=true;
+  parts('Splitter, wing and diffuser',material(0x172024),[[1.92,.32,0,.55,.08,1.85],[-1.85,1.18,0,.45,.095,2.12],[-2.06,.37,0,.32,.14,1.75]]).castShadow=true;
   parts('Headlamps',material(0xf0f0d9,{emissive:0xbbc9bc,emissiveIntensity:.5}),[[2.13,.64,-.62,.09,.09,.4],[2.13,.64,.62,.09,.09,.4]]);
   parts('Tail lamps',material(red,{emissive:0xff210c,emissiveIntensity:.62}),[[-2.15,.72,-.55,.075,.087,.45],[-2.15,.72,.55,.075,.087,.45]]);
   const tire=new THREE.CylinderGeometry(.345,.345,.26,16);tire.rotateX(Math.PI/2);
@@ -232,7 +273,7 @@ function rivalCar(color){
   for(const x of [1.25,-1.34])for(const side of [-1,1]){
     const pivot=new THREE.Group(),spin=new THREE.Group();root.add(pivot);pivot.add(spin);
     pivot.position.set(x,.345,side*.904);
-    mesh(spin,tire,rubber,'Tyre');mesh(spin,hub,alloy,'Alloy wheel');
+    mesh(spin,tire,rubber,'Tyre').castShadow=true;mesh(spin,hub,alloy,'Alloy wheel');
     wheels.push({pivot,spin,front:x>0});
   }
   return {root,wheels};
@@ -259,7 +300,8 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
     ribbon(root,'Kerb red',paintedRed,...curb,.014,2.8,3,true);
     ribbon(root,'White edge line',paintedWhite,...edge,.018,2);boundary(root,obstacles,side);
   }
-  facilities(root);hills(root);
+  facilities(root,obstacles);hills(root);
+  const airFrames=airCourse(root);
   const grove=tracksideTrees(root,treeLibrary);
   const nextGate=new THREE.Group();nextGate.name='Next checkpoint';root.add(nextGate);
   const markerMaterial=new THREE.MeshBasicMaterial({color:mint});
@@ -273,13 +315,17 @@ export function createStationRaceWorld(roadMaterial,treeLibrary){
     for(let i=0;i<race.rivals.length;i++){
       const rival=race.rivals[i];
       if(!cars[i]){cars[i]=rivalCar(rival.color);root.add(cars[i].root);}
-      const car=cars[i];car.root.name=rival.name;car.root.position.set(rival.x,0,rival.z);car.root.rotation.y=rival.heading;
+      const car=cars[i];car.root.name=rival.name;car.root.position.set(rival.x,rival.heave||0,rival.z);car.root.rotation.y=rival.heading;
       const ahead=sampleCourse(rival.distance+2,rival.lateral);
       const angle=ahead.heading-rival.heading;
-      const steer=Math.atan2(Math.sin(angle),Math.cos(angle))*1.35;
-      for(const {spin,pivot,front} of car.wheels){spin.rotation.z=-rival.distance/.345;pivot.rotation.y=front?steer:0;}
+      const steer=rival.steerAngle??Math.atan2(Math.sin(angle),Math.cos(angle))*1.35;
+      for(const {spin,pivot,front} of car.wheels){spin.rotation.z=-(rival.wheelDistance??rival.distance)/.345;pivot.rotation.y=front?steer:0;}
     }
     const gate=RACE_COURSE.gates[race.nextGate];
+    for(let i=0;i<airFrames.length;i++){
+      const active=race.nextGate===AIR_GATES[i].index;
+      airFrames[i].children[0].material.emissiveIntensity=active?1.6:.55;
+    }
     nextGate.visible=!!gate&&race.phase==='racing';
     if(gate){nextGate.position.set(gate.x,0,gate.z);nextGate.rotation.y=gate.heading;}
   }

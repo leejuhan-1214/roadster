@@ -58,7 +58,7 @@ test('city keyboard and touch controls ignore experiments and text fields and re
 function driveHarness(){
   const source=main.match(/function setupDriveControls\(\)\{[\s\S]*?\n\}\n(?=function drawCityMap)/)[0];
   const keyboard={},documentListeners={},buttons=new Map();
-  for(const code of ['KeyW','KeyA','KeyD']){
+  for(const code of ['KeyW','KeyA','KeyD','Space']){
     const held=new Set(),listeners={};
     buttons.set(code,{dataset:{drive:code},held,listeners,classList:{add(c){held.add(c);},remove(c){held.delete(c);}},
       setPointerCapture(){},addEventListener(type,callback){listeners[type]=callback;}});
@@ -77,6 +77,21 @@ function driveHarness(){
     preventDefault(){this.prevented=true;}});
   return {context,keyboard,documentListeners,buttons,event};
 }
+
+test('the station race accepts held lift and side thrust together and releases them after the finish',()=>{
+  const {context:c,keyboard,buttons,event}=driveHarness();
+  c.race={phase:'racing'};
+  const lift=buttons.get('Space').listeners;
+  lift.pointerdown(event('Space','canvas',5));
+  keyboard.keydown(event('KeyD'));
+  assert.ok(c.driveKeys.has('Space')&&c.driveKeys.has('KeyD'));
+  lift.pointerup(event('Space','canvas',5));
+  assert.deepEqual([...c.driveKeys],['KeyD']);
+  keyboard.keyup(event('KeyD'));
+  c.race.phase='finished';
+  keyboard.keydown(event('Space'));
+  assert.equal(c.driveKeys.size,0);
+});
 
 test('entering city number settings releases held acceleration and steering, then Enter returns driving focus',()=>{
   const {context:c,keyboard:k,documentListeners:d,buttons,event:e}=driveHarness();
