@@ -1,0 +1,88 @@
+{
+  "attribution": "OpenFreeMap © OpenMapTiles · Map data © OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "licenseUrl": "https://www.openstreetmap.org/copyright",
+  "openFreeMap": "https://openfreemap.org/",
+  "openMapTiles": "https://openmaptiles.org/",
+  "projection": {
+    "worldOriginLatLon": [
+      37.4979,
+      127.0276
+    ],
+    "eastMetresPerDegree": 88318.57758398737,
+    "northMetresPerDegree": 111320,
+    "northIsNegativeZ": true
+  },
+  "roadsAndBlocks": {
+    "source": "provenance.json",
+    "coreSource": "../provenance.json",
+    "method": "Real road centrelines clipped to simulation coverage. Surface-road faces enclosing mapped buildings supply generalized urban blocks. These are not cadastral parcels. Underground roads are omitted from the surface map."
+  },
+  "water": {
+    "layer": "OpenMapTiles water, zoom 13",
+    "schema": "https://openmaptiles.org/schema/",
+    "tiles": [
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6985/3173.pbf",
+        "sha256": "1ab9cd727005422e1fda5a9dedf14830d37cf9721c7a8f428f48fbffbf4ea26e"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6985/3174.pbf",
+        "sha256": "837e3fb7992d366c02f36a2168b3c9640ea6c5dddfeddd802ccd761f8075995c"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6985/3175.pbf",
+        "sha256": "f025b5a0839fda3fd064ea7703e6b04163ce8b13853546e7d6c0130ddbfd965d"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6986/3173.pbf",
+        "sha256": "b987263c50f1d83a5d1c87dfba79e3f80752fc477a7f4db7d4c9042b1be0108f"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6986/3174.pbf",
+        "sha256": "0ede2b1a4b7c78d0273bec3d437daa9ab50ce8093b7531f009f8c2bedb702036"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6986/3175.pbf",
+        "sha256": "468d2f275e7489b59df0cc9ccbe458268eef5408a1afe69b22b5f34d065fe066"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6987/3173.pbf",
+        "sha256": "17715851bf56eb633a07c6b8c45d89896454798d667d4d9c9b73309409d906c9"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6987/3174.pbf",
+        "sha256": "ad90b00fe9d42c311e2e5e256611d3d1761d97f4af10ec729bfabe599e05abc2"
+      },
+      {
+        "url": "https://tiles.openfreemap.org/planet/20261115_080022_pt/13/6987/3175.pbf",
+        "sha256": "e681a8509018e4acea37ac83a688b3c72574a82134dd05d65524ce79d79de277"
+      }
+    ],
+    "method": "Tile buffers removed, shorelines dissolved and clipped to playable area, metre-rounded with holes retained."
+  },
+  "bridgesAndPlaces": {
+    "snapshot": "https://download.bbbike.org/osm/bbbike/Seoul/Seoul.osm.geojson.xz",
+    "sha256": "1636b1c963d8a6168ddff76d1ba5cb43470e0309b65b1090750040b1e2cee9af",
+    "originalSourceFeatureOrdinal": {
+      "강남": 54680,
+      "세빛섬": 320147,
+      "영동대교": 768993,
+      "동작대교": 776831,
+      "한남대교": 776832,
+      "동호대교": 830298,
+      "성수대교": 916685,
+      "청담대교": 916686,
+      "반포대교": 955908,
+      "잠수교": 962279
+    },
+    "method": "Bridge centre paths are sampled from mapped deck outlines. Jamsu sits on the lower level of Banpo. Bridge labels are positioned on the Han River crossing. Other landmark anchors lie on a named station point or building/site geometry."
+  },
+  "locationReferences": [
+    "https://hangang.seoul.go.kr/www/contents/663.do?mid=425",
+    "https://hangang.seoul.go.kr/www/contents/657.do?mid=454",
+    "https://www.coex.co.kr/guide/directions/",
+    "https://www.sac.or.kr/site/main/content/guide",
+    "https://www.museum.go.kr/MUSEUM/contents/M0106010000.do?menuId=subway-map"
+  ]
+}

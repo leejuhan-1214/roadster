@@ -14,7 +14,8 @@ import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-phys
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {LandingPlanner} from './landing-preparation.js?v=20261118-city151';
-import {drawMappedStreets} from './city-minimap.js?v=20261118-race152';
+import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261118-atlas156';
+import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace} from './station-race.js?v=20261118-circuit155';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261118-circuit155';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-circuit155';
@@ -39,6 +40,8 @@ const compactCityViewport=matchMedia('(max-width:700px), (max-height:560px) and 
 let cityLoading=false,modeEpoch=0,cityDistance=0,driveInput={},driveGear='D';
 let citySettings=normalizeCityExperiment({});
 const brakeTrial=new CityBrakeTrial();
+const mapSession=new DriveMapSession();
+let mapPanel,cityPoseReady=false;
 const driveKeys=new Set(),worldUp=new Vector3(0,1,0);
 let driver=new DrivingController(),race=null,cityReturn=null;
 const previousCityPosition=new Vector3();
@@ -71,6 +74,7 @@ function startRace(gate){
   if(mode!=='city'||cityLoading||vehicleLoading)return;
   if(!race){
     brakeTrial.cancel('paused');
+    mapSession.sample(sim.state.pos.x,sim.state.pos.z);mapSession.breakPath();
     cityReturn={gate,sim,driver,distance:cityDistance};
     scene.city.streaming?.bindPhysics(null);
     showCityExperiments(false);cockpitPanelsOpen=false;
@@ -79,6 +83,7 @@ function startRace(gate){
   sim=new PhysicsSim({...cityReturn.sim.params,...CITY_DRIVE_PARAMS,roadRoughness:0});
   driver=new DrivingController();cityDistance=0;
   scene.setStationRace(race);sim.setObstacles(scene.raceWorld.obstacles);
+  mapPanel.setRaceActive(true);
   parkAt(race.startPose);setPaused(false);
   showRaceHUD(true);updateRaceHUD(race,sim.telemetry(),driver);
   $('world').setAttribute('aria-label','AI 차량 3대와 달리는 4.381 km 서킷 · 매 랩 공중 링 3개 필수');
@@ -96,6 +101,7 @@ function leaveRace(){
   scene.setStationRace(null);scene.city.streaming?.bindPhysics(sim);
   const exit=gate.returnPose;
   parkAt({x:exit.position[0],z:exit.position[2],heading:exit.heading});
+  mapSession.sample(sim.state.pos.x,sim.state.pos.z);mapPanel.setRaceActive(false);
   scene.city.streetOverlay?.portals?.suppress(gate);
   showRaceHUD(false);setPaused(false);
   $('world').setAttribute('aria-label','강남역 실제 도로 기반 자유 주행');
@@ -115,7 +121,7 @@ function cancelLanding(message='실험 준비'){
   if(session.kind==='ballast')updateLabMass();
   landingUI.setBusy(false,message);$('vehicle-select').disabled=vehicleLoading;setPaused(true);
 }
-function reset({cancel=true,clearMeasurement=true}={}){
+function reset({cancel=true,clearMeasurement=true,restoreCityPlace=false}={}){
   if(race){recoverRace();return;}
   if(cancel)cancelLanding();
   clearDriveInputs();driver.reset();driveInput={};cityDistance=0;brakeTrial.reset({keepResults:true});
@@ -131,7 +137,12 @@ function reset({cancel=true,clearMeasurement=true}={}){
   sim.setObstacles(obstacles);scene.city?.streaming?.bindPhysics(mode==='city'?sim:null);sim.reset('ground');
   if(mode==='city'&&scene.city){
     scene.city.streetOverlay?.portals?.reset();
-    const spawn=scene.city.spawn;sim.state.pos.x=spawn.position[0];sim.state.pos.z=spawn.position[2];sim.state.q.setFromAxisAngle(worldUp,spawn.heading);
+    const savedDistance=restoreCityPlace?mapSession.restore(sim):null;
+    if(savedDistance===null){
+      const spawn=scene.city.spawn;sim.state.pos.x=spawn.position[0];sim.state.pos.z=spawn.position[2];sim.state.q.setFromAxisAngle(worldUp,spawn.heading);
+      mapSession.breakPath();
+    }else cityDistance=savedDistance;
+    mapSession.sample(sim.state.pos.x,sim.state.pos.z);cityPoseReady=true;
     scene.frameCityStart(sim);
   }
   if(clearMeasurement)lastResult=null;
@@ -255,13 +266,14 @@ function vehicleCredit(p){return '<a href="'+escape(p.source)+'" target="_blank"
 async function selectVehicle(id,{forLanding=false}={}){
   if(vehicleLoading)return false;
   if(race)return false;
+  if(mode==='city'&&cityPoseReady)mapSession.remember(sim,cityDistance);
   if(!forLanding)cancelLanding();
   const profile=vehicleProfile(id);vehicleLoading=true;setPaused(true);$('vehicle-select').disabled=true;$('city-vehicle-select').disabled=true;
   $('model-status').hidden=false;$('model-status').textContent=profile.short+' 불러오는 중…';
   try{
     vehicleLoadTask=scene.loadVehicle(profile);const vehicle=await vehicleLoadTask;activeVehicle=profile;
     if(mode==='lab'&&experimentIds.has(profile.id))lastLabVehicleId=profile.id;
-    Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),{roadRoughness:0,aeroEnabled:false});reset({cancel:false});
+    Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),{roadRoughness:0,aeroEnabled:false});reset({cancel:false,restoreCityPlace:mode==='city'});
     selectedPartId=null;$('part-card').hidden=true;$('part-search').value='';
     $('vehicle-title').innerHTML=escape(profile.brand)+' <em>'+escape(profile.model)+'</em>';
     $('model-status').hidden=mode==='lab';$('model-status').textContent=profile.reference;$('vehicle-credit').innerHTML=vehicleCredit(profile);$('city-credit').innerHTML=vehicleCredit(profile);
@@ -275,6 +287,8 @@ async function selectVehicle(id,{forLanding=false}={}){
 async function setMode(next){
   if(next===mode||!['lab','inspect','city'].includes(next))return;
   if(race)leaveRace();
+  if(mode==='city'&&cityPoseReady)mapSession.remember(sim,cityDistance);
+  cityPoseReady=false;mapPanel.close();
   const previousMode=mode,epoch=++modeEpoch;cancelLanding();clearDriveInputs();driver.reset();mode=next;cityLoading=mode==='city'&&!scene.city;
   camera=mode==='city'?'chase':'orbit';setPaused(true);
   scene.setMode(mode);scene.setCamera(camera);scene.focusPart(null);
@@ -285,7 +299,8 @@ async function setMode(next){
   $('panel-toggle').textContent=mode==='inspect'?'☷ 부품 목록':'☷ 실험 설정';$('camera-label').textContent=cameraLabel();
   $('world').setAttribute('aria-label',mode==='city'?'강남역 실제 도로 기반 자유 주행':'착지 충격과 차체 구조를 관찰하는 3D 공간');
   if(mode==='city'){
-    try{await scene.loadCity();if(epoch!==modeEpoch)return;cityLoading=false;$('city-loading').hidden=true;reset({cancel:false});$('world').focus({preventScroll:true});}
+    mapPanel.load();
+    try{await scene.loadCity();if(epoch!==modeEpoch)return;cityLoading=false;$('city-loading').hidden=true;reset({cancel:false,restoreCityPlace:true});$('world').focus({preventScroll:true});}
     catch(error){if(epoch===modeEpoch){cityLoading=false;console.error(error);setMode('lab');toast('도시를 불러오지 못했습니다. 다시 시도해 주세요.');}return;}
   }else{
     cityLoading=false;if(vehicleLoadTask)await vehicleLoadTask.catch(()=>{});if(epoch!==modeEpoch)return;
@@ -497,14 +512,12 @@ function setupDriveControls(){
 }
 function drawCityMap(t){
   const city=scene.city;if(!city)return;
-  const canvas=$('city-map'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  if(race){drawRaceMap($('city-map').getContext('2d'),race,sim.state.pos,t.attitude.yaw);return;}
+  if(!cityPoseReady)return;
   const x=sim.state.pos.x,z=sim.state.pos.z;
-  if(race){drawRaceMap(ctx,race,sim.state.pos,t.attitude.yaw);return;}
-  drawMappedStreets(ctx,city.roads,x,z);
-  city.streetOverlay?.portals?.drawMap(ctx,x,z);
-  ctx.save();ctx.translate(w/2,h/2);
-  ctx.rotate(Math.PI/2-t.attitude.yaw);ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(-6,6);ctx.lineTo(0,3);ctx.lineTo(6,6);ctx.closePath();ctx.fillStyle='#8bffe0';ctx.fill();ctx.restore();
-  ctx.font='bold 12px sans-serif';ctx.fillStyle='#dce7e9';ctx.fillText('N',w-17,18);
+  mapSession.sample(x,z);
+  mapPanel.update({x,z,yaw:t.attitude.yaw,route:mapSession.segments,routeRevision:mapSession.revision,
+    roads:city.roads,portals:city.streetOverlay?.portals,cells:city.streetOverlay?.cells});
 }
 function updateCityHUD(t){
   $('city-camera').textContent=camera==='orbit'?'◉ 자유':camera==='hood'?'◉ 운전석':'◉ 추적';
@@ -622,6 +635,9 @@ function renderGuide(tab='controls'){
   $('guide-content').innerHTML=tab==='sources'?'<p>AI 경주차 외형은 Lexyc16의 <a href="https://sketchfab.com/3d-models/none-db9a5f7ae9d84a0fb01cac96afe3e69c" target="_blank" rel="noopener noreferrer">Nissan Z Proto</a>이며 축척·도색·바퀴 회전을 적용했습니다. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></p><p>공기 장치: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md" target="_blank" rel="noopener noreferrer">테슬라 특허·공식 자료와 구현 가정</a></p><p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>2020 Roadster 외형을 포함한 77종에 공통 가상 추진 장치를 적용했습니다. 이 장치는 각 실차의 기본 사양이 아닙니다. 실험 5종은 동일한 375 kg 초기 공기를 사용하며 차체별 분사 위치가 다릅니다. <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>4방식 비교로 자유 낙하·추력 제동·완만한 하강·절약 착지를 같은 조건에서 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 시점 복원 · V: 물리 표시 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 각 차체는 Space로 충분히 상승한 뒤 X를 누르면 분사로 한 바퀴 회전한 뒤 자세를 회복합니다. 질량·관성·높이·기체 조건이 부족하면 시작하지 않습니다. B는 회전을 취소하고 제동합니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. 팬 접지 보조는 지상 가속·제동 때 바닥의 공기를 빼서 접지력을 높이며 배터리를 사용합니다. 공중 부양은 별도의 압축기체 노즐이 담당합니다. 공기 충전을 켜면 정차·분사 종료 후 배터리로 주변 공기를 압축해 탱크를 채웁니다. 충전은 압축에 필요한 일과 냉각을 계산하며 운용 기준인 99%에서 멈춥니다. 300 kW 압축기와 5 kW 냉각 보조장치는 가정값이며 실제 자동차의 탑재 사양이 아닙니다. 화면의 예상 시간은 현재 기체량·온도·배터리를 반영합니다. R은 출발점·탱크·배터리를 초기화하는 시뮬레이션 복귀입니다. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
   if(tab==='controls'&&mode==='city'){
     const info=document.createElement('p');
+    const mapHelp=document.createElement('p');
+    mapHelp.textContent='서울 지도 · 미니맵 또는 M을 눌러 한강·다리·랜드마크와 주행 경로를 봅니다. 드래그로 이동하고 휠 또는 두 손가락으로 확대합니다. 내 차를 누르면 현재 위치로 지도가 돌아옵니다.';
+    $('guide-content').append(mapHelp);
     info.textContent='서킷 경주 · 미니맵의 금색 마름모를 찾아 도로에서 역 출입구 쪽으로 들어가세요. AI 3대와 2랩을 달립니다. Space 상승, 공중 A/D 옆이동, Q/E 회전, H 높이 유지, F 부스트, X 공중제비를 사용하세요. 한 랩은 4.381 km로 14개 코너를 돕니다. 매 랩 약 2 km 지점에서 Space로 이륙해 하늘색 링 3개를 순서대로 지나세요. 지상 우회로는 인정되지 않으며 놓치면 이륙 전으로 복귀합니다. R은 마지막 통과 지점으로 복귀, 도시로 버튼은 역 출구 옆 도로로 복귀합니다.';
     $('guide-content').prepend(info);
   }
@@ -642,6 +658,14 @@ function setSettingsPanel(open){
   scene.inspectionViewport();
 }
 function setupUI(){
+  mapPanel=createSeoulMapPanel({
+    beforeOpen(){
+      if(mode!=='city'||!cityPoseReady||vehicleLoading||race)return false;
+      clearDriveInputs();accumulator=0;renderStates.reset(sim);drawCityMap(sim.telemetry());
+      return true;
+    },
+    afterClose(){if(mode==='city')$('world').focus({preventScroll:true});}
+  });
   for(const stroke of ENGINE_STROKES){
     const label=document.createElement('span');
     label.style.setProperty('--stroke-color',stroke.color);
@@ -747,7 +771,8 @@ function setupUI(){
   window.addEventListener('keydown',e=>{
     if(e.code==='Escape'&&!document.querySelector('dialog[open]')){e.preventDefault();$('left-panel').classList.remove('open');if(mode==='city'&&cockpitPanelsOpen)toggleCockpitPanels(false);showCityExperiments(false);$('world').focus({preventScroll:true});return;}
     if(e.metaKey||e.ctrlKey||e.altKey||e.repeat||e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;
-    if(e.code==='KeyP'&&(landingRun||freeDriving())){e.preventDefault();setPaused(!paused);}
+    if(e.code==='KeyM'&&mode==='city'&&!race){e.preventDefault();mapPanel.open();}
+    else if(e.code==='KeyP'&&(landingRun||freeDriving())){e.preventDefault();setPaused(!paused);}
     else if(e.code==='KeyR')$('reset').click();else if(e.code==='KeyC')$('camera').click();else if(e.code==='KeyV')$('vectors').click();
     else if(e.code==='Escape'){$('left-panel').classList.remove('open');showCityExperiments(false);}
   });
@@ -761,6 +786,7 @@ function animate(stamp){
   requestAnimationFrame(animate);
   if(document.hidden)return;
   const frameMs=lastStamp?stamp-lastStamp:1000/60,elapsed=Math.min(frameMs/1000,.1);lastStamp=stamp;
+  if(mapPanel?.isOpen)return;
   const blocked=!!document.querySelector('dialog[open]');
   if(blocked&&landingLiftHeld)clearLandingLift();
   if(mode==='city'&&!race)scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z,sim.state.vel.x,sim.state.vel.z);
@@ -795,6 +821,6 @@ try{
     else if(mode==='lab')landingPlanner.warm();
   });
   // ?debug exposes the running objects for inspection; it changes no behaviour.
-  if(new URLSearchParams(location.search).has('debug'))window.__roadster={get sim(){return sim;},scene,get driver(){return driver;},get race(){return race;},driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
+  if(new URLSearchParams(location.search).has('debug'))window.__roadster={get sim(){return sim;},scene,mapSession,get driver(){return driver;},get race(){return race;},driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
   $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
 }catch(error){console.error(error);$('boot-message').textContent='3D 화면을 시작하지 못했습니다. WebGL을 지원하는 브라우저에서 새로고침해 주세요.';}
