@@ -72,6 +72,7 @@ function driveHarness(){
   context.landingSession={};context.freeDriving=()=>context.mode==='city'||(context.mode==='lab'&&!context.landingSession);
   runInNewContext(source+'\nsetupDriveControls();',context);
   const event=(code,type='canvas',pointerId=1)=>({code,pointerId,target:{
+    closest(){return type==='button'||type==='summary'?this:null;},
     matches(selector){return selector==='input[type="number"]'?type==='number':['number','text','select','checkbox'].includes(type);}},
     preventDefault(){this.prevented=true;}});
   return {context,keyboard,documentListeners,buttons,event};
@@ -122,4 +123,32 @@ test('reset, pause and focus clear all input sources without stale key resurrect
 
 test('lab free driving is enabled before a trial and blocked when a controlled session starts',()=>{
  const {context:c,keyboard:k,event:e}=driveHarness();c.mode='lab';c.landingSession=null;k.keydown(e('KeyW'));assert.ok(c.driveKeys.has('KeyW'));c.clearDriveInputs();c.landingSession={};k.keydown(e('KeyW'));assert.equal(c.driveKeys.size,0);
+});
+
+test('held-key repeats cannot resume paused driving or reapply controls after losing focus',()=>{
+  const {context:c,keyboard:k,buttons,event:e}=driveHarness();
+  k.keydown(e('KeyW'));
+  c.paused=true;c.clearDriveInputs();
+  k.keydown({...e('KeyW'),repeat:true});
+  assert.equal(c.paused,true);
+  assert.equal(c.driveKeys.size,0);
+  const steer=buttons.get('KeyA');
+  steer.listeners.pointerdown(e('','canvas',7));
+  k.keydown({...e('KeyW'),repeat:true});
+  assert.deepEqual([...c.driveKeys],['KeyA']);
+  k.keyup(e('KeyW'));k.keydown(e('KeyW'));k.keydown({...e('KeyW'),repeat:true});
+  assert.deepEqual([...c.driveKeys].sort(),['KeyA','KeyW']);
+  k.blur();k.keydown({...e('KeyW'),repeat:true});
+  assert.equal(c.driveKeys.size,0);
+});
+
+test('Space activates focused interface controls and still lifts when the driving view has focus',()=>{
+  const {context:c,keyboard:k,event:e}=driveHarness();
+  for(const target of ['button','summary']){
+    const press=e('Space',target),release=e('Space',target);
+    k.keydown(press);assert.equal(c.driveKeys.size,0);assert.ok(!press.prevented);
+    k.keyup(release);assert.ok(!release.prevented);
+  }
+  k.keydown(e('Space'));assert.ok(c.driveKeys.has('Space'));
+  k.keyup(e('Space'));assert.equal(c.driveKeys.size,0);
 });

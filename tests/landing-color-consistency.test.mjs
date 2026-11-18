@@ -18,7 +18,7 @@ test('one trial keeps its color in table, force trace, both scatter plots and st
   LandingUI.prototype.renderChart.call(ui,rows);
   const traceColors=[...querySelector('#landing-force-chart').innerHTML.matchAll(/<polyline fill="none" stroke="(#[0-9a-f]{6})"/g)].map(match=>match[1]);
   assert.deepEqual(tableColors,traceColors);
-  const brakeColor=tableColors[1],label='지면 전 추력 제동 · 2.25 m;';
+  const brakeColor=tableColors[1],label='지면 전 추력 제동 · 2.25 m 설정;';
   assert.equal(colorOfPoint(landingResearchPlot(rows,{kind:'gas'}),label),brakeColor);
   assert.equal(colorOfPoint(landingResearchPlot(rows,{kind:'height',baseline:rows[0]}),label),brakeColor);
   assert.equal(colorOfPoint(landingResearchPlot(rows.slice(1),{kind:'gas',candidates:[rows[1]]}),label),brakeColor);

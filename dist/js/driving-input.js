@@ -2,7 +2,8 @@
 // braking, so a full battery still slows the car using the wheel brakes.
 // All speed changes continue through tire forces and the rigid-body solver.
 import {isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
-import {RocketRollController} from './rocket-flight.js?v=20261118-audit148';
+import {RocketRollController} from './rocket-flight.js?v=20261118-review149';
+import {rideHeightAboveSurface} from './road-surface.js?v=20261118-review149';
 export const CITY_DRIVE_PARAMS=Object.freeze({
   friction:1.15,rollingResistance:.015,aeroEnabled:true,dragScale:1,
   roadRoughness:.15,windX:0,windZ:0,tractionControl:true,absEnabled:true,
@@ -43,10 +44,10 @@ export class DrivingController {
     if(this.landingAssist&&hasSettledSupport(sim)&&Math.abs(sim.state.vel.y)<.2&&Math.hypot(sim.state.vel.x,sim.state.vel.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
     return this.landingAssist;
   }
-  toggleAltitudeHold(sim){
+  toggleAltitudeHold(sim,clearance=rideHeightAboveSurface(sim)){
     this.landingAssist=false;this.landingStatus='idle';
     this.altHold=!this.altHold;
-    if(this.altHold)this.targetHeight=Math.max(.8,sim.state.pos.y-sim.restHeight);
+    if(this.altHold)this.targetHeight=Math.max(.8,clearance);
     return this.altHold;
   }
   update(keys,sim,dt){
@@ -56,12 +57,11 @@ export class DrivingController {
     const supported=sim.contactCount>0||hasBodySupport(sim);
     const manualFlight=activeManeuver||!!lift||held(keys,'KeyB','KeyH')||(supported&&held(keys,'ShiftLeft','ShiftRight'));
     if(this.landingAssist&&manualFlight){this.landingAssist=false;this.landingStatus='manual';}
-    if(holdKey&&!this._holdKey)this.toggleAltitudeHold(sim);
+    const clearance=!supported||this.landingAssist||this.altHold||holdKey?rideHeightAboveSurface(sim):0;
+    if(holdKey&&!this._holdKey)this.toggleAltitudeHold(sim,clearance);
     this._holdKey=holdKey;
     // Re-enter ground controls on either tire or hull support. Compare clearance
     // to the local road, so a raised road is not mistaken for free flight.
-    const surface=!supported||this.landingAssist?(sim.surfaceHeightAt?.(sim.state.pos.x,sim.state.pos.z,sim.state.pos.y-sim.restHeight)||0):0;
-    const clearance=sim.state.pos.y-sim.restHeight-surface;
     if(supported)this.airborne=false;
     else if(clearance>.08)this.airborne=true;
     // Quaternion-rotated local +X, projected onto actual world velocity.
@@ -142,7 +142,7 @@ export class DrivingController {
         input.stabilize=false;input.verticalAcceleration=-sim.params.gravity;
       }else input.verticalAcceleration=clamp(8*(targetVelocity-velocity.y),-sim.params.gravity,1.1*sim.params.gravity);
     }
-    else if(holding)input.verticalAcceleration=clamp(24*(this.targetHeight+sim.restHeight-sim.state.pos.y)-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
+    else if(holding)input.verticalAcceleration=clamp(24*(this.targetHeight-clearance)-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
     else if(airBrake&&!lift)input.verticalAcceleration=clamp(-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
     else if(this.flightAssist&&this.airborne&&!lift&&activeManeuver){
       // Direction keys need carrier thrust: a gimbal angle alone produces no

@@ -64,7 +64,7 @@ export class CockpitView {
     const steer=((view.wheels?.[0]?.steer||0)+(view.wheels?.[1]?.steer||0))/2;
     this.steering?.quaternion.setFromAxisAngle(this.steeringAxis,-clamp(steer*14,-Math.PI*2.4,Math.PI*2.4));
     this.forward.set(1,0,0).applyQuaternion(q);const signed=v.dot(this.forward),speed=Math.hypot(v.x,v.z)*3.6;
-    this.interior.update?.({speed,gear:signed<-.3?'R':speed>1?'D':'N',height:telemetry.altitude||0,powerKW:(telemetry.electricPowerW||0)/1000,gasFraction:clamp((telemetry.gasPct??100)/100,0,1)});
+    this.interior.update?.({speed,gear:signed<-.3?'R':speed>1?'D':'N',height:telemetry.heightAboveSurface??telemetry.altitude??0,powerKW:(telemetry.electricPowerW||0)/1000,gasFraction:clamp((telemetry.gasPct??100)/100,0,1)});
     return pose;
   }
   releaseGeometry(){

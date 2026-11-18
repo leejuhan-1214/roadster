@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PhysicsSim} from '../dist/js/physics.js';
 import {DrivingController,CITY_DRIVE_PARAMS} from '../dist/js/driving-input.js';
+import {rideHeightAboveSurface} from '../dist/js/road-surface.js';
 
 const STEP=.002,keys=(...codes)=>new Set(codes);
+const platform={id:'deck',center:[0,7.5,0],size:[35,1,35]};
 // Preserve the original DB11 support geometry that exposed this bug, even when
 // its imported collision bounds change. The hull can rest below all four tires.
 const LOW_HULL={...CITY_DRIVE_PARAMS,aeroEnabled:false,roadRoughness:0,dryMass:1950,
@@ -16,6 +18,37 @@ const LOW_HULL={...CITY_DRIVE_PARAMS,aeroEnabled:false,roadRoughness:0,dryMass:1
 function advance(sim,control,input,seconds){
   for(let n=0;n<seconds/STEP;n++)sim.step(STEP,control.update(input,sim,STEP));
 }
+
+test('capturing H or entering 2 m above a deck uses the same local height as the city instruments',()=>{
+  const sim=new PhysicsSim({...CITY_DRIVE_PARAMS,roadRoughness:0}),control=new DrivingController();
+  sim.setObstacles([platform]);sim.reset('flight');sim.state.vel.set(0,0,0);
+  sim.state.pos.y=sim.restHeight+10;
+  const hover=control.update(keys('KeyH'),sim,STEP);
+  assert.equal(hover.targetHeight,2);assert.equal(hover.verticalAcceleration,0);
+  assert.equal(sim.telemetry().heightAboveSurface,hover.targetHeight);
+  control.setAltitudeTarget(2);
+  sim.state.pos.y-=.2;assert.ok(control.update(keys(),sim,STEP).verticalAcceleration>4);
+  sim.state.pos.y+=.4;assert.ok(control.update(keys(),sim,STEP).verticalAcceleration < -4);
+  sim.state.pos.y=sim.restHeight+2;
+  assert.equal(rideHeightAboveSurface(sim),2,'a deck overhead is not the supporting road');
+  sim.state.pos.x=20;sim.state.pos.y+=8;
+  assert.equal(rideHeightAboveSurface(sim),10,'the ground outside the deck footprint is lower');
+});
+
+test('direct hover commands on flat ground and an 8 m deck follow the same physical trajectory',()=>{
+  for(const height of [2,30]){
+    const flat=new PhysicsSim({roadRoughness:0}),raised=new PhysicsSim({roadRoughness:0});
+    raised.setObstacles([platform]);
+    for(const [sim,base] of [[flat,0],[raised,8]]){
+      sim.reset('flight');sim.state.pos.y=sim.restHeight+base+height;sim.state.vel.set(0,0,0);
+      for(let i=0;i<300;i++)sim.step(STEP,{altHold:true,targetHeight:height,stabilize:true});
+      assert.ok(sim.state.gasUsed>1,'height hold requires actual gas');
+      assert.ok(Math.abs(rideHeightAboveSurface(sim)-height)<.15);
+    }
+    assert.ok(Math.abs(raised.state.pos.y-flat.state.pos.y-8)<1e-9);
+    assert.ok(Math.abs(raised.state.gas-flat.state.gas)<1e-9);
+  }
+});
 
 test('a hull-supported car never spends cold gas merely to remain parked',()=>{
   for(const roadRoughness of [0,.15]){

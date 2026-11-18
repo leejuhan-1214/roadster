@@ -48,7 +48,7 @@ export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
 
 /** Minimum unloaded tire-to-ground gap, unaffected by static spring sag. */
 export function landingClearance(sim){
-  return Math.min(...sim.wheels.map(w=>w.pos.clone().applyQuaternion(sim.state.q).y+sim.state.pos.y-sim.params.wheelRadius));
+  return Math.min(...sim.wheels.map(w=>w.pos.clone().applyQuaternion(sim.state.q).y+sim.state.pos.y-sim.params.wheelRadius-(w.surfaceY??0)));
 }
 
 /** Resets the supplied vehicle using shared controlled environmental conditions. */
@@ -96,7 +96,7 @@ export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
     ecoPlannedBrakeHeight:economy?.brakeHeight??null,ecoPredictedTouchdownSpeed:economy?.predictedSpeed??null,
     ecoPredictedGas:economy?.predictedGas??null,ecoPlanFeasible:economy?.feasible??null,
     ecoPredictedTouchdownGas:economy?.predictedTouchdownGas??null,ecoProfile:economy?.profile??null,
-    ecoCoastOnly:economy?.coastOnly??false,autoBrakeHeight:null,ecoCoastTime:null,
+    ecoCoastOnly:economy?.coastOnly??false,autoBrakeHeight:null,autoBrakeTime:null,ecoCoastTime:null,
     ecoMinimumCoastTime:economy?.minimumCoastTime??null,
     ecoPlanTimeMs,
     touchdownTime:null,touchdownSpeed:null,contactDuration:null,contactEndTime:null,contactEndVelocityY:null,
@@ -120,12 +120,14 @@ export function landingRunInput(run,sim,manualLift=false){
     // Manual thrust changes the planned trajectory. On release, use feedback
     // immediately; measurements retain the manual-input marker for fair comparison.
     if(!run.braking&&(gap<=run.ecoPlannedBrakeHeight||run.manualLiftUsed)){
-      run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.ecoCoastTime=run.elapsed;
+      run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.autoBrakeTime=run.elapsed;run.ecoCoastTime=run.elapsed;
     }
     if(!run.braking)return off;
     return {...off,stabilize:true,verticalAcceleration:economyAcceleration(gap,velocity,run.targetSpeed,g,sim.params.valveTau)};
   }
-  if(run.method==='brake'&&gap<=run.brakeHeight)run.braking=true;
+  if(run.method==='brake'&&!run.braking&&gap<=run.brakeHeight){
+    run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.autoBrakeTime=run.elapsed;
+  }
   if(run.method==='brake'&&!run.braking)return off;
   // Anticipate valve delay without changing actual velocity. A braking run waits
   // for the chosen clearance; gentle descent starts shaping speed immediately.

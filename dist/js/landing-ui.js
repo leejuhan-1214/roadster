@@ -8,7 +8,14 @@ const heightNumber = value => Number.isFinite(value)?String(Number(value.toPreci
 const csvCell = value => '"'+String(value??'').replace(/"/g,'""')+'"';
 const isLanded = result => result.status==='landed'&&result.settled!==false&&Number.isFinite(result.touchdownSpeed);
 const label = result => result.vehicleTitle||result.title||result.vehicleId||'차체';
-const methodLabel = result => (result.manualLiftUsed?'수동 Space · ':'')+(METHODS[result.method]||result.method)+(result.method==='brake'?' · '+heightNumber(result.brakeHeight)+' m':'');
+const commandMetres=value=>String(Number(value.toPrecision(4)))+' m';
+function methodLabel(result){
+  const name=(result.manualLiftUsed?'수동 Space · ':'')+(METHODS[result.method]||result.method);
+  if(result.method!=='brake')return name;
+  const setting=' · '+heightNumber(result.brakeHeight)+' m 설정';
+  if(Number.isFinite(result.autoBrakeHeight))return name+setting+' · '+commandMetres(result.autoBrakeHeight)+' 명령';
+  return name+setting+(result.autoBrakeTime===null?' · 접촉 전 자동 명령 없음':'');
+}
 export const LANDING_HISTORY_LIMIT=78;
 
 /** Trial identity, not filtered position, owns the color across every chart.
@@ -21,33 +28,38 @@ export function landingResultColor(result={}){
 
 /** Each point is a measured trial. The x axis is never a categorical rank. */
 export function landingResearchPlot(rows,{kind='gas',candidates=[],baseline=null}={}){
+  // Old recordings contain only the requested threshold. A plot has one
+  // horizontal quantity throughout, including when old and new rows coexist.
+  const measuredHeight=kind==='height'&&rows.some(row=>row.method==='brake'&&Object.hasOwn(row,'autoBrakeTime'));
+  const heightAxis=measuredHeight?'자동 제동 명령 높이':'제동 설정 높이';
+  const heightKey=measuredHeight?'autoBrakeHeight':'brakeHeight';
   const points=rows.filter(row=>Number.isFinite(row.peakEquivalentGroundForceN)&&Number.isFinite(row.touchdownSpeed)&&(kind!=='height'||row.method==='brake'))
-    .map(row=>({row,x:kind==='height'?row.brakeHeight:row.gasUsed,y:row.peakEquivalentGroundForceN/1000}))
+    .map(row=>({row,x:kind==='height'?row[heightKey]:row.gasUsed,y:row.peakEquivalentGroundForceN/1000}))
     .filter(point=>Number.isFinite(point.x)&&point.x>=0&&Number.isFinite(point.y)&&point.y>=0);
-  if(!points.length)return '<p class="landing-note">'+(kind==='height'?'제동 높이 비교를 실행하면 측정 지점이 표시됩니다.':'첫 접촉을 측정한 결과가 없습니다.')+'</p>';
+  if(!points.length)return '<p class="landing-note">'+(kind==='height'?(measuredHeight?'접촉 전 자동 제동 명령 높이가 기록된 지점이 없습니다.':'제동 높이 비교를 실행하면 측정 지점이 표시됩니다.'):'첫 접촉을 측정한 결과가 없습니다.')+'</p>';
   const W=600,H=285,pad={left:75,right:25,top:30,bottom:57},width=W-pad.left-pad.right,height=H-pad.top-pad.bottom;
   const xMax=Math.min(Number.MAX_VALUE,Math.max(.1,...points.map(point=>point.x))*1.12);
   const baselineForce=kind==='height'&&Number.isFinite(baseline?.peakEquivalentGroundForceN)?baseline.peakEquivalentGroundForceN/1000:0;
   const yMax=Math.min(Number.MAX_VALUE,Math.max(1,baselineForce,...points.map(point=>point.y))*1.12);
   const x=value=>pad.left+value/xMax*width,y=value=>pad.top+height-value/yMax*height;
   const tick=value=>Math.abs(value)>=10000?value.toExponential(1):number(value,value>=100?0:value>=10?1:2);
-  const title=kind==='height'?'제동 시작 높이와 최대 등가반력':'기체 사용량과 최대 등가반력';
-  let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+title+'"><title>'+title+'</title><desc>가로축 '+(kind==='height'?'제동 시작 높이, 미터':'기체 사용량, 킬로그램')+'; 세로축 최대 등가반력, 킬로뉴턴. 원은 안정 착지, 엑스는 조건 미충족, 바깥 원은 충격과 기체 소비의 절충 후보입니다.</desc>';
+  const title=kind==='height'?heightAxis+'와 최대 등가반력':'기체 사용량과 최대 등가반력';
+  let svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+title+'"><title>'+title+'</title><desc>가로축 '+(kind==='height'?heightAxis+', 미터':'기체 사용량, 킬로그램')+'; 세로축 최대 등가반력, 킬로뉴턴. 원은 안정 착지, 엑스는 조건 미충족, 바깥 원은 충격과 기체 소비의 절충 후보입니다.</desc>';
   for(let i=0;i<=4;i++){
     const vx=xMax*i/4,vy=yMax*i/4;
     svg+='<line class="landing-grid" x1="'+pad.left+'" x2="'+(W-pad.right)+'" y1="'+y(vy)+'" y2="'+y(vy)+'"/><text x="'+(pad.left-12)+'" y="'+(y(vy)+4)+'" text-anchor="end">'+tick(vy)+'</text><text x="'+x(vx)+'" y="'+(H-31)+'" text-anchor="middle">'+tick(vx)+'</text>';
   }
-  svg+='<text x="'+pad.left+'" y="15">최대 등가반력 · kN</text><text x="'+(pad.left+width/2)+'" y="'+(H-7)+'" text-anchor="middle">'+(kind==='height'?'제동 시작 높이 · m':'기체 사용량 · kg')+'</text>';
+  svg+='<text x="'+pad.left+'" y="15">최대 등가반력 · kN</text><text x="'+(pad.left+width/2)+'" y="'+(H-7)+'" text-anchor="middle">'+(kind==='height'?heightAxis+' · m':'기체 사용량 · kg')+'</text>';
   if(baselineForce>0)svg+='<line class="landing-baseline-line" x1="'+pad.left+'" x2="'+(W-pad.right)+'" y1="'+y(baselineForce)+'" y2="'+y(baselineForce)+'"/><text class="landing-baseline-label" x="'+(W-pad.right-4)+'" y="'+(y(baselineForce)-6)+'" text-anchor="end">자유낙하 기준 '+number(baselineForce,1)+' kN</text>';
   points.forEach(({row,x:vx,y:vy},index)=>{
     const px=x(vx),py=y(vy),valid=isLanded(row)&&!row.bodyStrike&&!row.bottomedOut&&!row.manualLiftUsed&&landingTargetMet(row),color=landingResultColor(row);
     const state=row.manualLiftUsed?'수동 분사':row.bodyStrike?'차체 접촉':row.bottomedOut?'서스펜션 한계':!isLanded(row)?'안정 조건 미충족':!landingTargetMet(row)?'목표 속도 미충족':'안정 착지';
-    const detail=label(row)+'; 출발 '+heightNumber(row.height)+' m; '+methodLabel(row)+'; '+(kind==='height'?heightNumber(vx)+' m':number(vx,2)+' kg')+'; '+number(vy,2)+' kN; '+state;
+    const detail=label(row)+'; 출발 '+heightNumber(row.height)+' m; '+methodLabel(row)+'; '+(kind==='height'?heightAxis+' '+commandMetres(vx):number(vx,2)+' kg')+'; '+number(vy,2)+' kN; '+state;
     svg+='<g class="landing-research-point" tabindex="0" role="img" aria-label="'+html(detail)+'"><title>'+html(detail)+'</title>';
     if(candidates.includes(row))svg+='<circle cx="'+px+'" cy="'+py+'" r="11" fill="none" stroke="'+color+'" stroke-width="2"/>';
     svg+=valid?'<circle cx="'+px+'" cy="'+py+'" r="5.5" fill="'+color+'"/>':'<path d="M '+(px-6)+' '+(py-6)+' L '+(px+6)+' '+(py+6)+' M '+(px+6)+' '+(py-6)+' L '+(px-6)+' '+(py+6)+'" stroke="'+color+'" stroke-width="3"/>';
     const labelY=py>H-pad.bottom-30?py-17-(index%2)*18:py+25;
-    svg+='<text x="'+px+'" y="'+labelY+'" text-anchor="middle">'+html(row.method==='free'?'자유':row.method==='gentle'?'완만':row.method==='eco'?'절약':heightNumber(row.brakeHeight)+' m')+'</text></g>';
+    svg+='<text x="'+px+'" y="'+labelY+'" text-anchor="middle">'+html(row.method==='free'?'자유':row.method==='gentle'?'완만':row.method==='eco'?'절약':kind==='height'?commandMetres(vx):heightNumber(row.brakeHeight)+' m 설정')+'</text></g>';
   });
   return svg+'</svg>';
 }
@@ -128,7 +140,7 @@ export class LandingUI {
         <button id="landing-start" class="primary-btn" type="submit">실험 시작 <span>↓</span></button>
         <button id="landing-methods" class="landing-compare-button" type="button">4방식 비교 <span>현재 차체 · 4회</span></button>
         <details id="landing-advanced" class="landing-settings-details"><summary>제동 · 서스펜션</summary><div class="landing-detail-content">
-          <div class="landing-control-pair"><label>제동 시작 <span id="landing-brake-unit">m</span><input id="landing-brake-height" name="brakeHeight" type="number" min="0" step="any" value="1.5" required title="지정 높이에서 분사하는 추력 제동 방식에 사용"></label><label>목표 하강속도 <span>m/s</span><input id="landing-target-speed" name="targetSpeed" type="number" min="0.2" max="2" step="0.1" value="0.5" required></label></div>
+          <div class="landing-control-pair"><label>제동 설정 <span id="landing-brake-unit">m</span><input id="landing-brake-height" name="brakeHeight" type="number" min="0" step="any" value="1.5" required title="바퀴 높이가 설정값 이하일 때 자동 제동을 시작합니다. 밸브가 열리면서 추력이 발생합니다."></label><label>목표 하강속도 <span>m/s</span><input id="landing-target-speed" name="targetSpeed" type="number" min="0.2" max="2" step="0.1" value="0.5" required></label></div>
           <div class="landing-control-pair"><label>스프링 <span>kN/m · 바퀴별</span><input id="landing-spring" name="springK" type="number" min="30" max="150" step="5" value="75" required></label><label>감쇠 <span>kN·s/m · 바퀴별</span><input id="landing-damper" name="damperC" type="number" min="1" max="15" step="0.5" value="6" required></label></div>
           <button id="landing-study-preset" type="button" class="landing-preset-button">기본 3 m 조건으로</button>
         </div></details>
@@ -138,7 +150,7 @@ export class LandingUI {
           <button id="landing-fleet-methods" class="landing-compare-button" type="button">전체 ${vehicles.length}종 × 4방식 <span>${vehicles.length*4}회</span></button>
           <button id="landing-brake-heights" class="landing-sweep-button" type="button">제동 높이 비교 <span>6회</span></button>
         </div></details>
-        <details class="landing-study-guide"><summary>실험 조건 · 물리 개념</summary><p>같은 높이·초기 탱크 조건에서 비교합니다. 평탄면·무풍·초속도 0·공기저항 OFF, 공통 가상 서스펜션·추진계를 사용합니다.</p><ol><li><b>4방식 비교</b>로 현재 차체를 같은 조건에서 비교합니다.</li><li><b>제동 높이 비교</b>로 분사 시작만 바꿉니다.</li><li>안정 착지 중 충격과 기체 소비의 절충점을 찾습니다.</li></ol><p>통제: 출발 높이·초기 속도·탱크·스프링·감쇠. 차종 비교에서는 질량과 구조가 함께 바뀝니다.</p><p><b>v = √(2gh)</b> 낙하 속도<br><b>∫F알짜 dt = Δp</b> 충격량<br><b>N휠 ≈ max(0, kx + cẋ)</b> 바퀴별 반력</p><p>x는 양의 압축량, ẋ는 압축 속도입니다. 식은 선형 구간의 근사이며 22 cm 초과에서는 범프 스톱이 추가됩니다.</p></details>
+        <details class="landing-study-guide"><summary>실험 조건 · 물리 개념</summary><p>같은 높이·초기 탱크 조건에서 비교합니다. 평탄면·무풍·초속도 0·공기저항 OFF, 공통 가상 서스펜션·추진계를 사용합니다.</p><ol><li><b>4방식 비교</b>로 현재 차체를 같은 조건에서 비교합니다.</li><li><b>제동 높이 비교</b>로 고정 제동의 설정 높이만 바꿉니다.</li><li>안정 착지 중 충격과 기체 소비의 절충점을 찾습니다.</li></ol><p>통제: 출발 높이·초기 속도·탱크·스프링·감쇠. 차종 비교에서는 질량과 구조가 함께 바뀝니다.</p><p><b>v = √(2gh)</b> 낙하 속도<br><b>∫F알짜 dt = Δp</b> 충격량<br><b>N휠 ≈ max(0, kx + cẋ)</b> 바퀴별 반력</p><p>x는 양의 압축량, ẋ는 압축 속도입니다. 식은 선형 구간의 근사이며 22 cm 초과에서는 범프 스톱이 추가됩니다.</p></details>
       </form>
       <div class="landing-run-footer"><p id="landing-status" role="status" aria-live="polite">실험 준비</p><button id="landing-stop" type="button" hidden>중단</button></div>
       <button id="landing-results" class="text-btn" type="button" disabled>결과 보기 <span id="landing-result-count">0회</span></button>`;
@@ -169,7 +181,7 @@ export class LandingUI {
     this.dialog.innerHTML=`<div class="modal-top"><h2 id="landing-results-heading">착지 비교 결과</h2><div class="landing-result-header-actions"><button id="landing-configure" class="landing-configure-button">조건 바꾸기</button><button class="icon-btn" id="landing-results-close" aria-label="착지 결과 닫기">×</button></div></div>
       <div class="landing-results-toolbar"><label for="landing-result-group">실험 묶음 <select id="landing-result-group"></select></label><span id="landing-group-conditions"></span></div>
       <p id="landing-best" class="landing-best"></p>
-      <details class="landing-analysis-details"><summary>물리 분석 · 제동 높이</summary><section class="landing-research" aria-label="이론 검증과 제동 조건 탐구"><div class="landing-research-heading"><h3>물리 검증 · 충격과 기체 소비</h3><label id="landing-research-vehicle-label" hidden>분석 차체 <select id="landing-research-vehicle" aria-label="분석할 차체"></select></label></div><p id="landing-research-scope" class="landing-result-note"></p><div id="landing-research-cards" class="landing-research-cards"></div><div id="landing-research-view-controls" class="landing-research-view-controls"><label><input id="landing-stable-zoom" type="checkbox">안정 착지만 확대</label><span id="landing-zoom-note"></span></div><div id="landing-research-plots" class="landing-research-plots"><section><h4>제동 시작 높이 → 최대 등가반력</h4><div id="landing-height-chart" class="landing-research-chart"></div></section><section><h4>기체 소비 ↔ 최대 등가반력</h4><div id="landing-gas-chart" class="landing-research-chart"></div></section></div><p id="landing-tradeoff" class="landing-tradeoff"></p><details class="landing-research-explanation"><summary>그래프와 검산 읽는 법</summary><p>○ 목표 달성·안정 착지 · × 목표 속도 미충족/수동 분사/차체 접촉/한계 초과/진동 · ◎ 절충 후보. 절충 후보는 다른 안정 결과가 충격과 기체 소비를 동시에 줄일 수 없는 측정 조건입니다. 측정한 범위의 후보이며 하나의 보편적 최적값을 뜻하지 않습니다.</p><p>자유낙하 속도 검산은 무풍·공기저항 없음·초속도 0 조건입니다. 충격량 검산은 <b>자유낙하 전체 측정 구간</b>의 지면 반력(접촉 보정 포함)과 중력을 적분해 같은 구간의 운동량 변화와 비교합니다. 분사 중에는 질량이 변하므로 이 고정질량 검산을 적용하지 않습니다.</p><p>접촉 직전 수직 운동에너지는 접촉 때 질량을 사용합니다. 분사 기체의 에너지는 포함하지 않으며 전체 에너지 보존 검사가 아닙니다. 차체 파손·탑승자 상해는 계산하지 않습니다.</p></details></section></details>
+      <details class="landing-analysis-details"><summary>물리 분석 · 제동 높이</summary><section class="landing-research" aria-label="이론 검증과 제동 조건 탐구"><div class="landing-research-heading"><h3>물리 검증 · 충격과 기체 소비</h3><label id="landing-research-vehicle-label" hidden>분석 차체 <select id="landing-research-vehicle" aria-label="분석할 차체"></select></label></div><p id="landing-research-scope" class="landing-result-note"></p><div id="landing-research-cards" class="landing-research-cards"></div><div id="landing-research-view-controls" class="landing-research-view-controls"><label><input id="landing-stable-zoom" type="checkbox">안정 착지만 확대</label><span id="landing-zoom-note"></span></div><div id="landing-research-plots" class="landing-research-plots"><section><h4>제동 높이 → 최대 등가반력</h4><div id="landing-height-chart" class="landing-research-chart"></div></section><section><h4>기체 소비 ↔ 최대 등가반력</h4><div id="landing-gas-chart" class="landing-research-chart"></div></section></div><p id="landing-tradeoff" class="landing-tradeoff"></p><details class="landing-research-explanation"><summary>그래프와 검산 읽는 법</summary><p>○ 목표 달성·안정 착지 · × 목표 속도 미충족/수동 분사/차체 접촉/한계 초과/진동 · ◎ 절충 후보. 절충 후보는 다른 안정 결과가 충격과 기체 소비를 동시에 줄일 수 없는 측정 조건입니다. 측정한 범위의 후보이며 하나의 보편적 최적값을 뜻하지 않습니다.</p><p>자유낙하 속도 검산은 무풍·공기저항 없음·초속도 0 조건입니다. 충격량 검산은 <b>자유낙하 전체 측정 구간</b>의 지면 반력(접촉 보정 포함)과 중력을 적분해 같은 구간의 운동량 변화와 비교합니다. 분사 중에는 질량이 변하므로 이 고정질량 검산을 적용하지 않습니다.</p><p>접촉 직전 수직 운동에너지는 접촉 때 질량을 사용합니다. 분사 기체의 에너지는 포함하지 않으며 전체 에너지 보존 검사가 아닙니다. 차체 파손·탑승자 상해는 계산하지 않습니다.</p></details></section></details>
       <div class="landing-table-wrap" tabindex="0" aria-label="착지 결과 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">높이<br>m</th><th scope="col">초기 질량<br>kg</th><th scope="col">최대 등가반력<br>kN · 2 ms</th><th scope="col">자유낙하 대비<br>반력 변화</th><th scope="col">접촉 최대 하중<br>g</th><th scope="col">첫 접촉 속도<br>m/s</th><th scope="col">기체 사용<br>kg</th><th scope="col">착지 상태</th></tr></thead><tbody id="landing-result-rows"></tbody></table></div>
       <details class="landing-metrics-details"><summary>접촉 질량·에너지·충격량·압축 비교</summary><div class="landing-table-wrap" tabindex="0" aria-label="착지 세부 계측 표 · 좌우 스크롤"><table class="landing-table"><thead><tr><th scope="col">차체 / 방식</th><th scope="col">접촉 직전 질량<br>kg</th><th scope="col">접촉 직전 수직 K<br>kJ</th><th scope="col">첫 접촉→첫 감속 종료<br>ms · 2 ms 해상도</th><th scope="col">감속 종료 수직 속도<br>m/s</th><th scope="col">첫 감속 지면 충격량<br>kN·s</th><th scope="col">최대 압축<br>cm</th><th scope="col">최대 반발 높이<br>cm</th></tr></thead><tbody id="landing-metric-rows"></tbody></table></div><p class="landing-result-note">충격량과 감속 시간은 같은 2 ms 끝점까지 측정합니다. 감속 종료는 |수직 속도| &lt; 0.01 m/s 또는 첫 반발이 검출된 표본이며, 정확히 속도 0인 해석적 순간은 아닙니다. 종료 속도는 위쪽이 양수입니다. 중력·분사력이 함께 작용하므로 차체의 전체 운동량 변화와 같지 않습니다. 반발은 접촉 후 관찰 구간의 최대 바퀴 높이입니다.</p></details>
       <div class="landing-chart-heading"><h3>첫 접촉 전후 등가반력</h3><label id="landing-chart-selector" hidden>그래프 차체 <select id="landing-chart-vehicle" aria-label="그래프 차체"></select></label><span id="landing-chart-range">0 s = 각 실험의 첫 접촉</span></div><div id="landing-force-chart" class="landing-force-chart"></div><div id="landing-chart-legend" class="landing-chart-legend"></div>
@@ -196,7 +208,7 @@ export class LandingUI {
   syncMethodInputs(){
     const eco=this.form.elements.namedItem('method').value==='eco',input=this.form.elements.namedItem('brakeHeight');
     input.disabled=this.busy||eco;
-    input.title=eco?'절약 착지는 속도·질량·남은 추력으로 분사 시점을 자동 결정합니다. 이 값은 비교할 고정 높이 제동에만 사용합니다.':'지정 높이에서 분사하는 추력 제동 방식에 사용';
+    input.title=eco?'절약 착지는 속도·질량·남은 추력으로 분사 시점을 자동 결정합니다. 이 값은 비교할 고정 높이 제동에만 사용합니다.':'바퀴 높이가 설정값 이하일 때 자동 제동을 시작합니다. 밸브가 열리면서 추력이 발생합니다.';
     this.root.querySelector('#landing-brake-unit').textContent=eco?'자동':'m';
   }
 
@@ -244,20 +256,22 @@ export class LandingUI {
     const rows=allHistory?this.results:this.results.filter(result=>result.groupId===this.selectedGroup);
     if(!rows.length)return;
     const first=rows[0];
-    this.dialog.querySelector('#landing-group-conditions').textContent=allHistory?'전체 '+rows.length+'회 · 각 행의 조건을 비교하세요.':'동일 높이 '+heightNumber(first.height)+' m · 스프링 '+number(first.springK/1000,0)+' kN/m · 감쇠 '+number(first.damperC/1000,1)+' kN·s/m · 탱크 '+number(first.tankVolume*1000,0)+' L'+(first.groupKind==='brake-heights'?' · 제동 시작 높이만 변경':'');
-    const complete=!allHistory&&rows.length>1&&rows.length>=Math.max(...rows.map(result=>result.groupSize||1));
+    this.dialog.querySelector('#landing-group-conditions').textContent=allHistory?'전체 '+rows.length+'회 · 각 행의 조건을 비교하세요.':'동일 높이 '+heightNumber(first.height)+' m · 스프링 '+number(first.springK/1000,0)+' kN/m · 감쇠 '+number(first.damperC/1000,1)+' kN·s/m · 탱크 '+number(first.tankVolume*1000,0)+' L'+(first.groupKind==='brake-heights'?' · 제동 설정 높이만 변경':'');
+    const planned=Math.max(...rows.map(result=>result.groupSize||1));
+    const partial=!allHistory&&rows.length<planned;
+    const complete=!allHistory&&rows.length>1&&!partial;
     const valid=rows.filter(result=>isLanded(result)&&!result.manualLiftUsed&&!result.bodyStrike&&!result.bottomedOut&&landingTargetMet(result));
     const sorted=valid.slice().sort((a,b)=>a.peakEquivalentGroundForceN-b.peakEquivalentGroundForceN);
     const sameVehicle=new Set(rows.map(result=>result.vehicleId)).size===1;
     const best=sameVehicle?sorted[0]:null;
     const bestText=this.dialog.querySelector('#landing-best');
-    bestText.hidden=rows.length<2;
+    bestText.hidden=rows.length<2&&!partial;
     if(complete&&best){
       const comparison=landingBaselineComparison(best,rows);
       const reduction=comparison&&comparison.baseline!==best?comparison.reductionPercent:null;
       const tied=sorted.filter(result=>Math.abs(result.peakEquivalentGroundForceN-best.peakEquivalentGroundForceN)<1).length>1;
       bestText.textContent='이 묶음의 목표 달성·안정 착지 중 '+(tied?'공동 ':'')+'최소 등가반력: '+label(best)+' · '+methodLabel(best)+' · '+number(best.peakEquivalentGroundForceN/1000)+' kN'+(reduction!==null?' · 자유 낙하보다 '+number(Math.abs(reduction),1)+'% '+(reduction>=0?'감소':'증가'):'')+(valid.length<rows.length?' · 목표 속도 미충족·수동 분사·차체 접촉·진동·한계 초과 결과는 최소값 후보에서 제외':'');
-    }else bestText.textContent=allHistory?'조건이 다른 전체 기록입니다. 높이·질량·스프링·감쇠를 확인하며 비교하세요. 전체 순위는 매기지 않습니다.':complete&&!sameVehicle?'차종마다 질량·크기·관성이 함께 달라집니다. 분석 차체를 선택해 같은 차체의 착지 방식을 비교하세요.':complete?'안정 착지 조건을 충족한 결과가 없어 최소 충격 순위를 매기지 않았습니다.':rows.length===1?'':'비교 실험 진행 중';
+    }else bestText.textContent=allHistory?'조건이 다른 전체 기록입니다. 높이·질량·스프링·감쇠를 확인하며 비교하세요. 전체 순위는 매기지 않습니다.':complete&&!sameVehicle?'차종마다 질량·크기·관성이 함께 달라집니다. 분석 차체를 선택해 같은 차체의 착지 방식을 비교하세요.':complete?'안정 착지 조건을 충족한 결과가 없어 최소 충격 순위를 매기지 않았습니다.':partial?'부분 기록 · 예정 '+planned+'회 중 '+rows.length+'회 측정 완료':'';
     const eco=complete&&sameVehicle?rows.find(result=>result.method==='eco'):null;
     const economy=eco?landingEconomyComparison(eco,rows):null;
     if(economy){
@@ -334,8 +348,8 @@ export class LandingUI {
   }
 
   exportSummary(){
-    const keys=['id','modelVersion','groupId','vehicleId','vehicleTitle','method','manualLiftUsed','manualLiftDuration','height','brakeHeight','autoBrakeHeight','ecoCoastTime','ecoMinimumCoastTime','ecoProfile','ecoPlannedBrakeHeight','ecoPredictedTouchdownSpeed','ecoPredictedTouchdownGas','ecoPredictedGas','ecoPlanFeasible','targetSpeed','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature','status','settled','touchdownTime','touchdownSpeed','touchdownMass','touchdownGasUsed','touchdownKineticEnergyJ','initialPotentialEnergyJ','finalMass','finalVelocityY','freeFallConditionsValid','constantMassAuditValid','peakGroundForceN','peakEquivalentGroundForceN','peakG','contactPeakG','groundImpulseNs','totalGroundImpulseNs','totalGravityImpulseNs','correctionImpulseNs','impactCorrectionImpulseNs','contactDuration','contactEndTime','contactEndVelocityY','maxCompression','bottomedOut','bodyStrike','reboundHeight','gasUsed','elapsed','flightTimeout','precontactSampleInterval'];
-    download('landing-results.csv',[['Roadster landing model; SI units; common hypothetical suspension/rig; peak equivalent force averages corrections over 0.002 s; baseline reduction is vehicle-specific; theory and release-to-final impulse audit apply only to untreated constant-mass free fall; touchdown energy is vertical kinetic energy, not occupant injury'],[...keys,'free_baseline_id','peak_force_reduction_percent','theory_expected_speed_m_s','theory_relative_error_percent','impulse_audit_net_N_s','impulse_audit_momentum_change_N_s','impulse_audit_residual_N_s','impulse_audit_duration_s','pareto_candidate_in_same_conditions','target_speed_met','eco_gas_baseline_id','eco_gas_reduction_percent_vs_gentle','eco_force_baseline_id','eco_force_reduction_percent_vs_brake','eco_force_reduction_percent_vs_gentle','parameters_json'],...this.results.map(result=>{const comparison=landingBaselineComparison(result,this.results),theory=landingTheory(result),audit=landingImpulseAudit(result),tradeoff=landingTradeoff(this.results,result),economy=landingEconomyComparison(result,this.results);return [...keys.map(key=>key==='modelVersion'?(result.modelVersion||'unknown'):result[key]),comparison?.baseline.id??'',comparison?.reductionPercent??'',theory.eligible?theory.expectedSpeed:'',theory.eligible?theory.relativeErrorPercent??'':'',audit.eligible?audit.netImpulseNs:'',audit.eligible?audit.momentumChangeNs:'',audit.eligible?audit.residualNs:'',audit.eligible?audit.duration:'',tradeoff.candidates.includes(result),landingTargetMet(result),economy?.gentle.id??'',economy?.gasReductionPercent??'',economy?.brake.id??'',economy?.forceReductionPercent??'',economy?.gentleForceReductionPercent??'',JSON.stringify(result.parameters||{})];})]);
+    const keys=['id','modelVersion','groupId','vehicleId','vehicleTitle','method','manualLiftUsed','manualLiftDuration','height','brakeHeight','autoBrakeHeight','autoBrakeTime','ecoCoastTime','ecoMinimumCoastTime','ecoProfile','ecoPlannedBrakeHeight','ecoPredictedTouchdownSpeed','ecoPredictedTouchdownGas','ecoPredictedGas','ecoPlanFeasible','targetSpeed','springK','damperC','initialMass','initialGas','tankVolume','tankPressureMPa','initialTemperature','status','settled','touchdownTime','touchdownSpeed','touchdownMass','touchdownGasUsed','touchdownKineticEnergyJ','initialPotentialEnergyJ','finalMass','finalVelocityY','freeFallConditionsValid','constantMassAuditValid','peakGroundForceN','peakEquivalentGroundForceN','peakG','contactPeakG','groundImpulseNs','totalGroundImpulseNs','totalGravityImpulseNs','correctionImpulseNs','impactCorrectionImpulseNs','contactDuration','contactEndTime','contactEndVelocityY','maxCompression','bottomedOut','bodyStrike','reboundHeight','gasUsed','elapsed','flightTimeout','precontactSampleInterval'];
+    download('landing-results.csv',[['Roadster landing model; SI units; brakeHeight is the configured fixed-brake threshold. autoBrakeHeight (m) and autoBrakeTime (s from release) mark the first automatic command, before valve response. Empty values indicate no observation; common hypothetical suspension/rig; peak equivalent force averages corrections over 0.002 s; baseline reduction is vehicle-specific; theory and release-to-final impulse audit apply only to untreated constant-mass free fall; touchdown energy is vertical kinetic energy, not occupant injury'],[...keys,'free_baseline_id','peak_force_reduction_percent','theory_expected_speed_m_s','theory_relative_error_percent','impulse_audit_net_N_s','impulse_audit_momentum_change_N_s','impulse_audit_residual_N_s','impulse_audit_duration_s','pareto_candidate_in_same_conditions','target_speed_met','eco_gas_baseline_id','eco_gas_reduction_percent_vs_gentle','eco_force_baseline_id','eco_force_reduction_percent_vs_brake','eco_force_reduction_percent_vs_gentle','parameters_json'],...this.results.map(result=>{const comparison=landingBaselineComparison(result,this.results),theory=landingTheory(result),audit=landingImpulseAudit(result),tradeoff=landingTradeoff(this.results,result),economy=landingEconomyComparison(result,this.results);return [...keys.map(key=>key==='modelVersion'?(result.modelVersion||'unknown'):result[key]),comparison?.baseline.id??'',comparison?.reductionPercent??'',theory.eligible?theory.expectedSpeed:'',theory.eligible?theory.relativeErrorPercent??'':'',audit.eligible?audit.netImpulseNs:'',audit.eligible?audit.momentumChangeNs:'',audit.eligible?audit.residualNs:'',audit.eligible?audit.duration:'',tradeoff.candidates.includes(result),landingTargetMet(result),economy?.gentle.id??'',economy?.gasReductionPercent??'',economy?.brake.id??'',economy?.forceReductionPercent??'',economy?.gentleForceReductionPercent??'',JSON.stringify(result.parameters||{})];})]);
   }
   exportTraces(){
     const keys=['time','sampleInterval','clearance','velocity','groundForceN','equivalentGroundForceN','gLoad','thrustN','compression','stateCompression','gasKg','massKg','kineticEnergyJ','potentialEnergyJ','springEnergyJ','correctionImpulseNs','manualLift','groundForcePeakTime','equivalentGroundForcePeakTime','gLoadPeakTime'];
@@ -349,7 +363,7 @@ export class LandingUI {
   }
 
   exportGraphs(){
-    const charts=[['#landing-height-chart','제동 시작 높이와 최대 등가반력'],['#landing-gas-chart','기체 사용량과 최대 등가반력'],['#landing-force-chart','첫 접촉 전후 등가반력']].map(([selector,title])=>({selector,title,svg:this.dialog.querySelector(selector+' svg')})).filter(chart=>chart.svg);
+    const charts=[['#landing-height-chart','제동 높이와 최대 등가반력'],['#landing-gas-chart','기체 사용량과 최대 등가반력'],['#landing-force-chart','첫 접촉 전후 등가반력']].map(([selector,title])=>({selector,title,svg:this.dialog.querySelector(selector+' svg')})).filter(chart=>chart.svg);
     if(!charts.length)return;
     const hasResearch=charts.some(chart=>chart.selector!=='#landing-force-chart');
     const vehicle=hasResearch?(this.dialog.querySelector('#landing-research-vehicle')?.selectedOptions?.[0]?.textContent||this.researchVehicle||''):'';

@@ -2,13 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {PhysicsSim} from '../dist/js/physics.js';
-import {createLandingRun,landingRunInput,updateLandingRun,LANDING_STEP} from '../dist/js/landing-experiment.js';
+import {createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from '../dist/js/landing-experiment.js';
 import {LandingVisual,landingForceScale,landingRulerWindow} from '../dist/js/landing-visual.js';
 import {FlightScene} from '../dist/js/scene.js';
 
 const camera=new THREE.PerspectiveCamera();camera.position.set(8,4,8);camera.lookAt(0,0,0);
 const view=sim=>({state:sim.state,wheels:sim.wheels});
 const near=(a,b,tolerance=1e-8)=>assert.ok(Math.abs(a-b)<tolerance,`${a} differs from ${b}`);
+
+test('practice height ruler and tyre gap use the surface under each wheel and reset for a controlled release',()=>{
+  const sim=new PhysicsSim(),visual=new LandingVisual();
+  // Only two wheels are over the platform. They determine the closest surface.
+  sim.setObstacles([{id:'half-deck',center:[5,7.5,0],size:[10,1,12]}]);
+  sim.state.pos.y+=9;sim.step(LANDING_STEP,{});
+  const wheelsAbove=sim.wheels.filter(w=>w.surfaceY===8);
+  assert.equal(wheelsAbove.length,2);
+  visual.update(sim,view(sim),camera,'lab');
+  const gap=landingClearance(sim);
+  assert.ok(gap>.9&&gap<1);near(visual.metrics.clearance,gap);
+  near(visual.ruler.position.y,8);near(visual.clearanceLine.position.y,8);near(visual.origin.position.y,8.025);
+  const run=createLandingRun(sim,{height:3,method:'brake',brakeHeight:10});
+  visual.setExperiment(run);visual.update(sim,view(sim),camera,'lab');
+  near(landingClearance(sim),3);near(visual.metrics.clearance,3);near(visual.ruler.position.y,0);
+  assert.equal(visual.brakeLabel.userData.text,'설정 hᵦ 10 m');
+  visual.dispose();
+});
 
 test('landing force diagram uses one linear scale with bounded upward scale changes',()=>{
   assert.equal(landingForceScale(0),10000);assert.equal(landingForceScale(29000),10000);
@@ -74,7 +92,7 @@ test('release/braking markers represent tyre clearance and remain only in the la
   visual.update(sim,view(sim),camera,'lab');
   assert.equal(visual.root.visible,true);near(visual.metrics.clearance,3);
   near(visual.heightMarker.position.y,3);near(visual.brakeMarker.position.y,.75);
-  assert.equal(visual.heightLabel.userData.text,'h₀ 3 m');assert.equal(visual.brakeLabel.userData.text,'hᵦ 0.75 m');
+  assert.equal(visual.heightLabel.userData.text,'h₀ 3 m');assert.equal(visual.brakeLabel.userData.text,'설정 hᵦ 0.75 m');
   assert.equal(visual.brakeMarker.visible,true);
   visual.update(sim,view(sim),camera,'city');assert.equal(visual.root.visible,false);
   visual.update(sim,view(sim),camera,'inspect');assert.equal(visual.root.visible,false);

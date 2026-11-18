@@ -3,17 +3,17 @@ import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-audit148';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-review149';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261115-capacity375';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-audit148';
-import {LandingUI} from './landing-ui.js?v=20261118-audit148';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-review149';
+import {LandingUI} from './landing-ui.js?v=20261118-review149';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
-import {LandingPlanner} from './landing-preparation.js?v=20261118-audit148';
+import {LandingPlanner} from './landing-preparation.js?v=20261118-review149';
 import {drawMappedStreets} from './city-minimap.js?v=20261118-frameperf1';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-audit148';
-import {FlightScene} from './scene.js?v=20261118-audit148';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261118-review149';
+import {FlightScene} from './scene.js?v=20261118-review149';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -333,6 +333,7 @@ function updateCityExperiments(t){
 
 function setupDriveControls(){
   const editable=target=>target?.matches?.('input,textarea,select,[contenteditable="true"]');
+  const activatesControl=e=>e.code==='Space'&&e.target?.closest?.('button:not([data-drive]),summary');
   const buttons=$$('[data-drive]'),keyboardKeys=new Set(),pointers=new Map();
   const nativeClear=driveKeys.clear.bind(driveKeys);
   const sync=()=>{
@@ -357,10 +358,16 @@ function setupDriveControls(){
     if(mode==='city'&&e.code==='Enter'&&e.target?.matches?.('input[type="number"]')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!document.querySelector('dialog[open]')){
       e.preventDefault();clear();$('world').focus({preventScroll:true});return;
     }
-    if(!freeDriving()||!DRIVE_KEYS.has(e.code)||editable(e.target)||document.querySelector('dialog[open]')||e.ctrlKey||e.metaKey||e.altKey)return;
-    e.preventDefault();if(readyToDrive()){keyboardKeys.add(e.code);sync();}
+    if(!freeDriving()||!DRIVE_KEYS.has(e.code)||editable(e.target)||activatesControl(e)||document.querySelector('dialog[open]')||e.ctrlKey||e.metaKey||e.altKey)return;
+    e.preventDefault();
+    // Only a new press may take control after a pause, reset or focus change.
+    if(!e.repeat&&readyToDrive()){keyboardKeys.add(e.code);sync();}
   });
-  window.addEventListener('keyup',e=>{if(DRIVE_KEYS.has(e.code)){keyboardKeys.delete(e.code);sync();if(mode==='city'&&!editable(e.target))e.preventDefault();}});
+  window.addEventListener('keyup',e=>{
+    if(!DRIVE_KEYS.has(e.code))return;
+    keyboardKeys.delete(e.code);sync();
+    if(mode==='city'&&!editable(e.target)&&!activatesControl(e))e.preventDefault();
+  });
   window.addEventListener('blur',clear);
   document.addEventListener('focusin',e=>{if(freeDriving()&&editable(e.target))clear();});
   buttons.forEach(button=>{
@@ -399,7 +406,7 @@ function updateCityHUD(t){
   $('city-compressor').title=compressorStatus(t);
   $('city-motion').textContent=paused?'일시정지':driver.landingAssist?'착지 보조':t.saturation&&driver.airborne?'추력 한계':driveInput.airBrake?'공중 제동':driveInput.lift?'상승 분사':driver.altHold?'고도 유지':driveInput.handbrake?'드리프트':driveInput.boost?'F 추진 가속':driver.airborne?'자유 비행':t.horizontalSpeed<.1&&!driveInput.throttle?'정지 유지':driveInput.brake>.3?'제동':driveInput.corneringAssist?'코너링 보조':driveInput.throttle?'가속':driveInput.brake>0?'페달 해제 감속':'타력';
   if(['prepare','rolling','recovering'].includes(driver.maneuverStatus))$('city-motion').textContent=maneuverLabels[driver.maneuverStatus];
-  $('city-altitude').textContent=Math.max(0,landingClearance(sim)).toFixed(1)+' m';
+  $('city-altitude').textContent=t.heightAboveSurface.toFixed(1)+' m';
   $('city-vertical').textContent=(t.verticalSpeed>=0?'+':'')+t.verticalSpeed.toFixed(1)+' m/s';
   $('city-gas').textContent=t.gasKg.toFixed(0)+' kg';
   const steering=sim.wheels.slice(0,2).reduce((sum,w)=>sum+w.steer,0)*90/Math.PI;
@@ -566,7 +573,7 @@ function setupUI(){
   });
   $('part-close').addEventListener('click',()=>{$('part-card').hidden=true;selectedPartId=null;scene.focusPart(null);renderPartCatalog();});
   window.addEventListener('keydown',e=>{
-    if(e.code==='Escape'&&!document.querySelector('dialog[open]')){e.preventDefault();$('left-panel').classList.remove('open');if(mode==='city'&&camera==='hood')toggleCockpitPanels(false);showCityExperiments(false);$('world').focus({preventScroll:true});return;}
+    if(e.code==='Escape'&&!document.querySelector('dialog[open]')){e.preventDefault();$('left-panel').classList.remove('open');if(mode==='city'&&cockpitPanelsOpen)toggleCockpitPanels(false);showCityExperiments(false);$('world').focus({preventScroll:true});return;}
     if(e.metaKey||e.ctrlKey||e.altKey||e.repeat||e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;
     if(e.code==='KeyP'&&(landingRun||freeDriving())){e.preventDefault();setPaused(!paused);}
     else if(e.code==='KeyR')$('reset').click();else if(e.code==='KeyC')$('camera').click();else if(e.code==='KeyV')$('vectors').click();

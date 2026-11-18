@@ -30,7 +30,8 @@ test('driver pose rotates with body pitch/roll/yaw and looking around never move
 
 test('cockpit has a clear windshield, actual steering response, bounded look and body-fixed interior',()=>{
   const car=vehicle(),cockpit=new CockpitView(),camera=new THREE.PerspectiveCamera(43,1,.25,3500),view=frame();
-  cockpit.setVehicle(car);cockpit.root.visible=true;cockpit.update(camera,view,.016,{altitude:1.2});
+  cockpit.setVehicle(car);cockpit.root.visible=true;cockpit.update(camera,view,.016,{altitude:9.2,heightAboveSurface:1.2});
+  assert.equal(cockpit.interior.root.userData.telemetry.height,1.2);
   assert.equal(camera.near,COCKPIT_NEAR);assert.equal(camera.fov,65);
   assert.ok(Math.abs(cockpit.steering.rotation.x+.19*14)<1e-12);
   assert.ok(cockpit.root.position.distanceTo(view.bodyPosition)<1e-12);

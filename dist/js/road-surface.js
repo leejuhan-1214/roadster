@@ -5,6 +5,11 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),num=(x,d=0)=>Number.isFinite(x)?x
 const preset=(id,label,muPeak,muSlide,rollingResistance)=>Object.freeze({id,label,muPeak,muSlide,rollingResistance,assumed:true});
 export const ROAD_SURFACES=Object.freeze({dry:preset('dry','마른 노면',1.15,.90,.015),wet:preset('wet','젖은 노면',.65,.48,.016),ice:preset('ice','얼음 노면',.15,.09,.010),zero:preset('zero','무마찰 비교',0,0,0)});
 export function getRoadSurface(id='dry'){return Object.hasOwn(ROAD_SURFACES,id)?ROAD_SURFACES[id]:ROAD_SURFACES.dry;}
+// City height targets use the parked chassis pose as zero above the local road.
+export function rideHeightAboveSurface(sim){
+ const {x,y,z}=sim.state.pos;
+ return y-sim.restHeight-(sim.surfaceHeightAt?.(x,z,y)??0);
+}
 const WAVES=[[.50,7,1,.22],[.30,3.8,.37,1],[.20,2.4,.8,-.6]].map(([weight,len,x,z])=>{const k=2*Math.PI/(len*Math.hypot(x,z));return {weight,kx:x*k,kz:z*k};});
 // Continuous deterministic relief, max 3mm × roughness; no random per-frame kicks.
 export function sampleRoadSurface(x,z,{roughness=1}={}){

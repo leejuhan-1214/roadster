@@ -2,7 +2,7 @@ import { Vector3, Quaternion, Euler } from 'three';
 import {R,GAMMA,CV,nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 export {nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
-import {sampleRoadSurface,tireForceAtSlip} from './road-surface.js?v=20261118-frameperf1';
+import {sampleRoadSurface,tireForceAtSlip,rideHeightAboveSurface} from './road-surface.js?v=20261118-review149';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261118-frameperf1';
 import {preparePrism,containsFootprint,prismContact} from './city-building-collision.js?v=20261110-seoul1';
@@ -264,6 +264,7 @@ export class PhysicsSim {
     this.history = [];
     this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
     for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0; w.compression = this.contactCount ? .31 + p.wheelRadius + this.cg.y - this.restHeight : 0;
+      w.surfaceY=this.surfaceHeightAt(this.state.pos.x+w.pos.x,this.state.pos.z+w.pos.z,this.state.pos.y+w.pos.y);
       w.omega = preset === 'corner' ? 12 / p.wheelRadius : preset === 'rolling' ? 20 / p.wheelRadius : 0; w.load = this.contactCount ? (p.dryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
@@ -436,9 +437,9 @@ export class PhysicsSim {
       }
     }
     let vertical = input.lift > 0 ? mass * gravity * (1 + (this.rocketProfile?1.1:.4) * clamp(input.lift, 0, 1)) : 0;
-    if (input.altHold) {
-      const target = clamp(input.targetHeight ?? 1.5, 0, 15) + this.restHeight;
-      const aDesired = clamp((input.targetAcceleration || 0) + 24 * (target - s.pos.y) + 10 * ((input.targetVelocity || 0) - s.vel.y), -gravity, 1.1 * Math.max(gravity, 1));
+    if (input.altHold && !Number.isFinite(input.verticalAcceleration)) {
+      const target = Number.isFinite(input.targetHeight) ? Math.max(0,input.targetHeight) : 1.5;
+      const aDesired = clamp((input.targetAcceleration || 0) + 24 * (target - rideHeightAboveSurface(this)) + 10 * ((input.targetVelocity || 0) - s.vel.y), -gravity, 1.1 * Math.max(gravity, 1));
       const liftWorldY=this.gimbalDirection.clone().applyQuaternion(s.q).y;
       vertical = mass * Math.max(0, gravity + aDesired) * this.gimbalDirection.y / Math.max(.3, liftWorldY);
     }
@@ -821,6 +822,7 @@ export class PhysicsSim {
       rollingResistanceN: this.rollingResistanceN, frictionForceN: this.frictionForceN, brakeForceN: this.brakeForceN, airDragN: this.airDragN,
       handbrakeAmount:this.handbrakeAmount,handbrakeForceN:this.handbrakeForceN,
       speed: Math.hypot(s.vel.x, s.vel.z), totalSpeed: s.vel.length(), altitude: Math.max(0, s.pos.y - this.restHeight),
+      heightAboveSurface:Math.max(0,rideHeightAboveSurface(this)),
       verticalSpeed: s.vel.y, pressureMPa: s.pressure / 1e6, pressureGaugeMPa: (s.pressure - ATMOSPHERE) / 1e6,
       temperature: s.temp, gasKg: s.gas, gasPct: 100 * s.gas / this.initialGas, totalMass: m,
       thrustN: this.totalThrust, fanN: this.fanForce, fanPressurePa:this.fanPressurePa,fanPowerW:this.fanPowerW,fanAirflowM3S:this.fanAirflowM3S,fanSeal:this.fanSeal,contactCount: contact, slip: this.maxSlip || 0,

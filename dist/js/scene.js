@@ -1,6 +1,6 @@
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
-import {CockpitView} from './cockpit-view.js?v=20261118-physics146';
-import {LandingVisual} from './landing-visual.js?v=20261118-physics146';
+import {CockpitView} from './cockpit-view.js?v=20261118-review149';
+import {LandingVisual} from './landing-visual.js?v=20261118-review149';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-physics146';
@@ -11,7 +11,7 @@ import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
 import {applyCitySurfaces} from './city-surfaces.js?v=20261109-real1';
 import * as THREE from 'three';
-import {sampleRoadSurface} from './road-surface.js?v=20261118-frameperf1';
+import {sampleRoadSurface} from './road-surface.js?v=20261118-review149';
 import {updateSuspension} from './suspension-model.js?v=20261118-physics146';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -86,16 +86,36 @@ function label(text,{width=9,height=1,color='#e6eceb',bg=null,font='600',size=90
 
 // Fit the complete 3D envelope in the usable inspector viewport, retaining its
 // current orbit direction instead of flattening the assembly into a front board.
-export function inspectionDistance(box,direction,fov,aspect,availableWidth=1,center=box.getCenter(new THREE.Vector3()),fill=.78){
+export function inspectionDistance(box,direction,fov,aspect,availableWidth=1,center=box.getCenter(new THREE.Vector3()),fill=.78,minDistance=3,padding=.25){
   const right=new THREE.Vector3().crossVectors(UP,direction).normalize();
   if(right.lengthSq()<.01)right.set(1,0,0);
   const up=new THREE.Vector3().crossVectors(direction,right).normalize();
   const tanY=Math.tan(THREE.MathUtils.degToRad(fov)/2)*fill,tanX=tanY*aspect*availableWidth;
-  let distance=3;
+  let distance=minDistance;
   for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
     const point=new THREE.Vector3(x,y,z).sub(center),near=point.dot(direction);
     distance=Math.max(distance,near+Math.abs(point.dot(right))/tanX,near+Math.abs(point.dot(up))/tanY);
-  }return distance+.25;
+  }return distance+padding;
+}
+
+function partViewAreas(canvas){
+  const viewport=canvas.getBoundingClientRect(),w=viewport.width,h=viewport.height;
+  const rect=selector=>{
+    const element=canvas.ownerDocument?.querySelector(selector);
+    const r=element&&!element.hidden&&element.getBoundingClientRect();
+    if(!r||r.width<=0||r.height<=0||r.right<=viewport.left||r.bottom<=viewport.top)return null;
+    return {left:r.left-viewport.left,right:r.right-viewport.left,top:r.top-viewport.top,bottom:r.bottom-viewport.top};
+  };
+  const panel=rect('#left-panel'),card=rect('#part-card'),header=rect('.topbar'),tools=rect('.view-tools'),toggle=rect('#panel-toggle');
+  const left=panel?Math.min(w,panel.right+8):0,right=w;
+  const top=Math.max(header?.bottom||0,toggle?.bottom||0)+8,bottom=tools?tools.top-8:h;
+  const open={left,right,top,bottom};
+  let areas=[open];
+  if(card&&card.right>left&&card.left<right&&card.top<bottom&&card.bottom>top){
+    areas=[{...open,right:card.left-8},{...open,top:card.bottom+8}];
+  }
+  areas=areas.filter(r=>r.right-r.left>1&&r.bottom-r.top>1);
+  return {w,h,areas:areas.length?areas:[{left:0,right:w,top:0,bottom:h}]};
 }
 
 export class FlightScene {
@@ -501,6 +521,9 @@ export class FlightScene {
     this.hiddenParts.clear();this.isolatedPartId=null;this.applyInspectorVisibility();
   }
   focusPart(id) {
+    if(this.framedPart&&id!==this.selectedPartId){
+      this.framedPart=null;this.inspectionViewport();
+    }
     if(id===null||id===undefined){this.selectedPart=null;this.selectedPartId=null;this.selectedBox.visible=false;return;}
     const part=this.vehicle.detailParts?.get(id)||this.vehicle.parts.get(id);if(!part)return;
     this.selectedPart=part;this.selectedPartId=id;
@@ -514,9 +537,23 @@ export class FlightScene {
     this.vehicle.root.updateMatrixWorld(true);
     const box=new THREE.Box3().setFromObject(this.selectedPart);
     if(box.isEmpty())return;
-    const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
-    const direction=this.camera.position.clone().sub(this.controls.target).normalize();
-    const distance=clamp(size.length()/(2*Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2)))*1.35,.5,12);
+    const center=box.getCenter(new THREE.Vector3()),direction=this.camera.position.clone().sub(this.controls.target);
+    if(direction.lengthSq()<1e-6)direction.set(1,.65,1.3);
+    direction.normalize();
+    const {w,h,areas}=partViewAreas(this.canvas);
+    if(!(w>0&&h>0))return;
+    // Use the rectangle that shows the largest complete part at the chosen
+    // orbit angle. Portrait usually fits below its card, landscape beside it.
+    let distance=Infinity,region;
+    for(const r of areas){
+      const width=r.right-r.left,height=r.bottom-r.top;
+      const fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2))*height/h));
+      const required=inspectionDistance(box,direction,fov,width/height,1,center,.90,this.controls.minDistance,this.camera.near+.02);
+      if(required<distance){distance=required;region=r;}
+    }
+    this.framedPart=this.selectedPart;
+    this.camera.setViewOffset(w,h,(w-region.right-region.left)/2,(h-region.bottom-region.top)/2,w,h);
+    this.controls.maxDistance=Math.max(this.controls.maxDistance,distance);
     this.camera.position.copy(center).addScaledVector(direction,distance);
     this.controls.target.copy(center);this.cameraTarget.copy(center);this.controls.update();
   }
@@ -526,6 +563,9 @@ export class FlightScene {
     if(full){box.min.lerp(full.min,t);box.max.lerp(full.max,t);}return box;
   }
   inspectionViewport() {
+    if(this.mode==='inspect'&&this.framedPart&&this.framedPart===this.selectedPart){
+      this.frameSelectedPart();return 1;
+    }
     const w=this.canvas?.clientWidth||1280,h=this.canvas?.clientHeight||720;
     if(this.mode==='lab'){
       const canvasRect=this.canvas?.getBoundingClientRect?.()||{left:0,top:0};
@@ -557,6 +597,7 @@ export class FlightScene {
     return 1-panel/w;
   }
   frameWholeVehicle({resetView=false}={}) {
+    this.framedPart=null;
     if(this.mode==='lab'){
       FlightScene.prototype.frameLabVehicle.call(this,{bodyPosition:this.vehicle.root.position},{resetView});return;
     }

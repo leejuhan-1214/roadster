@@ -128,7 +128,7 @@ export class LandingVisual {
       this.heightMarker.position.y=this.config.height;this.brakeMarker.position.y=this.config.brakeHeight;
       const heightText=value=>value>=1e5?value.toExponential(2):String(Number(value.toPrecision(5)));
       this.heightLabel=replaceText(this.heightLabel,'h₀ '+heightText(this.config.height)+' m',COLORS.height,1.45);
-      this.brakeLabel=replaceText(this.brakeLabel,'hᵦ '+heightText(this.config.brakeHeight)+' m',COLORS.brake,1.45);
+      this.brakeLabel=replaceText(this.brakeLabel,'설정 hᵦ '+heightText(this.config.brakeHeight)+' m',COLORS.brake,1.95);
     }
     this.rulerKey='';
   }
@@ -157,10 +157,11 @@ export class LandingVisual {
     this.root.visible=mode==='lab'&&this.enabled;if(!this.root.visible)return;
     const state=view?.state||sim.state,wheels=view?.wheels||sim.wheels;
     const position=state.pos,q=state.q;
-    let clearance=Infinity,compression=0;
+    let clearance=Infinity,surfaceY=0,compression=0;
     for(const w of wheels){
       this._point.copy(w.pos).applyQuaternion(q).add(position);
-      clearance=Math.min(clearance,this._point.y-sim.params.wheelRadius);
+      const wheelSurface=finite(w.surfaceY),gap=this._point.y-sim.params.wheelRadius-wheelSurface;
+      if(gap<clearance){clearance=gap;surfaceY=wheelSurface;}
       compression=Math.max(compression,finite(w.compression));
     }
     clearance=finite(clearance);
@@ -193,11 +194,11 @@ export class LandingVisual {
     this._bodyX.set(1,0,0).applyQuaternion(q);this._bodyZ.set(0,0,1).applyQuaternion(q);
     const halfSpan=Math.abs(this._right.dot(this._bodyX))*finite(sim.params.bodyLength,5)*.5+Math.abs(this._right.dot(this._bodyZ))*finite(sim.params.bodyWidth,2)*.5;
     const rulerOffset=halfSpan+.85;
-    this.ruler.position.set(originX+this._right.x*rulerOffset,0,originZ+this._right.z*rulerOffset);
+    this.ruler.position.set(originX+this._right.x*rulerOffset,surfaceY,originZ+this._right.z*rulerOffset);
     this.ruler.rotation.y=Math.atan2(-this._right.z,this._right.x);
     this.heightLabel.position.set(this._right.x*(rulerOffset+.25),.18,this._right.z*(rulerOffset+.25));
     this.brakeLabel.position.set(this._right.x*(rulerOffset+.25),.18,this._right.z*(rulerOffset+.25));
-    this.origin.position.set(originX,.025,originZ);
+    this.origin.position.set(originX,surfaceY+.025,originZ);
     this.heightMarker.visible=!!this.config;this.brakeMarker.visible=this.config?.method==='brake';
     this.clearanceLine.position.copy(this.ruler.position).addScaledVector(this._right,.08);this.clearanceLine.scale.y=Math.max(0,clearance);this.clearanceLine.visible=clearance>.005;
     for(let i=0;i<4;i++){
