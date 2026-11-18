@@ -94,11 +94,33 @@ test('idle preparation leaves the running city visible and uploads each shared g
   }
 });
 
+test('a cold race entry waits for grid cars and shares shader preparation with warm and repeat entries',async()=>{
+  const previousFrame=globalThis.requestAnimationFrame;
+  globalThis.requestAnimationFrame=cb=>setImmediate(cb);
+  let completeModels,completeShaders,compiles=0;
+  const world={root:new Group(),update(){},rivalModelsReady:new Promise(resolve=>{completeModels=resolve;})};
+  const view=Object.assign(Object.create(FlightScene.prototype),{raceWorld:world,
+    renderer:{compileAsync(){compiles++;return new Promise(resolve=>{completeShaders=resolve;});}}});
+  try{
+    const entering=view.prepareStationRaceEntry();
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(compiles,0);
+    completeModels();await new Promise(resolve=>setImmediate(resolve));
+    const warm=view.compileRaceWorld(world);
+    assert.equal(compiles,1);assert.ok(!view.raceEntryReady);
+    completeShaders();await Promise.all([entering,warm]);await view.prepareStationRaceEntry();
+    assert.equal(view.raceEntryReady,true);assert.equal(compiles,1);
+  }finally{
+    if(previousFrame===undefined)delete globalThis.requestAnimationFrame;
+    else globalThis.requestAnimationFrame=previousFrame;
+  }
+});
+
 test('the visible circuit walls close on both sides and share the solver footprints',()=>{
   const world=createStationRaceWorld(),sim=new PhysicsSim();
-  const turf=world.root.getObjectByName('Circuit grass'),asphalt=world.root.getObjectByName('Track asphalt');
-  assert.ok(turf.renderOrder<asphalt.renderOrder);
-  assert.equal(turf.material.depthWrite,false,'turf cannot mask the asphalt at a grazing view angle');
+  const paving=world.root.getObjectByName('Quayside paving'),asphalt=world.root.getObjectByName('Track asphalt');
+  assert.ok(paving.renderOrder<asphalt.renderOrder);
+  assert.equal(paving.material.depthWrite,false,'paving cannot mask the asphalt at a grazing view angle');
   sim.setObstacles(world.obstacles);
   assert.equal(sim.obstacles.length,world.obstacles.length);
   const walls=world.root.children.filter(o=>o.name==='Circuit safety wall');

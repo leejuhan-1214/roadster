@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse,projectToCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
+import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
 import {AIR_APPROACH,rivalAirPath} from './station-race-air.js?v=20261119-ai158';
+import {circuitUrbanTrackStages,CIRCUIT_BASIN} from './circuit-urban-track.js?v=20261119-metropolis159';
+import {circuitCityscapeStages} from './circuit-cityscape.js?v=20261119-metropolis159';
 import {addCircuitLighting} from './circuit-lighting.js?v=20261119-ai158';
 
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js';
@@ -55,14 +57,14 @@ function precastWallMaterial(){
     const streak=3*Math.sin(x*.10)+2*Math.sin(x*.51);
     const dirt=cap?0:Math.max(0,1-fromBase/24)*(17+streak);
     const tieHole=!cap&&(Math.min(Math.abs(x-37),Math.abs(x-218))**2+(fromBase-24)**2<4);
-    const tone=177+grain+streak-dirt+(cap?11:0)-(edge<1?49:edge<2?14:0)-(tieHole?39:0);
-    const i=(y*w+x)*4;pixels[i]=tone+2;pixels[i+1]=tone+1;pixels[i+2]=tone-3;pixels[i+3]=255;
+    const tone=108+grain+streak-dirt+(cap?24:0)-(edge<1?37:edge<2?12:0)-(tieHole?29:0);
+    const i=(y*w+x)*4;pixels[i]=tone-7;pixels[i+1]=tone+1;pixels[i+2]=tone+10;pixels[i+3]=255;
   }
   const map=new THREE.DataTexture(pixels,w,h);
   map.name='Cast concrete panels with tie holes and joints';map.wrapS=THREE.RepeatWrapping;
   map.colorSpace=THREE.SRGBColorSpace;map.magFilter=THREE.LinearFilter;map.minFilter=THREE.LinearMipmapLinearFilter;
   map.generateMipmaps=true;map.needsUpdate=true;map.anisotropy=4;
-  return material(0xffffff,{map,roughness:.91,flatShading:true,side:THREE.DoubleSide});
+  return material(0x8895a5,{map,roughness:.94,flatShading:true,side:THREE.DoubleSide});
 }
 
 // Follow the same corner vertices in the rendered walls and their collision prisms.
@@ -199,79 +201,45 @@ function facilities(root,obstacles){
   instance.name='Grandstands, pit lane and start grid';instance.castShadow=instance.receiveShadow=true;root.add(instance);
 }
 
-function hills(root){
-  const positions=[],colors=[],indices=[],land=new THREE.Color(),samples=192;
-  const e=RACE_COURSE.extent,cx=(e.minX+e.maxX)/2,cz=(e.minZ+e.maxZ)/2;
-  const rx=(e.maxX-e.minX)/2+210,rz=(e.maxZ-e.minZ)/2+220;
-  const bands=[[230,-.6,0,0x566458],[292,3,.19,0x475d54],[345,8,.49,0x465a54],
-    [405,14,.80,0x475b58],[455,19,1,0x47595b],[525,12,.72,0x506164],[640,3,.36,0x58676b]];
-  for(const [ring,[radius,seat,relief,color]] of bands.entries()){
-    for(let i=0;i<samples;i++){
-      const a=2*Math.PI*i/samples,t=a+.08*Math.sin(a*3+.23*ring);
-      const ridge=9*Math.sin(t*4+.7)+6*Math.cos(t*7-.35)+3.3*Math.sin(t*13)+1.4*Math.cos(t*28);
-      const r=radius+relief*(12*Math.cos(t*6)+6*Math.sin(t*13));
-      positions.push(cx+Math.cos(a)*(rx+r-180),seat+relief*ridge*2.2,cz+Math.sin(a)*(rz+r-180));
-      land.setHex(color).multiplyScalar(1+relief*(.045*Math.cos(t*17)+.027*Math.sin(t*31)));
-      colors.push(land.r,land.g,land.b);
-      if(ring){
-        const n=(i+1)%samples,p=(ring-1)*samples,q=ring*samples;
-        indices.push(p+i,p+n,q+i,p+n,q+n,q+i);
-      }
+// Continuous world-space UVs keep the paving joints aligned on both embankments.
+function addCityPaving(root){
+  const {minX,maxX,minZ,maxZ}=CIRCUIT_BASIN,bounds=RACE_COURSE.extent;
+  const west=bounds.minX-750,east=bounds.maxX+750,north=bounds.minZ-750,south=bounds.maxZ+750;
+  const positions=[],uv=[],indices=[];
+  for(const [left,right,top,bottom] of [[west,east,north,minZ],[west,east,maxZ,south],
+    [west,minX,minZ,maxZ],[maxX,east,minZ,maxZ]]){
+    const base=positions.length/3;
+    for(const [x,z] of [[left,top],[left,bottom],[right,top],[right,bottom]]){
+      positions.push(x,-.11,z);uv.push(x/96,z/96);
     }
+    indices.push(base,base+1,base+2,base+2,base+1,base+3);
   }
-  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();
-  mesh(root,geo,material(0xffffff,{vertexColors:true,roughness:1}),'Distant hills');
-}
-
-function turfMaterial(){
-  const size=128,pixels=new Uint8Array(size*size*4);
+  // A block has a narrow service street, drainage curb and stone pavement.
+  // Keep them on the terrain so the bridge opening remains unobstructed.
+  const size=256,pixels=new Uint8Array(size*size*4);
   for(let i=0;i<size*size;i++){
-    const x=i%size,y=Math.floor(i/size);
-    const grain=((Math.imul(i+7,0x9e3779b1)>>>20)/4095-.5)*17;
-    const tone=grain+4*Math.sin(2*Math.PI*x/size)+2*Math.cos(4*Math.PI*y/size);
-    pixels.set([88+tone,105+tone,69+tone*.7,255],i*4);
+    const x=i%size,z=Math.floor(i/size),dx=Math.min(x,size-1-x),dz=Math.min(z,size-1-z);
+    const edge=Math.min(dx,dz),along=dx<dz?z:x,other=Math.max(dx,dz);
+    const grain=((Math.imul(i+1,0x9e3779b1)>>>20)/4095-.5)*7;
+    let r=62,g=70,b=83;
+    if(edge<12){
+      const stripe=(edge===1&&along%22<9&&other>21)||(other>=18&&other<=23&&edge%4<2);
+      r=stripe?122:33;g=stripe?136:40;b=stripe?144:50;
+    }else if(edge<15){r=102;g=111;b=114;}
+    else if(edge<24){r=73;g=81;b=87;}
+    else if(dx>40&&dx<78&&dz>46&&dz<102){r=43;g=64;b=65;}
+    const joint=edge>14&&(z%6===0||(x+3*Math.floor(z/6))%12===0)?7:0;
+    pixels.set([r+grain-joint,g+grain-joint,b+grain-joint,255],i*4);
   }
   const map=new THREE.DataTexture(pixels,size,size);
-  map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(210,210);
-  map.colorSpace=THREE.SRGBColorSpace;map.magFilter=THREE.LinearFilter;
-  map.minFilter=THREE.LinearMipmapLinearFilter;map.generateMipmaps=true;map.needsUpdate=true;
-  return material(0xffffff,{map});
-}
-
-// Trees stand beyond the track walls. Reuse the Seoul library's middle-distance
-// geometry and atlas; the whole circuit submits one draw per tree species.
-function tracksideTrees(root,library){
-  const grove=new THREE.Group();
-  if(!library)return grove;
-  const matrix=new THREE.Object3D(),tint=new THREE.Color();
-  const clusters=new Map();
-  for(let i=0;i<295;i++){
-    const outer=i<175,k=outer?i:i-175;
-    const d=(k+.32)*RACE_COURSE.length/(outer?175:120),side=outer?1:-1;
-    const offset=side*(halfWidth+runoffWidth(d,side)+13+8*Math.sin(i*1.8));
-    const p=sampleCourse(d,offset),clearance=projectToCourse(p).error;
-    if(clearance<halfWidth+10||Math.abs(p.x)<200&&Math.abs(p.z)<42)continue;
-    const tx=Math.floor(p.x/320),tz=Math.floor(p.z/320),species=i%2?'pine':'zelkova';
-    const key=tx+','+tz+','+species;
-    if(!clusters.has(key))clusters.set(key,{tx,tz,species,points:[]});
-    clusters.get(key).points.push({p,i});
-  }
-  for(const {tx,tz,species,points} of clusters.values()){
-    const variant=library.variant(species,0);
-    for(const part of variant.levels[1]){
-      const trees=new THREE.InstancedMesh(part.geometry,part.material,points.length);
-      trees.name='Circuit '+species;trees.receiveShadow=true;
-      trees.userData.clusterX=(tx+.5)*320;trees.userData.clusterZ=(tz+.5)*320;
-      points.forEach(({p,i},n)=>{
-        matrix.position.set(p.x,-.03,p.z);matrix.rotation.y=i*2.4;
-        matrix.scale.setScalar((7+5*(.5+.5*Math.sin(i*4.94)))/variant.height);matrix.updateMatrix();
-        trees.setMatrixAt(n,matrix.matrix);trees.setColorAt(n,tint.setScalar(.85+.11*Math.cos(i)));
-      });
-      trees.computeBoundingSphere();grove.add(trees);
-    }
-  }
-  root.add(grove);return grove;
+  map.wrapS=map.wrapT=THREE.RepeatWrapping;map.colorSpace=THREE.SRGBColorSpace;
+  map.magFilter=THREE.LinearFilter;map.minFilter=THREE.LinearMipmapLinearFilter;map.generateMipmaps=true;map.needsUpdate=true;
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  geometry.setIndex(indices);geometry.computeVertexNormals();
+  const ground=mesh(root,geometry,material(0x9facb9,{map,roughness:.93,depthWrite:false}),'Quayside paving');
+  ground.renderOrder=-10;
 }
 
 // Longitudinal cross-sections let the low-detail rivals retain a coupe silhouette.
@@ -412,23 +380,15 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
   ()=>import('./rival-exterior.js?v=20261118-circuit155').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
   root.name='Station Circuit';root.visible=false;
-  const bounds=RACE_COURSE.extent;
-  const grassWidth=bounds.maxX-bounds.minX+1500,grassDepth=bounds.maxZ-bounds.minZ+1500;
-  const grass=turfMaterial();
-  // Turf is the circuit backdrop. Draw it first without claiming road depth;
-  // a single kilometre-scale surface otherwise masks asphalt at grazing angles.
-  grass.depthWrite=false;
-  const ground=mesh(root,new THREE.PlaneGeometry(grassWidth,grassDepth,Math.ceil(grassWidth/80),Math.ceil(grassDepth/80)),grass,'Circuit grass');
-  ground.renderOrder=-10;ground.rotation.x=-Math.PI/2;
-  ground.position.set((bounds.minX+bounds.maxX)/2,-.11,(bounds.minZ+bounds.maxZ)/2);
+  addCityPaving(root);
   yield;
   // The city offsets road paint towards the camera to resolve overlapping OSM
   // streets. The circuit is continuous so keep paint and kerbs above asphalt.
   const asphalt=roadMaterial?roadMaterial.clone():material(0x484d52);
   asphalt.polygonOffset=false;asphalt.vertexColors=false;
-  if(roadMaterial)asphalt.color.multiplyScalar(.74);
+  if(roadMaterial){asphalt.color.setHex(0x536880);asphalt.roughness=.86;}
   ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,.001,circuitStations,roadMaterial?.map?.image?4:2);
-  const paintedWhite=material(white),kerb=kerbMaterial(),apron=material(0x7e8580);
+  const paintedWhite=material(white),kerb=kerbMaterial(),apron=material(0x414f60);
   const precast=precastWallMaterial(),bendDetails=[];
   for(const side of [-1,1]){
     const edge=[side*(halfWidth-.12),side*(halfWidth+.02)].sort((a,b)=>a-b);
@@ -449,13 +409,14 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
   }
   addBrakeBoards(root);
   yield;
-  facilities(root,obstacles);hills(root);
+  facilities(root,obstacles);
   yield;
   addCircuitLighting(root,obstacles);
   yield;
   const airFrames=airCourse(root);
   yield;
-  const grove=tracksideTrees(root,treeLibrary);
+  yield* circuitUrbanTrackStages(root,obstacles);
+  yield* circuitCityscapeStages(root,obstacles);
   const nextGate=new THREE.Group();nextGate.name='Next checkpoint';root.add(nextGate);
   let exterior=null,disposed=false;
   function dress(car){
@@ -475,7 +436,6 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
   }
   function update(race,viewer=sampleCourse(race.progress)){
     for(const {details,x,z} of bendDetails)details.visible=(viewer.x-x)**2+(viewer.z-z)**2<800**2;
-    for(const trees of grove.children)trees.visible=(viewer.x-trees.userData.clusterX)**2+(viewer.z-trees.userData.clusterZ)**2<810**2;
     for(let i=0;i<race.rivals.length;i++){
       const rival=race.rivals[i];
       if(!cars[i]){cars[i]=rivalCar(rival.color);cars[i].color=rival.color;root.add(cars[i].root);if(exterior)dress(cars[i]);}
@@ -516,12 +476,14 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
     if(disposed)return;disposed=true;
     for(const car of cars)car.skin?.dispose();exterior?.dispose();
     const meshes=new Set(),materials=new Set(),textures=new Set();
-    grove.removeFromParent();grove.traverse(o=>{if(o.isInstancedMesh)o.dispose();});grove.clear();
     root.traverse(o=>{
       if(o.geometry)meshes.add(o.geometry);
       if(o.material){
         materials.add(o.material);
-        if(o.material.map&&o.material.map!==roadMaterial?.map)textures.add(o.material.map);
+        for(const slot of ['map','emissiveMap','roughnessMap','normalMap']){
+          const texture=o.material[slot];
+          if(texture&&texture!==roadMaterial?.[slot])textures.add(texture);
+        }
       }
       if(o.isInstancedMesh)o.dispose();
     });

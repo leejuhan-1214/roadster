@@ -9,3 +9,11 @@ Redistributed file: kloppenheim_03_puresky_2k.hdr
 Downloaded unchanged from Poly Haven's public 2K HDR download.
 This is a photographed sky used for generic daylight and reflections. It is not
 a photograph of Gangnam, current weather, or a measured Seoul lighting record.
+
+circuit-blue-hour.jpg is an original colour treatment of the same CC0
+photograph for the fictional racing circuit. Decode the HDR to linear RGB.
+Feather adjacent photographed clouds over the high daytime sun, then use
+log luminance and blue chromaticity to preserve cloud texture. Interpolate
+an indigo zenith (sRGB 30,45,85) to a slate horizon (115,142,177), with a
+localized warm afterglow at the original solar azimuth. Resample the full
+panorama to 1536 x 768 and encode as an sRGB JPEG.

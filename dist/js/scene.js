@@ -8,7 +8,7 @@ import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261118-flight153';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-circuit155';
 import {loadCityWorld} from './city-world.js?v=20261118-circuit155';
-import {stationRaceWorldStages} from './station-race-world.js?v=20261119-ai158';
+import {stationRaceWorldStages} from './station-race-world.js?v=20261119-metropolis159';
 import {StationRace} from './station-race.js?v=20261119-ai158';
 import {attachStreamingCity} from './city-streaming.js?v=20261119-wide157';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261119-wide157';
@@ -141,6 +141,7 @@ export class FlightScene {
     this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;this.physicsVisualClock=new SimulationVisualClock();this.jetEmissionCarry=[];
     this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=true;this.touchPointers=new Map();this.pinchDistance=0;
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
+    this.renderer.debug.checkShaderErrors=new URLSearchParams(window.location.search).has('shaderDebug');
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.0;
@@ -439,45 +440,85 @@ export class FlightScene {
   setLandingLearningVisible(visible){this.landingVisual?.setVisible(visible);}
   syncCircuitLighting(){
     const dusk=Boolean(this.stationRace),hdr=Boolean(this.realSky);
-    this.scene.backgroundIntensity=dusk?.085:1;
-    this.scene.environmentIntensity=dusk?.42:hdr?.7:.8;
-    this.scene.fog.color.setHex(dusk?0x455b70:0xb6c4c9);
-    this.sun.color.setHex(dusk?0xc6d3f2:0xfff0d8);
-    this.sun.intensity=dusk?.68:hdr?2.2:3.1;
-    for(const light of this.scene.children)if(light.isHemisphereLight)light.intensity=dusk?.43:hdr?.5:1.45;
+    if(!this.inspectionStudio){
+      this.scene.background=dusk&&this.circuitSkyReady?this.circuitSky:(this.realSky?.background||null);
+      this.sky.visible=!this.scene.background;
+    }
+    this.scene.backgroundIntensity=(dusk&&!this.circuitSkyReady) ? .14 : 1;
+    this.scene.environmentIntensity=dusk?.54:hdr?.7:.8;
+    this.scene.fog.color.setHex(dusk?0x596c89:0xb6c4c9);
+    this.sun.color.setHex(dusk?0xf1e1d2:0xfff0d8);
+    this.sun.intensity=dusk?.87:hdr?2.2:3.1;
+    for(const light of this.scene.children)if(light.isHemisphereLight)light.intensity=dusk?.67:hdr?.5:1.45;
     const sky=this.sky.material.uniforms;
     sky.top.value.setHex(dusk?0x1e344b:0x5683a6);sky.bottom.value.setHex(dusk?0x82949e:0xc3cdcf);
   }
   prepareRaceStage(){
     if(this.raceWorld)return true;
     if(!this.raceBuild){
+      if(!this.circuitSky&&typeof document!=='undefined'){
+        this.circuitSky=new THREE.TextureLoader().load(new URL('../assets/environment/sky/circuit-blue-hour.jpg',import.meta.url).href,texture=>{
+          if(this.circuitSky!==texture)return;
+          texture.colorSpace=THREE.SRGBColorSpace;texture.mapping=THREE.EquirectangularReflectionMapping;
+          this.circuitSkyReady=true;if(this.stationRace)this.syncCircuitLighting();
+        },undefined,()=>{ /* The photographed or procedural sky stays available. */ });
+      }
       const asphalt=this.city?.root.getObjectByName('OSM road network')?.material;
-      this.raceBuild=stationRaceWorldStages(asphalt,this.city?.treeAsset?.library);
+      this.raceBuild=stationRaceWorldStages(asphalt);
     }
     const {done,value}=this.raceBuild.next();
     if(done){this.raceBuild=null;this.raceWorld=value;skipHiddenBranch(value.root);this.scene.add(value.root);}
     return done;
+  }
+  compileRaceWorld(world){
+    if(!this.raceShaders){
+      const compile=this.renderer.compileAsync||this.renderer.compile;
+      this.raceShaders=Promise.resolve(compile.call(this.renderer,world.root,this.camera,this.scene)).catch(error=>{
+        this.raceShaders=null;throw error;
+      });
+    }
+    return this.raceShaders;
+  }
+  async prepareStationRaceEntry(){
+    if(this.raceEntryReady)return;
+    const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+    await nextFrame();
+    let start=performance.now();
+    while(!this.prepareRaceStage()){
+      if(performance.now()-start<5)continue;
+      await nextFrame();start=performance.now();
+    }
+    const world=this.raceWorld;
+    world.update(new StationRace());
+    await world.rivalModelsReady;
+    await this.compileRaceWorld(world);
+    this.raceEntryReady=true;
   }
   warmStationRace(city){
     if(!city||this.raceWorld||this.raceWarmPending)return;
     const idle=cb=>window.requestIdleCallback?window.requestIdleCallback(cb,{timeout:220}):window.setTimeout(cb,40);
     this.raceWarmPending=true;
     const stillDriving=()=>this.city===city&&this.mode==='city'&&!this.stationRace;
-    const build=()=>{
+    const build=deadline=>{
       this.raceWarmPending=false;
       if(!stillDriving()||this.raceWorld)return;
-      if(!this.prepareRaceStage()){this.warmStationRace(city);return;}
+      const sliceStart=performance.now();
+      while(!this.prepareRaceStage()){
+        if(!deadline?.timeRemaining||deadline.timeRemaining()<4||performance.now()-sliceStart>4){
+          this.warmStationRace(city);return;
+        }
+      }
       const world=this.raceWorld;
       // Stage the actual starting cars while the hidden track waits for entry.
       const grid=new StationRace();
       world.update(grid);
       world.rivalModelsReady.then(()=>idle(()=>{
         if(!stillDriving())return;
-        this.renderer.compile(world.root,this.camera,this.scene);
+        this.compileRaceWorld(world).catch(error=>console.warn('경주 화면 사전 준비',error));
         // The three detailed cars share texture objects. Upload each starting-grid
         // texture only once, with an opportunity to draw the city between uploads.
         const textures=new Set();
-        for(const name of [...grid.rivals.map(r=>r.name),'Circuit grass','Track asphalt','Circuit safety wall']){
+        for(const name of [...grid.rivals.map(r=>r.name),'Quayside paving','Track asphalt','Circuit safety wall','Circuit metropolitan districts']){
           world.root.getObjectByName(name)?.traverse(o=>{
             for(const m of Array.isArray(o.material)?o.material:[o.material]){
               if(m)for(const t of Object.values(m))if(t?.isTexture&&t.image&&!t.isRenderTargetTexture)textures.add(t);
@@ -1127,6 +1168,6 @@ export class FlightScene {
     for(const vehicle of this.vehicleCache?.values()||[])disposeVehicle(vehicle);this.vehicleCache?.clear();
     const environmentTextures=new Set();for(const material of Object.values(this.environmentMaterials||{})){for(const value of Object.values(material))if(value?.isTexture)environmentTextures.add(value);material.dispose();}
     for(const texture of environmentTextures)texture.dispose();
-    this.realSky?.dispose();this.environmentTarget?.dispose();this.renderer.dispose();
+    this.circuitSky?.dispose();this.circuitSky=null;this.realSky?.dispose();this.environmentTarget?.dispose();this.renderer.dispose();
   }
 }

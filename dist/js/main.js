@@ -19,7 +19,7 @@ import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261119-ai158';
-import {FlightScene} from './scene.js?v=20261119-ai158';
+import {FlightScene} from './scene.js?v=20261119-metropolis159';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -71,8 +71,24 @@ function parkAt(pose){
   driver.reset();clearDriveInputs();driveInput={};driveGear='D';
   renderStates.reset(sim);scene.frameCityStart(sim);
 }
-function startRace(gate){
-  if(mode!=='city'||cityLoading||vehicleLoading)return;
+let pendingRaceEpoch=null;
+async function startRace(gate){
+  if(mode!=='city'||cityLoading||vehicleLoading||pendingRaceEpoch===modeEpoch)return;
+  if(!scene.raceEntryReady){
+    const epoch=modeEpoch,loading=$('city-loading');
+    pendingRaceEpoch=epoch;setPaused(true);
+    loading.textContent='미래도시 서킷을 준비하는 중…';loading.hidden=false;
+    try{await scene.prepareStationRaceEntry();}
+    catch(error){
+      if(mode==='city'&&modeEpoch===epoch){console.error(error);toast('서킷 준비에 실패했습니다. 다시 진입해 주세요.');setPaused(false);}
+      return;
+    }finally{
+      if(pendingRaceEpoch===epoch)pendingRaceEpoch=null;
+      if(modeEpoch===epoch){loading.textContent='서울 도로를 불러오는 중…';loading.hidden=true;}
+    }
+    if(mode!=='city'||modeEpoch!==epoch||cityLoading)return;
+    if(vehicleLoading){setPaused(false);return;}
+  }
   if(!race){
     brakeTrial.cancel('paused');
     mapSession.sample(sim.state.pos.x,sim.state.pos.z);mapSession.breakPath();
@@ -87,7 +103,7 @@ function startRace(gate){
   mapPanel.setRaceActive(true);
   parkAt(race.startPose);setPaused(false);
   showRaceHUD(true);updateRaceHUD(race,sim.telemetry(),driver);
-  $('world').setAttribute('aria-label','AI 차량 3대와 달리는 4.381 km 서킷 · 매 랩 공중 링 '+RACE_COURSE.gates.filter(g=>g.air).length+'개 필수 · 기체 무제한');
+  $('world').setAttribute('aria-label','AI 차량 3대와 달리는 4.381 km 미래도시 서킷 · 매 랩 공중 링 '+RACE_COURSE.gates.filter(g=>g.air).length+'개 필수 · 기체 무제한');
   $('world').focus({preventScroll:true});
 }
 function recoverRace(){
@@ -100,10 +116,11 @@ function leaveRace(){
   const {gate,sim:citySim,driver:cityDriver,distance}=cityReturn;
   race=null;cityReturn=null;sim=citySim;driver=cityDriver;cityDistance=distance;
   scene.setStationRace(null);scene.city.streaming?.bindPhysics(sim);
-  const exit=gate.returnPose;
-  parkAt({x:exit.position[0],z:exit.position[2],heading:exit.heading});
+  const exit=gate?.returnPose;
+  if(exit)parkAt({x:exit.position[0],z:exit.position[2],heading:exit.heading});
+  else {clearDriveInputs();renderStates.reset(sim);scene.frameCityStart(sim);}
   mapSession.sample(sim.state.pos.x,sim.state.pos.z);mapPanel.setRaceActive(false);
-  scene.city.streetOverlay?.portals?.suppress(gate);
+  if(gate)scene.city.streetOverlay?.portals?.suppress(gate);
   showRaceHUD(false);setPaused(false);
   $('world').setAttribute('aria-label','서울 실제 도로 기반 자유 주행');
   $('world').focus({preventScroll:true});
@@ -296,7 +313,7 @@ async function setMode(next){
   document.body.classList.toggle('inspect',mode==='inspect');document.body.classList.toggle('city',mode==='city');
   $$('[data-mode]').forEach(b=>{b.classList.toggle('active',b.dataset.mode===mode);b.setAttribute('aria-pressed',b.dataset.mode===mode);});
   $('inspect-panel').hidden=mode!=='inspect';$('lab-panel').hidden=mode!=='lab';$('part-card').hidden=true;selectedPartId=null;
-  $('city-hud').hidden=mode!=='city';$('city-loading').hidden=!cityLoading;
+  $('city-hud').hidden=mode!=='city';$('city-loading').textContent='서울 도로를 불러오는 중…';$('city-loading').hidden=!cityLoading;
   $('panel-toggle').textContent=mode==='inspect'?'☷ 부품 목록':'☷ 실험 설정';$('camera-label').textContent=cameraLabel();
   $('world').setAttribute('aria-label',mode==='city'?'서울 실제 도로 기반 자유 주행':'착지 충격과 차체 구조를 관찰하는 3D 공간');
   if(mode==='city'){
@@ -831,8 +848,9 @@ try{
   selectVehicle('roadster').then(ready=>{
     if(!ready)return;
     const requestedMode=new URLSearchParams(location.search).get('mode');
-    if(!modeEpoch&&['inspect','city'].includes(requestedMode)){
-      setMode(requestedMode).then(async()=>{
+    if(!modeEpoch&&['inspect','city','race'].includes(requestedMode)){
+      setMode(requestedMode==='race'?'city':requestedMode).then(async()=>{
+        if(requestedMode==='race'&&mode==='city'&&modeEpoch===1&&cityPoseReady){startRace(null);return;}
         if(mode!=='inspect'||requestedMode!=='inspect')return;
         const query=new URLSearchParams(location.search),id=query.get('vehicle');
         if(id&&id!==activeVehicle.id&&VEHICLES.some(v=>v.id===id))await selectVehicle(id);
