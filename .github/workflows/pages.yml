@@ -6,6 +6,12 @@ on:
     paths:
       - 'dist/**'
       - 'tests/**'
+      - 'docs/landing-study-guide.md'
+      - 'docs/experiment-mass-basis.md'
+      - 'docs/landing-20m-v146.md'
+      - 'docs/data/**'
+      - 'docs/vehicle-reference.txt'
+      - 'scripts/build-landing-guide.mjs'
       - 'package*.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -29,6 +35,8 @@ jobs:
           cache: npm
       - name: Install test dependency
         run: npm ci --ignore-scripts
+      - name: Build public landing study guide
+        run: node scripts/build-landing-guide.mjs
       - name: Check JavaScript and simulator tests
         run: |
           npm run check

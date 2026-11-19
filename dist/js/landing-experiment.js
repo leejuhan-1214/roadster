@@ -1,5 +1,5 @@
 import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261118-study150';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261119-height160';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // Measurement updates run at the fixed physics step (normally 2 ms). Force samples
@@ -136,7 +136,10 @@ export function landingRunInput(run,sim,manualLift=false){
     if(!run.braking)return off;
     return {...off,stabilize:true,verticalAcceleration:economyAcceleration(gap,velocity,run.targetSpeed,g,sim.params.valveTau)};
   }
-  if(run.method==='brake'&&!run.braking&&gap<=run.brakeHeight){
+  // Reconstructing wheel clearance can round a release exactly on the trigger
+  // a few ULPs above it; that equality belongs to this controller tick.
+  const heightTolerance=4*Number.EPSILON*Math.max(1,run.brakeHeight);
+  if(run.method==='brake'&&!run.braking&&gap<=run.brakeHeight+heightTolerance){
     run.braking=true;run.autoBrakeHeight=Math.max(0,gap);run.autoBrakeTime=run.elapsed;
   }
   if(run.method==='brake'&&!run.braking)return off;

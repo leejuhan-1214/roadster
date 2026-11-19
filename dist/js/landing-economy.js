@@ -10,11 +10,15 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function forecast(initial, trigger, target, profile='brake') {
   const {gravity:g, dryMass, tankVolume, valveTau, feedLossCoefficient, area} = initial;
   const distance = Math.max(0, initial.height - trigger);
-  const steps = Math.ceil(Math.sqrt(distance)*Math.sqrt(2/g)/STEP);
+  // A release from hover carries open valves and residual flow. Integrate
+  // their decay during the coast; only a cold release has a ballistic shortcut.
+  const fromHover=initial.valveOpening>0;
+  let steps = fromHover?0:Math.ceil(Math.sqrt(distance)*Math.sqrt(2/g)/STEP);
   let gap = initial.height - .5 * g * (STEP*steps)**2;
-  let velocity = -g * STEP * steps;
+  let velocity = (initial.releaseVelocityY||0)-g * STEP * steps;
   let gas = initial.gas, temperature = initial.temperature, pressure = initial.pressure;
-  let opening = 0, flow = 0, elapsed = 0;
+  let opening = initial.valveOpening||0, flow = initial.flowKgS||0, elapsed = 0;
+  let braking=!fromHover||profile==='gentle';
   let contactVelocity=gap<=0?-Math.sqrt(2*g*initial.height):velocity,contactGas=gas;
   const tau = Math.max(.001, valveTau), decay = Math.exp(-STEP / tau);
   const meanDecay = -Math.expm1(-STEP/tau)/(STEP/tau);
@@ -25,7 +29,9 @@ function forecast(initial, trigger, target, profile='brake') {
     const manifold = Math.max(ATMOSPHERE, pressure - feedLossCoefficient * flow * flow);
     const full = nozzle(manifold, temperature, area);
     const acceleration = profile==='gentle'?gentleForecastAcceleration(gap,velocity,target,g,tau):economyAcceleration(gap,velocity,target,g,tau);
-    const requested = mass * Math.max(0, g + acceleration);
+    if(!braking&&gap<=trigger)braking=true;
+    if(!braking)steps++;
+    const requested = braking?mass * Math.max(0, g + acceleration):0;
     const command = full.force > 0 ? clamp(requested / full.force, 0, 1) : 0;
     const meanOpening = command + (opening - command) * meanDecay;
     opening = command + (opening - command) * decay;
@@ -66,7 +72,7 @@ function forecast(initial, trigger, target, profile='brake') {
     gas=nextGas;pressure=gas*R*temperature/tankVolume;
   }
   return {trigger, profile, speed:Math.max(0,gap<=0?-contactVelocity:-velocity), gasUsed:initial.gas - gas,touchdownGasUsed,
-    complete:gap <= 0, coastTime:steps * STEP, burnTime:elapsed};
+    complete:gap <= 0, coastTime:steps * STEP, burnTime:elapsed-(fromHover?steps*STEP:0)};
 }
 
 /** Feedback requests acceleration; only PhysicsSim applies forces and motion. */

@@ -8,12 +8,13 @@ import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
 import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-circuit155';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261118-city151';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261118-city151';
-import {LandingUI} from './landing-ui.js?v=20261118-circuit155';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261119-height160';
+import {LandingUI} from './landing-ui.js?v=20261119-height160';
+import {roadsterHeightStudySource} from './landing-height-source.js?v=20261119-height160';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
-import {LandingPlanner} from './landing-preparation.js?v=20261118-city151';
+import {LandingPlanner} from './landing-preparation.js?v=20261119-height160';
 import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261119-wide157';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
@@ -26,6 +27,11 @@ import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=2
 
 const EXPERIMENT_VEHICLES=experimentVehicles(VEHICLES),experimentIds=new Set(EXPERIMENT_VEHICLES.map(v=>v.id));
 let lastLabVehicleId='roadster',vehicleLoadTask=null;
+let roadsterStudyGeometry=null;
+async function getHeightStudySource(settings){
+  if(!roadsterStudyGeometry&&vehicleLoadTask)await vehicleLoadTask;
+  return roadsterHeightStudySource(roadsterStudyGeometry,settings);
+}
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let sim=new PhysicsSim({roadRoughness:0,aeroEnabled:false});
@@ -290,6 +296,7 @@ async function selectVehicle(id,{forLanding=false}={}){
   $('model-status').hidden=false;$('model-status').textContent=profile.short+' 불러오는 중…';
   try{
     vehicleLoadTask=scene.loadVehicle(profile);const vehicle=await vehicleLoadTask;activeVehicle=profile;
+    if(profile.id==='roadster')roadsterStudyGeometry={...vehicle.geometryParams};
     if(mode==='lab'&&experimentIds.has(profile.id))lastLabVehicleId=profile.id;
     Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),{roadRoughness:0,aeroEnabled:false});reset({cancel:false,restoreCityPlace:mode==='city'});
     selectedPartId=null;$('part-card').hidden=true;$('part-search').value='';
@@ -714,7 +721,7 @@ function setupUI(){
   labTires=createTireReadout($('lab-wheel-loads'));
   cityTires=createTireReadout($('city-wheel-loads'));
   refreshVehiclePicker();
-  landingUI=new LandingUI({vehicles:EXPERIMENT_VEHICLES,onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onCompareFleetMethods:()=>startLanding('fleet-methods'),onCompareBrakeHeights:()=>startLanding('brake-heights'),onCompareBallast:()=>startLanding('ballast'),onStop:stopLanding,onConfigure:()=>setSettingsPanel(true)});
+  landingUI=new LandingUI({vehicles:EXPERIMENT_VEHICLES,getHeightStudySource,onStart:()=>startLanding('single'),onCompareVehicles:()=>startLanding('vehicles'),onCompareMethods:()=>startLanding('methods'),onCompareFleetMethods:()=>startLanding('fleet-methods'),onCompareBrakeHeights:()=>startLanding('brake-heights'),onCompareBallast:()=>startLanding('ballast'),onStop:stopLanding,onConfigure:()=>setSettingsPanel(true)});
   landingLiveUI=new LandingLiveUI($('telemetry'));
   scene.setLandingLearningVisible(landingLearningVisible);
   $('landing-speed').addEventListener('change',event=>{landingPlaybackRate=Number(event.target.value)||1;accumulator=0;});
@@ -857,6 +864,7 @@ try{
         if(mode==='inspect'&&query.has('part'))focusApparatus(query.get('part'));
       });
     }
+    else if(!modeEpoch&&mode==='lab'&&new URLSearchParams(location.search).get('study')==='brake-height')landingUI.openHeightStudy();
     else if(mode==='lab')landingPlanner.warm();
   });
   // ?debug exposes the running objects for inspection; it changes no behaviour.

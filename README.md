@@ -1,6 +1,12 @@
-# Roadster v1.59.1 — 착지 실험과 서울 주행
+# Roadster v1.60.0 — 착지 실험과 서울 주행
 
 [시뮬레이터 열기](https://leejuhan-1214.github.io/roadster/) · [현재 보고서 가이드와 20 m 측정 결과](docs/landing-study-guide.md) · [5차종 20조건 검증](docs/landing-20m-v146.md)
+
+## v1.60.0 — 20 m 부양 후 착지 실험
+
+착지 실험에서 **20 m 부양·제동 높이 실험**을 누른다. 같은 2020 로드스터로 부양한 뒤 지정 높이 제동과 절약 착지의 공기 소비, 접촉 속력, 최대 등가반력을 비교한다. 제동 명령 시점의 단순 예측과 첫 접촉 전 실제 감속 거리를 나란히 읽을 수 있다. 전체 측정값은 CSV로 저장한다.
+
+[20 m 실험 바로 열기](https://leejuhan-1214.github.io/roadster/?study=brake-height&v=1.60.0) · [측정표와 보고서 가이드](https://leejuhan-1214.github.io/roadster/landing-study-guide.html#height-study)
 
 ## v1.59.1 — 미래도시 서킷
 

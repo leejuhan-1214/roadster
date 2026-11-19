@@ -1,0 +1,58 @@
+#landing-height-study{border-color:#45786e}
+.height-study-dialog{box-sizing:border-box;width:min(900px,calc(100vw - 32px));max-width:none;max-height:90vh;max-height:90dvh;margin:auto;padding:0;color:#e2ebef;background:#101e28;border:1px solid #3a5660;border-radius:12px;overflow:auto;overscroll-behavior:contain}
+.height-study-dialog::backdrop{background:#041018cc}
+.height-study-dialog [hidden]{display:none!important}
+.height-study-dialog .modal-top{position:sticky;z-index:2;top:0;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;padding:14px 20px;background:#152630;border-bottom:1px solid #354a55}
+.height-study-dialog .modal-top h2{margin:0;font-size:1.15rem;color:#e2ebef}
+.height-study-dialog .modal-top button{flex:none}
+.height-study-body{display:grid;gap:13px;padding:16px 20px 20px;font-size:14px;line-height:1.5}
+.height-study-body p,.height-study-body h3{margin:0}
+.height-study-body h3{font-size:1rem;color:#e0ecee}
+.height-study-body small,.height-study-note{color:#aec4ce}
+.height-study-body select,.height-study-body button,.height-study-body textarea{font:inherit;color:inherit}
+.height-study-body button,.height-study-body select,.height-study-links a{min-height:36px;padding:5px 10px;border:1px solid #46626e;border-radius:5px;background:#1a303b}
+.height-study-body button,.height-study-links a{cursor:pointer}
+.height-study-body button:focus-visible,.height-study-body select:focus-visible,.height-study-body a:focus-visible,.height-study-body summary:focus-visible{outline:2px solid #9af4d6;outline-offset:3px}
+.height-study-status,.height-study-links,.height-study-legend{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
+.height-study-status progress{max-width:100%;accent-color:#8de4c5}
+.height-study-links a{display:inline-flex;align-items:center;color:#c1eee4;text-decoration:none}
+.height-study-body textarea{width:100%;box-sizing:border-box;background:#0c1820}
+.height-study-output{display:grid;gap:14px}
+.height-study-summary{padding:9px 12px;color:#cdf4e8;border-left:3px solid #70cbb0;background:#16302f}
+.height-study-result-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(245px,1fr);align-items:start;gap:16px}
+.height-study-plot{margin:0;min-width:0}
+.height-study-plot figcaption,.height-study-details label{font-weight:700}
+.height-study-plot svg{display:block;width:100%;height:auto;margin:5px 0;background:#0c1922;border:1px solid #2c4651;border-radius:6px;box-sizing:border-box}
+.height-study-plot text{font:13px system-ui,sans-serif;fill:#c5d7df}
+.height-study-plot .height-study-axis{font-size:14px}
+.height-study-grid{stroke:#30434f;stroke-width:1}
+.height-study-point{cursor:pointer}
+.height-study-point:focus{outline:none}
+.height-study-point:focus-visible .height-study-focus{stroke:#fff;stroke-width:2}
+.height-study-callout{stroke:#90a5af;stroke-width:1}
+.height-study-legend{font-size:12px;color:#c6d5dd}
+.height-study-valid{color:#8ae4bd}.height-study-invalid{color:#c4ced6}.height-study-eco{color:#ffbb78}
+.height-study-details{display:grid;gap:7px;min-width:0}
+.height-study-details select{display:block;width:100%;max-width:100%}
+.height-study-details dl{margin:0}
+.height-study-details dl div{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid #293c46}
+.height-study-details dt{color:#b4c8d1}.height-study-details dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.height-study-section{border-top:1px solid #324751;padding-top:8px}
+.height-study-section summary{cursor:pointer;font-weight:650;color:#d6e7ec}
+.height-study-section p{margin-top:6px}
+.height-study-plot label{font-size:12px;display:inline-flex;align-items:center;gap:5px}
+.height-study-plot .height-study-note{margin-top:7px;font-size:12px}
+.height-study-scroll{overflow:auto;max-height:340px;margin-top:8px}
+.height-study-scroll table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums}
+.height-study-scroll th,.height-study-scroll td{padding:6px 8px;text-align:right;border-bottom:1px solid #2b414c}
+.height-study-scroll th:first-child,.height-study-scroll td:first-child{text-align:left}
+.height-study-scroll thead th{position:sticky;top:0;background:#1c303b}
+@media(max-width:700px){
+  .height-study-dialog{width:calc(100vw - 16px);max-height:94vh;max-height:94dvh}
+  .height-study-dialog .modal-top{padding:10px 12px}
+  .height-study-dialog .modal-top h2{font-size:1rem}
+  .height-study-body{padding:10px 12px 15px;gap:10px}
+  .height-study-result-layout{grid-template-columns:minmax(0,1fr)}
+  .height-study-plot text,.height-study-plot .height-study-axis{font-size:15px}
+  .height-study-scroll{max-height:270px}
+}

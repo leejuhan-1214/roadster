@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>20 m 착지 실험 결과 교체 자료</title>
+  <link rel="stylesheet" href="../landing-study-guide.css">
+</head>
+<body>
+  <a class="skip" href="#report">본문 바로가기</a>
+  <header><div class="bar"><a class="brand" href="../">Roadster 착지 실험</a><a href="../landing-study-guide.html">보고서 가이드로</a></div></header>
+  <div class="layout">
+    <nav aria-labelledby="contents-title"><h2 id="contents-title">목차</h2><ul><li><a href="#section-1">통제 조건</a></li>
+<li><a href="#section-2">Roadster의 네 방식</a></li>
+<li><a href="#section-3">운동량·에너지 검산</a></li>
+<li><a href="#section-4">결과 해석</a></li></ul></nav>
+    <main id="report" tabindex="-1"><h1>20 m 착지 실험 결과 교체 자료</h1>
+<p><strong>v1.46.0에서 Roadster의 착지 목표를 만족한 방식은 절약 착지이다.</strong> 같은 높이와 초기 탱크 상태에서 절약 착지는 완만한 하강보다 압축공기를 175.16 kg(59.48%) 적게 썼다. 두 방식의 착지 판정은 각각 충족과 미달이었다.</p>
+<h2 id="section-1">통제 조건</h2>
+<p>바퀴 하단에서 평면 지면까지 20.00 m, 수평 자세·초기속도 0에서 하강을 시작했다. Roadster 초기 총질량은 2275 kg이며, 공기 375 kg가 포함된다. 900 L 탱크의 초기 절대압은 35.875 MPa, 온도는 300 K다. 하부 노즐로 공기를 방출하며 재충전·수동 조작·바람·공기저항은 껐다. 바퀴별 스프링 계수 75,000 N/m, 감쇠 계수 6,000 N·s/m, 마찰계수 1.15, g = 9.80665 m/s²를 사용했다. 지정 높이 분사의 시작 높이는 1.50 m다. 접촉 속력 0.50 m/s 이하, 차체 바닥 비접촉, 서스펜션 범프스톱 미개입, 최종 정착을 모두 만족해야 목표를 달성한다.</p>
+<h2 id="section-2">Roadster의 네 방식</h2>
+<p>각 칸의 왼쪽은 기존 v1.45.0, <strong>오른쪽은 이번 v1.46.0</strong> 계산이다.</p>
+<div class="data-table" role="region" aria-label="Roadster의 네 방식 표 1" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">방식</th>
+<th scope="col" align="right">접촉 속력 (m/s)</th>
+<th scope="col" align="right">공기 소비 (kg)</th>
+<th scope="col" align="right">최대 등가반력 (kN)</th>
+<th scope="col">이번 차체 바닥 접촉</th>
+<th scope="col">착지 목표</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>자유 낙하</td>
+<td align="right">19.8094 → <strong>19.8057</strong></td>
+<td align="right">0.000 → <strong>0.000</strong></td>
+<td align="right">21686.529 → <strong>21734.889</strong></td>
+<td>있음</td>
+<td>미달 → <strong>미달</strong></td>
+</tr>
+<tr>
+<td>지정 높이 분사</td>
+<td align="right">18.7653 → <strong>18.8108</strong></td>
+<td align="right">7.046 → <strong>6.703</strong></td>
+<td align="right">20292.094 → <strong>20391.175</strong></td>
+<td>있음</td>
+<td>미달 → <strong>미달</strong></td>
+</tr>
+<tr>
+<td>완만한 하강</td>
+<td align="right">6.1317 → <strong>6.1306</strong></td>
+<td align="right">294.535 → <strong>294.484</strong></td>
+<td align="right">3970.068 → <strong>3864.712</strong></td>
+<td>있음</td>
+<td>미달 → <strong>미달</strong></td>
+</tr>
+<tr>
+<td>절약 착지</td>
+<td align="right">0.3628 → <strong>0.3636</strong></td>
+<td align="right">119.406 → <strong>119.323</strong></td>
+<td align="right">26.792 → <strong>26.843</strong></td>
+<td>없음</td>
+<td>충족 → <strong>충족</strong></td>
+</tr>
+</tbody></table>
+</div>
+<p>공기 소비량은 하강 시작부터 접촉 후 밸브가 닫히고 정착을 관측할 때까지의 방출량이다. 20 m까지 상승하거나 공중 정지 상태를 유지하는 데 필요한 공기는 이 구간 밖이다. 힘은 2 ms 단위로 계산했다. 큰 값에는 강체의 땅속 침투를 막는 보정 충격량을 0.002 s로 나눈 항이 포함된다. 그 값의 적용 범위는 이 계산 설정에서 방식 간 하중을 비교하는 데 한정된다. 차체 재료의 실제 변형에 따른 충격력과 탑승자 안전성은 별도 실측이 필요하다.</p>
+<h2 id="section-3">운동량·에너지 검산</h2>
+<div class="data-table" role="region" aria-label="운동량·에너지 검산 표 1" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">방식</th>
+<th scope="col" align="right">접촉 시각 (s)</th>
+<th scope="col" align="right">접촉 질량 (kg)</th>
+<th scope="col" align="right">수직 운동에너지 (J)</th>
+<th scope="col" align="right">첫 감속 구간 (s)</th>
+<th scope="col" align="right">지면 충격량 (N·s)</th>
+<th scope="col" align="right">구간 평균 반력 (kN)</th>
+<th scope="col" align="right">연속 반력 최대 (kN)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>자유 낙하</td>
+<td align="right">2.019620</td>
+<td align="right">2275.000</td>
+<td align="right">446202.57</td>
+<td align="right">0.010380</td>
+<td align="right">47313.44</td>
+<td align="right">4558.125</td>
+<td align="right">484.150</td>
+</tr>
+<tr>
+<td>지정 높이 분사</td>
+<td align="right">2.021162</td>
+<td align="right">2270.760</td>
+<td align="right">401750.00</td>
+<td align="right">0.010838</td>
+<td align="right">44440.50</td>
+<td align="right">4100.564</td>
+<td align="right">458.660</td>
+</tr>
+<tr>
+<td>완만한 하강</td>
+<td align="right">7.409745</td>
+<td align="right">1981.315</td>
+<td align="right">37232.72</td>
+<td align="right">0.038255</td>
+<td align="right">13006.46</td>
+<td align="right">339.993</td>
+<td align="right">241.040</td>
+</tr>
+<tr>
+<td>절약 착지</td>
+<td align="right">2.879202</td>
+<td align="right">2156.894</td>
+<td align="right">142.54</td>
+<td align="right">0.294798</td>
+<td align="right">6386.07</td>
+<td align="right">21.662</td>
+<td align="right">26.843</td>
+</tr>
+</tbody></table>
+</div>
+<p>정지 상태의 자유 낙하 이론값은 v = √(2gh) = 19.805706248 m/s, t = √(2h/g) = 2.019619977 s다. 궤적에서 처음 지면을 지난 순간을 찾아 얻은 접촉값은 19.805706248 m/s, 2.019619977 s다. 초기 위치에너지 mgh는 446202.575 J이고 접촉 수직운동에너지는 446202.575 J다. 이전 버전은 비행 변위를 단계 끝 속도로 계산하고, 2 ms 경계에서 접촉 속도를 기록했다. 이번에는 단계 평균 속도로 비행 변위를 계산하고 지면 통과 순간의 속력과 질량을 구했다. 밸브를 통해 흐르는 공기량에도 단계 동안의 개도 변화를 반영했다.</p>
+<p>자유 낙하의 첫 감속 구간에서 위쪽을 양의 방향으로 두면 Δp = m(v₂−v₁) = 47081.861648 N·s다. 지면 충격량 J_ground에 중력 충격량을 더한 값은 47313.441295 − 231.579647 = 47081.861648 N·s다. 첫 접촉 시각은 2 ms 사이에서 보간하고 첫 정지 근처 속도 v₂ = +0.889618 m/s는 실제 계산 단계 끝에서 읽었다. 이 둘의 시간 차이로 중력 충격량과 평균 반력을 구했다. 보정 충격량이 포함된 평균 반력과 연속 접촉력만의 최대는 집계하는 힘의 범위가 다르다.</p>
+<p>분사 중에는 차량과 남은 공기를 합한 질량이 시간에 따라 줄어든다. 아래쪽으로 공기를 내보낼 때 위쪽 추력은 T = ṁₑuₑ + (pₑ−pₐ)Aₑ이다. 유효 배기속력 u_eff = T/ṁₑ로 두면 질량 유출에 의한 운동량 변화는 m dv = −u_eff dm이다. 직선 운동에서 외력이 없고 u_eff가 일정하면 **Δv = u_eff ln(mᵢ/m_f)**가 된다. mᵢ와 m_f에는 차체와 남은 공기 질량이 모두 포함된다. 공중에서 위쪽 추력과 일정한 중력을 함께 고려한 식은 Δv = u_eff ln(mᵢ/m_f) − gΔt이다. 실제 수치 실험은 압력·온도·유량이 변하는 노즐 추력을 계산하고 접촉 뒤에는 지면반력도 합산한다.</p>
+<h2 id="section-4">결과 해석</h2>
+<p>지정 높이 분사의 접촉 속력은 18.811 m/s다. 20 m에서 1.50 m까지 떨어지며 얻은 하강 운동량을 남은 제동 거리에서 충분히 줄이지 못했다. 완만한 하강은 일찍부터 분사하여 공기를 294.484 kg 사용했다. 끝날 때도 80.516 kg이 남았고, 절대압력은 4.163 MPa까지 낮아졌다. 절약 착지는 1.424 s 동안 무분사 하강한 뒤 바퀴 아래 높이 10.057 m에서 제동을 시작했다. 압력과 분사 시간을 함께 고려해 목표 접촉 속력을 달성한 사례다. 관찰한 절감률은 이 높이·차체·비교 방식에 대한 값이다.</p>
+<p>5차종에 같은 네 방식을 적용한 20조건에서 20개가 정착했고 5개가 목표에 도달했다. 목표 충족 조건은 Mazda MX-5 Miata NA 완만한 하강, Mazda MX-5 Miata NA 절약 착지, BMW M3 E30 절약 착지, Toyota Supra Mk IV (1994) 절약 착지, Tesla Roadster 2020 절약 착지이다. 이전 대비 목표 판정이 달라진 조건은 0개다. 각 조건은 한 번씩 계산했고 모든 단계에 대해 수치 유한성·질량·탱크 에너지·수직 대칭 등을 확인했다. 탱크 에너지 수지의 최대 잔차는 3.13e-7 J, 공기 질량 수지는 1.65e-12 kg다. 차종 간 비교에는 형상과 관성 차이도 함께 반영된다.</p>
+<p><a href="../data/landing-20m-v146-comparison.csv">20조건 전체 전후 비교 CSV</a> · <a href="../data/landing-20m-v146-audit.json">물리 결과와 실행 조건 JSON</a></p>
+</main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+차량 비교 실험 - 출처와 가정 (2026-11-07)
+
+선택 차체: Tesla Roadster 2020 콘셉트, Ferrari 458 Spider, BMW M3 E30.
+공개 커뮤니티 모델의 외형을 활용한다. 제조사 CAD/실제 착지 시험 결과가 아니다.
+
+1. 확인한 제원
+Ferrari 458 Spider: 길이4527mm,폭1937mm,높이1211mm,축간2650mm. 기준 공차중량1535kg; 건조중량1430kg와 구분한다. 수치는 단조 휠/레이싱 시트 조건이다. Ferrari S.p.A.2011브로셔 PDF34페이지(인쇄62-63쪽)를 텍스트 추출하고 렌더링하여 확인했다.
+https://asset.moto.it/pricelist/auto/61674c8d28dccd8ee6d3b1379f6d74fe/catalogo-458-spider.pdf
+모델 배포자가 붙인 원제목은 Ferrari 458 Italia이나, 열린 지붕과 뒤쪽 형태를 실제 렌더링에서 확인해 화면의 차종/물리 기준을 Spider로 정했다. 원제목은 저작자 표시에서 유지한다.
+
+BMW M3 E30: BMW AG Presse제원표1페이지, M3 1986-1990열. 길이4345mm,폭1680mm,높이1370mm,축간2562mm,앞/뒤윤거1412/1433mm, DIN기준 공차중량1200kg. 표를 추출하고 렌더링하여 확인했다.
+https://newsroom.bmwgroup.com/emea/download/77c3f415-c484-4e2d-ba85-adc55592ec7b/20260902080344136-843.pdf
+원래 자료 페이지: https://www.press.bmwgroup.com/italy/article/attachment/T0082320IT/125300
+
+2. 실험에 적용한 질량
+Roadster: 기체 제외1900kg(기존 가정), 초기 공기375kg추가=2275kg.
+Ferrari: 공차1535kg+가상 장치 순증가150kg=기체 제외1685kg. 초기 공기375kg추가=2060kg.
+BMW: 공차1200kg+가상 장치 순증가150kg=기체 제외1350kg. 초기 공기375kg추가=1725kg.
+공통 기본 탱크900L/공기375kg이며, 분사하면 기체 질량이 감소한다. 코드의 dryMass는 여기서 기체 제외 질량을 뜻하며 제조사 건조중량과 다르다. 150kg는 실제 개조 설계/배치/탱크 질량을 검증한 값이 아닌 통제 실험용 가정이다.
+
+3. 형상 처리와 물리 범위
+네 타이어 중심의 축간거리를 기준 제원에 맞춰 균일 확대/축소한다. 차폭이나 높이를 따로 늘려서 모델을 변형하지 않는다. 사이드미러 포함 모델 폭은 제조사 표의 차폭과 다를 수 있다. 앞뒤차축 중점을 기준으로 재배치하고, 바퀴 회전/서스펜션 표시와 충돌용 외피를 연결한다. BMW원본의 약28.7도 조향 상태는 곧게 편다.
+차체별 길이/폭/높이/질량과 박스 근사 관성모멘트가 다르다. 서스펜션과 비행 장치는 공통 교육용 조건이다. Ferrari의 V8/7단변속기나 BMW의 S14/수동변속기 재현이 아니다. 모든 차체에 동일한 가상3모터 전기구동 및 압축공기 추진계를 적용한다. 실차 착지안전성 비교나 개조 실현 가능성을 입증하지 않는다.
+
+4. 3D저작물 출처
+Ferrari: vicent091036, CC BY4.0. 다운로드 고정커밋f2b6a71bdd088d9da387fcc62802323341099b92.
+https://raw.githubusercontent.com/mrdoob/three.js/f2b6a71bdd088d9da387fcc62802323341099b92/examples/models/gltf/ferrari.glb
+SHA256 cafe3f48da6797aa9bde75ca768bc5b57db366575fd233e90df186ae988a876e
+BMW: Martin Trafas, CC BY4.0. 최적화배포 ahnuchen/auto-atlas 고정커밋cb039d767f549e4d032ae8a704117a3979d3adfa.
+https://raw.githubusercontent.com/ahnuchen/auto-atlas/cb039d767f549e4d032ae8a704117a3979d3adfa/public/models/free_bmw_m3_e30.glb
+SHA256 4806a9b24954a784efc349b6b2ab2b0c347f3802422f1baf1054f45e44a933d1
+원본 링크, 라이선스, 수정 내역은 dist/assets/vehicles/ATTRIBUTION.txt 및 provenance.json에 보존한다.

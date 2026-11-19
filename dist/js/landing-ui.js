@@ -1,6 +1,7 @@
 import {experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
-import {LandingStepAuditPanel,STEP_AUDIT_MARKUP} from './landing-step-audit.js?v=20261118-circuit155';
+import {LandingStepAuditPanel,STEP_AUDIT_MARKUP} from './landing-step-audit.js?v=20261119-height160';
 import {brakeTimelinePlot} from './landing-brake-timeline.js?v=20261118-study150';
+import {LandingHeightStudyPanel} from './landing-height-study-ui.js?v=20261119-height160';
 import {copyLandingConditions} from './landing-report.js?v=20261118-study150';
 import {landingTheory,landingImpulseAudit,landingTradeoff,landingTargetMet,landingReactionTrace,sameLandingModel} from './landing-analysis.js?v=20261118-study150';
 const METHODS = {free:'자유 낙하',brake:'지면 전 추력 제동',gentle:'완만한 하강 제어',eco:'절약 착지'};
@@ -126,16 +127,20 @@ export function retainLandingGroups(results,currentGroup,limit=LANDING_HISTORY_L
   return results;
 }
 
+export function landingCsvText(rows){
+  return '\ufeff'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
+}
 function download(name,rows){
-  const text='\ufeff'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');
+  const text=landingCsvText(rows);
   const url=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
   const anchor=document.createElement('a');anchor.href=url;anchor.download=name;anchor.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 export class LandingUI {
-  constructor({onStart,onCompareVehicles,onCompareMethods,onCompareFleetMethods,onCompareBrakeHeights,onCompareBallast,onStop,onConfigure,vehicles=[]}){
+  constructor({onStart,onCompareVehicles,onCompareMethods,onCompareFleetMethods,onCompareBrakeHeights,onCompareBallast,onStop,onConfigure,getHeightStudySource,vehicles=[]}){
     this.root=document.getElementById('landing-lab');
+    this.getHeightStudySource=getHeightStudySource;
     this.results=[];this.busy=false;this.selectedGroup=null;this.nextId=1;
     this.root.innerHTML=`
       <form id="landing-settings" class="landing-settings">
@@ -145,6 +150,7 @@ export class LandingUI {
         </div>
         <button id="landing-start" class="primary-btn" type="submit">실험 시작 <span>↓</span></button>
         <button id="landing-methods" class="landing-compare-button" type="button">4방식 비교 <span>현재 차체 · 4회</span></button>
+        <button id="landing-height-study" class="landing-compare-button" type="button">20 m 부양·제동 높이 실험 <span>로드스터</span></button>
         <details id="landing-advanced" class="landing-settings-details"><summary>제동 · 서스펜션</summary><div class="landing-detail-content">
           <div class="landing-control-pair"><label>제동 설정 <span id="landing-brake-unit">m</span><input id="landing-brake-height" name="brakeHeight" type="number" min="0" step="any" value="1.5" required title="바퀴 높이가 설정값 이하일 때 자동 제동을 시작합니다. 밸브가 열리면서 추력이 발생합니다."></label><label>목표 하강속도 <span>m/s</span><input id="landing-target-speed" name="targetSpeed" type="number" min="0.2" max="2" step="0.1" value="0.5" required></label></div>
           <div class="landing-control-pair"><label>스프링 <span>kN/m · 바퀴별</span><input id="landing-spring" name="springK" type="number" min="30" max="150" step="5" value="75" required></label><label>감쇠 <span>kN·s/m · 바퀴별</span><input id="landing-damper" name="damperC" type="number" min="1" max="15" step="0.5" value="6" required></label></div>
@@ -181,6 +187,7 @@ export class LandingUI {
     this.form.addEventListener('submit',event=>{event.preventDefault();if(!this.busy&&this.checkValidity())onStart(this.readOptions());});
     this.root.querySelector('#landing-vehicles').addEventListener('click',()=>{if(!this.busy&&this.checkValidity()){if(this.readOptions().vehicleIds.length<2){this.setProgress('비교할 차체를 2개 이상 선택하세요.');return;}onCompareVehicles(this.readOptions());}});
     this.root.querySelector('#landing-methods').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareMethods(this.readOptions());});
+    this.root.querySelector('#landing-height-study').addEventListener('click',()=>this.openHeightStudy());
     this.root.querySelector('#landing-fleet-methods').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareFleetMethods(this.readOptions());});
     this.root.querySelector('#landing-ballast').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareBallast(this.readOptions());});
     this.root.querySelector('#landing-brake-heights').addEventListener('click',()=>{if(!this.busy&&this.checkValidity())onCompareBrakeHeights?.(this.readOptions());});
@@ -190,7 +197,7 @@ export class LandingUI {
     this.dialog.setAttribute('aria-labelledby','landing-results-heading');
     this.dialog.innerHTML=`<div class="modal-top"><h2 id="landing-results-heading">착지 비교 결과</h2><div class="landing-result-header-actions"><button id="landing-configure" class="landing-configure-button">조건 바꾸기</button><button class="icon-btn" id="landing-results-close" aria-label="착지 결과 닫기">×</button></div></div>
       <div class="landing-results-toolbar"><label for="landing-result-group">실험 묶음 <select id="landing-result-group"></select></label><span id="landing-group-conditions"></span></div>
-      <div class="landing-copy-tools"><button type="button" id="landing-copy-conditions">실험 조건 복사</button><a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">보고서 가이드</a><span id="landing-copy-status" role="status"></span></div>
+      <div class="landing-copy-tools"><button type="button" id="landing-copy-conditions">실험 조건 복사</button><a href="./landing-study-guide.html" target="_blank" rel="noopener noreferrer">보고서 가이드</a><span id="landing-copy-status" role="status"></span></div>
       <textarea id="landing-copy-text" aria-label="복사용 실험 조건" rows="5" readonly hidden></textarea>
       <p id="landing-best" class="landing-best"></p>
       <details class="landing-analysis-details landing-timeline-section"><summary>제동 그래프 · 추력과 하강 속도</summary>
@@ -237,6 +244,14 @@ export class LandingUI {
     this.root.querySelector('#landing-brake-unit').textContent=eco?'자동':'m';
   }
 
+  openHeightStudy(){
+    if(this.busy||!this.getHeightStudySource)return;
+    for(const name of ['targetSpeed','springK','damperC','brakeHeight']){
+      if(!this.form.elements.namedItem(name).reportValidity())return;
+    }
+    this.heightStudy??=new LandingHeightStudyPanel(()=>this.getHeightStudySource(this.readOptions()),download);
+    this.heightStudy.open();
+  }
   checkValidity(){
     this.form.querySelectorAll('input[type="number"]').forEach(input=>input.setCustomValidity(Number.isFinite(Number(input.value))?'':'유한한 숫자를 입력하세요.'));
     return this.form.reportValidity();
