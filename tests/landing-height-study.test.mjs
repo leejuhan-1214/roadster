@@ -33,8 +33,13 @@ test('20 m height study separates command, goal, and contact on a controlled hov
     assert.equal(row.hoverGasKg,conditions.hover.gasUsedKg);
     assert.equal(row.totalGasKg,row.hoverGasKg+row.landingGasKg);
     if(row.actualDistance!==null)assert.ok(row.actualDistance<=row.distanceToContact+1e-9);
-    if(row.predictedDistance>0)assert.ok(Math.abs(2*row.referenceAcceleration*row.predictedDistance-
-      (row.entrySpeed**2-row.targetSpeed**2))<1e-9);
+    if(row.predictedDistance>0){
+      const b=.5*conditions.parameters.airDensity*conditions.parameters.verticalDragArea/row.commandMassKg;
+      assert.equal(row.kAtCommand,b);
+      // Recover entry v² from the reference solution integrated over d.
+      const v2=(row.referenceAcceleration/b+row.targetSpeed**2)*Math.exp(2*b*row.predictedDistance)-row.referenceAcceleration/b;
+      assert.ok(Math.abs(v2-row.entrySpeed**2)<1e-8);
+    }
   }
   const never=fixed[0],late=fixed.find(r=>r.brakeHeight===1.5),atRelease=fixed.at(-1),eco=rows.at(-1);
   assert.equal(never.targetState,'no-command');assert.equal(never.predictedDistance,null);

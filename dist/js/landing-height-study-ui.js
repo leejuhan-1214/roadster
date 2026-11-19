@@ -92,17 +92,17 @@ const studyMetrics=row=>[
   ['합계',amount(row.totalGasKg,'kg',3)],
   ['실제 명령 높이',amount(row.autoBrakeHeight,'m',3)],
   ['명령 직전 하강 속력',amount(row.entrySpeed,'m/s',3)],
-  ['예측에 쓴 알짜가속도',amount(row.referenceAcceleration,'m/s²',3)],
+  ['추력·중력 기준 가속도',amount(row.referenceAcceleration,'m/s²',3)],
   ['명령부터 첫 접촉까지',amount(row.distanceToContact,'m',3)],
   ['추력이 무게를 넘기까지',finite(row.supportDelay)?amount(1000*row.supportDelay,'ms',1):'접촉 전 관측 없음'],
 ];
 
 export function heightStudyCSV(study){
   const {hover,config,parameters,vehicleId}=study.conditions;
-  const fields=['method','brakeHeight','autoBrakeHeight','targetSpeed','entrySpeed','referenceAcceleration','predictedDistance','actualDistance','targetState','distanceToContact','supportDelay','touchdownSpeed','peakEquivalentGroundForceN','groundImpulseNs','hoverGasKg','landingGasKg','totalGasKg','feasible','bodyStrike','bottomedOut','status'];
-  const headers=['method','brake_setting_m','command_height_m','target_speed_m_s','command_speed_m_s','reference_acceleration_m_s2','predicted_target_distance_m','observed_target_distance_m','target_state','command_to_contact_m','support_delay_s','touchdown_speed_m_s','peak_2ms_reaction_N','first_deceleration_ground_impulse_N_s','hover_air_kg','landing_air_kg','total_air_kg','eligible','body_strike','bump_stop','status'];
-  const controlFields=['vehicle','height_m','hover_duration_s','start_air_kg','release_air_kg','release_height_m','release_velocity_y_m_s','release_pressure_Pa','release_temperature_K','config_json','parameters_json'];
-  const controls=[vehicleId,config.height,hover.durationS,hover.startGasKg,hover.releaseGasKg,hover.releaseHeightM,hover.releaseVelocityY,hover.releasePressurePa,hover.releaseTemperatureK,JSON.stringify(config),JSON.stringify(parameters)];
+  const fields=['method','brakeHeight','autoBrakeHeight','targetSpeed','entrySpeed','referenceAcceleration','predictedDistance','actualDistance','commandMassKg','kAtCommand','targetState','distanceToContact','supportDelay','touchdownSpeed','peakEquivalentGroundForceN','groundImpulseNs','hoverGasKg','landingGasKg','totalGasKg','feasible','bodyStrike','bottomedOut','status'];
+  const headers=['method','brake_setting_m','command_height_m','target_speed_m_s','command_speed_m_s','reference_acceleration_m_s2','predicted_target_distance_m','observed_target_distance_m','command_mass_kg','drag_k_per_m','target_state','command_to_contact_m','support_delay_s','touchdown_speed_m_s','peak_2ms_reaction_N','first_deceleration_ground_impulse_N_s','hover_air_kg','landing_air_kg','total_air_kg','eligible','body_strike','bump_stop','status'];
+  const controlFields=['vehicle','height_m','hover_duration_s','start_air_kg','release_air_kg','release_height_m','release_velocity_y_m_s','release_pressure_Pa','release_temperature_K','aero_enabled','air_density_kg_m3','vertical_CdA_m2','config_json','parameters_json'];
+  const controls=[vehicleId,config.height,hover.durationS,hover.startGasKg,hover.releaseGasKg,hover.releaseHeightM,hover.releaseVelocityY,hover.releasePressurePa,hover.releaseTemperatureK,parameters.aeroEnabled,parameters.airDensity,parameters.verticalDragArea,JSON.stringify(config),JSON.stringify(parameters)];
   return [[...headers,...controlFields],...study.rows.map(row=>[...fields.map(field=>row[field]??''),...controls])];
 }
 
@@ -123,7 +123,7 @@ const markup=`<div class="modal-top"><h2 id="height-study-heading">20 m 부양·
         </section>
       </div>
       <details class="height-study-section"><summary>예측식과 통제 조건</summary>
-        <p><b>d = (vᵢ² − v목표²) / (2a)</b>. 명령 순간의 질량과 탱크 상태로 계산한 최대 추력에서 중력을 빼고, 제어 한도 1.1g를 적용해 위쪽 알짜가속도 a를 정합니다. 예측은 밸브가 즉시 열리고 이 가속도가 유지된다고 가정합니다. 이미 목표 속력 이내이면 필요한 거리는 0 m입니다.</p>
+        <p><b>d = ln[(a₀ + b vᵢ²)/(a₀ + b v목표²)]/(2b)</b>. b = ρ(CdA)/(2m)이며 공기저항을 끄면 d = (vᵢ² − v목표²)/(2a₀)입니다. 명령 순간의 질량과 탱크 상태를 고정하고 밸브가 즉시 열릴 때의 추력에서 중력을 뺀 가속도 a₀를 구합니다(상한 1.1g). 하강 중 위로 작용하는 항력은 감속하면서 줄어듭니다. 이미 목표 속력 이내이면 필요한 거리는 0 m입니다.</p>
         <p>실측 제동 거리는 명령 뒤 하강 속력이 목표까지 처음 줄어든 지점까지의 수직 변위입니다. 목표에 도달하지 못한 경우에는 첫 접촉까지 떨어진 거리와 구분해 표시합니다. 추력 지연은 2 ms 구간의 평균 수직 추력이 무게를 처음 넘을 때까지의 시간입니다.</p>
         <p id="height-study-release"></p>
         <p>고정 제동은 0~20 m에서 1 m 간격으로 측정하고, 인접한 두 높이의 조건 충족 여부가 바뀐 구간을 0.1 m 간격으로 다시 측정합니다. 현재 고정 제동 설정값도 범위 안이면 포함합니다. 목표 접촉 속력 이하로 착지하고 차체 바닥 접촉이나 범프 스톱 개입 없이 안정되면 조건 충족입니다. 절약 착지도 같은 부양 종료 상태에서 출발합니다.</p>
@@ -143,7 +143,7 @@ function releaseDescription({hover,config,parameters}){
     '부양 전 탱크 '+amount(hover.startGasKg,'kg',3)+', 부양 종료 때 탱크 '+amount(hover.releaseGasKg,'kg',3)+
     ', 압력 '+amount(hover.releasePressurePa/1e6,'MPa',3)+', 온도 '+amount(hover.releaseTemperatureK,'K')+
     ', 바퀴 높이 '+amount(hover.releaseHeightM,'m',3)+', 수직 속도 '+amount(hover.releaseVelocityY,'m/s',4)+' (위쪽 +). '+
-    '추가 질량 '+amount(parameters.ballastKg??0,'kg')+'. 부양 소비는 공중에서 높이를 유지한 구간에, 착지 소비는 부양 종료 후 관측이 끝날 때까지 배출한 공기에 해당합니다.';
+    '공기저항 '+(parameters.aeroEnabled?'켬 (ρ '+amount(parameters.airDensity,'kg/m³',3)+', 수직 CdA '+amount(parameters.verticalDragArea,'m²',2)+' 가정)':'끔')+' · 무풍. 추가 질량 '+amount(parameters.ballastKg??0,'kg')+'. 부양 소비는 공중에서 높이를 유지한 구간에, 착지 소비는 부양 종료 후 관측이 끝날 때까지 배출한 공기에 해당합니다.';
 }
 
 const phaseNames={coarse:'1 m 간격 측정',fine:'0.1 m 간격 측정',eco:'절약 착지 비교'};
@@ -200,7 +200,7 @@ export class LandingHeightStudyPanel{
       const key=JSON.stringify(source);
       if(reuse&&this.cacheKey===key&&this.study){this.present(this.study);return;}
       if(typeof Worker==='undefined')throw new Error('이 브라우저에서 백그라운드 계산을 시작할 수 없습니다.');
-      const worker=new Worker(new URL('./landing-height-worker.js?v=20261119-height160',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./landing-height-worker.js?v=20261119-air161',import.meta.url),{type:'module'});
       this.worker=worker;
       worker.onerror=event=>{
         if(this.serial!==serial)return;
@@ -230,7 +230,8 @@ export class LandingHeightStudyPanel{
     this.study=study;
     const rows=study.rows,c=study.conditions,hover=c.hover,stable=rows.filter(r=>r.feasible);
     if(!rows.length)throw new Error('측정한 조건이 없습니다.');
-    this.find('conditions').textContent='로드스터 · 20 m · 공통 부양 '+amount(hover.durationS,'s')+' · 목표 접촉 속력 '+amount(c.config.targetSpeed,'m/s')+' 이하';
+    const airCondition=c.parameters.aeroEnabled?'무풍 · 공기저항 켬':'공기저항 끔';
+    this.find('conditions').textContent='로드스터 · 20 m · '+airCondition+' · 공통 부양 '+amount(hover.durationS,'s')+' · 목표 접촉 속력 '+amount(c.config.targetSpeed,'m/s')+' 이하';
     this.find('release').textContent=releaseDescription(c);
     this.find('summary').textContent=studySummary(rows);
     const ordered=rows.map((row,i)=>({row,i})).sort((a,b)=>Number(a.row.method==='eco')-Number(b.row.method==='eco')||a.row.brakeHeight-b.row.brakeHeight);

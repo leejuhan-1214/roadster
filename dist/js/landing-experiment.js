@@ -1,12 +1,13 @@
+import {STANDARD_AIR_DENSITY,RIG_VERTICAL_DRAG_AREA,dragConstant,freeDrop} from './landing-aerodynamics.js?v=20261119-air161';
 import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261119-height160';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261119-air161';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // Measurement updates run at the fixed physics step (normally 2 ms). Force samples
 // retain the maximum in each 10 ms chart bin; the summary never uses render rate.
 export const LANDING_STEP=.002;
 export const LANDING_AUDIT_STEPS=Object.freeze([LANDING_STEP,.001,.0005]);
-export const LANDING_MODEL_VERSION='1.46.0';
+export const LANDING_MODEL_VERSION='1.61.0';
 export const LANDING_METHODS=Object.freeze([
   {id:'free',label:'자유낙하'},
   {id:'brake',label:'지정 높이에서 분사'},
@@ -20,7 +21,9 @@ const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Numb
 
 export function landingSettings(options={}){
   const height=finite(options.height,3,0,Number.MAX_VALUE);
-  return {...options,height,
+  return {...options,height, aeroEnabled: options.aeroEnabled!==false,
+    airDensity:finite(options.airDensity,STANDARD_AIR_DENSITY,.1,2),
+    verticalDragArea:finite(options.verticalDragArea,RIG_VERTICAL_DRAG_AREA,0,30),
     physicsStep:LANDING_AUDIT_STEPS.includes(options.physicsStep)?options.physicsStep:LANDING_STEP,
     method:LANDING_METHODS.some(m=>m.id===options.method)?options.method:'free',
     brakeHeight:finite(options.brakeHeight,2,0,Number.MAX_VALUE),
@@ -63,7 +66,8 @@ export function landingClearance(sim){
 export function releaseLandingVehicle(sim,options={}){
   const config=landingSettings(options);
   Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,ballastKg:config.ballastKg,
-    gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:false,
+    gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:config.aeroEnabled,
+    airDensity:config.airDensity,verticalDragArea:config.verticalDragArea,dragScale:1,centeredAero:true,
     contactEnabled:true,friction:1.15,rollingResistance:.015,
     parkedWheelMounts:false,cityWheelGeometry:null,cityGroundSupports:null,
     // Fixed level, centred loading isolates mass and chassis geometry differences.
@@ -88,7 +92,7 @@ export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
   // A fixed 15 s deadline silently discarded high drops before first contact.
   // Keep that failure guard at ordinary heights, but scale it with free fall
   // and the gentle controller's 2.5 m/s cruise reference for larger releases.
-  const freeFallTime=Math.sqrt(config.height)*Math.sqrt(2/9.80665);
+  const freeFallTime=freeDrop(config.height,sim.params.gravity,dragConstant(sim.params)/sim.mass).time;
   const flightTimeout=Math.max(15,freeFallTime*2+10,['gentle','eco'].includes(config.method)?config.height/2.5+10:0);
   const precontactSampleInterval=Math.max(.01,flightTimeout/4000);
   return {...config,modelVersion:LANDING_MODEL_VERSION,config:Object.freeze({...config}),startTime:sim.state.time,
@@ -100,7 +104,7 @@ export function recordLandingRelease(sim,config,economy,ecoPlanTimeMs){
     energyDatumY:sim.state.pos.y-config.height,initialPotentialEnergyJ:sim.mass*sim.params.gravity*config.height,
     previousMass:sim.mass,previousGas:sim.state.gas,previousClearance:config.height,finalMass:sim.mass,finalVelocityY:0,
     touchdownMass:null,touchdownKineticEnergyJ:null,touchdownGasUsed:null,
-    totalGravityImpulseNs:0,constantMassAuditValid:true,freeFallConditionsValid:true,
+    totalGravityImpulseNs:0,totalAirDragImpulseNs:0,constantMassAuditValid:true,freeFallConditionsValid:true,
     parameters:Object.freeze({...sim.params}),flightTimeout,precontactSampleInterval,elapsed:0,done:false,status:'running',
     braking:false,manualLiftActive:false,manualLiftUsed:false,manualLiftDuration:0,
     ecoPlannedBrakeHeight:economy?.brakeHeight??null,ecoPredictedTouchdownSpeed:economy?.predictedSpeed??null,
@@ -192,8 +196,9 @@ export function updateLandingRun(run,sim,dt=run.physicsStep??LANDING_STEP){
   // never the 10 ms peak-envelope chart or the fractionally timed first stop.
   const massBefore=run.previousMass,gasBefore=run.previousGas;
   run.totalGravityImpulseNs-=(massBefore+sim.mass)*.5*Math.max(0,sim.params.gravity)*dt;
+  run.totalAirDragImpulseNs+=sim.verticalAirDragN*dt;
   run.finalMass=sim.mass;run.finalVelocityY=sim.state.vel.y;
-  const noExtraVerticalForce=sim.totalThrust<1e-9&&Math.abs(sim.fanForce)<1e-9&&sim.airDragN<1e-9&&
+  const noExtraVerticalForce=sim.totalThrust<1e-9&&Math.abs(sim.fanForce)<1e-9&&
     sim.params.roadRoughness===0&&sim.obstacles.length===0;
   run.constantMassAuditValid &&= noExtraVerticalForce&&Math.abs(sim.mass-run.initialMass)<1e-9;
   if(run.touchdownTime===null)run.freeFallConditionsValid &&= noExtraVerticalForce&&
@@ -265,7 +270,7 @@ export function updateLandingRun(run,sim,dt=run.physicsStep??LANDING_STEP){
       groundForceN:ground,groundForcePeakTime:run.elapsed,
       equivalentGroundForceN:equivalent,equivalentGroundForcePeakTime:run.elapsed,
       gLoad:properG,gLoadPeakTime:run.elapsed,thrustN:sim.totalThrust,
-      verticalThrustN:sim.verticalThrustN,thrustWeightRatio,
+      verticalThrustN:sim.verticalThrustN,verticalAirDragN:sim.verticalAirDragN,thrustWeightRatio,
       // compression comes from force evaluation; energy and stateCompression
       // describe the end-state pose at time, independently of the bin maxima.
       compression,stateCompression:springState.stateCompression,gasKg:sim.state.gas,correctionImpulseNs:impulse,manualLift:run.manualLiftActive?1:0,

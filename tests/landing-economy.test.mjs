@@ -30,7 +30,7 @@ test('automatic economy starts with measured zero thrust and zero gas use across
       if(run.braking)break;
       sim.step(.002,input);updateLandingRun(run,sim);steps++;
       assert.equal(sim.totalThrust,0);assert.equal(sim.state.gas,run.initialGas);
-      assert.ok(Math.abs(sim.state.vel.y+sim.params.gravity*run.elapsed)<1e-8);
+      assert.ok(Math.abs(sim.mass*(sim.state.vel.y+sim.params.gravity*run.elapsed)-run.totalAirDragImpulseNs)<1e-6);
     }
     assert.ok(steps>=2);assert.equal(run.ecoProfile,'brake');
     assert.ok(run.ecoCoastTime+1e-10>=run.ecoMinimumCoastTime);

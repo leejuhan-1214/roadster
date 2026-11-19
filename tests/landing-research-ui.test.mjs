@@ -23,7 +23,7 @@ function elements(){
 
 test('research cards show measured analytic verification and contact energy, never powered-run freefall error',()=>{
   const cards=landingResearchCards(rows);
-  assert.match(cards,/7\.671/);assert.match(cards,/상대 오차/);assert.match(cards,/전체 [\d.]+ s/);
+  assert.match(cards,/7\.660/);assert.match(cards,/상대 오차/);assert.match(cards,/전체 [\d.]+ s/);
   assert.match(cards,/접촉 직전 질량과 수직 속도/);
   assert.doesNotMatch(cards,/NaN|undefined|Infinity/);
   const powered=landingResearchCards([brake,gentle]);
@@ -55,7 +55,7 @@ test('research analysis isolates one vehicle and clears old plots when viewing u
   assert.match(element('#landing-zoom-note').textContent,/조건 미충족 1회는 그래프에서 제외/);
   assert.equal((element('#landing-gas-chart').innerHTML.match(/class="landing-research-point"/g)||[]).length,2);
   assert.doesNotMatch(element('#landing-height-chart').innerHTML,/자유낙하 기준/,'unsafe baseline must not keep stretching the zoomed y axis');
-  assert.match(element('#landing-research-cards').innerHTML,/7\.671/,'theory verification remains visible when the unsafe baseline point is hidden');
+  assert.match(element('#landing-research-cards').innerHTML,/7\.660/,'theory verification remains visible when the unsafe baseline point is hidden');
   ui.researchVehicle='other';LandingUI.prototype.renderResearch.call(ui,[...rows,...other]);
   assert.match(element('#landing-research-scope').textContent,/Other · .* 3회/);
   LandingUI.prototype.renderResearch.call(ui,[...rows,...other],true);

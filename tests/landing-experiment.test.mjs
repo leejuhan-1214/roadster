@@ -24,7 +24,7 @@ test('different mass, spring sag and wheel radius begin at the same unloaded tir
     assert.equal(sim.state.vel.length(),0);assert.equal(sim.state.omega.length(),0);
     assert.equal(sim.contactCount,0);assert.ok(sim.wheels.every(w=>!w.grounded&&w.load===0&&w.compression===0));
     assert.equal(sim.obstacles.length,0);assert.equal(sim.params.windX,0);assert.equal(sim.params.roadRoughness,0);
-    assert.equal(sim.params.aeroEnabled,false);assert.equal(sim.params.cgY,0);
+    assert.equal(sim.params.aeroEnabled,true);assert.equal(sim.params.cgY,0);
     assert.equal(run.initialGas,375);assert.equal(run.initialMass,dryMass+375);
   }
 });
@@ -32,7 +32,7 @@ test('different mass, spring sag and wheel radius begin at the same unloaded tir
 test('free-fall touchdown follows sqrt(2gh) independently of chassis mass',()=>{
   const speeds=[];
   for(const dryMass of [1350,1685,1900]){
-    const {result:r}=experiment({method:'free',height:2},{dryMass});speeds.push(r.touchdownSpeed);
+    const {result:r}=experiment({method:'free',height:2,aeroEnabled:false},{dryMass});speeds.push(r.touchdownSpeed);
     assert.equal(r.status,'landed');assert.equal(r.gasUsed,0);
     assert.ok(Math.abs(r.touchdownSpeed-Math.sqrt(2*9.80665*2))<.025);
     assert.ok(r.touchdownTime>0&&r.contactDuration>0&&r.groundImpulseNs>0);
@@ -53,7 +53,7 @@ test('both thrust-based methods reduce first contact speed and peak ground load 
 });
 
 test('20 m contact is localized within its step and the first compression interval closes momentum',()=>{
-  const {result:r}=experiment({method:'free',height:20});
+  const {result:r}=experiment({method:'free',height:20,aeroEnabled:false});
   const g=r.parameters.gravity, speed=Math.sqrt(2*g*r.height);
   assert.ok(Math.abs(r.touchdownSpeed-speed)<1e-9);
   assert.ok(Math.abs(r.touchdownTime-speed/g)<1e-9);
@@ -86,7 +86,7 @@ test('ground impulse accounts for momentum change and gravity, including hull co
   const expected=r.initialMass*(sim.state.vel.y+sim.params.gravity*r.elapsed);
   assert.ok(r.bodyStrike);assert.ok(r.correctionImpulseNs>0);
   assert.ok(r.peakEquivalentGroundForceN>r.peakGroundForceN);
-  assert.ok(Math.abs(r.totalGroundImpulseNs-expected)<1e-6);
+  assert.ok(Math.abs(r.totalGroundImpulseNs+r.totalAirDragImpulseNs-expected)<1e-6);
   assert.ok(r.contactPeakG>r.peakGroundForceN/(r.initialMass*sim.params.gravity));
 });
 
@@ -139,7 +139,7 @@ test('high releases keep the entered clearance and are measured past the old 15 
     assert.ok(Math.abs(landingClearance(sim)-height)<1e-7);
     assert.ok(Number.isFinite(run.flightTimeout)&&run.flightTimeout>=15);
   }
-  const {result}=experiment({height:2000,method:'free'},{},[25]);
+  const {result}=experiment({height:2000,method:'free',aeroEnabled:false},{},[25]);
   assert.equal(result.height,2000);assert.ok(result.touchdownTime>15);
   assert.notEqual(result.status,'timeout');
   assert.ok(Math.abs(result.touchdownSpeed-Math.sqrt(2*9.80665*2000))<.03);
@@ -154,6 +154,6 @@ test('horizontal sliding cannot be marked settled only because vertical oscillat
   const sim=new PhysicsSim(),run=createLandingRun(sim,{height:.05,method:'free'});
   sim.params.friction=0;sim.params.rollingResistance=0;sim.state.vel.x=2;
   for(let n=0;n<15000&&!run.done;n++){sim.step(.002,landingRunInput(run,sim));updateLandingRun(run,sim);}
-  assert.equal(run.done,true);assert.ok(Math.abs(sim.state.vel.x-2)<1e-9);
+  assert.equal(run.done,true);assert.ok(sim.state.vel.x>1.9&&sim.state.vel.x<=2);
   assert.equal(run.settled,false);assert.equal(run.result.status,'unsettled');
 });

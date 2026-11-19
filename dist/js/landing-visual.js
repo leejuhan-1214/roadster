@@ -3,7 +3,7 @@ import * as THREE from 'three';
 // A diagram over the real rendered vehicle. This module never changes a physics
 // state: metre marks, spring travel and force arrows all read the solver.
 const UP=new THREE.Vector3(0,1,0), DOWN=new THREE.Vector3(0,-1,0);
-const COLORS={gravity:0xff9478,thrust:0x78efd3,ground:0x89bcff,height:0xcbd9e0,brake:0xffbf75};
+const COLORS={gravity:0xff9478,thrust:0x78efd3,ground:0x89bcff,drag:0xd0a8ff,height:0xcbd9e0,brake:0xffbf75};
 const TRACE_CAPACITY=768;
 const finite=(n,fallback=0)=>Number.isFinite(n)?n:fallback;
 
@@ -96,7 +96,7 @@ export class LandingVisual {
     this.enabled=true;this.config=null;this.scale=10000;this.metrics={gravityN:0,thrustN:0,thrustVerticalN:0,groundN:0,groundVerticalN:0,forceScaleNPerM:this.scale,clearance:0,compression:0,velocityY:0};
     this._position=new THREE.Vector3();this._direction=new THREE.Vector3();this._thrust=new THREE.Vector3();this._right=new THREE.Vector3(1,0,0);this._point=new THREE.Vector3();this._bodyX=new THREE.Vector3();this._bodyZ=new THREE.Vector3();
     this.forces=new THREE.Group();this.root.add(this.forces);this.forceArrows={};this.forceLabels={};
-    for(const [key,text]of [['gravity','mg'],['thrust','T'],['ground','N']]){
+    for(const [key,text]of [['gravity','mg'],['thrust','T'],['ground','N'],['drag','Dᵧ']]){
       const arrow=new THREE.ArrowHelper(key==='gravity'?DOWN:UP,new THREE.Vector3(),1,COLORS[key],.17,.09);
       arrow.name='landing '+key+' force';arrow.line.material.toneMapped=false;arrow.cone.material.toneMapped=false;
       this.forces.add(arrow);this.forceArrows[key]=arrow;
@@ -170,20 +170,21 @@ export class LandingVisual {
     this._thrust.set(0,0,0);
     for(const thruster of sim.thrusters||[]){this._direction.copy(thruster.dir).applyQuaternion(sim.state.q);this._thrust.addScaledVector(this._direction,Math.max(0,finite(thruster.force)));}
     const gravity=Math.max(0,finite(sim.mass)*finite(sim.params.gravity)),thrust=this._thrust.length(),ground=Math.max(0,finite(sim.groundForceN));
-    this.scale=landingForceScale(Math.max(gravity,thrust,ground),this.scale);
-    Object.assign(this.metrics,{gravityN:gravity,thrustN:thrust,thrustVerticalN:this._thrust.y,groundN:ground,groundVerticalN:ground,forceScaleNPerM:this.scale,clearance,compression,velocityY:state.vel.y});
+    const dragY=finite(sim.verticalAirDragN);
+    this.scale=landingForceScale(Math.max(gravity,thrust,ground,Math.abs(dragY)),this.scale);
+    Object.assign(this.metrics,{gravityN:gravity,thrustN:thrust,thrustVerticalN:this._thrust.y,groundN:ground,groundVerticalN:ground,dragVerticalN:dragY,forceScaleNPerM:this.scale,clearance,compression,velocityY:state.vel.y});
     // Displace the parallel force diagram beside the vehicle, rather than
     // pretending the displaced arrows show their physical points of application.
     this._right.set(1,0,0).applyQuaternion(camera?.quaternion||new THREE.Quaternion());this._right.y=0;this._right.normalize();
     if(this._right.lengthSq()<.01)this._right.set(1,0,0);
-    const diagramHeight=Math.max(position.y+.9,gravity/this.scale+.35);
+    const diagramHeight=Math.max(position.y+.9,Math.max(gravity,-dragY)/this.scale+.35);
     this._position.copy(position).addScaledVector(this._right,-(finite(sim.params.bodyWidth,2)*.5+1.4));this._position.y=diagramHeight;
-    for(const [index,key,value]of [[0,'gravity',gravity],[1,'thrust',thrust],[2,'ground',ground]]){
+    for(const [index,key,value]of [[0,'gravity',gravity],[1,'thrust',thrust],[2,'ground',ground],[3,'drag',Math.abs(dragY)]]){
       const arrow=this.forceArrows[key],label=this.forceLabels[key],length=value/this.scale;
       arrow.visible=label.visible=value>1;
       if(!arrow.visible)continue;
-      arrow.position.copy(this._position).addScaledVector(this._right,(index-1)*.65);
-      if(key==='gravity')this._direction.copy(DOWN);else if(key==='thrust')this._direction.copy(this._thrust).normalize();else this._direction.copy(UP);
+      arrow.position.copy(this._position).addScaledVector(this._right,(index-1.5)*.65);
+      if(key==='gravity'||(key==='drag'&&dragY<0))this._direction.copy(DOWN);else if(key==='thrust')this._direction.copy(this._thrust).normalize();else this._direction.copy(UP);
       arrow.setDirection(this._direction);arrow.setLength(length,Math.min(.2,length*.24),Math.min(.11,length*.13));
       label.position.copy(arrow.position).addScaledVector(this._direction,length+.18);
     }

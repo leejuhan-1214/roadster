@@ -1,6 +1,12 @@
-# Roadster v1.60.0 — 착지 실험과 서울 주행
+# Roadster v1.61.0 — 착지 실험과 서울 주행
 
 [시뮬레이터 열기](https://leejuhan-1214.github.io/roadster/) · [현재 보고서 가이드와 20 m 측정 결과](docs/landing-study-guide.md) · [5차종 20조건 검증](docs/landing-20m-v146.md)
+
+## v1.61.0 — 공기저항을 포함한 20 m 착지 실험
+
+보고서용 20 m 조건은 바람이 없는 공기 속에서 실행한다. 하강하면 차체와 공기 사이에 상대속도가 생기고, 수직 항력은 하강을 방해한다. 기준 공기 밀도는 1.225 kg/m³, 수직 유효항력면적은 모형 가정값 3.40 m²이다. 같은 차체에서 공기저항만 켜고 끈 결과와 유효항력면적을 바꾼 결과를 보고서 가이드에서 비교할 수 있다.
+
+[공기저항을 포함한 실험 열기](https://leejuhan-1214.github.io/roadster/?study=brake-height&v=1.61.0) · [보고서 가이드와 실험 원자료](https://leejuhan-1214.github.io/roadster/landing-study-guide.html#height-study)
 
 ## v1.60.0 — 20 m 부양 후 착지 실험
 

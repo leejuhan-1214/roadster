@@ -32,7 +32,8 @@ test('Roadster ballast sweep holds geometry, centered inertia, gas and release h
   }
   const free=results.filter(row=>row.method==='free');
   for(const row of free){
-    assert.ok(Math.abs(row.touchdownSpeed-Math.sqrt(2*9.80665*20))<1e-7);
+    const b=.5*1.225*3.4/row.initialMass;
+    assert.ok(Math.abs(row.touchdownSpeed-Math.sqrt(-9.80665*Math.expm1(-2*b*20)/b))<.002);
     assert.equal(row.gasUsed,0);
   }
   assert.notEqual(free[0].groundImpulseNs,free[2].groundImpulseNs);

@@ -29,15 +29,20 @@ test('readings preserve solver state and read world-space thrust without stale d
   const snapshot=()=>JSON.stringify({params:sim.params,state:sim.state,wheels:sim.wheels,thrusters:sim.thrusters});
   const before=snapshot(),reading=landingLiveReadings(sim);assert.equal(snapshot(),before);
   assert.ok(Math.abs(reading.thrustVerticalN-500)<1e-9);
-  const ids=['landing-weight','landing-thrust-y','landing-normal','landing-force-scale','landing-acceleration','landing-kinetic','landing-elastic','landing-live-compression','landing-phase'];
+  const ids=['landing-weight','landing-thrust-y','landing-drag-y','landing-normal','landing-force-scale','landing-acceleration','landing-kinetic','landing-elastic','landing-live-compression','landing-phase'];
   const nodes=Object.fromEntries(ids.map(id=>[id,{textContent:''}]));
   LandingLiveUI.prototype.update.call({panel:{hidden:false},nodes},sim,{metrics:{thrustVerticalN:0,forceScaleNPerM:10000}},null);
   assert.equal(nodes['landing-thrust-y'].textContent,'0.5 kN');assert.equal(snapshot(),before);
+  for(const [dragN,label] of [[0,'0.00 kN'],[815,'+0.81 kN'],[-750,'-0.75 kN']]){
+    sim.verticalAirDragN=dragN;
+    LandingLiveUI.prototype.update.call({panel:{hidden:false},nodes},sim,null,null);
+    assert.equal(nodes['landing-drag-y'].textContent,label);
+  }
 });
 
 test('eco phase follows real unpowered descent and solver thrust rather than an armed controller',()=>{
   const sim=new PhysicsSim(),run=createLandingRun(sim,{height:3,method:'eco'}),initialGas=sim.state.gas;
-  const ids=['landing-weight','landing-thrust-y','landing-normal','landing-force-scale','landing-acceleration','landing-kinetic','landing-elastic','landing-live-compression','landing-phase'];
+  const ids=['landing-weight','landing-thrust-y','landing-drag-y','landing-normal','landing-force-scale','landing-acceleration','landing-kinetic','landing-elastic','landing-live-compression','landing-phase'];
   const nodes=Object.fromEntries(ids.map(id=>[id,{textContent:''}])),ui={panel:{hidden:false},nodes};
   assert.equal(landingPhaseLabel(sim,{...run,braking:true},{active:true}),'무분사 낙하','a request alone must not claim actual braking thrust');
   let coastSteps=0,firstThrustTime=null;

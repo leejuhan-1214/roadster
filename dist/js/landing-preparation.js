@@ -1,5 +1,5 @@
-import {economyInitialState,measureEconomyPlan} from './landing-economy.js?v=20261119-height160';
-import {landingClearance,releaseLandingVehicle,recordLandingRelease} from './landing-experiment.js?v=20261119-height160';
+import {economyInitialState,measureEconomyPlan} from './landing-economy.js?v=20261119-air161';
+import {landingClearance,releaseLandingVehicle,recordLandingRelease} from './landing-experiment.js?v=20261119-air161';
 
 // Reuse a warm worker between trials. Only numeric release conditions cross
 // the thread boundary. The running vehicle remains on the simulation thread.
@@ -7,7 +7,7 @@ export class LandingPlanner{
   warm(){
     if(this.idleWorker)return;
     try{
-      const worker=new Worker(new URL('./landing-plan-worker.js?v=20261119-height160',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./landing-plan-worker.js?v=20261119-air161',import.meta.url),{type:'module'});
       worker.onerror=event=>{
         event.preventDefault();
         if(this.idleWorker===worker)this.idleWorker=null;

@@ -20,7 +20,7 @@ test('twenty metre free fall has one contact speed across genuine step refinemen
   assert.equal(rows[0].impulse,reference.groundImpulseNs);
   assert.equal(rows[0].peak,reference.peakEquivalentGroundForceN);
   for(const r of rows){
-    assert.ok(Math.abs(r.speed-Math.sqrt(2*9.80665*20))<1e-7);
+    assert.ok(Math.abs(r.speed-Math.sqrt(-9.80665*Math.expm1(-2*(.5*1.225*3.4/r.initialMass)*20)/(.5*1.225*3.4/r.initialMass)))<.002);
     assert.equal(r.initialMass,reference.initialMass);
     assert.ok(Math.abs(r.impulse/rows[0].impulse-1)<.01);
     assert.ok(Math.abs(r.contactEndTime/r.step-Math.round(r.contactEndTime/r.step))<1e-7);

@@ -1,3 +1,4 @@
+import {dragConstant,freeDrop} from './landing-aerodynamics.js?v=20261119-air161';
 // Physics interpretation is separate from rendering. Every value here is
 // derived from fixed-step measurements, never from a display-frame estimate.
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
@@ -41,8 +42,10 @@ export function landingTargetMet(result={}){
  */
 export function landingTheory(result={}){
   const g=result.parameters?.gravity;
-  const expectedSpeed=finite(g)&&g>0&&finite(result.height)&&result.height>=0?Math.sqrt(2*g*result.height):null;
-  const expectedFallTime=expectedSpeed!==null?expectedSpeed/g:null;
+  const hasDrag=result.parameters?.aeroEnabled===true;
+  const k=hasDrag?dragConstant(result.parameters)/result.initialMass:0;
+  const exact=finite(g)&&g>0&&finite(k)&&finite(result.height)&&result.height>=0?freeDrop(result.height,g,k):null;
+  const expectedSpeed=exact?.speed??null,expectedFallTime=exact?.time??null;
   let reason='';
   if(result.method!=='free'||result.manualLiftUsed)reason='추력·수동 분사 실험은 자유낙하 검증 대상이 아닙니다.';
   else if(!measured(result))reason='첫 접촉 측정이 완료되어야 비교할 수 있습니다.';
@@ -52,7 +55,7 @@ export function landingTheory(result={}){
   const eligible=!reason;
   const measuredSpeed=measured(result)?result.touchdownSpeed:null;
   const absoluteError=eligible?Math.abs(measuredSpeed-expectedSpeed):null;
-  return {eligible,reason,expectedSpeed,expectedFallTime,measuredSpeed,absoluteError,
+  return {eligible,reason,hasDrag,expectedSpeed,expectedFallTime,measuredSpeed,absoluteError,
     relativeErrorPercent:eligible&&expectedSpeed>0?absoluteError/expectedSpeed*100:null};
 }
 
@@ -68,19 +71,20 @@ export function landingImpulseAudit(result={}){
   else if(!measured(result))reason='완료된 낙하 측정이 필요합니다.';
   else if(result.constantMassAuditValid!==true||!finite(result.initialMass)||!finite(result.finalMass)||
     Math.abs(result.finalMass-result.initialMass)>1e-9||!finite(result.gasUsed)||Math.abs(result.gasUsed)>1e-9)
-    reason='일정 질량과 중력·지면 반력만 작용하는 조건을 확인할 수 없습니다.';
-  else if(![result.totalGroundImpulseNs,result.totalGravityImpulseNs,result.finalVelocityY,result.elapsed].every(finite))
+    reason='일정 질량과 중력·항력·지면 반력 조건을 확인할 수 없습니다.';
+  else if((result.parameters?.aeroEnabled&&!finite(result.totalAirDragImpulseNs))||![result.totalGroundImpulseNs,result.totalGravityImpulseNs,result.finalVelocityY,result.elapsed].every(finite))
     reason='동일 시간 구간의 계측값이 없습니다.';
   const eligible=!reason;
   const groundImpulseNs=eligible?result.totalGroundImpulseNs:null;
   const gravityImpulseNs=eligible?result.totalGravityImpulseNs:null;
-  const netImpulseNs=eligible?groundImpulseNs+gravityImpulseNs:null;
+  const dragImpulseNs=eligible?(result.totalAirDragImpulseNs??0):null;
+  const netImpulseNs=eligible?groundImpulseNs+gravityImpulseNs+dragImpulseNs:null;
   const momentumChangeNs=eligible?result.initialMass*result.finalVelocityY:null;
   const residualNs=eligible?netImpulseNs-momentumChangeNs:null;
   // Δp approaches zero after settling. Normalize by the larger opposing
   // impulse, not by this tiny difference, to avoid a misleading huge percent.
   const scale=eligible?Math.max(Math.abs(groundImpulseNs),Math.abs(gravityImpulseNs),Math.abs(momentumChangeNs)):0;
-  return {eligible,reason,groundImpulseNs,gravityImpulseNs,netImpulseNs,momentumChangeNs,residualNs,
+  return {eligible,reason,groundImpulseNs,gravityImpulseNs,dragImpulseNs,netImpulseNs,momentumChangeNs,residualNs,
     relativeResidualPercent:eligible&&scale>0?Math.abs(residualNs)/scale*100:null,
     duration:eligible?result.elapsed:null};
 }
@@ -91,7 +95,8 @@ const hasConditions=result=>!!result?.groupId&&!!result?.vehicleId&&MATCH_KEYS.s
 
 export function sameLandingModel(a,b){
   // Older ordinary trials used the 2 ms solver with no added ballast.
-  return a.modelVersion===b.modelVersion&&(a.physicsStep??.002)===(b.physicsStep??.002)&&
+  return a.parameters?.aeroEnabled===b.parameters?.aeroEnabled&&a.parameters?.verticalDragArea===b.parameters?.verticalDragArea&&
+    a.parameters?.airDensity===b.parameters?.airDensity&&a.modelVersion===b.modelVersion&&(a.physicsStep??.002)===(b.physicsStep??.002)&&
     (a.ballastKg??0)===(b.ballastKg??0);
 }
 

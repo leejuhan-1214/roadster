@@ -1,3 +1,4 @@
+import {dragConstant,freeDrop} from './landing-aerodynamics.js?v=20261119-air161';
 import {nozzle, ATMOSPHERE, R, GAMMA} from './air-nozzle.js?v=20261118-audit148';
 import {contactFraction} from './landing-measurement.js?v=20261118-physics146';
 
@@ -13,13 +14,24 @@ function forecast(initial, trigger, target, profile='brake') {
   // A release from hover carries open valves and residual flow. Integrate
   // their decay during the coast; only a cold release has a ballistic shortcut.
   const fromHover=initial.valveOpening>0;
-  let steps = fromHover?0:Math.ceil(Math.sqrt(distance)*Math.sqrt(2/g)/STEP);
+  const drag=initial.dragConstant??0;
+  // Step the coast as in the live integrator at ordinary experiment heights.
+  // For a long, unpowered cold coast, jump to the trigger using its exact
+  // quadratic-drag trajectory so the bounded planner remains responsive.
+  const coast=freeDrop(distance,g,drag/(dryMass+initial.gas));
+  const stepCoast=fromHover||(drag>0&&coast.time<=20);
+  let steps = stepCoast?0:Math.ceil(coast.time/STEP);
   let gap = initial.height - .5 * g * (STEP*steps)**2;
   let velocity = (initial.releaseVelocityY||0)-g * STEP * steps;
+  if(!stepCoast&&drag>0){
+    const overshoot=steps*STEP-coast.time;
+    velocity=-coast.speed+(drag*coast.speed**2/(dryMass+initial.gas)-g)*overshoot;
+    gap=trigger+.5*(velocity-coast.speed)*overshoot;
+  }
   let gas = initial.gas, temperature = initial.temperature, pressure = initial.pressure;
   let opening = initial.valveOpening||0, flow = initial.flowKgS||0, elapsed = 0;
-  let braking=!fromHover||profile==='gentle';
-  let contactVelocity=gap<=0?-Math.sqrt(2*g*initial.height):velocity,contactGas=gas;
+  let braking=!stepCoast||profile==='gentle';
+  let contactVelocity=gap<=0?-freeDrop(initial.height,g,drag/(dryMass+initial.gas)).speed:velocity,contactGas=gas;
   const tau = Math.max(.001, valveTau), decay = Math.exp(-STEP / tau);
   const meanDecay = -Math.expm1(-STEP/tau)/(STEP/tau);
   // At very high heights the bounded search can report infeasibility without
@@ -45,7 +57,7 @@ function forecast(initial, trigger, target, profile='brake') {
     if (gas > 0 && nextGas > 0) temperature *= (nextGas / gas) ** (GAMMA - 1);
     gas = nextGas;
     pressure = gas * R * temperature / tankVolume;
-    const netAcceleration=force/Math.max(1,mass-dm*.5)-g;
+    const netAcceleration=(force-drag*velocity*Math.abs(velocity))/Math.max(1,mass-dm*.5)-g;
     const oldGap=gap,oldVelocity=velocity;
     velocity += netAcceleration*STEP;
     gap += .5*(oldVelocity+velocity)*STEP;
@@ -72,7 +84,7 @@ function forecast(initial, trigger, target, profile='brake') {
     gas=nextGas;pressure=gas*R*temperature/tankVolume;
   }
   return {trigger, profile, speed:Math.max(0,gap<=0?-contactVelocity:-velocity), gasUsed:initial.gas - gas,touchdownGasUsed,
-    complete:gap <= 0, coastTime:steps * STEP, burnTime:elapsed-(fromHover?steps*STEP:0)};
+    complete:gap <= 0, coastTime:steps * STEP, burnTime:elapsed-(stepCoast?steps*STEP:0)};
 }
 
 /** Feedback requests acceleration; only PhysicsSim applies forces and motion. */
@@ -93,7 +105,7 @@ function gentleForecastAcceleration(gap,velocity,target,gravity,valveTau){
 
 export function economyInitialState(sim, height) {
   const p = sim.params, s = sim.state;
-  return {height:Math.max(0, height), gravity:p.gravity, dryMass:sim.loadedDryMass,
+  return {height:Math.max(0, height), gravity:p.gravity, dragConstant:dragConstant(p), dryMass:sim.loadedDryMass,
     tankVolume:p.tankVolume, valveTau:p.valveTau, feedLossCoefficient:Math.max(0,p.feedLossCoefficient),
     gas:s.gas, temperature:s.temp, pressure:s.pressure,
     area:sim.thrusters.slice(0,4).reduce((sum,t)=>sum+t.area,0)};
@@ -110,7 +122,7 @@ export function measureEconomyPlan(initial,targetSpeed){
 }
 
 export function planEconomyFromState(initial,targetSpeed){
-  const freeSpeed = Math.sqrt(initial.height)*Math.sqrt(2*initial.gravity);
+  const freeSpeed = freeDrop(initial.height,initial.gravity,(initial.dragConstant??0)/(initial.dryMass+initial.gas)).speed;
   if (initial.height <= 0 || freeSpeed <= targetSpeed) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:true, coastOnly:true};
   const full = nozzle(initial.pressure, initial.temperature, initial.area);
   if (full.force <= 0 || initial.gas <= 0) return {brakeHeight:0, predictedSpeed:freeSpeed, predictedGas:0, feasible:false, coastOnly:true};

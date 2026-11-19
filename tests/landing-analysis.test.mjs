@@ -16,9 +16,27 @@ function experiment(options={},manual=false){
 }
 const free=experiment(),brake=experiment({method:'brake',brakeHeight:2.25});
 
+test('controlled drag acts against relative vertical motion; disabling it recovers the vacuum reference',()=>{
+  for(const vy of [-10,0,10]){
+    const sim=new PhysicsSim(),run=createLandingRun(sim,{height:20});
+    sim.state.vel.y=vy;
+    sim.step(LANDING_STEP,landingRunInput(run,sim));
+    assert.ok(Math.abs(sim.verticalAirDragN+.5*1.225*3.4*vy*Math.abs(vy))<1e-10);
+    assert.ok(sim.verticalAirDragN*vy<=0);
+    assert.ok(sim.state.omega.length()<1e-12);
+  }
+  const vacuum=experiment({aeroEnabled:false});
+  assert.ok(vacuum.touchdownSpeed>free.touchdownSpeed);
+  assert.ok(Math.abs(vacuum.touchdownSpeed-Math.sqrt(2*9.80665*3))<1e-9);
+  assert.equal(vacuum.totalAirDragImpulseNs,0);
+  assert.ok(landingImpulseAudit(free).dragImpulseNs>0);
+});
+
 test('untreated 3 m drop exposes analytic validation and measured precontact kinetic energy',()=>{
   const theory=landingTheory(free);
-  assert.equal(theory.eligible,true);assert.ok(Math.abs(theory.expectedSpeed-7.67072)<.0001);
+  assert.equal(theory.eligible,true);const b=.5*1.225*3.4/free.initialMass;
+  assert.ok(Math.abs(theory.expectedSpeed-Math.sqrt(9.80665/b*(-Math.expm1(-2*b*3))))<1e-10);
+  assert.ok(free.totalAirDragImpulseNs>0&&theory.expectedSpeed<7.67072);
   assert.ok(theory.relativeErrorPercent<.5,'report contact-step integration error rather than replacing the measured speed');
   assert.equal(free.touchdownMass,free.initialMass);assert.equal(free.touchdownGasUsed,0);
   assert.equal(free.touchdownKineticEnergyJ,.5*free.touchdownMass*free.touchdownSpeed**2);

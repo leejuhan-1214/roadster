@@ -9,7 +9,7 @@ function setupLines(row){
     '출발 바퀴 높이 '+measured(row.height)+' m · 초기 속력 '+measured(speed)+' m/s · 목표 접촉 속력 '+measured(row.targetSpeed)+' m/s',
     '탱크 '+measured(row.tankVolume,1000)+' L · 초기 절대압 '+measured(row.tankPressureMPa)+' MPa · 온도 '+measured(row.initialTemperature)+' K · 초기 압축공기 '+measured(row.initialGas)+' kg',
     '바퀴별 스프링 '+measured(row.springK)+' N/m · 바퀴별 감쇠 '+measured(row.damperC)+' N·s/m · 중력가속도 '+measured(p.gravity)+' m/s²',
-    '노면 마찰계수 '+measured(p.friction)+' · 구름저항계수 '+measured(p.rollingResistance)+' · 노면 요철 계수 '+measured(p.roadRoughness)+' · 공기저항 '+state(p.aeroEnabled)+' · 바람 (X, Z) ('+measured(p.windX)+', '+measured(p.windZ)+') m/s',
+    '노면 마찰계수 '+measured(p.friction)+' · 구름저항계수 '+measured(p.rollingResistance)+' · 노면 요철 계수 '+measured(p.roadRoughness)+' · 공기저항 '+state(p.aeroEnabled)+(p.aeroEnabled?' (밀도 '+measured(p.airDensity)+' kg/m³, 수직 CdA '+measured(p.verticalDragArea)+' m² 가정)':'')+' · 바람 (X, Z) ('+measured(p.windX)+', '+measured(p.windZ)+') m/s',
     '계산 간격 '+measured(row.physicsStep,1000)+' ms · 물리 모델 '+(row.modelVersion||'미기록')+' · 시뮬레이터 '+(row.appVersion||'미기록'),
   ].join('\n');
 }

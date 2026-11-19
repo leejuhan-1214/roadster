@@ -1,8 +1,9 @@
-import {PhysicsSim} from './physics.js?v=20261119-ai158';
+import {dragConstant,predictedBrakeDistance} from './landing-aerodynamics.js?v=20261119-air161';
+import {PhysicsSim} from './physics.js?v=20261119-air161';
 import {nozzle} from './air-nozzle.js?v=20261118-audit148';
-import {LANDING_STEP, LANDING_MODEL_VERSION, landingSettings, landingRunInput, updateLandingRun} from './landing-experiment.js?v=20261119-height160';
-import {landingTargetMet} from './landing-analysis.js';
-import {startHoverLandingRun, landingPhaseAir, STUDY_HOVER_SECONDS} from './landing-hover.js?v=20261119-height160';
+import {LANDING_STEP, LANDING_MODEL_VERSION, landingSettings, landingRunInput, updateLandingRun} from './landing-experiment.js?v=20261119-air161';
+import {landingTargetMet} from './landing-analysis.js?v=20261119-air161';
+import {startHoverLandingRun, landingPhaseAir, STUDY_HOVER_SECONDS} from './landing-hover.js?v=20261119-air161';
 
 const HEIGHT=20;
 
@@ -14,10 +15,9 @@ function predictAtCommand(sim,targetSpeed){
   const area=sim.thrusters.slice(0,4).reduce((sum,t)=>sum+t.area,0);
   const maximum=nozzle(sim.state.pressure,sim.state.temp,area).force;
   const referenceAcceleration=Math.min(1.1*sim.params.gravity,maximum/sim.mass-sim.params.gravity);
-  let predictedDistance=null;
-  if(entrySpeed<=targetSpeed)predictedDistance=0;
-  else if(referenceAcceleration>0)predictedDistance=(entrySpeed**2-targetSpeed**2)/(2*referenceAcceleration);
-  return {entrySpeed,referenceAcceleration,predictedDistance};
+  const commandMassKg=sim.mass,kAtCommand=dragConstant(sim.params)/commandMassKg;
+  const predictedDistance=predictedBrakeDistance(entrySpeed,targetSpeed,referenceAcceleration,kAtCommand);
+  return {entrySpeed,referenceAcceleration,predictedDistance,commandMassKg,kAtCommand};
 }
 
 export function measureHeightStudyTrial(source,config){

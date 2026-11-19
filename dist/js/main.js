@@ -6,21 +6,21 @@ import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261118-circuit155';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261119-air161';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261118-city151';
-import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261119-height160';
-import {LandingUI} from './landing-ui.js?v=20261119-height160';
-import {roadsterHeightStudySource} from './landing-height-source.js?v=20261119-height160';
-import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261118-physics146';
+import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261119-air161';
+import {LandingUI} from './landing-ui.js?v=20261119-air161';
+import {roadsterHeightStudySource} from './landing-height-source.js?v=20261119-air161';
+import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261119-air161';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
-import {LandingPlanner} from './landing-preparation.js?v=20261119-height160';
+import {LandingPlanner} from './landing-preparation.js?v=20261119-air161';
 import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261119-wide157';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261119-ai158';
-import {FlightScene} from './scene.js?v=20261119-chase1591';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261119-air161';
+import {FlightScene} from './scene.js?v=20261119-air161';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -34,7 +34,7 @@ async function getHeightStudySource(settings){
 }
 const $=id=>document.getElementById(id), $$=selector=>[...document.querySelectorAll(selector)];
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sim=new PhysicsSim({roadRoughness:0,aeroEnabled:false});
+let sim=new PhysicsSim({roadRoughness:0,aeroEnabled:true});
 const renderStates=new RenderStateBuffer(sim);
 const landingPlanner=new LandingPlanner();
 let labTires,cityTires;
@@ -154,7 +154,7 @@ function reset({cancel=true,clearMeasurement=true,restoreCityPlace=false}={}){
   parameters.cityWheelGeometry=mode==='city'?scene?.vehicle?.cityWheelGeometry??null:null;
   parameters.cityGroundSupports=mode==='city'?scene?.vehicle?.cityGroundSupports??null:null;
   if(freeDriving())Object.assign(parameters,CITY_DRIVE_PARAMS,mode==='city'?cityExperimentParams(citySettings):{});
-  else Object.assign(parameters,{roadRoughness:0,aeroEnabled:false});
+  else Object.assign(parameters,{roadRoughness:0,aeroEnabled:true});
   if(mode==='lab'&&!landingSession)Object.assign(parameters,{friction:Number($('lab-surface').value),roadRoughness:0});
   Object.assign(sim.params,parameters);
   const obstacles=mode==='city'?(scene.city?.obstacles||[]):mode==='lab'?FACILITY_SOLIDS:[];
@@ -298,7 +298,7 @@ async function selectVehicle(id,{forLanding=false}={}){
     vehicleLoadTask=scene.loadVehicle(profile);const vehicle=await vehicleLoadTask;activeVehicle=profile;
     if(profile.id==='roadster')roadsterStudyGeometry={...vehicle.geometryParams};
     if(mode==='lab'&&experimentIds.has(profile.id))lastLabVehicleId=profile.id;
-    Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),{roadRoughness:0,aeroEnabled:false});reset({cancel:false,restoreCityPlace:mode==='city'});
+    Object.assign(sim.params,vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),{roadRoughness:0,aeroEnabled:true});reset({cancel:false,restoreCityPlace:mode==='city'});
     selectedPartId=null;$('part-card').hidden=true;$('part-search').value='';
     $('vehicle-title').innerHTML=escape(profile.brand)+' <em>'+escape(profile.model)+'</em>';
     $('model-status').hidden=mode==='lab';$('model-status').textContent=profile.reference;$('vehicle-credit').innerHTML=vehicleCredit(profile);$('city-credit').innerHTML=vehicleCredit(profile);
@@ -657,7 +657,7 @@ function updateUI(){
 }
 function renderGuide(tab='controls'){
   $$('[data-guide]').forEach(b=>b.classList.toggle('active',b.dataset.guide===tab));
-  $('guide-content').innerHTML=tab==='sources'?'<p>AI 경주차 외형은 Lexyc16의 <a href="https://sketchfab.com/3d-models/none-db9a5f7ae9d84a0fb01cac96afe3e69c" target="_blank" rel="noopener noreferrer">Nissan Z Proto</a>이며 축척·도색·바퀴 회전을 적용했습니다. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></p><p>공기 장치: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md" target="_blank" rel="noopener noreferrer">테슬라 특허·공식 자료와 구현 가정</a></p><p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>2020 Roadster 외형을 포함한 77종에 공통 가상 추진 장치를 적용했습니다. 이 장치는 각 실차의 기본 사양이 아닙니다. 실험 5종은 동일한 375 kg 초기 공기를 사용하며 차체별 분사 위치가 다릅니다. <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>4방식 비교로 자유 낙하·추력 제동·완만한 하강·절약 착지를 같은 조건에서 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 시점 복원 · V: 물리 표시 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 각 차체는 Space로 충분히 상승한 뒤 X를 누르면 분사로 한 바퀴 회전한 뒤 자세를 회복합니다. 질량·관성·높이·기체 조건이 부족하면 시작하지 않습니다. B는 회전을 취소하고 제동합니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. 팬 접지 보조는 지상 가속·제동 때 바닥의 공기를 빼서 접지력을 높이며 배터리를 사용합니다. 공중 부양은 별도의 압축기체 노즐이 담당합니다. 공기 충전을 켜면 정차·분사 종료 후 배터리로 주변 공기를 압축해 탱크를 채웁니다. 충전은 압축에 필요한 일과 냉각을 계산하며 운용 기준인 99%에서 멈춥니다. 300 kW 압축기와 5 kW 냉각 보조장치는 가정값이며 실제 자동차의 탑재 사양이 아닙니다. 화면의 예상 시간은 현재 기체량·온도·배터리를 반영합니다. R은 출발점·탱크·배터리를 초기화하는 시뮬레이션 복귀입니다. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
+  $('guide-content').innerHTML=tab==='sources'?'<p>AI 경주차 외형은 Lexyc16의 <a href="https://sketchfab.com/3d-models/none-db9a5f7ae9d84a0fb01cac96afe3e69c" target="_blank" rel="noopener noreferrer">Nissan Z Proto</a>이며 축척·도색·바퀴 회전을 적용했습니다. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></p><p>공기 장치: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/roadster-air-systems.md" target="_blank" rel="noopener noreferrer">테슬라 특허·공식 자료와 구현 가정</a></p><p>착지 탐구: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/landing-study-guide.md" target="_blank" rel="noopener noreferrer">실험 설계·물리식·축소 실험·출처</a></p><p>2020 Roadster 외형을 포함한 77종에 공통 가상 추진 장치를 적용했습니다. 이 장치는 각 실차의 기본 사양이 아닙니다. 실험 5종은 동일한 375 kg 초기 공기를 사용하며 차체별 분사 위치가 다릅니다. <a href="./assets/vehicles/vehicle-specifications.md" target="_blank" rel="noopener noreferrer">제원 기준</a></p>'+'<p>환경: <a href="./assets/environment/sky/LICENSE.txt" target="_blank" rel="noopener noreferrer">촬영 하늘</a> · <a href="./assets/environment/road/LICENSE.txt" target="_blank" rel="noopener noreferrer">도로 재질</a>  · <a href="./assets/trees/LICENSE.txt" target="_blank" rel="noopener noreferrer">스캔 나무 모델</a> · Poly Haven CC0 · 은행·양버즘·느티·왕벚·메타세쿼이아·소나무는 수종별 규칙으로 생성한 모델(실측 아님)</p><p>운전석: <a href="https://github.com/leejuhan-1214/roadster/blob/main/docs/cockpit-references.md" target="_blank" rel="noopener noreferrer">실내 참고 자료와 구현 범위</a></p><p>강남 건물: <a href="./assets/city-buildings/README.txt" target="_blank" rel="noopener noreferrer">공식 건축 자료와 OSM에 기반한 재현 모델 · 출처</a></p>'+VEHICLES.map(p=>'<p><b>'+escape(p.title)+'</b><br>'+vehicleCredit(p)+'</p>').join(''):'<ol><li>차체와 출발 높이를 선택합니다.</li><li>4방식 비교로 자유 낙하·추력 제동·완만한 하강·절약 착지를 같은 조건에서 비교합니다.</li><li>제동 높이와 서스펜션을 바꿔 충격을 줄이는 조건을 찾습니다.</li><li>비교 결과에서 이론값 검증·제동 높이·기체 소비와 반력 그래프를 확인합니다.</li><li>물리 표시(V)로 중력·수직 항력·추력·연속 지면반력을 비교합니다. 실험 재생을 0.25×/0.1×로 낮추거나 P로 멈춘 뒤 +2 ms씩 관찰할 수 있습니다.</li></ol><p>드래그: 시점 회전 · P: 실험 일시정지 · C: 시점 복원 · V: 물리 표시 · R: 초기화</p><p>구조 탐색에서 스크롤하면 분해·조립합니다. 도시 주행: W/↑ 가속, S/↓ 제동·후진, A/D 방향, B 제동. Space 상승, F 추진 가속 · Shift 드리프트, H 현재 고도 유지. 공중 기본 A/D는 차체 방향을 유지하는 좌우 수평 분사, W/S는 전후 추진입니다. Q/E는 기수 회전, 화살표는 자세 제어입니다. 각 차체는 Space로 충분히 상승한 뒤 X를 누르면 분사로 한 바퀴 회전한 뒤 자세를 회복합니다. 질량·관성·높이·기체 조건이 부족하면 시작하지 않습니다. B는 회전을 취소하고 제동합니다. 조작 중 높이 보정은 기체를 사용하며 H는 지속적인 높이 유지입니다. 착지 보조는 수평 속도를 줄여 하강하며 수동 키를 누르면 해제됩니다. B는 기체를 써서 공중 감속하며 가스가 떨어지면 제어할 수 없습니다. C: 추적→운전석→자유 시점. 운전석에서 드래그로 둘러보고 두 번 클릭하면 정면으로 돌아옵니다. 휠은 시야각을 조절합니다. 운전석의 차량·설정 버튼으로 차량 목록과 전체 계기를 열고, Escape로 닫습니다. 12종은 원본 모델 실내를 사용하며, 나머지는 차종별 자료를 참고한 재현 실내입니다. 원본 계기 텍스처는 시각 자료이고 실제 속도는 HUD에서 확인합니다. 팬 접지 보조는 지상 가속·제동 때 바닥의 공기를 빼서 접지력을 높이며 배터리를 사용합니다. 공중 부양은 별도의 압축기체 노즐이 담당합니다. 공기 충전을 켜면 정차·분사 종료 후 배터리로 주변 공기를 압축해 탱크를 채웁니다. 충전은 압축에 필요한 일과 냉각을 계산하며 운용 기준인 99%에서 멈춥니다. 300 kW 압축기와 5 kW 냉각 보조장치는 가정값이며 실제 자동차의 탑재 사양이 아닙니다. 화면의 예상 시간은 현재 기체량·온도·배터리를 반영합니다. R은 출발점·탱크·배터리를 초기화하는 시뮬레이션 복귀입니다. 화면의 조작 버튼으로도 사용할 수 있습니다. 실험 패널에서 노면·구름저항·항력·바람을 바꾸고 같은 속도에서 B를 눌러 제동거리를 비교합니다.</p>';
   if(tab==='controls'&&mode==='city'){
     const info=document.createElement('p');
     const mapHelp=document.createElement('p');

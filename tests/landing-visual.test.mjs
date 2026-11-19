@@ -38,7 +38,17 @@ test('landing force diagram uses one linear scale with bounded upward scale chan
   near(visual.forceArrows.gravity.cone.position.y,sim.mass*sim.params.gravity/visual.scale);
   near(visual.forceArrows.ground.cone.position.y,10000/visual.scale);
   assert.equal(visual.metrics.groundN,10000,'continuous reaction does not invent an instantaneous numerical impact force');
-  assert.equal(visual.forceArrows.thrust.visible,false);visual.dispose();
+  assert.equal(visual.forceArrows.thrust.visible,false);
+  const dragArrow=visual.forceArrows.drag;
+  for(const dragY of [-750,0,825]){
+    sim.verticalAirDragN=dragY;visual.update(sim,view(sim),camera,'lab');
+    assert.equal(dragArrow.visible,dragY!==0);
+    if(dragY){
+      near(dragArrow.cone.position.y,Math.abs(dragY)/visual.scale);
+      near(new THREE.Vector3(0,1,0).applyQuaternion(dragArrow.quaternion).y,Math.sign(dragY));
+    }
+  }
+  visual.dispose();
 });
 
 test('airborne thrust has actual resultant direction and zero ground vector/contact marks',()=>{

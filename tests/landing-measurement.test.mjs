@@ -66,7 +66,7 @@ test('live and logged elastic storage use the same end-state pose throughout imp
 
 test('first-deceleration duration and ground impulse have the same resolved 2 ms endpoint',()=>{
   for(const height of [.1,3]){
-    const sim=new PhysicsSim(),run=createLandingRun(sim,{height,method:'free'});
+    const sim=new PhysicsSim(),run=createLandingRun(sim,{height,method:'free',aeroEnabled:false});
     for(let step=0;step<15000&&!run.done;step++)advance(sim,run);
     assert.ok(run.done);
     const r=run.result;

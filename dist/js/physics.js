@@ -1,3 +1,4 @@
+import {STANDARD_AIR_DENSITY,RIG_VERTICAL_DRAG_AREA} from './landing-aerodynamics.js?v=20261119-air161';
 import { Vector3, Quaternion, Euler } from '../vendor/three.core.js';
 import {R,GAMMA,CV,nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 export {nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
@@ -21,7 +22,7 @@ export const DEFAULTS = Object.freeze({
   dryMass: 1900, ballastKg:0, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
   friction: 1.15, rollingResistance: .015, springK: 75000, damperC: 6000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
-  gravity: 9.80665, dragScale: 1, valveTau: .03,
+  gravity: 9.80665, dragScale: 1, airDensity:STANDARD_AIR_DENSITY, verticalDragArea:RIG_VERTICAL_DRAG_AREA, centeredAero:false, valveTau: .03,
   wheelRadius: .36, wheelInertia: 2.6, gearRatio: 9, driveEfficiency: .94,
   batteryKWh: 200, roadRoughness:0, tractionControl:true, absEnabled:true, feedLossCoefficient:1000, contactEnabled: true, aeroEnabled: true,
   cgX: 0, cgY: 0, cgZ: 0, inertiaRoll: 900, inertiaYaw: 3400, inertiaPitch: 3500,
@@ -279,7 +280,7 @@ export class PhysicsSim {
     this.preStepVelocityY=0;this.resolvedAcceleration=new Vector3();this.stepDuration=0;
     this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
-    this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.rollingResistanceN = 0;
+    this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.verticalAirDragN = 0; this.rollingResistanceN = 0;
     this.handbrakeAmount=0;this.handbrakeForceN=0;
     this.motorState=evaluateElectricDrive({wheelOmega:[0,0,0,0],throttle:0,brake:0,batteryEnergyJ:this.state.batteryJ,dt:.002},p);
     this.manifoldPressure=this.state.pressure;this.massFlowKgS=0;this.electricPowerW=0;this.regenPowerW=0;this.driveLossW=0;this.tractionCut=1;
@@ -542,13 +543,16 @@ export class PhysicsSim {
 
     // Anisotropic body drag, relative wind, and aerodynamic surface moment.
     const relative = s.vel.clone().sub(new Vector3(p.windX || 0, 0, p.windZ || 0)).applyQuaternion(qInv);
-    this.airDragN = 0;
+    this.airDragN = 0; this.verticalAirDragN = 0;
     if (p.aeroEnabled) {
-      const rho = 1.225, aeroScale = Math.max(0, p.dragScale);
+      const rho = p.airDensity, aeroScale = Math.max(0, p.dragScale);
       const aero = new Vector3(-.5 * rho * .50 * relative.x * Math.abs(relative.x),
-        -.5 * rho * 3.4 * relative.y * Math.abs(relative.y), -.5 * rho * 1.6 * relative.z * Math.abs(relative.z)).multiplyScalar(aeroScale);
+        -.5 * rho * p.verticalDragArea * relative.y * Math.abs(relative.y), -.5 * rho * 1.6 * relative.z * Math.abs(relative.z)).multiplyScalar(aeroScale);
       this.airDragN = aero.length();
-      applyAt(aero.applyQuaternion(s.q), new Vector3(-.12, .06, 0).sub(this.cg).applyQuaternion(s.q));
+      aero.applyQuaternion(s.q);
+      this.verticalAirDragN = aero.y;
+      if (p.centeredAero) force.add(aero);
+      else applyAt(aero, new Vector3(-.12, .06, 0).sub(this.cg).applyQuaternion(s.q));
       if (input.wing) {
         const wing = new Vector3(-.5 * rho * .18 * relative.x * Math.abs(relative.x), -.5 * rho * 1.3 * relative.x ** 2, 0).multiplyScalar(aeroScale);
         applyAt(wing.applyQuaternion(s.q), new Vector3(-1.68, .48, 0).sub(this.cg).applyQuaternion(s.q));

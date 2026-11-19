@@ -1,6 +1,6 @@
 import {ATMOSPHERE,nozzle} from './air-nozzle.js?v=20261118-audit148';
-import {LANDING_STEP,landingClearance,recordLandingRelease,releaseLandingVehicle} from './landing-experiment.js?v=20261119-height160';
-import {economyInitialState,measureEconomyPlan} from './landing-economy.js?v=20261119-height160';
+import {LANDING_STEP,landingClearance,recordLandingRelease,releaseLandingVehicle} from './landing-experiment.js?v=20261119-air161';
+import {economyInitialState,measureEconomyPlan} from './landing-economy.js?v=20261119-air161';
 
 export const STUDY_HOVER_SECONDS=1;
 
