@@ -33,9 +33,9 @@ test('the export separates no braking observation, zero landing use, both gas ph
 });
 
 test('a stopped run cannot replace a later result and closing cancels a pending worker',async()=>{
-  const controls=new Map(),workers=[];
+  const controls=new Map(),workers=[],closeEvents=[];
   function control(){return {listeners:{},hidden:false,checked:false,addEventListener(type,fn){this.listeners[type]=fn;},
-    removeAttribute(){},setAttribute(){},replaceChildren(){},showModal(){this.open=true;},close(){this.open=false;this.listeners.close?.();}};}
+    removeAttribute(){},setAttribute(){},replaceChildren(){},showModal(){this.open=true;},close(){this.open=false;closeEvents.push(()=>this.listeners.close?.());}};}
   const dialog=control();
   dialog.querySelector=id=>{if(!controls.has(id))controls.set(id,control());return controls.get(id);};
   const previous={document:globalThis.document,Worker:globalThis.Worker,Option:globalThis.Option};
@@ -43,7 +43,8 @@ test('a stopped run cannot replace a later result and closing cancels a pending 
   globalThis.Option=class{};
   globalThis.Worker=class{constructor(){workers.push(this);}postMessage(){}terminate(){this.terminated=true;}};
   try{
-    const panel=new LandingHeightStudyPanel(()=>conditions,()=>{});
+    let selected=conditions;
+    const panel=new LandingHeightStudyPanel(()=>selected,()=>{});
     panel.open();await Promise.resolve();assert.equal(workers.length,1);
     dialog.querySelector('#height-study-stop').listeners.click();assert.equal(workers[0].terminated,true);
     await panel.start(false);assert.equal(workers.length,2);
@@ -51,8 +52,18 @@ test('a stopped run cannot replace a later result and closing cancels a pending 
     workers[1].onmessage({data:{study}});assert.equal(panel.find('results').hidden,false);assert.equal(panel.find('choice').value,'1');
     await panel.start(true);assert.equal(workers.length,2,'same settings reuse completed measurements');
     await panel.start(false);assert.equal(workers.length,3);
-    dialog.close();assert.equal(workers[2].terminated,true);
-    workers[2].onmessage({data:{error:'late'}});assert.doesNotMatch(panel.find('status').textContent,/late/);
+    // A browser changes .open immediately, then dispatches close on a later task.
+    dialog.close();
+    selected={...conditions,config:{...conditions.config,verticalDragArea:5.1}};
+    panel.open();await Promise.resolve();
+    assert.equal(workers.length,4);assert.equal(workers[2].terminated,true);
+    closeEvents.shift()();
+    assert.equal(dialog.open,true);assert.equal(panel.worker,workers[3]);
+    workers[3].onmessage({data:{progress:{phase:'coarse',done:1,total:23}}});
+    assert.match(panel.find('status').textContent,/1 \/ 23/);
+    dialog.close();closeEvents.shift()();
+    assert.equal(workers[3].terminated,true);assert.equal(panel.worker,null);
+    workers[3].onmessage({data:{error:'late'}});assert.doesNotMatch(panel.find('status').textContent,/late/);
   }finally{
     for(const [key,value] of Object.entries(previous)){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
   }

@@ -157,7 +157,10 @@ export class LandingHeightStudyPanel{
     document.body.append(this.dialog);
     this.find=id=>this.dialog.querySelector('#height-study-'+id);
     this.find('close').addEventListener('click',()=>this.dialog.close());
-    this.dialog.addEventListener('close',()=>this.cancel());
+    this.dialog.addEventListener('close',()=>{
+      // A queued close from the previous opening can arrive after a new trial starts.
+      if(!this.dialog.open)this.cancel();
+    });
     this.find('stop').addEventListener('click',()=>{this.cancel();this.setStatus('측정을 중단했습니다.',false);});
     this.find('run').addEventListener('click',()=>this.start(false));
     this.find('choice').addEventListener('change',event=>this.select(Number(event.target.value)));
