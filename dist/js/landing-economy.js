@@ -105,7 +105,7 @@ function gentleForecastAcceleration(gap,velocity,target,gravity,valveTau){
 
 export function economyInitialState(sim, height) {
   const p = sim.params, s = sim.state;
-  return {height:Math.max(0, height), gravity:p.gravity, dragConstant:dragConstant(p), dryMass:sim.loadedDryMass,
+  return {height:Math.max(0, height), gravity:p.gravity, dragConstant:dragConstant(p), dryMass:sim.dryMass,
     tankVolume:p.tankVolume, valveTau:p.valveTau, feedLossCoefficient:Math.max(0,p.feedLossCoefficient),
     gas:s.gas, temperature:s.temp, pressure:s.pressure,
     area:sim.thrusters.slice(0,4).reduce((sum,t)=>sum+t.area,0)};

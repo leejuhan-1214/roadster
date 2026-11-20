@@ -94,10 +94,9 @@ const MATCH_KEYS=Object.freeze(['groupId','vehicleId','height','targetSpeed','sp
 const hasConditions=result=>!!result?.groupId&&!!result?.vehicleId&&MATCH_KEYS.slice(2).every(key=>finite(result[key]));
 
 export function sameLandingModel(a,b){
-  // Older ordinary trials used the 2 ms solver with no added ballast.
+  // Older trials omitted the 2 ms default from their metadata.
   return a.parameters?.aeroEnabled===b.parameters?.aeroEnabled&&a.parameters?.verticalDragArea===b.parameters?.verticalDragArea&&
-    a.parameters?.airDensity===b.parameters?.airDensity&&a.modelVersion===b.modelVersion&&(a.physicsStep??.002)===(b.physicsStep??.002)&&
-    (a.ballastKg??0)===(b.ballastKg??0);
+    a.parameters?.airDensity===b.parameters?.airDensity&&a.modelVersion===b.modelVersion&&(a.physicsStep??.002)===(b.physicsStep??.002);
 }
 
 /** Match a single vehicle, batch and controlled initial conditions. Invalid

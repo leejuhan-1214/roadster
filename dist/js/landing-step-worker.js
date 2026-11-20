@@ -1,5 +1,5 @@
-import {PhysicsSim} from './physics.js?v=20261119-air161';
-import {LANDING_STEP,LANDING_AUDIT_STEPS,releaseLandingVehicle,recordLandingRelease,landingRunInput,updateLandingRun} from './landing-experiment.js?v=20261119-air161';
+import {PhysicsSim} from './physics.js?v=20261120-basemass';
+import {LANDING_STEP,LANDING_AUDIT_STEPS,releaseLandingVehicle,recordLandingRelease,landingRunInput,updateLandingRun} from './landing-experiment.js?v=20261120-basemass';
 
 // Use the frozen release and the planner's original trigger in each replay.
 // The digital controller still samples the vehicle every 2 ms, with commands

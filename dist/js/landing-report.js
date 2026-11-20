@@ -31,7 +31,7 @@ export function landingConditionText(rows,methodNames,audit){
       const setup=setupLines(row);
       if(!blocks.has(setup))blocks.set(setup,new Map());
       const vehicles=blocks.get(setup);
-      const car=(row.vehicleTitle||row.title||row.vehicleId||'차체 미기록')+' · 중앙 추가 질량 '+measured(row.ballastKg??row.parameters?.ballastKg)+' kg · 초기 총질량 '+measured(row.initialMass)+' kg';
+      const car=(row.vehicleTitle||row.title||row.vehicleId||'차체 미기록')+' · 초기 총질량 '+measured(row.initialMass)+' kg';
       if(!vehicles.has(car))vehicles.set(car,[]);
       const method=methodNames[row.method]||row.method||'방식 미기록';
       const setting=row.method==='brake'?' (제동 설정 '+measured(row.brakeHeight)+' m)':'';

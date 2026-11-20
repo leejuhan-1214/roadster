@@ -1,4 +1,4 @@
-import {LANDING_MODEL_VERSION,LANDING_STEP} from './landing-experiment.js?v=20261119-air161';
+import {LANDING_MODEL_VERSION,LANDING_STEP} from './landing-experiment.js?v=20261120-basemass';
 
 export const STEP_AUDIT_MARKUP=`<details id="landing-audit" class="landing-metrics-details">
   <summary>계산 간격 검산 · 2 / 1 / 0.5 ms</summary>
@@ -20,6 +20,7 @@ export const STEP_AUDIT_MARKUP=`<details id="landing-audit" class="landing-metri
 
 export function canAuditLanding(row){
   return row?.modelVersion===LANDING_MODEL_VERSION&&!row.manualLiftUsed&&
+    !(row.ballastKg||row.config?.ballastKg||row.parameters?.ballastKg)&&
     ['landed','unsettled'].includes(row.status)&&Number.isFinite(row.touchdownSpeed)&&
     Number.isFinite(row.parameters?.dryMass)&&Number.isFinite(row.config?.height)&&
     (row.method!=='eco'||Number.isFinite(row.ecoPlannedBrakeHeight));
@@ -41,12 +42,12 @@ const difference=(value,reference)=>Number.isFinite(value)&&Number.isFinite(refe
 
 export function stepAuditCSV(source,rows){
   const fine=rows.at(-1),c=source.config,p=source.parameters;
-  return [['result_id','model_version','vehicle','method','height_m','ballast_kg','initial_mass_kg','initial_gas_kg',
+  return [['result_id','model_version','vehicle','method','height_m','initial_mass_kg','initial_gas_kg',
     'brake_setting_m','target_speed_m_s','spring_N_m','damper_N_s_m','controller_ms','physics_ms','status',
     'touchdown_speed_m_s','first_ground_impulse_N_s','peak_equivalent_reaction_N',
     'speed_delta_vs_0.5ms_m_s','impulse_delta_vs_0.5ms_N_s','peak_delta_vs_0.5ms_N',
     'automatic_command_s','touchdown_s','first_deceleration_end_s','gas_used_kg','release_parameters_json'],
-    ...rows.map(r=>[source.id,source.modelVersion,source.vehicleId,c.method,c.height,p.ballastKg??0,r.initialMass,r.initialGas,
+    ...rows.map(r=>[source.id,source.modelVersion,source.vehicleId,c.method,c.height,r.initialMass,r.initialGas,
       c.brakeHeight,c.targetSpeed,c.springK,c.damperC,LANDING_STEP*1000,r.step*1000,r.status,
       r.speed,r.impulse,r.peak,difference(r.speed,fine.speed),difference(r.impulse,fine.impulse),difference(r.peak,fine.peak),
       r.autoBrakeTime,r.contactTime,r.contactEndTime,r.gasUsed,JSON.stringify(p)])];
@@ -94,7 +95,7 @@ export class LandingStepAuditPanel{
     this.clear();
     try{
       this.source=stepAuditSource(row);
-      const worker=new Worker(new URL('./landing-step-worker.js?v=20261119-air161',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./landing-step-worker.js?v=20261120-basemass',import.meta.url),{type:'module'});
       this.worker=worker;this.run.disabled=true;this.stop.hidden=false;
       this.status.textContent='저장한 출발 조건을 준비하는 중…';
       const finish=message=>{

@@ -1,6 +1,6 @@
 import {STANDARD_AIR_DENSITY,RIG_VERTICAL_DRAG_AREA,dragConstant,freeDrop} from './landing-aerodynamics.js?v=20261119-air161';
 import {contactFraction,landingSpringState} from './landing-measurement.js?v=20261118-physics146';
-import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261119-air161';
+import {planEconomyLanding,economyAcceleration} from './landing-economy.js?v=20261120-basemass';
 
 // A controlled comparison of a hypothetical common landing rig, not OEM crash data.
 // Measurement updates run at the fixed physics step (normally 2 ms). Force samples
@@ -15,11 +15,10 @@ export const LANDING_METHODS=Object.freeze([
   {id:'eco',label:'절약 착지'},
 ]);
 export const BRAKE_HEIGHT_FRACTIONS=Object.freeze([.1,.25,.5,.75,1]);
-export const ROADSTER_BALLAST_KG=Object.freeze([0,100,200]);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const finite=(value,fallback,min,max)=>clamp(Number.isFinite(Number(value))?Number(value):fallback,min,max);
 
-export function landingSettings(options={}){
+export function landingSettings({ballastKg: _obsolete, ...options}={}){
   const height=finite(options.height,3,0,Number.MAX_VALUE);
   return {...options,height, aeroEnabled: options.aeroEnabled!==false,
     airDensity:finite(options.airDensity,STANDARD_AIR_DENSITY,.1,2),
@@ -30,7 +29,6 @@ export function landingSettings(options={}){
     targetSpeed:finite(options.targetSpeed,.5,.2,2),
     springK:finite(options.springK,75000,30000,150000),
     damperC:finite(options.damperC,6000,1000,15000),
-    ballastKg:ROADSTER_BALLAST_KG.includes(options.ballastKg)?options.ballastKg:0,
   };
 }
 
@@ -40,10 +38,6 @@ export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
   const active=fleet.find(vehicle=>vehicle.id===activeVehicleId)||fleet[0];
   if(!active)return [];
   const method=landingSettings(settings).method;
-  if(kind==='ballast'){
-    if(!fleet.some(vehicle=>vehicle.id==='roadster'))return [];
-    return LANDING_METHODS.flatMap(({id:method})=>ROADSTER_BALLAST_KG.map(ballastKg=>({vehicleId:'roadster',method,ballastKg})));
-  }
   if(kind==='brake-heights'){
     const height=landingSettings(settings).height;
     // Include an untreated baseline, then change only the brake trigger. Zero
@@ -54,7 +48,7 @@ export function createLandingJobs(kind,vehicles,settings={},activeVehicleId){
   if(kind==='fleet-methods')return fleet.flatMap(vehicle=>LANDING_METHODS.map(item=>({vehicleId:vehicle.id,method:item.id})));
   if(kind==='methods'||kind==='economy')return LANDING_METHODS.map(item=>({vehicleId:active.id,method:item.id}));
   if(kind==='vehicles')return fleet.filter(vehicle=>settings.vehicleIds?.includes(vehicle.id)).map(vehicle=>({vehicleId:vehicle.id,method}));
-  return [{vehicleId:active.id,method}];
+  return kind==='single'?[{vehicleId:active.id,method}]:[];
 }
 
 /** Minimum unloaded tire-to-ground gap, unaffected by static spring sag. */
@@ -65,12 +59,12 @@ export function landingClearance(sim){
 /** Resets the supplied vehicle using shared controlled environmental conditions. */
 export function releaseLandingVehicle(sim,options={}){
   const config=landingSettings(options);
-  Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,ballastKg:config.ballastKg,
+  Object.assign(sim.params,{springK:config.springK,damperC:config.damperC,
     gravity:9.80665,windX:0,windZ:0,roadRoughness:0,aeroEnabled:config.aeroEnabled,
     airDensity:config.airDensity,verticalDragArea:config.verticalDragArea,dragScale:1,centeredAero:true,
     contactEnabled:true,friction:1.15,rollingResistance:.015,
     parkedWheelMounts:false,cityWheelGeometry:null,cityGroundSupports:null,
-    // Fixed level, centred loading isolates mass and chassis geometry differences.
+    // All vehicles start level with centered mass properties.
     cgX:0,cgY:0,cgZ:0});
   sim.setObstacles([]);sim.reset('ground');
   sim.state.pos.set(0,.31+sim.params.wheelRadius+config.height,0);

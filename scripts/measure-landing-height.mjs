@@ -36,7 +36,7 @@ function closedValveTrial(source,job,aeroEnabled){
 
 function recordTrial(r){
   return {
-    method:r.method,ballast_kg:r.ballastKg,height_m:r.height,initial_mass_kg:r.initialMass,
+    method:r.method,height_m:r.height,initial_mass_kg:r.initialMass,
     initial_gas_kg:r.initialGas,contact_speed_m_s:r.touchdownSpeed,first_ground_impulse_N_s:r.groundImpulseNs,
     peak_equivalent_reaction_N:r.peakEquivalentGroundForceN,gas_used_kg:r.gasUsed,
     command_s:r.autoBrakeTime,first_above_weight_s:r.firstAboveWeightTime,touchdown_s:r.touchdownTime,
@@ -84,23 +84,21 @@ for(const row of study.rows){
   if(row.targetState==='reached')assert.ok(row.actualDistance>=0&&row.actualDistance<=row.distanceToContact+1e-8);
 }
 
-const mass=[],audit=[],controls=[];
-for(const job of createLandingJobs('ballast',[profile],source.config,profile.id)){
+const methods=[],audit=[],controls=[];
+for(const job of createLandingJobs('methods',[profile],source.config,profile.id)){
   const run=closedValveTrial(source,job,true);
   const row=recordTrial(run);
-  mass.push(row);
-  if(job.ballastKg===0){
-    const dragFree=closedValveTrial(source,job,false);
-    controls.push(row,recordTrial(dragFree));
-    if(job.method==='free'){
-      const vacuumSpeed=Math.sqrt(2*run.parameters.gravity*run.height);
-      assert.ok(Math.abs(dragFree.touchdownSpeed-vacuumSpeed)<1e-7);
-      assert.ok(run.touchdownSpeed>0&&run.touchdownSpeed<dragFree.touchdownSpeed);
-      assert.equal(run.gasUsed,0);
-      assert.equal(dragFree.gasUsed,0);
-    }
+  methods.push(row);
+  const dragFree=closedValveTrial(source,job,false);
+  controls.push(row,recordTrial(dragFree));
+  if(job.method==='free'){
+    const vacuumSpeed=Math.sqrt(2*run.parameters.gravity*run.height);
+    assert.ok(Math.abs(dragFree.touchdownSpeed-vacuumSpeed)<1e-7);
+    assert.ok(run.touchdownSpeed>0&&run.touchdownSpeed<dragFree.touchdownSpeed);
+    assert.equal(run.gasUsed,0);
+    assert.equal(dragFree.gasUsed,0);
   }
-  const replaySource=stepAuditSource({...run,id:job.method+'-'+job.ballastKg,vehicleId:profile.id});
+  const replaySource=stepAuditSource({...run,id:job.method,vehicleId:profile.id});
   for(const step of LANDING_AUDIT_STEPS){
     const result=replayLandingStep(replaySource,step);
     if(step===LANDING_STEP){
@@ -110,7 +108,7 @@ for(const job of createLandingJobs('ballast',[profile],source.config,profile.id)
       assert.equal(result.gasUsed,run.gasUsed);
     }
     audit.push({
-      method:run.method,ballast_kg:run.ballastKg,height_m:run.height,initial_mass_kg:result.initialMass,
+      method:run.method,height_m:run.height,initial_mass_kg:result.initialMass,
       controller_ms:LANDING_STEP*1000,physics_ms:step*1000,contact_speed_m_s:result.speed,
       first_ground_impulse_N_s:result.impulse,peak_equivalent_reaction_N:result.peak,
       touchdown_s:result.contactTime,gas_used_kg:result.gasUsed,
@@ -118,8 +116,8 @@ for(const job of createLandingJobs('ballast',[profile],source.config,profile.id)
     });
   }
 }
-assert.equal(mass.length,12);
-assert.equal(audit.length,36);
+assert.equal(methods.length,4);
+assert.equal(audit.length,12);
 assert.equal(controls.length,8);
 const eligibleFixed=study.rows.filter(row=>row.method==='brake'&&row.feasible);
 assert.ok(eligibleFixed.length);
@@ -158,10 +156,10 @@ for(const scale of [.75,1,1.25]){
   }
 }
 await Promise.all([
-  saveTable('landing-height-v161',heightStudyCSV(study)),
-  saveTable('landing-ballast-v161',table(mass)),
-  saveTable('landing-timestep-v161',table(audit)),
-  saveTable('landing-drag-control-v161',table(controls)),
+  saveTable('landing-height-20m',heightStudyCSV(study)),
+  saveTable('landing-methods-20m',table(methods)),
+  saveTable('landing-timestep-20m',table(audit)),
+  saveTable('landing-drag-control-20m',table(controls)),
   saveTable('landing-drag-sensitivity-v161',table(sensitivity))
 ]);
 console.log(JSON.stringify(study,null,2));

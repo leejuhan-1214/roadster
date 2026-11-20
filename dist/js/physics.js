@@ -19,7 +19,7 @@ import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layou
  */
 export const DEFAULTS = Object.freeze({
   ...AIR_SYSTEM_DEFAULTS,
-  dryMass: 1900, ballastKg:0, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
+  dryMass: 1900, tankVolume: .9, tankPressureMPa: 35.875, initialTemperature: 300,
   friction: 1.15, rollingResistance: .015, springK: 75000, damperC: 6000, fanMaxForce: 18000,
   motorPowerKW: 650, motorTorqueNm: 900, windX: 0, windZ: 0,
   gravity: 9.80665, dragScale: 1, airDensity:STANDARD_AIR_DENSITY, verticalDragArea:RIG_VERTICAL_DRAG_AREA, centeredAero:false, valveTau: .03,
@@ -179,6 +179,7 @@ function makeThrusters(rocket=false,params={}) {
 export class PhysicsSim {
   constructor(params = {}) {
     this.params = { ...DEFAULTS, ...(isRocketProfile(params)?ROCKET_PARAMS:{}), ...params };
+    delete this.params.ballastKg; // Discard the retired option when replaying older configurations.
     this.thrusters = makeThrusters(isRocketProfile(this.params),this.params);
     this.cg = new Vector3();
     this.bodyHalf = [...BODY_ENVELOPE.half];
@@ -202,8 +203,6 @@ export class PhysicsSim {
     this.rocketProfile=isRocketProfile(p);
     this.thrusters=makeThrusters(this.rocketProfile,p);
     p.dryMass = Math.max(100, Number(p.dryMass) || DEFAULTS.dryMass);
-    // Point ballast is centered at the CG and adds no rotational inertia.
-    p.ballastKg = Number.isFinite(p.ballastKg) ? Math.max(0,p.ballastKg) : 0;
     p.tankVolume = clamp(Number(p.tankVolume) || DEFAULTS.tankVolume, .02, 2);
     p.tankPressureMPa = clamp(Number(p.tankPressureMPa) || DEFAULTS.tankPressureMPa, .101325, 80);
     p.initialTemperature = clamp(Number(p.initialTemperature) || 300, 150, 500);
@@ -230,7 +229,7 @@ export class PhysicsSim {
     }
     this.groundLevers=this.groundSupportGroups.map(()=>new Vector3());
     const gas = p.tankPressureMPa * 1e6 * p.tankVolume / (R * p.initialTemperature);
-    const staticSag=(this.loadedDryMass + gas)*p.gravity/(4*p.springK);
+    const staticSag=(this.dryMass + gas)*p.gravity/(4*p.springK);
     // Fitted city meshes depict a parked car: its hub already carries the
     // static spring load. Extend the unloaded suspension by that deflection so
     // simulating the load returns the wheel to its authored arch position.
@@ -289,7 +288,7 @@ export class PhysicsSim {
     for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0;w.lateralForceN=0;
       w.compression = this.contactCount ? Math.max(0,w.radius-(this.state.pos.y+w.pos.y)) : 0;
       w.surfaceY=this.surfaceHeightAt(this.state.pos.x+w.pos.x,this.state.pos.z+w.pos.z,this.state.pos.y+w.pos.y);
-      w.omega = preset === 'corner' ? 12 / w.radius : preset === 'rolling' ? 20 / w.radius : 0; w.load = this.contactCount ? (this.loadedDryMass + gas) * p.gravity / 4 : 0;
+      w.omega = preset === 'corner' ? 12 / w.radius : preset === 'rolling' ? 20 / w.radius : 0; w.load = this.contactCount ? (this.dryMass + gas) * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
     return this.state;
@@ -355,8 +354,8 @@ export class PhysicsSim {
     return height;
   }
 
-  get loadedDryMass() { return Math.max(100,this.params.dryMass)+this.params.ballastKg; }
-  get mass() { return this.loadedDryMass + this.state.gas; }
+  get dryMass() { return Math.max(100,this.params.dryMass); }
+  get mass() { return this.dryMass + this.state.gas; }
   get groundHeight() { return this.restHeight; }
   get bodyPosition() { return this.state.pos.clone().sub(this.cg.clone().applyQuaternion(this.state.q)); }
   step(dt, input = {}) {

@@ -1,9 +1,9 @@
 import {dragConstant,predictedBrakeDistance} from './landing-aerodynamics.js?v=20261119-air161';
-import {PhysicsSim} from './physics.js?v=20261119-air161';
+import {PhysicsSim} from './physics.js?v=20261120-basemass';
 import {nozzle} from './air-nozzle.js?v=20261118-audit148';
-import {LANDING_STEP, LANDING_MODEL_VERSION, landingSettings, landingRunInput, updateLandingRun} from './landing-experiment.js?v=20261119-air161';
-import {landingTargetMet} from './landing-analysis.js?v=20261119-air161';
-import {startHoverLandingRun, landingPhaseAir, STUDY_HOVER_SECONDS} from './landing-hover.js?v=20261119-air161';
+import {LANDING_STEP, LANDING_MODEL_VERSION, landingSettings, landingRunInput, updateLandingRun} from './landing-experiment.js?v=20261120-basemass';
+import {landingTargetMet} from './landing-analysis.js?v=20261120-basemass';
+import {startHoverLandingRun, landingPhaseAir, STUDY_HOVER_SECONDS} from './landing-hover.js?v=20261120-basemass';
 
 const HEIGHT=20;
 

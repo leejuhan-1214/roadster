@@ -1,4 +1,4 @@
-import {DEFAULTS} from './physics.js?v=20261119-air161';
+import {DEFAULTS} from './physics.js?v=20261120-basemass';
 import {vehiclePhysics,vehicleProfile} from './vehicle-profiles.js?v=20261118-city151';
 
 // Both the report and the interactive study use the fitted Roadster rig. A
@@ -9,5 +9,5 @@ export function roadsterHeightStudySource(geometry,settings={}){
   const profile=vehicleProfile('roadster');
   const {aeroEnabled=true,airDensity,verticalDragArea,targetSpeed=.5,springK=75000,damperC=6000,brakeHeight=1.5}=settings;
   return {vehicleId:profile.id,vehicleTitle:profile.title,parameters:vehiclePhysics(profile,geometry,DEFAULTS),
-    config:{height:20,ballastKg:0,aeroEnabled,airDensity,verticalDragArea,targetSpeed,springK,damperC,brakeHeight},hoverSeconds:1};
+    config:{height:20,aeroEnabled,airDensity,verticalDragArea,targetSpeed,springK,damperC,brakeHeight},hoverSeconds:1};
 }

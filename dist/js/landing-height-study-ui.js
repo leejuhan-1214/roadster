@@ -143,7 +143,7 @@ function releaseDescription({hover,config,parameters}){
     '부양 전 탱크 '+amount(hover.startGasKg,'kg',3)+', 부양 종료 때 탱크 '+amount(hover.releaseGasKg,'kg',3)+
     ', 압력 '+amount(hover.releasePressurePa/1e6,'MPa',3)+', 온도 '+amount(hover.releaseTemperatureK,'K')+
     ', 바퀴 높이 '+amount(hover.releaseHeightM,'m',3)+', 수직 속도 '+amount(hover.releaseVelocityY,'m/s',4)+' (위쪽 +). '+
-    '공기저항 '+(parameters.aeroEnabled?'켬 (ρ '+amount(parameters.airDensity,'kg/m³',3)+', 수직 CdA '+amount(parameters.verticalDragArea,'m²',2)+' 가정)':'끔')+' · 무풍. 추가 질량 '+amount(parameters.ballastKg??0,'kg')+'. 부양 소비는 공중에서 높이를 유지한 구간에, 착지 소비는 부양 종료 후 관측이 끝날 때까지 배출한 공기에 해당합니다.';
+    '공기저항 '+(parameters.aeroEnabled?'켬 (ρ '+amount(parameters.airDensity,'kg/m³',3)+', 수직 CdA '+amount(parameters.verticalDragArea,'m²',2)+' 가정)':'끔')+' · 무풍. 부양 소비는 공중에서 높이를 유지한 구간에, 착지 소비는 부양 종료 후 관측이 끝날 때까지 배출한 공기에 해당합니다.';
 }
 
 const phaseNames={coarse:'1 m 간격 측정',fine:'0.1 m 간격 측정',eco:'절약 착지 비교'};
@@ -203,7 +203,7 @@ export class LandingHeightStudyPanel{
       const key=JSON.stringify(source);
       if(reuse&&this.cacheKey===key&&this.study){this.present(this.study);return;}
       if(typeof Worker==='undefined')throw new Error('이 브라우저에서 백그라운드 계산을 시작할 수 없습니다.');
-      const worker=new Worker(new URL('./landing-height-worker.js?v=20261119-air161',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./landing-height-worker.js?v=20261120-basemass',import.meta.url),{type:'module'});
       this.worker=worker;
       worker.onerror=event=>{
         if(this.serial!==serial)return;
