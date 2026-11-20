@@ -22,13 +22,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261118-model154';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261118-circuit155';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261121-edges';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261118-model154';
 import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-circuit155';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
 import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
-import {renderPixelRatio,RenderBudget} from './render-quality.js?v=20261118-circuit155';
+import {renderPixelRatio,RenderBudget,useDistantExterior} from './render-quality.js?v=20261121-edges';
 import {batchStaticEnvironment} from './static-batch.js?v=20261107-drive2';
 import {createEnvironmentMaterials,surfaceUV} from './environment-materials.js?v=20261107-fleet1';
 import {createLandingDeck} from './landing-deck.js?v=20261118-model154';
@@ -140,9 +140,8 @@ export class FlightScene {
     this.canvas=canvas;this.onPartSelect=onPartSelect;this.mode='drive';this.cameraName='chase';this.elapsed=0;this.lastPaint='';
     this.onInspectExplode=onInspectExplode;this.onCameraChange=onCameraChange;this.physicsVisualClock=new SimulationVisualClock();this.jetEmissionCarry=[];
     this.explodeTarget=0;this.explodeProgress=0;this.hiddenParts=new Set();this.isolatedPartId=null;this.showHypotheses=true;this.touchPointers=new Map();this.pinchDistance=0;
-    this.renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
+    this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.debug.checkShaderErrors=new URLSearchParams(window.location.search).has('shaderDebug');
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.0;
     this.renderBudget=new RenderBudget();this.quality='smooth';this.renderer.shadowMap.enabled=false;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.shadowElapsed=1;
@@ -370,7 +369,7 @@ export class FlightScene {
   resize() {
     const rect=this.canvas.getBoundingClientRect();const w=Math.max(1,rect.width),h=Math.max(1,rect.height);
     const resized=this.bufferWidth!==undefined&&(w!==this.bufferWidth||h!==this.bufferHeight);
-    const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000);
+    const ratio=renderPixelRatio(w,h,window.devicePixelRatio||1,this.quality,this.renderBudget?.pixels||600000,this.mode);
     if(w!==this.bufferWidth||h!==this.bufferHeight||ratio!==this.bufferRatio){
       this.renderer.setDrawingBufferSize(w,h,ratio);
       this.bufferWidth=w;this.bufferHeight=h;this.bufferRatio=ratio;
@@ -393,7 +392,7 @@ export class FlightScene {
     const a=this.roadRelief.geometry.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,sampleRoadSurface(a.getX(i),a.getZ(i),{roughness}).height);
     a.needsUpdate=true;this.roadRelief.geometry.computeVertexNormals();
   }
-  observeFrame(ms){if(this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
+  observeFrame(ms){if(this.mode==='city'&&this.quality==='smooth'&&this.modelStatus?.ok&&this.renderBudget.observe(ms))this.resize();}
   configureLandingShadows(){
     // r180 selects shadow casters using the view camera's layers, so changing
     // shadow.camera.layers alone cannot isolate the car. Cache only the fixed
@@ -435,6 +434,7 @@ export class FlightScene {
     if(this.stageVisual)this.stageVisual.visible=mode!=='inspect';
     if(mode!=='inspect'){this.selectedBox.visible=false;this.selectedPart=null;this.selectedPartId=null;this.mechanismPlaying=false;this.mechanismPhase=0;}
     this.applyInspectorVisibility?.();
+    if(this.canvas&&this.renderer)this.resize();
   }
   setLandingExperiment(config){this.resetPhysicalEffects?.();this.landingVisual?.setExperiment(config);if(!config)this.landingFocusOffset=null;}
   setLandingLearningVisible(visible){this.landingVisual?.setVisible(visible);}
@@ -818,6 +818,20 @@ export class FlightScene {
     let vehicle=this.vehicleCache.get(profile.id);
     if(!vehicle){
       vehicle=profile.id==='roadster'?await loadRoadsterVehicle(createVehicle()):await loadRealVehicle(profile);
+      // Bodywork and tire detail often share a texture atlas. Keep oblique
+      // surfaces readable when viewed along the side of the selected car.
+      const anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());
+      vehicle.root.traverse(object=>{
+        if(!object.isMesh)return;
+        for(const material of Array.isArray(object.material)?object.material:[object.material]){
+          for(const texture of [material.map,material.normalMap,material.roughnessMap,material.metalnessMap]){
+            if(texture&&texture.anisotropy<anisotropy){
+              texture.anisotropy=anisotropy;
+              texture.needsUpdate=true;
+            }
+          }
+        }
+      });
       prepareAssessmentVehicle(vehicle);
       prepareRocketRetrofit(vehicle);
       configureVehicleFit(vehicle,profile);
@@ -978,9 +992,9 @@ export class FlightScene {
     this.updateCamera(view,dt);
     if(this.vehicle.setExteriorDisplayLod){
       const exterior=this.quality==='smooth'&&mode!=='inspect'&&!this.cutaway&&!insideCockpit&&!explode;
-      const distanceSq=this.camera.position.distanceToSquared(bodyPosition);
-      // Hysteresis keeps the source mesh stable when orbiting close to its body.
-      this.useExteriorLod=exterior&&distanceSq>(this.useExteriorLod?9:12.25);
+      const distance=this.camera.position.distanceTo(bodyPosition);
+      this.useExteriorLod=exterior&&useDistantExterior(
+        sim.params.bodyLength,distance,this.bufferHeight,this.camera.projectionMatrix.elements[5],this.useExteriorLod);
       this.vehicle.setExteriorDisplayLod(this.useExteriorLod);
     }
     this.landingVisual?.update(sim,view,this.camera,mode);

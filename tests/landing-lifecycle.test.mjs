@@ -17,6 +17,23 @@ const helpers=section('function restoreLandingParams(session)','async function s
 const next=section('async function nextLanding(session)','function stepSimulation()');
 const select=section('async function selectVehicle(id,','async function setMode(next)');
 const panel=section('function setSettingsPanel(open)','function setupUI()');
+test('initial loading keeps the bootstrap chassis off screen until the real vehicle is ready', async()=>{
+  const startup=section("  $('boot-message').textContent='로드스터 차체를 불러오는 중", '  // ?debug');
+  for(const success of [false,true]){
+    let resolveLoad,frames=0;
+    const load=new Promise(resolve=>{resolveLoad=resolve;});
+    const elements={'boot-message':{},'boot-retry':{hidden:true},boot:{hidden:false,classList:{add(){}}}};
+    const completion=vm.runInNewContext(startup,{
+      $:id=>elements[id],selectVehicle:()=>load,requestAnimationFrame:()=>{frames++;},
+      animate(){},setTimeout:callback=>callback(),URLSearchParams,location:{search:''},
+      modeEpoch:0,mode:'lab',landingPlanner:{warm(){}}
+    });
+    assert.equal(frames,0);assert.equal(elements.boot.hidden,false);
+    resolveLoad(success);await completion;
+    assert.equal(frames,success?1:0);assert.equal(elements.boot.hidden,success);
+    assert.equal(elements['boot-retry'].hidden,success);
+  }
+});
 const clickBinding=id=>{
   const line=main.split('\n').find(line=>line.includes("$('"+id+"').addEventListener('click',"));
   assert.ok(line,id+' click binding exists');return line;

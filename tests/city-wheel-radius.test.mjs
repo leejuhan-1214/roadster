@@ -50,3 +50,22 @@ for(const id of ['lamborghini-revuelto','chevrolet-camaro']){
     }finally{disposeVehicle(vehicle);}
   });
 }
+
+test('Cybertruck tire arcs gain visual detail without changing the fitted contact circles',async()=>{
+  const profile=vehicleProfile('tesla-cybertruck');
+  const {scene}=await loadModelGeometry(profile);
+  const traffic=adaptRealVehicle(scene,profile,{exteriorOnly:true});
+  const player=adaptRealVehicle(scene,profile);
+  try{
+    assert.deepEqual(player.cityWheelGeometry,traffic.cityWheelGeometry);
+    for(let i=0;i<4;i++){
+      const wheel=car=>car.wheels[i].userData.spinGroup.children.find(mesh=>mesh.material.name==='rubber').geometry;
+      const full=wheel(player),original=wheel(traffic);
+      assert.ok(full.index.count>original.index.count);
+      assert.equal(full.groups[0].count,full.index.count);
+      assert.equal(full.attributes.uv.count,full.attributes.position.count);
+      const oldBox=original.boundingBox,newBox=full.boundingBox;
+      near(oldBox.min.y,newBox.min.y,.004);near(oldBox.max.y,newBox.max.y,.004);
+    }
+  }finally{disposeVehicle(player);disposeVehicle(traffic);}
+});

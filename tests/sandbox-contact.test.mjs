@@ -35,9 +35,17 @@ test('brake holds static friction against wind within tire limits; zero friction
 test('recessed lift exits stay inside the body width throughout the gimbal cone',()=>{
  const vehicle=createVehicle();for(const pivot of vehicle.gimbalNozzles){for(let angle=0;angle<Math.PI*2;angle+=Math.PI/8){const direction=new Vector3(Math.sin(25*Math.PI/180)*Math.cos(angle),Math.cos(25*Math.PI/180),Math.sin(25*Math.PI/180)*Math.sin(angle));pivot.quaternion.setFromUnitVectors(new Vector3(0,1,0),direction);vehicle.root.updateMatrixWorld(true);const exit=pivot.userData.exitOffset.clone().applyMatrix4(pivot.matrixWorld);assert.ok(Math.abs(exit.z)+.091<1.1);assert.ok(exit.y-.091>-.61);assert.equal(pivot.parent.position.y,LIFT_LAYOUT.y);}}
 });
-test('smooth rendering stays within a 600k pixel budget without changing the CSS viewport',()=>{
- for(const [w,h,d] of [[1280,720,1.25],[870,668,1.25],[3840,2160,2],[320,700,1]]){const r=renderPixelRatio(w,h,d);assert.ok(w*h*r*r<=600000.0001);assert.ok(r<=1&&r>0);}
- assert.equal(renderPixelRatio(870,668,1.25),1);assert.equal(renderPixelRatio(1280,720,1.25,'detail'),1);
+test('landing and inspection silhouettes keep display resolution under city-level frame pressure',()=>{
+ for(const mode of ['lab','inspect']){
+   for(const budget of [225000,360000,600000]){
+     assert.equal(renderPixelRatio(1536,864,1.25,'smooth',budget,mode),1.25);
+     assert.equal(renderPixelRatio(835,545,2,'smooth',budget,mode),2);
+   }
+   const ratio=renderPixelRatio(3840,2160,2,'smooth',225000,mode);
+   assert.ok(3840*2160*ratio*ratio<=4200000.001);
+ }
+ assert.equal(renderPixelRatio(1920,1080,1,'smooth',225000,'city'),.8);
+ assert.equal(renderPixelRatio(1280,720,1.25,'detail'),1.25);
 });
 
 test('a light brake does not remove lateral tire grip',()=>{

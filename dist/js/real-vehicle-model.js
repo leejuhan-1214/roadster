@@ -43,6 +43,52 @@ function group(root,parts,id,position,offset){
   root.add(g);parts.set(id,g);return g;
 }
 
+// The concept asset uses straight chords around the tire shoulder. Split only
+// exterior arcs; keep the artist's rim, sidewall graphics, and wheel pivot.
+function roundCybertruckTire(geometry,radius){
+  const position=geometry.attributes.position,index=geometry.index;
+  if(!index||geometry.groups.length>1)return;
+  const channels=Object.entries(geometry.attributes).map(([name,attr])=>({
+    name,attr,values:Array.from({length:attr.count*attr.itemSize},(_,i)=>
+      attr.getComponent(Math.floor(i/attr.itemSize),i%attr.itemSize))
+  }));
+  const coordinates=channels.find(channel=>channel.name==='position').values;
+  const splitEdges=new Map(),triangles=[];
+  function midpoint(a,b){
+    const key=Math.min(a,b)*position.count+Math.max(a,b);
+    if(splitEdges.has(key))return splitEdges.get(key);
+    const ax=position.getX(a),ay=position.getY(a),bx=position.getX(b),by=position.getY(b);
+    const ra=Math.hypot(ax,ay),rb=Math.hypot(bx,by);
+    if(Math.min(ra,rb)<.8*radius)return -1;
+    const x=(ax+bx)/2,y=(ay+by)/2,chord=Math.hypot(x,y),arc=(ra+rb)/2;
+    const cosAngle=(ax*bx+ay*by)/(ra*rb);
+    // Preserve radial facets and avoid spanning concave tread cutouts.
+    if(cosAngle>.9976||cosAngle<.925)return -1;
+    const id=coordinates.length/3;
+    for(const {attr,values} of channels){
+      for(let k=0;k<attr.itemSize;k++)values.push((attr.getComponent(a,k)+attr.getComponent(b,k))/2);
+    }
+    coordinates[id*3]=x*arc/chord;coordinates[id*3+1]=y*arc/chord;
+    splitEdges.set(key,id);
+    return id;
+  }
+  for(let i=0;i<index.count;i+=3){
+    const a=index.getX(i),b=index.getX(i+1),c=index.getX(i+2);
+    const ab=midpoint(a,b),bc=midpoint(b,c),ca=midpoint(c,a);
+    if(ab<0&&bc<0&&ca<0){triangles.push(a,b,c);continue;}
+    const ring=[a,ab,b,bc,c,ca].filter(v=>v>=0);
+    const center=coordinates.length/3;
+    for(const {attr,values} of channels){
+      for(let k=0;k<attr.itemSize;k++)values.push(ring.reduce((sum,v)=>sum+values[v*attr.itemSize+k],0)/ring.length);
+    }
+    for(let j=0;j<ring.length;j++)triangles.push(ring[j],ring[(j+1)%ring.length],center);
+  }
+  for(const {name,attr,values} of channels)geometry.setAttribute(name,new THREE.Float32BufferAttribute(values,attr.itemSize));
+  const materialIndex=geometry.groups[0]?.materialIndex??0;
+  geometry.setIndex(triangles);geometry.clearGroups();geometry.addGroup(0,triangles.length,materialIndex);
+  geometry.normalizeNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+}
+
 export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
   // Undo the artist's parked steering pose, preserving the body proportions.
   if(profile.id==='bmw')source.traverse(o=>{if(wheelRoot(o,profile)===o)o.quaternion.identity();});
@@ -133,7 +179,9 @@ export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
     const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(m=>material(m,r)):material(r.original.material,r));
     obj.name=r.original.name;obj.castShadow=true;obj.receiveShadow=true;
     obj.userData={partId:id,kind:'model',basePosition:new THREE.Vector3(),explodeOffset:new THREE.Vector3(center.x*.15,glazing?.45:.15,Math.sign(center.z)*.3),explodeStage:[.35,.9]};
-    if(r.wheel>=0){r.geometry.translate(-anchors[r.wheel].x,-anchors[r.wheel].y,-anchors[r.wheel].z);(r.brake||r.fixed?wheels[r.wheel]:wheels[r.wheel].userData.spinGroup).add(obj);}
+    if(r.wheel>=0){r.geometry.translate(-anchors[r.wheel].x,-anchors[r.wheel].y,-anchors[r.wheel].z);
+      if(!exteriorOnly&&profile.id==='tesla-cybertruck'&&r.tire)roundCybertruckTire(r.geometry,(boxes[r.wheel].max.y-boxes[r.wheel].min.y)*scale/2);
+      (r.brake||r.fixed?wheels[r.wheel]:wheels[r.wheel].userData.spinGroup).add(obj);}
     else{hullBounds.union(r.geometry.boundingBox);(interior?cabin:body).add(obj);}
     detailParts.set(id,obj);catalog.push({id,title,kind:'model',category,categoryLabel:{wheels:'바퀴·브레이크',interior:'실내',glazing:'유리·렌즈',powertrain:'동력계',exterior:'외장'}[category],sourceName:r.original.name,sourceObjectName:r.original.parent?.name||r.original.name,materialNames:r.materialNames,sourceUrl:profile.source});
   });

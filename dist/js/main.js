@@ -20,7 +20,7 @@ import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261120-basemass';
-import {FlightScene} from './scene.js?v=20261119-air161';
+import {FlightScene} from './scene.js?v=20261121-edges';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -848,9 +848,16 @@ function animate(stamp){
 }
 try{
   scene=new FlightScene($('world'),selectPart,value=>{$('explode').value=value;$('explode-value').textContent=Math.round(value*100)+'%';},value=>{camera=value;$('camera-label').textContent=cameraLabel();});
-  scene.setMode('lab');scene.setCamera(camera);setupUI();sim.setObstacles(FACILITY_SOLIDS);updateUI();requestAnimationFrame(animate);
+  scene.setMode('lab');scene.setCamera(camera);setupUI();sim.setObstacles(FACILITY_SOLIDS);updateUI();
+  $('boot-message').textContent='로드스터 차체를 불러오는 중…';
   selectVehicle('roadster').then(ready=>{
-    if(!ready)return;
+    if(!ready){
+      $('boot-message').textContent='로드스터 차체를 불러오지 못했습니다.';
+      $('boot-retry').hidden=false;
+      return;
+    }
+    requestAnimationFrame(animate);
+    $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
     const requestedMode=new URLSearchParams(location.search).get('mode');
     if(!modeEpoch&&['inspect','city','race'].includes(requestedMode)){
       setMode(requestedMode==='race'?'city':requestedMode).then(async()=>{
@@ -866,5 +873,4 @@ try{
   });
   // ?debug exposes the running objects for inspection; it changes no behaviour.
   if(new URLSearchParams(location.search).has('debug'))window.__roadster={get sim(){return sim;},scene,mapSession,get driver(){return driver;},get race(){return race;},driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
-  $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
 }catch(error){console.error(error);$('boot-message').textContent='3D 화면을 시작하지 못했습니다. WebGL을 지원하는 브라우저에서 새로고침해 주세요.';}

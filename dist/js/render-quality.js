@@ -1,7 +1,18 @@
 // DOM labels remain at native resolution; only the 3D buffer scales.
-export function renderPixelRatio(width,height,deviceRatio=1,quality='smooth',budget=600000){
- const native=Math.min(1,Math.max(.1,deviceRatio));
- return quality==='detail'?native:Math.min(native,Math.sqrt(budget/Math.max(1,width*height)));
+export function renderPixelRatio(width,height,deviceRatio=1,quality='smooth',budget=600000,mode='city'){
+ const native=Math.min(2,Math.max(.1,deviceRatio));
+ const area=Math.max(1,width*height);
+ // Use the actual display density for the small lab and inspection scenes.
+ // A city frame may shed pixels under load, but keep at least 80% of its
+ // CSS width on an ordinary desktop. Cap very large displays by total area.
+ const nativeRatio=Math.min(native,Math.sqrt(4200000/area));
+ if(quality==='detail'||mode==='lab'||mode==='inspect')return nativeRatio;
+ const loadScale=Math.sqrt(Math.max(225000,budget)/600000);
+ return Math.min(nativeRatio,Math.max(.8,Math.min(1.5,native)*loadScale),Math.sqrt(3000000/area));
+}
+export function useDistantExterior(length, distance, viewportHeight, projectionY, wasDistant){
+ const screenLength=length*viewportHeight*projectionY/(2*Math.max(.01,distance));
+ return screenLength<(wasDistant?270:220);
 }
 export class RenderBudget{
  constructor(){this.pixels=600000;this.elapsed=0;this.totalMs=0;this.frames=0;this.cooldown=.7;}
