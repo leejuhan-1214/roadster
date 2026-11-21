@@ -34,6 +34,24 @@ test('initial loading keeps the bootstrap chassis off screen until the real vehi
     assert.equal(elements['boot-retry'].hidden,success);
   }
 });
+test('a city driver link loads the requested car before switching to its driving seat',async()=>{
+  const startup=section("  $('boot-message').textContent='로드스터 차체를 불러오는 중", '  // ?debug');
+  const order=[];
+  const elements={'boot-message':{},boot:{classList:{add(){}}},'camera-label':{}};
+  const context={
+    $:id=>elements[id],animate(){},requestAnimationFrame(){},setTimeout:fn=>fn(),URLSearchParams,
+    location:{search:'?mode=city&camera=driver&vehicle=aston-martin-db11'},
+    mode:'lab',modeEpoch:0,cityPoseReady:false,camera:'chase',cameraLabel:()=>'운전석',
+    activeVehicle:{id:'roadster'},VEHICLES:[{id:'roadster'},{id:'aston-martin-db11'}],
+    async selectVehicle(id){order.push(id);return true;},
+    async setMode(mode){context.mode=mode;context.modeEpoch++;context.cityPoseReady=true;},
+    scene:{setCamera(camera){order.push(camera);}}
+  };
+  await vm.runInNewContext(startup,context);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(order,['roadster','aston-martin-db11','hood']);
+  assert.equal(elements['camera-label'].textContent,'운전석');
+});
 const clickBinding=id=>{
   const line=main.split('\n').find(line=>line.includes("$('"+id+"').addEventListener('click',"));
   assert.ok(line,id+' click binding exists');return line;

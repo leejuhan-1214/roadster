@@ -54,6 +54,41 @@ export function createReferenceCockpit(vehicle={},seat={width:1.9,eye:new THREE.
   for(let i=0;i<56;i++){matrix.makeTranslation(.742,-.333,left+.035+(width-.07)*i/55);seam.setMatrixAt(i,matrix);}root.add(seam);
   box([.035,.024,width*.9],[.699,-.408,center],family==='model3'?wood:satin,root,.005,'continuous dashboard trim');
 
+  // The outer vehicle is hidden in driver view. Continue the dash through the
+  // windshield base to a painted hood so the driver can judge the front corners.
+  // Positions are relative to the eye, as are the rest of the reference cabin.
+  const hoodRear=1.27,hoodFront=clamp((seat.length||4.6)*.5-(seat.eye?.x||0),1.68,3.55);
+  const hoodHeight=(t,lateral)=>{
+    const x=THREE.MathUtils.lerp(hoodRear,hoodFront,t);
+    const panelDrop=(angular?.085:.028)*t*t;
+    return Math.min(-.295-panelDrop,-.15*x-.018)-.038*lateral*lateral;
+  };
+  const hoodHalfWidth=t=>width*.5*(1.04-.16*t*t);
+  const hoodVertices=[],hoodIndices=[];
+  const lateralSections=[-1,-.84,-.53,0,.53,.84,1],rows=5;
+  for(let i=0;i<rows;i++){
+    const t=i/(rows-1),x=THREE.MathUtils.lerp(hoodRear,hoodFront,t);
+    for(const lateral of lateralSections){
+      hoodVertices.push(x-.085*t*lateral*lateral,hoodHeight(t,lateral),center+hoodHalfWidth(t)*lateral);
+    }
+  }
+  const columns=lateralSections.length;
+  for(let i=0;i<rows-1;i++)for(let j=0;j<columns-1;j++){
+    const a=i*columns+j;
+    hoodIndices.push(a,a+1,a+columns,a+1,a+columns+1,a+columns);
+  }
+  const hoodPanel=new THREE.BufferGeometry();
+  hoodPanel.setAttribute('position',new THREE.Float32BufferAttribute(hoodVertices,3));
+  hoodPanel.setIndex(hoodIndices);hoodPanel.computeVertexNormals();
+  mesh(hoodPanel,painted,null,root,'painted hood beyond windshield');
+  box([.092,.024,width*1.03],[hoodRear,-.283,center],rubber,root,.005,'windshield base');
+  for(const offset of [-.23,.22]){
+    const z=center+width*offset;
+    const blade=box([.017,.012,width*.37],[hoodRear+.008,-.264,z],rubber,root,.003,'parked wiper blade');
+    blade.rotation.y=.045;
+    rod([hoodRear+.007,-.275,z+width*.14],[hoodRear+.006,-.263,z-width*.055],.0045,satin);
+  }
+
   // Doors, windscreen frame, and the tunnel give the view a connected cabin.
   for(const [z,sign] of [[left-.055,1],[right+.055,-1]]){
     box([1.65,.46,.095],[-.12,-.48,z],lower,root,.036,'door inner panel');
@@ -63,7 +98,8 @@ export function createReferenceCockpit(vehicle={},seat={width:1.9,eye:new THREE.
     box([.16,.022,.055],[-.24,-.405,z+sign*.1],glossy);
     for(let j=0;j<2;j++)box([.047,.008,.024],[-.28+j*.065,-.390,z+sign*.1],satin,root,.002,'window switch');
     curve([[.62,-.31,z+sign*.051],[.22,-.34,z+sign*.06],[-.42,-.365,z+sign*.06]],.003,stitch);
-    rod([1.20,-.23,z],[.25,.46,z-sign*.01],.035,leather);
+    const pillar=rod([1.20,-.23,z],[.25,.46,z-sign*.01],.038,leather);
+    pillar.scale.z=.68;pillar.name='windshield pillar trim';
     rod([.26,.46,z-sign*.01],[-.64,.46,z-sign*.01],.027,leather);
   }
   rod([.25,.46,left-.055],[.25,.46,right+.055],.034,leather);

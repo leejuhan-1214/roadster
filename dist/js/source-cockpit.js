@@ -8,19 +8,32 @@ import {tireAxle} from './wheel-alignment.js?v=20261109-wheel1';
 export const SOURCE_COCKPITS=Object.freeze({
   roadster:{wheel:/^roadster014_Metal_-_Black_rough_0$/,rim:/^roadster014_/,eyeBack:.78,eyeLift:.38,mirror:'roadster011_mirror_0'},
   ferrari:{wheel:/^steering_(?!column)/,rim:/^steering_leather$/,eyeLift:.28},
-  'ford-mustang':{wheel:/^GT500Steer_leather_0$/,rim:/^GT500Steer_leather_0$/,eyeLift:.28,pitch:-.10},
+  'ford-mustang':{wheel:/^GT500Steer_leather_0$/,rim:/^GT500Steer_leather_0$/,eyeBack:.44,eyeLift:.29,pitch:-.08},
   'tesla-model':{wheel:/^movsteer_10_/,rim:/^movsteer_10_movsteer_100_0$/,display:'LCDs_LCDs0_0'},
-  'mazda-miata-mx-5':{wheel:/^RLA_miata_steeringwheel_a_/,rim:/^RLA_miata_steeringwheel_a_RLA_miata_alcantara_0$/},
-  'aston-martin-db11':{wheel:/^amdb11_steer_/,rim:/^amdb11_steer_amdb11_leather_0$/},
+  'mazda-miata-mx-5':{wheel:/^RLA_miata_steeringwheel_a_/,rim:/^RLA_miata_steeringwheel_a_RLA_miata_alcantara_0$/,eyeLift:.31},
+  'aston-martin-db11':{wheel:/^amdb11_steer_/,rim:/^amdb11_steer_amdb11_leather_0$/,eyeLift:.29},
   'audi-q7':{wheel:/^q7-15_driving_wheel_/,rim:/^q7-15_driving_wheel_sits_leather_0$/},
-  'audi-tt':{wheel:/^tt_cc15_driving_wheel_/,rim:/^tt_cc15_driving_wheel_sits_leather_0$/},
+  'audi-tt':{wheel:/^tt_cc15_driving_wheel_/,rim:/^tt_cc15_driving_wheel_sits_leather_0$/,eyeLift:.29},
   'hyundai-tucson':{wheel:/^tucson-15_driving_wheel_/,rim:/^tucson-15_driving_wheel_sits_leather_0$/},
-  'lamborghini-gallardo-lp560':{wheel:/^gallardo_steer_/,rim:/^gallardo_steer_gallardo_steeringwheel_0$/,eyeLift:.36},
+  'lamborghini-gallardo-lp560':{wheel:/^gallardo_steer_/,rim:/^gallardo_steer_gallardo_steeringwheel_0$/,eyeBack:.50,eyeLift:.23,pitch:-.06},
   'mini-countryman':{wheel:/^countryman-17_driving_wheel_/,rim:/^countryman-17_driving_wheel_sits_leather_0$/},
   'renault-duster':{wheel:/^duster-11_driving_wheel_/,rim:/^duster-11_driving_wheel_sits_leather_0$/},
 });
 const clamp=THREE.MathUtils.clamp;
-const GLASS=/glass|window|windscreen|windshield|glas|tint/i;
+// Some models reuse "glass" on the instruments, lights and windscreen trim.
+// Match the artist's pane meshes so only cabin glazing gets the inside finish.
+const commonPane=/_exterior_glass_0$/;
+const cabinPanes={
+  roadster:/_Glass_(?:mid_tint|Tint_max)_0$/i,
+  ferrari:/^glass$/,
+  'ford-mustang':/^GT500(?:SideGlass[RL]|DoorGlass[RL]|Windshield|Backlight)_tinted_glass_/,
+  'tesla-model':/^(?:windscreen_ok|door_[lr][fr]|glass)_glass[01]_0$/,
+  'mazda-miata-mx-5':/^RLA_miata_(?:windshield|window_[lr]f)_RLA_miata_glass(?:_int)?_0$/,
+  'aston-martin-db11':/^amdb11_(?:windshield|doorglass_[RL]|sideglass_[RL]|backlight|body)_amdb11_glass(?:_tint)?_0$/,
+  'lamborghini-gallardo-lp560':/^gallardo_(?:windshield_tinted|(?:sideglass|doorglass)_[RL]_tinted|backlight_tinted|tailgate)_gallardo_glass(?:_tinted)?_0$/,
+  'audi-q7':commonPane,'audi-tt':commonPane,'hyundai-tucson':commonPane,
+  'mini-countryman':commonPane,'renault-duster':commonPane,
+};
 
 function assemblyMatrix(object,root,basePositions){
   const matrix=new THREE.Matrix4();
@@ -73,20 +86,25 @@ export function createSourceCockpit(vehicle){
   const originalPaint=new Set(vehicle.paintMaterials||[]),records=[],wheelRecords=[],rimRecords=[];
   const bodyBounds=new THREE.Box3();let glazingCount=0;
   function cloneMaterial(original,mesh){
-    const glass=GLASS.test(original.name+' '+mesh.name),key=original.uuid+'|'+glass;
+    const glass=Array.isArray(mesh.material)
+      ? /^(glass|windshield|windscreen)$/i.test(original.name)
+      : cabinPanes[modelId].test(mesh.name);
+    const key=original.uuid+'|'+glass;
     if(materialCache.has(key))return materialCache.get(key);
+    if(glass){
+      // The source can have two overlapping panes and baked exterior
+      // reflections. Use a faint neutral tint on the cabin copy only.
+      const pane=new THREE.MeshBasicMaterial({name:original.name,color:0xdce9e6,
+        transparent:true,opacity:.02,depthWrite:false,side:THREE.DoubleSide,
+        forceSinglePass:true,toneMapped:false,fog:false});
+      pane.userData.cabinPane=true;
+      materialCache.set(key,pane);ownedMaterials.add(pane);glazingCount++;
+      return pane;
+    }
     const material=copyVehiclePaint(original,original.clone());material.side=THREE.DoubleSide;
     // The Roadster artist's unmapped interior is medium-grey metal; the
     // concept reference has a dark, nonmetallic dashboard. Keep seats intact.
     if(modelId==='roadster'&&original.name==='interior'){material.color.set('#15191c');material.metalness=0;material.roughness=.86;}
-    if(glass){
-      // Exterior tinted/reflection maps must not act like opaque panels from
-      // the driver's side. The original material is left untouched.
-      material.transparent=true;material.opacity=.075;material.depthWrite=false;
-      material.metalness=0;material.roughness=.06;
-      if('transmission'in material)material.transmission=0;
-      glazingCount++;
-    }
     materialCache.set(key,material);ownedMaterials.add(material);
     if(originalPaint.has(original))paintMaterials.push(material);
     return material;
@@ -124,7 +142,7 @@ export function createSourceCockpit(vehicle){
   // height. These are visual seat coordinates, not OEM seating measurements.
   const eye=wheelCenter.clone().add(new THREE.Vector3(-(spec.eyeBack??.58),spec.eyeLift??.36,0));
   eye.y=clamp(eye.y,wheelCenter.y+.20,bodyBounds.max.y-.075);
-  const seat={width:size.z,length:size.x,eye,source:true,pitch:spec.pitch??-.16};
+  const seat={width:size.z,length:size.x,eye,source:true,pitch:spec.pitch??-.075};
   const display=displaySurface(records.find(r=>r.object.name===spec.display));
   let mirrorSurface=null;
   const mirrorRecord=records.find(r=>r.object.name===spec.mirror),mirrorBasis=displaySurface(mirrorRecord);

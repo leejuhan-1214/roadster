@@ -58,6 +58,43 @@ test('switching from cockpit restores the exterior, camera up and city clipping 
   cockpit.dispose();
 });
 
+test('cornering glance follows forward ground turns and yields to manual look',()=>{
+  const cockpit=new CockpitView(),camera=new THREE.PerspectiveCamera(),view=frame();
+  cockpit.setVehicle(vehicle());
+  const grounded={contactCount:4};
+  const pose=cockpit.update(camera,view,1,grounded);
+  assert.ok(cockpit.turnLook>0&&cockpit.turnLook<=.085);
+  assert.ok(pose.direction.z<0);
+  assert.ok(pose.eye.distanceTo(cockpit.seat.eye.clone().add(view.bodyPosition))<1e-12);
+  cockpit.look(180,0);
+  cockpit.update(camera,view,1,grounded);
+  assert.ok(cockpit.turnLook<.001);
+  cockpit.recenter();
+  view.state.vel.x=-20;
+  cockpit.update(camera,view,1,grounded);
+  assert.equal(cockpit.turnLook,0);
+  view.state.vel.x=20;
+  cockpit.update(camera,view,1,{contactCount:0});
+  assert.equal(cockpit.turnLook,0);
+  cockpit.dispose();
+});
+
+test('resizing the cockpit reframes the road and preserves zoom',()=>{
+  const cockpit=new CockpitView(),camera=new THREE.PerspectiveCamera(43,16/9),view=frame();
+  cockpit.setVehicle(vehicle());
+  cockpit.update(camera,view,.016);
+  const wide=camera.fov;
+  camera.aspect=9/16;
+  cockpit.update(camera,view,.016);
+  const tall=camera.fov;
+  assert.ok(wide>55&&wide<65);
+  assert.ok(tall>65&&tall<80);
+  cockpit.zoom(-150);
+  cockpit.update(camera,view,.016);
+  assert.ok(camera.fov<tall);
+  cockpit.dispose();
+});
+
 test('changing car rebuilds only the reference interior and leaves artist geometry/materials intact',()=>{
   const a=vehicle(),b=vehicle(5.9,2.25,1.95),source=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial({opacity:.42,transparent:true}));a.root.add(source);
   const cockpit=new CockpitView();cockpit.setVehicle(a);let old;cockpit.root.traverse(o=>{if(!old&&o.geometry)old=o.geometry;});let disposed=0;old.addEventListener('dispose',()=>disposed++);

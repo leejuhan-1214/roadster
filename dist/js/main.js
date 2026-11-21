@@ -20,7 +20,7 @@ import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261120-basemass';
-import {FlightScene} from './scene.js?v=20261121-edges';
+import {FlightScene} from './scene.js?v=20261121-driver';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261111-cockpit1';
@@ -858,12 +858,20 @@ try{
     }
     requestAnimationFrame(animate);
     $('boot').classList.add('ready');setTimeout(()=>$('boot').hidden=true,800);
-    const requestedMode=new URLSearchParams(location.search).get('mode');
+    const query=new URLSearchParams(location.search),requestedMode=query.get('mode');
     if(!modeEpoch&&['inspect','city','race'].includes(requestedMode)){
       setMode(requestedMode==='race'?'city':requestedMode).then(async()=>{
         if(requestedMode==='race'&&mode==='city'&&modeEpoch===1&&cityPoseReady){startRace(null);return;}
+        if(requestedMode==='city'&&query.get('camera')==='driver'&&mode==='city'&&modeEpoch===1&&cityPoseReady){
+          const id=query.get('vehicle');
+          if(id&&id!==activeVehicle.id&&VEHICLES.some(v=>v.id===id))await selectVehicle(id);
+          if(mode==='city'&&modeEpoch===1){
+            camera='hood';scene.setCamera(camera);$('camera-label').textContent=cameraLabel();
+          }
+          return;
+        }
         if(mode!=='inspect'||requestedMode!=='inspect')return;
-        const query=new URLSearchParams(location.search),id=query.get('vehicle');
+        const id=query.get('vehicle');
         if(id&&id!==activeVehicle.id&&VEHICLES.some(v=>v.id===id))await selectVehicle(id);
         if(mode==='inspect'&&query.has('part'))focusApparatus(query.get('part'));
       });

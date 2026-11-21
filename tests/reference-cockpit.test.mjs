@@ -47,6 +47,35 @@ test('analog speed, gas and available power move needles without inventing engin
   cabin.dispose();
 });
 
+test('visible hood and windshield trim frame the road across compact, sedan and truck dimensions',()=>{
+  for(const [id,width,length] of [['miata',1.58,3.91],['bmw',1.68,4.34],['tesla-cybertruck',2.13,5.72]]){
+    const fitted={width,length,eye:new THREE.Vector3(.08,.83,-width*.23)};
+    const cabin=createReferenceCockpit({profileId:id},fitted);
+    try{
+      cabin.root.updateMatrixWorld(true);
+      const hood=cabin.root.getObjectByName('painted hood beyond windshield');
+      assert.equal(hood.material,cabin.paintMaterials[0]);
+      assert.equal(named(cabin.root,'parked wiper blade').length,2);
+      const points=hood.geometry.attributes.position;
+      const ray=new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(),.03,30);
+      let visible=false;
+      for(let i=0;i<points.count;i++){
+        const point=new THREE.Vector3().fromBufferAttribute(points,i);
+        assert.ok(point.y<-.14*point.x,'hood remains below forward road corridor');
+      }
+      for(const lateral of [-.22,0,.12,.32])for(let down=8;down<=16&&!visible;down+=.25){
+        ray.ray.direction.set(1,-Math.tan(THREE.MathUtils.degToRad(down)),lateral).normalize();
+        if(ray.intersectObject(cabin.root,true)[0]?.object===hood){visible=true;break;}
+      }
+      assert.ok(visible,id+' hood can be seen through the windshield above the dashboard');
+      for(const degrees of [-12,-6,0,6,12])for(const pitch of [-6,0,6]){
+        ray.ray.direction.set(1,Math.tan(THREE.MathUtils.degToRad(pitch)),Math.tan(THREE.MathUtils.degToRad(degrees))).normalize();
+        assert.equal(ray.intersectObject(cabin.root,true).length,0,id+' forward road corridor');
+      }
+    }finally{cabin.dispose();}
+  }
+});
+
 test('fallback disposes every owned GPU resource once and leaves the source vehicle untouched',()=>{
   const source=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial()),vehicle={profileId:'lamborghini-urus',root:new THREE.Group()};vehicle.root.add(source);
   const cabin=createReferenceCockpit(vehicle,seat),resources=new Set();

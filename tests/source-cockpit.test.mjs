@@ -23,7 +23,7 @@ for(const id of Object.keys(SOURCE_COCKPITS))test(id+' preserves the artist cabi
   assert.ok(cockpit.seat.eye.x<cockpit.wheelCenter.x-.4);assert.ok(cockpit.seat.eye.y>cockpit.wheelCenter.y+.19);assert.ok(cockpit.seat.eye.z<-.15);
   assert.ok(cockpit.bodyBounds.containsPoint(cockpit.seat.eye),id+' driver eye stays inside body');
   const originals=new Map();vehicle.root.traverse(o=>{if(o.isMesh&&o.userData.kind==='model')originals.set(o.name,o);});
-  let clonedGlass=0;cockpit.root.traverse(o=>{if(!o.isMesh)return;const original=originals.get(o.name);assert.ok(original);if(o.userData.ownedSourceGeometry){arraysEqual(o.geometry.attributes.position.array,original.geometry.attributes.position.array);assert.notEqual(o.geometry,original.geometry);}else assert.ok(sourceGeometry.has(o.geometry),'geometry remains the exact artist geometry');for(const m of Array.isArray(o.material)?o.material:[o.material]){assert.ok(!sourceMaterials.has(m),'clone owns its material');if(m.transparent&&m.opacity===.075){clonedGlass++;assert.equal(m.depthWrite,false);}}});
+  let clonedGlass=0;cockpit.root.traverse(o=>{if(!o.isMesh)return;const original=originals.get(o.name);assert.ok(original);if(o.userData.ownedSourceGeometry){arraysEqual(o.geometry.attributes.position.array,original.geometry.attributes.position.array);assert.notEqual(o.geometry,original.geometry);}else assert.ok(sourceGeometry.has(o.geometry),'geometry remains the exact artist geometry');for(const m of Array.isArray(o.material)?o.material:[o.material]){assert.ok(!sourceMaterials.has(m),'clone owns its material');if(m.userData.cabinPane){clonedGlass++;assert.ok(m.transparent&&m.opacity<=.025);assert.ok(m.forceSinglePass);assert.equal(m.depthWrite,false);assert.equal(m.map,null);assert.ok(!/lamp|blink|brake|headlight|gauge/i.test(o.name),'preserve non-window lenses');}}});
   assert.ok(clonedGlass>0,'driver can see through original glazing');
   if(id==='roadster'){const dash=cockpit.root.getObjectByName('roadster008_interior_0').material;assert.equal(dash.color.getHex(),0x15191c);assert.equal(dash.metalness,0);assert.equal(dash.roughness,.86);assert.ok(Math.abs(cockpit.wheelCenter.x-cockpit.seat.eye.x-.78)<1e-12);assert.equal(cockpit.mirrorSurface.name,'roadster011_mirror_0');assert.ok(cockpit.mirrorSurface.material.isMeshBasicMaterial);for(const value of cockpit.mirrorSurface.geometry.attributes.uv.array)assert.ok(value>=-1e-6&&value<=1.000001);}
   if(id==='tesla-model'){
@@ -31,14 +31,14 @@ for(const id of Object.keys(SOURCE_COCKPITS))test(id+' preserves the artist cabi
     assert.ok(cockpit.display.size.x>.3&&cockpit.display.size.x<.4);assert.ok(cockpit.display.size.y>.2&&cockpit.display.size.y<.3);
     assert.ok(new THREE.Vector3(0,0,1).applyQuaternion(cockpit.display.quaternion).distanceTo(cockpit.display.normal)<1e-12);
   }
-  if(['roadster','ferrari','ford-mustang','lamborghini-gallardo-lp560'].includes(id)){
-    cockpit.root.updateMatrixWorld(true);
-    for(const pitch of [cockpit.seat.pitch]){
-      for(const yaw of (id==='roadster'?[-.12,0,.12]:[0])){
-        const direction=new THREE.Vector3(Math.cos(pitch)*Math.cos(yaw),Math.sin(pitch),Math.cos(pitch)*Math.sin(yaw));
-        const hits=new THREE.Raycaster(cockpit.seat.eye,direction,.03,id==='roadster'?4:1.3).intersectObject(cockpit.root,true);
-        assert.ok(hits.every(h=>h.object.material.transparent&&h.object.material.opacity<.1),'normal forward gaze sees through windscreen without hitting opaque cabin');
-      }
+  cockpit.root.updateMatrixWorld(true);
+  for(const pitch of [cockpit.seat.pitch,0]){
+    for(const yaw of [-.10,0,.10]){
+      const direction=new THREE.Vector3(Math.cos(pitch)*Math.cos(yaw),Math.sin(pitch),Math.cos(pitch)*Math.sin(yaw));
+      const hits=new THREE.Raycaster(cockpit.seat.eye,direction,.03,4).intersectObject(cockpit.root,true);
+      const materials=hits.map(h=>Array.isArray(h.object.material)?h.object.material[h.face.materialIndex]:h.object.material);
+      assert.ok(materials.some(m=>m.userData.cabinPane),id+' looks through its windscreen');
+      assert.ok(materials.every(m=>m.transparent&&m.opacity<.1),id+' has a clear forward view at pitch '+pitch+' and yaw '+yaw);
     }
   }
   cockpit.root.updateMatrixWorld(true);const child=cockpit.steering.children[0],before=child.matrixWorld.clone();
@@ -68,7 +68,7 @@ test('material arrays preserve independent slots and shared textures on release'
   const body=new THREE.Mesh(new THREE.BoxGeometry(4,1.5,2),[paint,glass]);body.name='body';body.userData.kind='model';root.add(body);
   const wheel=new THREE.Mesh(new THREE.TorusGeometry(.18,.02,8,32),paint);wheel.geometry.rotateY(Math.PI*.5);wheel.name='roadster014_Metal_-_Black_rough_0';wheel.position.set(.5,.1,-.4);wheel.userData.kind='model';root.add(wheel);
   const source=createSourceCockpit({profileId:'roadster',root,paintMaterials:[paint]});assert.ok(source);
-  const cloned=source.root.getObjectByName('body');assert.equal(cloned.material.length,2);assert.notEqual(cloned.material[0],paint);assert.notEqual(cloned.material[1],glass);assert.equal(cloned.material[1].map,map);assert.equal(cloned.material[1].opacity,.075);
+  const cloned=source.root.getObjectByName('body');assert.equal(cloned.material.length,2);assert.notEqual(cloned.material[0],paint);assert.notEqual(cloned.material[1],glass);assert.equal(cloned.material[1].map,null);assert.equal(cloned.material[1].opacity,.02);assert.equal(cloned.material[0].transparent,paint.transparent);
   assert.equal(glass.opacity,.5);source.dispose();assert.equal(textureDisposed,0);assert.equal(glass.map,map);assert.equal(body.parent,root);
   body.geometry.dispose();wheel.geometry.dispose();paint.dispose();glass.dispose();map.dispose();
 });
