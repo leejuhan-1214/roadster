@@ -59,7 +59,7 @@ function roundCybertruckTire(geometry,radius){
     if(splitEdges.has(key))return splitEdges.get(key);
     const ax=position.getX(a),ay=position.getY(a),bx=position.getX(b),by=position.getY(b);
     const ra=Math.hypot(ax,ay),rb=Math.hypot(bx,by);
-    if(Math.min(ra,rb)<.8*radius)return -1;
+    if(Math.min(ra,rb)<.95*radius)return -1;
     const x=(ax+bx)/2,y=(ay+by)/2,chord=Math.hypot(x,y),arc=(ra+rb)/2;
     const cosAngle=(ax*bx+ay*by)/(ra*rb);
     // Preserve radial facets and avoid spanning concave tread cutouts.
@@ -76,12 +76,21 @@ function roundCybertruckTire(geometry,radius){
     const a=index.getX(i),b=index.getX(i+1),c=index.getX(i+2);
     const ab=midpoint(a,b),bc=midpoint(b,c),ca=midpoint(c,a);
     if(ab<0&&bc<0&&ca<0){triangles.push(a,b,c);continue;}
-    const ring=[a,ab,b,bc,c,ca].filter(v=>v>=0);
-    const center=coordinates.length/3;
-    for(const {attr,values} of channels){
-      for(let k=0;k<attr.itemSize;k++)values.push(ring.reduce((sum,v)=>sum+values[v*attr.itemSize+k],0)/ring.length);
+    if(ab>=0&&bc>=0&&ca>=0){
+      triangles.push(a,ab,ca,ab,b,bc,ca,bc,c,ab,bc,ca);
+      continue;
     }
-    for(let j=0;j<ring.length;j++)triangles.push(ring[j],ring[(j+1)%ring.length],center);
+    // Rotate the triangle so the first edge is split. Preserve winding
+    // without adding face-center vertices that bias the fitted tire axis.
+    let corners=[a,b,c],edges=[ab,bc,ca];
+    for(let turn=0;turn<3;turn++){
+      if(edges[0]>=0&&edges[2]<0)break;
+      corners.push(corners.shift());edges.push(edges.shift());
+    }
+    const [v0,v1,v2]=corners,[m0,m1]=edges;
+    triangles.push(v0,m0,v2);
+    if(m1>=0)triangles.push(m0,v1,m1,m0,m1,v2);
+    else triangles.push(m0,v1,v2);
   }
   for(const {name,attr,values} of channels)geometry.setAttribute(name,new THREE.Float32BufferAttribute(values,attr.itemSize));
   const materialIndex=geometry.groups[0]?.materialIndex??0;
