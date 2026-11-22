@@ -45,14 +45,17 @@ test('out-of-coverage, off-road, obstructed or cancelled travel leaves the vehic
 test('paused map prepares all four remote guard tiles, keeps local colliders and limits worker requests',async t=>{
   const requests=[],tiles={},wanted=['5_1','5_2','6_1','6_2'],previous=globalThis.Worker;
   const dest={...point,x:3072,z:1024};
-  for(const key of ['0_0',...wanted]){
+  const stalled='7_3',cancelled=[];
+  for(const key of ['0_0',...wanted,stalled]){
     const [ix,iz]=key.split('_').map(Number);
     tiles[key]={bounds:{minX:ix*512,maxX:(ix+1)*512,minZ:iz*512,maxZ:(iz+1)*512}};
   }
   globalThis.Worker=class {
     postMessage({type,id,options}){
+      if(type==='cancel')cancelled.push(id);
       if(type)return;
       requests.push(options.id);
+      if(options.id===stalled)return;
       const payload={id:options.id,origin:options.origin,roads:[{...road,points:[[3000,1024],[3170,1024]]}],
         trees:[],meshes:[],obstacles:[{center:[5000,1,5000],size:[1,2,1]}]};
       queueMicrotask(()=>this.onmessage({data:{id,payload}}));
@@ -75,4 +78,12 @@ test('paused map prepares all four remote guard tiles, keeps local colliders and
   assert.deepEqual([...requests].sort(),['0_0',...wanted].sort());
   for(const key of requests)assert.ok(sim.obstacleChunks.has('seoul:'+key));
   assert.ok(city.streaming.hasAt(0,0));
+  const controller=new AbortController();
+  const pending=prepareWarpArrival(city,sim,{...dest,x:3840,z:1792},{signal:controller.signal});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.ok(requests.includes(stalled));
+  controller.abort();
+  await assert.rejects(pending,{name:'AbortError'});
+  assert.equal(city.streaming.wanted.has(stalled),false);
+  assert.equal(cancelled.length,1);
 });
