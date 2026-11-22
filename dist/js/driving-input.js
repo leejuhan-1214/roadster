@@ -2,7 +2,7 @@
 // braking, so a full battery still slows the car using the wheel brakes.
 // All speed changes continue through tire forces and the rigid-body solver.
 import {isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
-import {RocketRollController} from './rocket-flight.js?v=20261122-wheel-repair';
+import {RocketRollController} from './rocket-flight.js?v=20261122-roadhandling';
 import {rideHeightAboveSurface} from './road-surface.js?v=20261118-review149';
 export const CITY_DRIVE_PARAMS=Object.freeze({
   friction:1.15,rollingResistance:.015,aeroEnabled:true,dragScale:1,
@@ -29,7 +29,8 @@ export class DrivingController {
   }
   reset(){
     this.throttle=0;this.steer=0;this.brake=.2;this.gear='D';
-    this.altHold=false;this.targetHeight=.8;this.airborne=false;this._holdKey=false;
+    this.straightLine=null;
+    this.altHold=false;this.targetHeight=.8;this.airborne=false;this.roadTravel=false;this._holdKey=false;this._airTurnDown=false;
     this.landingAssist=false;this.landingStatus='idle';
     this.rocketRoll=new RocketRollController();this.maneuverStatus='idle';this.maneuverProgress=0;
   }
@@ -64,16 +65,26 @@ export class DrivingController {
     // to the local road, so a raised road is not mistaken for free flight.
     if(supported)this.airborne=false;
     else if(clearance>.08)this.airborne=true;
+    // A wheel unloading off a curb does not arm aircraft controls. With F held,
+    // the pitch allocator and height assist could otherwise turn a short hop
+    // into sustained powered flight. Space or height hold still arms them.
+    const airTurn=held(keys,'KeyA','KeyD','KeyQ','KeyE','ArrowLeft','ArrowRight');
+    const requestAirTurn=this.airborne&&airTurn&&!held(keys,'KeyF')&&
+      (!this._airTurnDown||clearance>2*sim.params.wheelRadius);
+    this._airTurnDown=airTurn;
+    if(lift||this.altHold||this.landingAssist||requestAirTurn)this.roadTravel=false;
+    else if(supported)this.roadTravel=true;
+    const flying=this.airborne&&!this.roadTravel;
     // Quaternion-rotated local +X, projected onto actual world velocity.
     const forward={x:1-2*(q.y*q.y+q.z*q.z),y:2*(q.x*q.y+q.w*q.z),z:2*(q.x*q.z-q.w*q.y)};
     const velocity=sim.state.vel,speed=velocity.x*forward.x+velocity.y*forward.y+velocity.z*forward.z;
     if(this.landingAssist&&hasSettledSupport(sim)&&Math.abs(velocity.y)<.2&&Math.hypot(velocity.x,velocity.z)<.4){this.landingAssist=false;this.landingStatus='complete';}
-    const go=held(keys,'KeyW',...(this.airborne?[]:['ArrowUp'])),back=held(keys,'KeyS',...(this.airborne?[]:['ArrowDown']));
+    const go=held(keys,'KeyW',...(flying?[]:['ArrowUp'])),back=held(keys,'KeyS',...(flying?[]:['ArrowDown']));
     const hardBrake=held(keys,'KeyB')||(go&&back)||this.landingAssist,direction=Number(go)-Number(back);
-    const turn=Number(held(keys,'KeyA',...(this.airborne?[]:['ArrowLeft'])))-Number(held(keys,'KeyD',...(this.airborne?[]:['ArrowRight'])));
+    const turn=Number(held(keys,'KeyA',...(flying?[]:['ArrowLeft'])))-Number(held(keys,'KeyD',...(flying?[]:['ArrowRight'])));
     const changingDirection=direction!==0&&direction*speed<-.3;
     const drifting=!this.airborne&&held(keys,'ShiftLeft','ShiftRight')&&!hardBrake&&!changingDirection&&!lift&&!this.altHold;
-    const boosting=held(keys,'KeyF')&&!hardBrake&&!changingDirection&&!back;
+    const boosting=held(keys,'KeyF')&&!hardBrake&&!changingDirection&&!back&&(!this.roadTravel||sim.contactCount>0);
     let throttle=0,brake=0;
     if(hardBrake||changingDirection)brake=1;
     else if(direction){throttle=direction;this.gear=direction>0?'D':'R';}
@@ -101,11 +112,36 @@ export class DrivingController {
     // still turns the actual tires at speed; grip limits the resulting path.
     // Handbrake drift allows the full rack for countersteering.
     const steeringLimit=drifting?1:Math.max(.30,Math.min(1,Math.atan(.7*sim.params.gravity*sim.params.wheelbase/Math.max(1,magnitude*magnitude))/baseSteer));
-    this.steer=approach(this.steer,turn*steeringLimit,step*(turn?5:8));
-    const airBrake=this.airborne&&held(keys,'KeyB');
-    const turnInAir=this.airborne&&this.flightSteering==='turn';
-    let airMoveForward=this.airborne?Number(go)-Number(back):0;
-    let airMoveRight=this.airborne&&!turnInAir?-turn:0;
+    let requestedSteer=turn*steeringLimit;
+    // Keyboard-neutral straight running has no driver making small steering
+    // corrections for uneven grip. Correct the heading through the front
+    // tires, leaving deliberate turns, slides, braking and collisions alone.
+    const straight=sim.params.parkedWheelMounts&&sim.contactCount>=3&&
+      (go||boosting)&&!back&&!turn&&!drifting&&!hardBrake&&!lift&&!this.altHold&&!this.landingAssist;
+    if(!straight||sim.obstacleContacts?.length)this.straightLine=null;
+    else if(this.straightLine===null){
+      if(Math.abs(this.steer)<.01)this.straightLine={heading:Math.atan2(-forward.z,forward.x),x:sim.state.pos.x,z:sim.state.pos.z};
+    }else if(speed>1){
+      const {heading,x,z}=this.straightLine;
+      const offset=(sim.state.pos.x-x)*Math.sin(heading)+(sim.state.pos.z-z)*Math.cos(heading);
+      const error=heading-Math.atan2(-forward.z,forward.x);
+      const angle=Math.atan2(Math.sin(error),Math.cos(error));
+      const yawRate=sim.state.omega.y;
+      if(Math.abs(angle)>.20||Math.abs(yawRate)>.45)this.straightLine=null;
+      else{
+        // Aim gently back toward the line established when steering was
+        // released; a small constant heading bias can otherwise add metres
+        // over a long straight. Look further ahead as road speed increases.
+        const rejoin=Math.atan2(offset,Math.max(6,.6*speed));
+        const correction=sim.params.wheelbase*(2.2*(angle+rejoin)-.45*yawRate)/Math.max(4,speed);
+        requestedSteer=clamp(correction,-.035,.035)/baseSteer;
+      }
+    }
+    this.steer=approach(this.steer,requestedSteer,step*(turn?5:8));
+    const airBrake=flying&&held(keys,'KeyB');
+    const turnInAir=flying&&this.flightSteering==='turn';
+    let airMoveForward=flying?Number(go)-Number(back):0;
+    let airMoveRight=flying&&!turnInAir?-turn:0;
     if(airBrake||this.landingAssist){
       // Counter the measured horizontal motion with the same bounded nozzle
       // gimbals as WASD. It consumes gas and cannot instantly stop the car.
@@ -114,7 +150,7 @@ export class DrivingController {
       airMoveRight=-clamp((velocity.x*s+velocity.z*c)/4,-1,1);
     }
     const holding=this.altHold&&!lift;
-    const flight=this.airborne||!!lift||holding||this.landingAssist;
+    const flight=flying||!!lift||holding||this.landingAssist;
     // Suction extracts ambient air under the floor to increase tire load. It
     // does not fill the pressure tank or provide upward flight thrust. Leave
     // it off while parked, drifting, or requesting a launch/hover manoeuvre.
@@ -123,12 +159,12 @@ export class DrivingController {
     const fan=this.fanEnabled&&sim.contactCount>0&&!flight&&!drifting&&groundDemand;
     // Steering linkage still turns unloaded front wheels in flight. Tire forces
     // require contact; the selected air mode uses yaw jets or lateral vectoring.
-    const input={throttle:this.airborne?0:this.throttle,brake:this.brake,steer:this.steer,
+    const input={throttle:flying?0:this.throttle,brake:this.brake,steer:this.steer,
       stabilize:flight,fan,compressor:this.compressorEnabled,wing:false,coastRegen:false,lift,
       boost:boosting,handbrake:drifting?1:0,
       airMoveForward,airMoveRight,altHold:holding,targetHeight:this.targetHeight,
-      pitch:this.airborne?Number(held(keys,'ArrowDown'))-Number(held(keys,'ArrowUp')):0,
-      roll:this.airborne?Number(held(keys,'ArrowRight'))-Number(held(keys,'ArrowLeft')):0,
+      pitch:flying?Number(held(keys,'ArrowDown'))-Number(held(keys,'ArrowUp')):0,
+      roll:flying?Number(held(keys,'ArrowRight'))-Number(held(keys,'ArrowLeft')):0,
       yaw:flight?clamp(Number(held(keys,'KeyQ'))-Number(held(keys,'KeyE'))+(turnInAir?turn:0),-1,1):0,
       airBrake,airborne:this.airborne,landingAssist:this.landingAssist,flightAssist:false,corneringAssist:corneringBlend>0,
     };
@@ -144,7 +180,7 @@ export class DrivingController {
     }
     else if(holding)input.verticalAcceleration=clamp(24*(this.targetHeight-clearance)-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
     else if(airBrake&&!lift)input.verticalAcceleration=clamp(-10*velocity.y,-sim.params.gravity,1.1*sim.params.gravity);
-    else if(this.flightAssist&&this.airborne&&!lift&&activeManeuver){
+    else if(this.flightAssist&&flying&&!lift&&activeManeuver){
       // Direction keys need carrier thrust: a gimbal angle alone produces no
       // translation when the four lift valves are closed. This bounded request
       // damps vertical speed while the user manoeuvres, using the same finite gas.

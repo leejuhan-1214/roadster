@@ -148,13 +148,22 @@ export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
   // and rear wheel sections of each source car XML specify ride height in
   // millimetres. The profile stores the two axle averages in metres. Tilt and
   // lift the sprung shell about the axle midpoint while the hubs stay planted.
-  const heights=profile.adapter?.axleRideHeights;
+  // A few track configurations leave their splitter on the ground under
+  // city braking. Their road settings use the source XML's adjustable range.
+  const heights=profile.adapter?.roadRideHeights??profile.adapter?.axleRideHeights;
   const ride=heights?new THREE.Matrix4().makeTranslation(0,(heights[0]+heights[1])/2-.24,0)
     .multiply(new THREE.Matrix4().makeRotationZ(Math.atan2(heights[0]-heights[1],profile.wheelbase)))
     .multiply(new THREE.Matrix4().makeTranslation(0,.24,0)):null;
   const bodyAlignment=ride?ride.clone().multiply(alignment):alignment;
   const cockpitPoint=point=>ride&&point?new THREE.Vector3(...point).applyMatrix4(ride).toArray():point;
-  const anchors=centers.map(c=>c.clone().applyMatrix4(alignment));
+  const scannedHubs=centers.map(c=>c.clone().applyMatrix4(alignment));
+  // A photogrammetry/livery mesh may stagger the two sides of the same axle.
+  // The designed axle runs across the body. Use its measured mean position
+  // and track for both mounts, retaining each tire's own radius and height.
+  const anchors=scannedHubs.map((hub,i)=>{
+    const opposite=scannedHubs[i^1];
+    return new THREE.Vector3((hub.x+opposite.x)/2,hub.y,(hub.z-opposite.z)/2);
+  });
   const root=new THREE.Group(),parts=new Map(),detailParts=new Map(),catalog=[],paintMaterials=[],materials=new Map(),tireMaterials=new Map();
   root.name=profile.title;root.userData.visualOnly=true;
   const body=group(root,parts,'body',new THREE.Vector3(),[0,.7,0]);
@@ -198,7 +207,7 @@ export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
     const obj=new THREE.Mesh(r.geometry,Array.isArray(r.original.material)?r.original.material.map(m=>material(m,r)):material(r.original.material,r));
     obj.name=r.original.name;obj.castShadow=true;obj.receiveShadow=true;
     obj.userData={partId:id,kind:'model',basePosition:new THREE.Vector3(),explodeOffset:new THREE.Vector3(center.x*.15,glazing?.45:.15,Math.sign(center.z)*.3),explodeStage:[.35,.9]};
-    if(r.wheel>=0){r.geometry.translate(-anchors[r.wheel].x,-anchors[r.wheel].y,-anchors[r.wheel].z);
+    if(r.wheel>=0){const hub=scannedHubs[r.wheel];r.geometry.translate(-hub.x,-hub.y,-hub.z);
       if(!exteriorOnly&&profile.id==='tesla-cybertruck'&&r.tire)roundCybertruckTire(r.geometry,(boxes[r.wheel].max.y-boxes[r.wheel].min.y)*scale/2);
       (r.brake||r.fixed?wheels[r.wheel]:wheels[r.wheel].userData.spinGroup).add(obj);}
     else{hullBounds.union(r.geometry.boundingBox);(interior?cabin:body).add(obj);}

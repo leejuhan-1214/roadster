@@ -50,6 +50,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.065, 0.075],
+      "roadRideHeights": [0.080, 0.080],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.055,

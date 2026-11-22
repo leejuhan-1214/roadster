@@ -6,7 +6,7 @@ import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 import {loadGangnamLandmarks} from './gangnam-landmarks.js?v=20261118-circuit155';
 import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261118-circuit155';
 import {createStreetDetails} from './city-facades.js?v=20261118-circuit155';
-import {buildingColliders} from './city-building-collision.js?v=20261118-study150';
+import {buildingColliders} from './city-building-collision.js?v=20261122-roadhandling';
 
 import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 

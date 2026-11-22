@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
 import {AIR_APPROACH,rivalAirPath} from './station-race-air.js?v=20261119-ai158';
-import {circuitUrbanTrackStages,CIRCUIT_BASIN} from './circuit-urban-track.js?v=20261119-metropolis159';
+import {circuitUrbanTrackStages,CIRCUIT_BASIN} from './circuit-urban-track.js?v=20261122-roadhandling';
 import {circuitCityscapeStages} from './circuit-cityscape.js?v=20261119-metropolis159';
-import {addCircuitLighting} from './circuit-lighting.js?v=20261119-ai158';
+import {addCircuitLighting} from './circuit-lighting.js?v=20261122-roadhandling';
 
-import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-wheel-repair';
+import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-roadhandling';
 
 const halfWidth=RACE_COURSE.width/2;
 const white=0xf1eee1,red=0xc63e37,dark=0x212c32,steel=0x829499,mint=0x5cf2cb;
@@ -46,6 +47,19 @@ function kerbMaterial(){
   map.magFilter=THREE.NearestFilter;map.minFilter=THREE.LinearMipmapLinearFilter;
   map.generateMipmaps=true;map.needsUpdate=true;
   return material(0xffffff,{map});
+}
+
+// A wheel uses the very same quadrilateral as the striped top. Kerbs can
+// support the underbody from below but their short edge is not a crash wall.
+function addKerbSupports(obstacles,strip,id,height){
+  const v=strip.geometry.attributes.position;
+  for(let i=0;i+3<v.count;i+=2){
+    const footprint=[i,i+1,i+3,i+2].map(k=>[v.getX(k),v.getZ(k)]);
+    const x=footprint.map(p=>p[0]),z=footprint.map(p=>p[1]);
+    const minX=Math.min(...x),maxX=Math.max(...x),minZ=Math.min(...z),maxZ=Math.max(...z);
+    obstacles.push({id:id+'-'+i/2,kind:'prism',topContactOnly:true,footprint,
+      center:[(minX+maxX)/2,height/2,(minZ+maxZ)/2],size:[maxX-minX,height,maxZ-minZ]});
+  }
 }
 
 function precastWallMaterial(){
@@ -150,12 +164,16 @@ function addBrakeBoards(root){
   }
 }
 
-// Static gantry, grandstands, grid paint and pit buildings share one draw.
+// Painted grid rectangles are flat decals and do not cast building shadows.
 function facilities(root,obstacles){
-  const blocks=[],tmp=new THREE.Object3D();
+  const blocks=[],grid=[],tmp=new THREE.Object3D();
   function box(x,y,z,l,h,w,color,yaw=0){
     tmp.position.set(x,y,z);tmp.rotation.set(0,yaw,0);tmp.scale.set(l,h,w);tmp.updateMatrix();
     blocks.push([tmp.matrix.clone(),color]);
+  }
+  function paint(x,z,l,w,color){
+    tmp.position.set(x,surfaceY.centreLine,z);tmp.rotation.set(0,0,0);tmp.scale.set(l,1,w);tmp.updateMatrix();
+    grid.push([tmp.matrix.clone(),color]);
   }
   for(const side of [-1,1])box(0,3.2,side*(halfWidth+1.4),.6,6.4,.6,steel);
   box(0,6.4,0,.55,1.4,2*halfWidth+4,dark);
@@ -164,11 +182,11 @@ function facilities(root,obstacles){
   billBoard(root,'STATION GRAND PRIX',16,1.35,-.29,6.4,0,0,'#152b30','#9df5dc');
   const columns=32,size=2*halfWidth/columns;
   for(let column=0;column<columns;column++)for(let row=0;row<3;row++)
-    box((row-1)*size,.014,-halfWidth+(column+.5)*size,size,.014,size,(row+column)%2===0?white:dark);
+    paint((row-1)*size,-halfWidth+(column+.5)*size,size,size,(row+column)%2===0?white:dark);
   for(const [s,side] of [[-6,-3.15],[-4,3.15],[-12,-3.15],[-14,3.15]]){
     const p=sampleCourse(s,side);
-    box(p.x+2.1,.019,p.z,.15,.012,2.85,white);
-    for(const sign of [-1,1])box(p.x+1.57,.019,p.z+sign*1.37,1.15,.012,.12,white);
+    paint(p.x+2.1,p.z,.15,2.85,white);
+    for(const sign of [-1,1])paint(p.x+1.57,p.z+sign*1.37,1.15,.12,white);
   }
   for(const center of [-158,-118,-78,-38,2,42,82,122]){
     const front=halfWidth+7;
@@ -182,7 +200,7 @@ function facilities(root,obstacles){
     for(const dx of [-15,-5,5,15])box(center+dx,3.2,front+6,.22,6.4,.25,steel);
   }
   const pit=-(halfWidth+15);
-  box(-32,.008,pit+6.4,250,.018,6.3,0x535b59);
+  box(-32,-.001,pit+6.4,250,.002,6.3,0x535b59);
   for(let garage=0;garage<4;garage++){
     const x=-100+garage*39;
     box(x,2.3,pit,38,4.6,9.2,0xb2b8b4);box(x,4.8,pit,39,.38,10.5,steel);
@@ -198,7 +216,11 @@ function facilities(root,obstacles){
   }
   const instance=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material(0xffffff),blocks.length);
   blocks.forEach(([matrix,color],i)=>{instance.setMatrixAt(i,matrix);instance.setColorAt(i,new THREE.Color(color));});
-  instance.name='Grandstands, pit lane and start grid';instance.castShadow=instance.receiveShadow=true;root.add(instance);
+  instance.name='Grandstands and pit lane';instance.castShadow=instance.receiveShadow=true;root.add(instance);
+  const marking=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),
+    material(0xffffff,{polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2}),grid.length);
+  grid.forEach(([matrix,color],i)=>{marking.setMatrixAt(i,matrix);marking.setColorAt(i,new THREE.Color(color));});
+  marking.name='Start stripe and grid boxes';marking.receiveShadow=true;root.add(marking);
 }
 
 // Continuous world-space UVs keep the paving joints aligned on both embankments.
@@ -377,7 +399,7 @@ export function createStationRaceWorld(...args){
 // City driving prepares one batch per idle slice. A portal reached early can
 // finish the same iterator synchronously, preserving the single world and its assets.
 export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
-  ()=>import('./rival-exterior.js?v=20261122-wheel-repair').then(m=>m.loadRivalExterior())}={}){
+  ()=>import('./rival-exterior.js?v=20261122-roadhandling').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
   root.name='Station Circuit';root.visible=false;
   addCityPaving(root);
@@ -387,14 +409,15 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
   const asphalt=roadMaterial?roadMaterial.clone():material(0x484d52);
   asphalt.polygonOffset=false;asphalt.vertexColors=false;
   if(roadMaterial){asphalt.color.setHex(0x536880);asphalt.roughness=.86;}
-  ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,.001,circuitStations,roadMaterial?.map?.image?4:2);
-  const paintedWhite=material(white),kerb=kerbMaterial(),apron=material(0x414f60);
+  ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,surfaceY.asphalt,circuitStations,roadMaterial?.map?.image?4:2);
+  const paintedWhite=material(white,{polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});
+  const kerb=kerbMaterial(),apron=material(0x414f60,{polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const precast=precastWallMaterial(),bendDetails=[];
   for(const side of [-1,1]){
     const edge=[side*(halfWidth-.12),side*(halfWidth+.02)].sort((a,b)=>a-b);
     const inner=side*(halfWidth+.12),outer=d=>side*(halfWidth+runoffWidth(d,side)+.5);
-    ribbon(root,'Run-off',apron,side<0?outer:inner,side<0?inner:outer,.003);
-    ribbon(root,'White edge line',paintedWhite,...edge,.02);boundary(root,obstacles,side,precast);
+    ribbon(root,'Run-off',apron,side<0?outer:inner,side<0?inner:outer,surfaceY.median);
+    ribbon(root,'White edge line',paintedWhite,...edge,surfaceY.centreLine);boundary(root,obstacles,side,precast);
     yield;
   }
   for(const bend of RACE_COURSE.bends){
@@ -402,7 +425,8 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
     const end=bend.start+bend.length,stations=[bend.start-12,...circuitStations.filter(d=>d>=bend.start&&d<=end),end+12];
     for(const side of [-1,1]){
       const offsets=[side*(halfWidth+.12),side*(halfWidth+1.08)].sort((a,b)=>a-b);
-      ribbon(details,'Striped kerb',kerb,...offsets,.028,stations,5,true);
+      const kerbHeight=.028,strip=ribbon(details,'Striped kerb',kerb,...offsets,kerbHeight,stations,5,true);
+      addKerbSupports(obstacles,strip,'race-kerb-'+bend.turn+'-'+side,kerbHeight);
     }
     const p=sampleCourse(bend.start+bend.length/2);
     bendDetails.push({details,x:p.x,z:p.z});

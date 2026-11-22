@@ -12,6 +12,10 @@ export const ELECTRIC_DRIVE_DEFAULTS = Object.freeze({
 
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const finite = (value, fallback) => Number.isFinite(value) ? value : fallback;
+export function motorSpeedHeadroom(rpm,limit=ELECTRIC_DRIVE_DEFAULTS.maxMotorRPM){
+  const rated=Math.max(1,finite(limit,ELECTRIC_DRIVE_DEFAULTS.maxMotorRPM));
+  return clamp((rated-Math.abs(rpm))/(rated*.05),0,1);
+}
 const MOTOR_LAYOUT = [
   { id: 'front', label: 'Front motor', wheelIndices: [0, 1] },
   { id: 'rear-left', label: 'Rear-left motor', wheelIndices: [2] },
@@ -177,7 +181,7 @@ export function evaluateElectricDrive(input, parameters = {}) {
       // Near rest, allow an energy-budgeted powered direction change. A stop-only
       // impulse would otherwise trap a wheel in tiny terrain-induced counter-rotation.
       const motoring = throttle * shaftOmega >= 0 || Math.abs(axleOmega)*p.wheelRadius < .1;
-      const rpmFade = motoring ? clamp((p.maxMotorRPM - rpm) / (p.maxMotorRPM * .05), 0, 1) : 1;
+      const rpmFade = motoring ? motorSpeedHeadroom(rpm,p.maxMotorRPM) : 1;
       const torqueLimit = Math.min(p.motorTorqueNm / 3,
         p.motorPowerKW * 1000 / 3 / Math.max(Math.abs(shaftOmega), 1e-9));
       torqueNm = throttle * torqueLimit * rpmFade;

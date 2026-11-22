@@ -54,7 +54,7 @@ export function updateTireContactShadows(mesh,position,rotation,wheels,physicsWh
       const support=wheel.surfaceY-slope;
       // Urban roughness is solved below the mesh resolution. Keep contact
       // visible where a depression passes beneath a flat painted lane.
-      const y=mode==='city'?Math.max(0,support)+surfaceY.contactShadow:support+(mode==='circuit'?.032:.018);
+      const y=mode==='city'||mode==='circuit'?Math.max(0,support)+surfaceY.contactShadow:support+.018;
       points.setXYZ(i*4+k,hub.x+ox,y,hub.z+oz);colors.setW(i*4+k,alpha);
     }
   }

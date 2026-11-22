@@ -45,7 +45,7 @@ export const EXTRA_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/0eaa7a16796540f29461ddae05ecdeb3",
-    "url": "../assets/vehicles/ford-mustang.glb",
+    "url": "../assets/vehicles/ford-mustang.glb?v=b72ebb86e230",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelPattern": "^GT500(Wheel|Hub)",
@@ -78,7 +78,7 @@ export const EXTRA_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/dbd3e2ccdc2748af957c34310163d848",
-    "url": "../assets/vehicles/lamborghini-aventador-lp700-4.glb",
+    "url": "../assets/vehicles/lamborghini-aventador-lp700-4.glb?v=9ac1aab3eac9",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [

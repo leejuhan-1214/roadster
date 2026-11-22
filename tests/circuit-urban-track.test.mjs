@@ -27,6 +27,12 @@ test('bridge and station gallery retain ground lanes and their visible structure
   for(let distance=164;distance<506;distance+=3){
     for(const lateral of [-7,0,7])assert.equal(sim.surfaceHeightAt(distance,lateral,1),0);
   }
+  const bridgeInlays=root.getObjectByName('Tide bridge hanger inlays'),points=bridgeInlays.geometry.attributes.position,deckLevels=new Set();
+  for(let i=0;i<points.count;i++){
+    const y=points.getY(i);if(y>0&&y<.1)deckLevels.add(Math.round(y*10000));
+  }
+  assert.deepEqual([...deckLevels].sort((a,b)=>a-b),[15,20]);
+  assert.ok(bridgeInlays.material.polygonOffset);
   for(let d=878;d<=1016;d+=1.8){
     for(const l of [-7.8,0,7.8]){
       const {x,z}=sampleCourse(d,l);

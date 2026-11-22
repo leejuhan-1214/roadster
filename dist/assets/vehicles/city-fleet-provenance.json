@@ -13,7 +13,7 @@
       ],
       "category": "sports",
       "file": "aston-martin-db11.glb",
-      "bytes": 1108192,
+      "bytes": 1136116,
       "paint": {
         "materials": [
           "amdb11_grey"
@@ -49,8 +49,8 @@
         "KHR_materials_specular",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 1108192,
-      "sha256": "4d5641e501d04967c9c3c44ed3289a4f710a8e14642717a8b90972ce02d9e8b0",
+      "actualBytes": 1136116,
+      "sha256": "b1544880d1a3bb28fa8bd3ed30bbe6c3525073db61b16d1f8d51bf8918dbd57b",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/aston-martin-db11.glb",
       "adapter": {
         "wheelPattern": "^(amdb11_(wheel_03|brakedisc|caliper|hub)|Object_400[1-4]_Scene)",
@@ -70,10 +70,11 @@
         "bodyHeight": 1.1403599977493286,
         "bodyCenterY": 0.12256401777267456
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "contributors": [],
       "wheelMappingEvidence": "Object_4001..4004_Scene_-_Root_0 are the four complete outer tires; amdb11_wheel_03 is the smaller inner wheel. Outer tires now determine radius; discs roll, calipers and wheel hubs steer/suspend without rolling. This removes tire geometry from the body collision envelope.",
-      "wheelMappingCheckedAt": "2026-11-11"
+      "wheelMappingCheckedAt": "2026-11-11",
+      "sourceSha256": "4d5641e501d04967c9c3c44ed3289a4f710a8e14642717a8b90972ce02d9e8b0"
     },
     {
       "id": "audi-q7",
@@ -340,7 +341,7 @@
       ],
       "category": "suv",
       "file": "renault-duster.glb",
-      "bytes": 1330200,
+      "bytes": 1376188,
       "paint": {
         "materials": [
           "metal"
@@ -370,8 +371,8 @@
       "apiAuthorUrl": "https://sketchfab.com/razor24",
       "apiDescription": "Made in Blender 2.79",
       "meshCount": 44,
-      "actualBytes": 1330200,
-      "sha256": "96253aa272e8c20965400ddbe99608ec3ecc8268f63a2810197c0f1be891247b",
+      "actualBytes": 1376188,
+      "sha256": "07b70df3d2123793dd5e7d8d0eace679f47f55d59eb85d6183a5c72dbef4e367",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/renault-duster.glb",
       "adapter": {
         "wheelPattern": "^duster-11_(FR|BR|BL|FL)_wheel",
@@ -390,8 +391,9 @@
         "bodyHeight": 1.4115272462368011,
         "bodyCenterY": 0.3844681531190872
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "96253aa272e8c20965400ddbe99608ec3ecc8268f63a2810197c0f1be891247b"
     },
     {
       "id": "ford-focus",
@@ -472,7 +474,7 @@
       ],
       "category": "sedan",
       "file": "bmw-e34.glb",
-      "bytes": 1606776,
+      "bytes": 1639872,
       "paint": {
         "materials": [
           "body_paint"
@@ -508,8 +510,8 @@
         "KHR_materials_specular",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 1606776,
-      "sha256": "50e5ae89e35c2b82e548c5efbbf7d6cd156ce4033baee52e7c923a760fef9da1",
+      "actualBytes": 1639872,
+      "sha256": "762031b815dd1ab893863057ce9b57beddebaaea4e36a5b5fcb055deb050e173",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bmw-e34.glb",
       "adapter": {
         "wheelPattern": "^(wheel|brake)_(FL|FR|RL|RR)",
@@ -528,7 +530,7 @@
         "bodyHeight": 1.2816954255104065,
         "bodyCenterY": 0.21145150065422058
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "contributors": [
         {
           "author": "Lexyc16",
@@ -537,7 +539,8 @@
           "license": "CC BY 4.0",
           "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
         }
-      ]
+      ],
+      "sourceSha256": "50e5ae89e35c2b82e548c5efbbf7d6cd156ce4033baee52e7c923a760fef9da1"
     },
     {
       "id": "bmw-e39",
@@ -1405,7 +1408,7 @@
       ],
       "category": "coupe",
       "file": "ferrari-f40.glb",
-      "bytes": 1348936,
+      "bytes": 1407168,
       "paint": null,
       "credit": {
         "author": "Black Snow",
@@ -1434,8 +1437,8 @@
         "KHR_materials_clearcoat",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 1348936,
-      "sha256": "19905f10db330363ed966f8cabbdbed1bc1fc8574edaff6b8e5a24016b16ebca",
+      "actualBytes": 1407168,
+      "sha256": "97fc925069e42578c95ae1b47e252e4704bfc429a8e156a87992bbbd4d931047",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ferrari-f40.glb",
       "adapter": {
         "wheelNames": [
@@ -1469,8 +1472,9 @@
         "bodyHeight": 1.0263287425041199,
         "bodyCenterY": 0.05901339650154114
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "19905f10db330363ed966f8cabbdbed1bc1fc8574edaff6b8e5a24016b16ebca"
     },
     {
       "id": "ford-escort",
@@ -1482,7 +1486,7 @@
       ],
       "category": "hatchback",
       "file": "ford-escort.glb",
-      "bytes": 489428,
+      "bytes": 510156,
       "paint": {
         "materials": [
           "material"
@@ -1519,8 +1523,8 @@
         "KHR_materials_transmission",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 489428,
-      "sha256": "d73de07e86990d029fde31d7d509e8527a726674be423fe0d0138c6faa97caf1",
+      "actualBytes": 510156,
+      "sha256": "205aaff05e02693b1b6d886626827c540832ab426fadb771be4c78c769f27348",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-escort.glb",
       "adapter": {
         "wheelNames": [
@@ -1548,8 +1552,9 @@
         "bodyHeight": 1.3910896182060242,
         "bodyCenterY": 0.29800155758857727
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "d73de07e86990d029fde31d7d509e8527a726674be423fe0d0138c6faa97caf1"
     },
     {
       "id": "mclaren-720s",
@@ -2247,7 +2252,7 @@
       ],
       "category": "hatchback",
       "file": "peugeot-205.glb",
-      "bytes": 159728,
+      "bytes": 188560,
       "paint": {
         "materials": [
           "Vehicle"
@@ -2277,8 +2282,8 @@
       "apiAuthorUrl": "https://sketchfab.com/thcyrax",
       "apiDescription": "# Vehicle - Peugeot 205   \n   \n**Follow me on ArtStation:**   \nhttps://www.artstation.com/kitsunegraphics   \n   \n**Follow me on Instagram:**   \nhttps://www.instagram.com/kitsune.graphics/   \n   \nCheck another vehicle: https://skfb.ly/6PWT7",
       "meshCount": 5,
-      "actualBytes": 159728,
-      "sha256": "bece1665032e1db92b4c876cb45697b239990000a6e63fb4a856a2de0d7c1fbd",
+      "actualBytes": 188560,
+      "sha256": "253971782616530cea47540a737dcb0b025ad4c6b0b2b08c1ab252f68d5b0816",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/peugeot-205.glb",
       "adapter": {
         "wheelPattern": "^(FLW|FRW|RLW|RRW)_",
@@ -2296,8 +2301,9 @@
         "bodyHeight": 1.224423885345459,
         "bodyCenterY": 0.2213330864906311
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "bece1665032e1db92b4c876cb45697b239990000a6e63fb4a856a2de0d7c1fbd"
     },
     {
       "id": "peugeot-206",
@@ -2713,7 +2719,7 @@
       ],
       "category": "hatchback",
       "file": "toyota-yaris.glb",
-      "bytes": 1305384,
+      "bytes": 1400448,
       "paint": {
         "materials": [
           "Intbodyunrefunblendbodyunrefunblend1Mtl"
@@ -2747,8 +2753,8 @@
         "EXT_meshopt_compression",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 1305384,
-      "sha256": "72950d75629e230a5ed96f0bd0a995888c3a0ab6cc75729e2b64520628b2171f",
+      "actualBytes": 1400448,
+      "sha256": "2dad1074ae2fd42d94b93b1a715ad9b470c41063d3b258260db84d68340d4079",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-yaris.glb",
       "adapter": {
         "wheelNames": [
@@ -2770,8 +2776,9 @@
         "bodyHeight": 1.296326756477356,
         "bodyCenterY": 0.23808258771896362
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "72950d75629e230a5ed96f0bd0a995888c3a0ab6cc75729e2b64520628b2171f"
     },
     {
       "id": "volkswagen-beetle",
@@ -3363,7 +3370,7 @@
       ],
       "category": "sedan",
       "file": "hyundai-azera.glb",
-      "bytes": 1452700,
+      "bytes": 1772484,
       "paint": {
         "materials": [
           "tail"
@@ -3398,8 +3405,8 @@
         "KHR_materials_specular",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 1452700,
-      "sha256": "d3155d48de8634a7bc149249794f225d107654b1177ae438eeaa1a521e19f3ca",
+      "actualBytes": 1772484,
+      "sha256": "b2611ff05a3073ed307abce2342814aaa242ea2327c688c567161f3e6661657e",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/hyundai-azera.glb",
       "adapter": {
         "wheelNames": [
@@ -3445,8 +3452,9 @@
         "bodyHeight": 1.3146949112415314,
         "bodyCenterY": 0.27896277606487274
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "d3155d48de8634a7bc149249794f225d107654b1177ae438eeaa1a521e19f3ca"
     },
     {
       "id": "hyundai-i30",
@@ -3458,7 +3466,7 @@
       ],
       "category": "hatchback",
       "file": "hyundai-i30.glb",
-      "bytes": 1380712,
+      "bytes": 1424112,
       "paint": {
         "materials": [
           "black_1"
@@ -3492,8 +3500,8 @@
         "EXT_meshopt_compression",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 1380712,
-      "sha256": "2af16308feb8ac02f3f6dd2045737a7ca59ce5f4b705b2ff0bb13b67d58c94ff",
+      "actualBytes": 1424112,
+      "sha256": "59d43631351a75e30eb73e988f0a9528c1f9cb546f2b5c90cec35a778b9aaf66",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/hyundai-i30.glb",
       "adapter": {
         "wheelNames": [
@@ -3523,10 +3531,11 @@
         "bodyHeight": 1.4021201729774475,
         "bodyCenterY": 0.19228538870811462
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "contributors": [],
       "wheelMappingEvidence": "Material2_17 detailed wheel geometry, Material3_47 brake discs and Material3_48 central wheel hardware now accompany the four rolling wheel pivots. Unidentified Material2_18 backing/caliper details remain unchanged.",
-      "wheelMappingCheckedAt": "2026-11-11"
+      "wheelMappingCheckedAt": "2026-11-11",
+      "sourceSha256": "2af16308feb8ac02f3f6dd2045737a7ca59ce5f4b705b2ff0bb13b67d58c94ff"
     },
     {
       "id": "kia-picanto",
@@ -3766,7 +3775,7 @@
       ],
       "category": "coupe",
       "file": "lamborghini-gallardo-lp560.glb",
-      "bytes": 2273548,
+      "bytes": 2417088,
       "paint": null,
       "credit": {
         "author": "Black Snow",
@@ -3795,8 +3804,8 @@
         "KHR_materials_clearcoat",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 2273548,
-      "sha256": "ef7aaab5bc1ee39b8f3a34926994922a5e0056179bd233514b3db8803aa80498",
+      "actualBytes": 2417088,
+      "sha256": "fb4e950b12bdc0480f786bf10c96a9a44ed77ba795d59442a3e928431b01b71e",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-gallardo-lp560.glb",
       "adapter": {
         "wheelNames": [
@@ -3850,8 +3859,9 @@
         "bodyHeight": 1.0666106939315796,
         "bodyCenterY": 0.02366507053375244
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "ef7aaab5bc1ee39b8f3a34926994922a5e0056179bd233514b3db8803aa80498"
     },
     {
       "id": "lamborghini-urus",
@@ -4176,7 +4186,7 @@
       ],
       "category": "sports",
       "file": "bugatti-veyron.glb",
-      "bytes": 3967440,
+      "bytes": 4125536,
       "paint": {
         "materials": [
           "M_Metalic_Orange"
@@ -4210,8 +4220,8 @@
         "EXT_meshopt_compression",
         "KHR_mesh_quantization"
       ],
-      "actualBytes": 3967440,
-      "sha256": "083b52fdcbb7b54f4bdc5a59c0d3773797d859545a43fb10d7dd8416a37923b6",
+      "actualBytes": 4125536,
+      "sha256": "541f427d4c00d6b8bab71e9413d6c729e76e2059d9e1978fbc185e17f5222365",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bugatti-veyron.glb",
       "adapter": {
         "wheelNames": [
@@ -4266,8 +4276,9 @@
         "yawY": -0.18866685777902603,
         "yawZ": 0.8767607797986756
       },
-      "changes": "Original pinned GLB unchanged. Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model.",
-      "contributors": []
+      "changes": "Runtime metric scaling, four independent wheel pivots, parked steering neutralization, brake/fixed-hub mapping where available, reviewed body paint, source environment and blur-mesh exclusions recorded in adapter, common fictional cold-gas hardware. City-only class mass and wheelbase assumptions; reference cockpit fallback, not a validated OEM driving model. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
+      "contributors": [],
+      "sourceSha256": "083b52fdcbb7b54f4bdc5a59c0d3773797d859545a43fb10d7dd8416a37923b6"
     },
     {
       "id": "koenigsegg-one",

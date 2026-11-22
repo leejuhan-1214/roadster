@@ -4,13 +4,13 @@ import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-cal
 import {CockpitView} from './cockpit-view.js?v=20261122-wheel-repair';
 import {LandingVisual} from './landing-visual.js?v=20261119-air161';
 import {CockpitMirror} from './cockpit-mirror.js?v=20261122-garage';
-import {TireEffects} from './tire-effects.js?v=20261122-wheel-repair';
-import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-wheel-repair';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261122-wheel-repair';
-import {loadCityWorld} from './city-world.js?v=20261122-wheel-repair';
-import {stationRaceWorldStages} from './station-race-world.js?v=20261122-wheel-repair';
+import {TireEffects} from './tire-effects.js?v=20261122-roadhandling';
+import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-roadhandling';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261122-roadhandling';
+import {loadCityWorld} from './city-world.js?v=20261122-roadhandling';
+import {stationRaceWorldStages} from './station-race-world.js?v=20261122-roadhandling';
 import {StationRace} from './station-race.js?v=20261119-ai158';
-import {attachStreamingCity} from './city-streaming.js?v=20261122-wheel-repair';
+import {attachStreamingCity} from './city-streaming.js?v=20261122-roadhandling';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261122-wheel-repair';
 import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
 import {loadRealSky} from './sky-environment.js?v=20261109-real1';
@@ -22,7 +22,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261118-model154';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261122-wheel-repair';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261122-roadhandling';
 import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261122-wheel-repair';
 import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-circuit155';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
@@ -981,7 +981,7 @@ export class FlightScene {
     }
     if(this.selectedBox.visible&&this.selectedPart&&this.mode==='inspect')this.selectedBox.setFromObject(this.selectedPart);
     const onCircuit=mode==='city'&&!!this.stationRace;
-    this.tireEffects.update(sim,view,mode==='city',onCircuit);
+    this.tireEffects.update(sim,view,mode==='city');
     updateTireContactShadows(this.contactShadow,position,q,wheels,sim.wheels,onCircuit?'circuit':mode);
     this.positionSun(position,wheels);
     this.sky.position.set(position.x,position.y,position.z);

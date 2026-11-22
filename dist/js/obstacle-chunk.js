@@ -1,6 +1,6 @@
 import {Vector3} from '../vendor/three.core.js';
 import {createObstacleIndex,indexObstacle} from './obstacle-index.js?v=20261118-circuit155';
-import {preparePrism} from './city-building-collision.js?v=20261118-study150';
+import {preparePrism} from './city-building-collision.js?v=20261122-roadhandling';
 
 export function prepareObstacle(box,i){
   if(!Array.isArray(box.center)||!Array.isArray(box.size)||box.center.length!==3||box.size.length!==3||
@@ -13,7 +13,9 @@ export function prepareObstacle(box,i){
     for(const [x,z] of footprint){x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);}
     center.x=(x0+x1)/2;center.z=(z0+z1)/2;half.x=(x1-x0)/2;half.z=(z1-z0)/2;
   }
-  return {id:box.id??String(i),treeId:box.treeId??null,center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
+  const obstacle={id:box.id??String(i),treeId:box.treeId??null,center,half,footprint,min:center.clone().sub(half),max:center.clone().add(half)};
+  if(box.topContactOnly===true)obstacle.topContactOnly=true;
+  return obstacle;
 }
 
 // A work-in-progress index is private to the tile. The simulation publishes

@@ -95,7 +95,7 @@ export class LandingStepAuditPanel{
     this.clear();
     try{
       this.source=stepAuditSource(row);
-      const worker=new Worker(new URL('./landing-step-worker.js?v=20261122-wheel-repair',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./landing-step-worker.js?v=20261122-roadhandling',import.meta.url),{type:'module'});
       this.worker=worker;this.run.disabled=true;this.stop.hidden=false;
       this.status.textContent='저장한 출발 조건을 준비하는 중…';
       const finish=message=>{

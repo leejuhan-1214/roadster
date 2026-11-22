@@ -81,7 +81,7 @@ export const RESERVE_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/none-938d3e3642cf4ea895c62c2a4bf6fc08",
-    "url": "../assets/vehicles/lamborghini-centenario-roadster.glb",
+    "url": "../assets/vehicles/lamborghini-centenario-roadster.glb?v=8479003c53f7",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [
@@ -185,7 +185,7 @@ export const RESERVE_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/none-f66020ee62d741ebb0adc1ba351300db",
-    "url": "../assets/vehicles/toyota-mr2-w20.glb",
+    "url": "../assets/vehicles/toyota-mr2-w20.glb?v=ecacfeeb1265",
     "yaw": 3.141592653589793,
     "adapter": {
       "wheelNames": [
@@ -284,7 +284,7 @@ export const RESERVE_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e",
-    "url": "../assets/vehicles/ferrari-portofino.glb?v=b32850865e5a",
+    "url": "../assets/vehicles/ferrari-portofino.glb?v=84681546a982",
     "yaw": 0,
     "adapter": {
       "wheelPattern": "^Reserve(Tire|Rim)",
@@ -302,9 +302,9 @@ export const RESERVE_VEHICLES = [
     "dryMass": 1810,
     "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
     "dimensionBasis": "Body envelopes measured on the mesh with a rounded simulation wheelbase, not OEM CAD",
-    "length": 4.8214,
+    "length": 4.8268,
     "width": 2.1246,
-    "height": 1.3045
+    "height": 1.3065
   },
   {
     "id": "subaru-brz",

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
 
@@ -22,7 +23,7 @@ export function addCircuitLighting(root,obstacles){
       for(let j=0;j<bands.length-1;j++){
         for(const [s,k] of [[start,j],[end,j],[start,j+1],[end,j],[end,j+1],[start,j+1]]){
           const [offset,strength]=bands[k],p=sampleCourse(s,sign*(width+runoffWidth(s,sign)-2.4+offset));
-          spill.push(p.x,.025,p.z);spillColors.push(color.r,color.g,color.b,strength);
+          spill.push(p.x,surfaceY.crossing,p.z);spillColors.push(color.r,color.g,color.b,strength);
         }
       }
     }
@@ -35,7 +36,8 @@ export function addCircuitLighting(root,obstacles){
     mesh.name=name;root.add(mesh);
   }
   mounted('Continuous amber and cyan wall guides',rails,railColors,3,{toneMapped:false});
-  mounted('Track edge light spill',spill,spillColors,4,{transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+  mounted('Track edge light spill',spill,spillColors,4,{transparent:true,depthWrite:false,
+    polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2,blending:THREE.AdditiveBlending});
 
   // A pair of stepped beacons frames the crest of the slalom from a distance.
   // Each vertical fin uses the same triangular footprint for drawing and contact.

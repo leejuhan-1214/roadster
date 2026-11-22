@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VEHICLES,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
+import {ELECTRIC_DRIVE_DEFAULTS} from '../dist/js/electric-drive.js';
 import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
 import {CITY_DRIVE_PARAMS,DrivingController} from '../dist/js/driving-input.js';
 import {rocketRollAuthority} from '../dist/js/rocket-flight.js';
@@ -13,11 +14,11 @@ import {configureVehicleFit} from '../dist/js/vehicle-fit.js';
 import {loadModelGeometry} from './model-loader-helper.mjs';
 const dt=.002, up=s=>1-2*(s.state.q.x**2+s.state.q.z**2);
 const selected=['mazda-miata-mx-5','bmw','ferrari','roadster','tesla-cybertruck'];
-for(const id of ['sd-67gp-kuiper-t81','sd-67gp-guthrie-eagle'])test(id+': level-road acceleration and rear boost keep tire contact',async()=>{
+for(const id of ['sd-67gp-kuiper-t81','sd-67gp-guthrie-eagle','chevrolet-onix'])test(id+': level-road acceleration and rear boost keep tire contact',async()=>{
  const profile=VEHICLES.find(p=>p.id===id),gltf=await loadModelGeometry(profile);
  const car=adaptRealVehicle(gltf.scene,profile);
  try{
-  prepareAssessmentVehicle(car);configureVehicleFit(car,profile);
+  prepareAssessmentVehicle(car);prepareRocketRetrofit(car);configureVehicleFit(car,profile);
   const params={...vehiclePhysics(profile,car.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS,
     parkedWheelMounts:true,cityWheelGeometry:car.cityWheelGeometry,cityGroundSupports:car.cityGroundSupports};
   for(const boost of [false,true]){
@@ -38,6 +39,37 @@ for(const id of ['sd-67gp-kuiper-t81','sd-67gp-guthrie-eagle'])test(id+': level-
    for(let i=0;i<700;i++)sim.step(dt,driver.update(lift,sim,dt));
    assert.equal(sim.contactCount,0,'commanded lift still works with the booster held');
   }
+  // The street heading and submillimetre road relief break the perfect left/
+  // right symmetry of a car placed at the origin. The course also supplies
+  // unlimited gas, so tank depletion cannot hide back-driven motor overspeed.
+  const heading=-1.22009,sim=new PhysicsSim({...params,unlimitedRaceGas:true}),driver=new DrivingController();
+  sim.state.pos.x=-2.95;sim.state.pos.z=17.28;sim.state.q.setFromAxisAngle({x:0,y:1,z:0},heading);
+  const start=sim.state.pos.clone(),pedals=new Set(['KeyW','KeyF']),onlyW=new Set(['KeyW']),idle=new Set();
+  for(let i=0;i<400;i++)sim.step(dt,driver.update(idle,sim,dt));
+  let maxRPM=0;
+  for(let i=0;i<5000;i++){
+   const keys=i<800||(i>1400&&i<2000)?onlyW:pedals;
+   sim.step(dt,driver.update(keys,sim,dt));
+   maxRPM=Math.max(maxRPM,...sim.motorState.motors.map(m=>m.rpm));
+   assert.ok(sim.contactCount>0);
+  }
+  const dx=sim.state.pos.x-start.x,dz=sim.state.pos.z-start.z;
+  assert.ok(dx*Math.cos(heading)-dz*Math.sin(heading)>400);
+  assert.ok(Math.abs(dx*Math.sin(heading)+dz*Math.cos(heading))<.5,'straight burst acceleration should hold the chosen street heading');
+  assert.ok(maxRPM<ELECTRIC_DRIVE_DEFAULTS.maxMotorRPM*1.02,'rear boost must respect coupled road motor redline');
+  // A brief upward impulse reproduces the suspension unload after a curb.
+  // F remains held throughout. Only a deliberate launch may use belly jets.
+  sim.state.vel.y+=2.3;
+  let unloaded=false,backOnTires=false,peak=0;
+  const y=sim.state.pos.y;
+  for(let i=0;i<750;i++){
+   sim.step(dt,driver.update(pedals,sim,dt));
+   unloaded ||= sim.contactCount===0;
+   backOnTires ||= unloaded&&sim.contactCount>=3;
+   peak=Math.max(peak,sim.state.pos.y-y);
+   assert.ok(sim.thrusters.slice(0,4).every(nozzle=>nozzle.force<1),'a road hop must stay unpowered vertically');
+  }
+  assert.ok(unloaded&&backOnTires&&peak<.5,'the car should settle after the hop');
  }finally{disposeVehicle(car);}
 });
 for(const id of selected)test(id+': fitted real chassis uses shared jets and completes a physical roll within its authority envelope',async()=>{

@@ -26,6 +26,9 @@ test('ambient contact sits at each actual rotated hub, follows uneven supports a
   const draw=()=>updateTireContactShadows(mesh,p,q,wheels,wheels,'city');
   draw();assert.ok(mesh.visible);
   const vertices=mesh.geometry.attributes.position,colors=mesh.geometry.attributes.color;
+  updateTireContactShadows(mesh,p,q,wheels,wheels,'circuit');
+  assert.ok(Math.abs(vertices.getY(0)-.064)<1e-6);
+  assert.ok(Math.abs(vertices.getY(4)-.004)<1e-6);
   for(const [i,w] of wheels.entries()){
     const hub=w.pos.clone().applyQuaternion(q).add(p);
     assert.ok(Math.abs((vertices.getX(i*4)+vertices.getX(i*4+2))/2-hub.x)<1e-6);

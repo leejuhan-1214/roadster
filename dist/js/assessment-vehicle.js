@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {disposeVehicle} from './real-vehicle-model.js?v=20261122-wheel-repair';
+import {disposeVehicle} from './real-vehicle-model.js?v=20261122-roadhandling';
 
 export const LANDING_APPARATUS=Object.freeze(['tank','suspension','thrusters']);
 // The inspector shares the loaded vehicle. Retain verified profile-specific

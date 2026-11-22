@@ -1,4 +1,4 @@
-import {runLandingHeightStudy} from './landing-height-study.js?v=20261122-wheel-repair';
+import {runLandingHeightStudy} from './landing-height-study.js?v=20261122-roadhandling';
 
 self.onmessage=({data})=>{
   try{

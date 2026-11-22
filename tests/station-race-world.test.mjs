@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Box3,Group,MeshStandardMaterial,Scene,Vector3} from 'three';
+import {Box3,Group,Matrix4,MeshStandardMaterial,Scene,Vector3} from 'three';
 import {PhysicsSim} from '../dist/js/physics.js';
 import {RACE_COURSE,StationRace,sampleCourse} from '../dist/js/station-race.js';
 import {createStationRaceWorld} from '../dist/js/station-race-world.js';
@@ -13,6 +13,49 @@ import {vehicleProfile} from '../dist/js/vehicle-profiles.js';
 import {RIVAL_LENGTH,RIVAL_ROOF_HEIGHT} from '../dist/js/race-contact.js';
 import {FlightScene} from '../dist/js/scene.js';
 import {drawRaceMap} from '../dist/js/station-race-hud.js';
+
+test('circuit markings stay on the road and raised kerbs support tires without a wall impulse',()=>{
+  const world=createStationRaceWorld(),sim=new PhysicsSim({roadRoughness:0});
+  try{
+    sim.setObstacles(world.obstacles);
+    const yOf=name=>world.root.getObjectByName(name).geometry.attributes.position.getY(0);
+    assert.equal(yOf('Track asphalt'),0);
+    assert.ok(yOf('White edge line')>0&&yOf('White edge line')<=.003);
+    assert.ok(yOf('Run-off')>=0&&yOf('Run-off')<.001);
+    const line=world.root.getObjectByName('Start stripe and grid boxes'),m=new Matrix4();
+    assert.ok(line.isInstancedMesh&&line.material.polygonOffset);
+    for(let i=0;i<line.count;i++){
+      line.getMatrixAt(i,m);assert.ok(m.elements[13]>0&&m.elements[13]<=.003);
+    }
+    let sampled=0;
+    world.root.traverse(mesh=>{
+      if(mesh.name!=='Striped kerb')return;
+      const p=mesh.geometry.attributes.position;
+      for(let i=0;i+3<p.count;i+=2){
+        const x=(p.getX(i)+p.getX(i+1)+p.getX(i+2)+p.getX(i+3))/4;
+        const z=(p.getZ(i)+p.getZ(i+1)+p.getZ(i+2)+p.getZ(i+3))/4;
+        assert.ok(Math.abs(sim.surfaceHeightAt(x,z,.4)-p.getY(i))<1e-6);sampled++;
+      }
+    });
+    assert.ok(sampled>100);
+    const bend=RACE_COURSE.bends[0],s=bend.start+bend.length/2,side=Math.sign(bend.curvature);
+    const start=sampleCourse(s,side*(RACE_COURSE.width/2+4.3)),target=sampleCourse(s,0);
+    const heading=Math.atan2(start.z-target.z,target.x-start.x);
+    sim.reset('ground');
+    sim.state.pos.x=start.x;sim.state.pos.z=start.z;
+    sim.state.q.setFromAxisAngle(new Vector3(0,1,0),heading);
+    const forward=new Vector3(Math.cos(heading),0,-Math.sin(heading)),origin=sim.state.pos.clone();
+    sim.state.vel.copy(forward).multiplyScalar(5);
+    for(const w of sim.wheels)w.omega=5/w.radius;
+    let climbed=false;
+    for(let i=0;i<1000;i++){
+      sim.step(.002,{throttle:.12});
+      climbed ||=sim.wheels.some(w=>w.grounded&&Math.abs(w.surfaceY-.028)<1e-5);
+      assert.equal(sim.collisionCount,0,'a drive across the curb must not register a wall crash');
+    }
+    assert.ok(climbed&&sim.state.pos.clone().sub(origin).dot(forward)>8);
+  }finally{world.dispose();}
+});
 
 test('slalom target advances in the 3D corridor and the lane diagram and resets for the next lap',()=>{
   const race=new StationRace(),world=createStationRaceWorld();

@@ -1,9 +1,9 @@
-import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261122-wheel-repair';
-import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261118-city151';
-import {RESERVE_VEHICLES} from './sports-reserve-profiles.js?v=20261122-wheel-repair';
+import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261122-roadhandling';
+import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261122-roadhandling';
+import {RESERVE_VEHICLES} from './sports-reserve-profiles.js?v=20261122-roadhandling';
 import {ADDITIONAL_SPORTS_VEHICLES} from './sports-additional-profiles.js?v=20261122-wheel-repair';
-import {CLASSIC_SPORTS_VEHICLES} from './sports-classics-profiles.js?v=20261122-wheel-repair';
-import {GT_SPORTS_VEHICLES} from './sports-gt-profiles.js?v=20261122-wheel-repair';
+import {CLASSIC_SPORTS_VEHICLES} from './sports-classics-profiles.js?v=20261122-roadhandling';
+import {GT_SPORTS_VEHICLES} from './sports-gt-profiles.js?v=20261122-roadhandling';
 import {ROCKET_PARAMS} from './rocket-layout.js?v=20261115-capacity375';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.

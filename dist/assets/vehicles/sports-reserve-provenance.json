@@ -82,7 +82,7 @@
         "sourceUrl": "https://sketchfab.com/3d-models/none-938d3e3642cf4ea895c62c2a4bf6fc08"
       },
       "apiAuthor": "SDC PERFORMANCE™️",
-      "actualBytes": 3156164,
+      "actualBytes": 3277236,
       "title": "Lamborghini Centenario Roadster",
       "author": "SDC PERFORMANCE™️",
       "authorUrl": "https://sketchfab.com/Lambo_SC04",
@@ -92,9 +92,9 @@
       "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-centenario-roadster.glb",
       "sourceSha256": "52fa96acb69a401ffc915bb23cda7fc47658d8af149d127d2ba61a3f7a16fca1",
-      "sha256": "52fa96acb69a401ffc915bb23cda7fc47658d8af149d127d2ba61a3f7a16fca1",
-      "bytes": 3156164,
-      "changes": "Original GLB, runtime alignment, separation of four rolling assemblies, material binding and common simulation rig.",
+      "sha256": "8479003c53f703466ed2e7a3da2020b63d55b4098e6b9a5b0956c5811126c479",
+      "bytes": 3277236,
+      "changes": "Runtime alignment, separation of four rolling assemblies, material binding and common simulation rig. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "orientationEvidence": "The steered front wheel assemblies are on +Z; stationary body and moving wheels are separated.",
       "modelFit": {
         "wheelEnvelopes": [
@@ -208,7 +208,7 @@
         "sourceUrl": "https://sketchfab.com/3d-models/none-f66020ee62d741ebb0adc1ba351300db"
       },
       "apiAuthor": "_shobh19",
-      "actualBytes": 679676,
+      "actualBytes": 715800,
       "title": "Toyota MR2 W20 (1996)",
       "author": "_shobh19",
       "authorUrl": "https://sketchfab.com/s0h1o9b",
@@ -218,9 +218,9 @@
       "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-mr2-w20.glb",
       "sourceSha256": "12387f4d8c2a67c40d1f6c34f7941673f9e6f864d5947f153e82b102845246fa",
-      "sha256": "12387f4d8c2a67c40d1f6c34f7941673f9e6f864d5947f153e82b102845246fa",
-      "bytes": 679676,
-      "changes": "Original GLB, runtime alignment, separation of four rolling assemblies, material binding and common simulation rig.",
+      "sha256": "ecacfeeb126545de99cac1bc6e4f7b6cf614b98c9fe52e0b2683f72773a4d82c",
+      "bytes": 715800,
+      "changes": "Runtime alignment, separation of four rolling assemblies, material binding and common simulation rig. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "orientationEvidence": "Popup-headlamp nose toward -X, centre fascia and rear lamps at +X, source studio floor removed.",
       "modelFit": {
         "wheelEnvelopes": [
@@ -334,7 +334,7 @@
         "sourceUrl": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e"
       },
       "apiAuthor": "WA7KVI",
-      "actualBytes": 3276508,
+      "actualBytes": 2022940,
       "title": "Ferrari Portofino",
       "author": "WA7KVI",
       "authorUrl": "https://sketchfab.com/WA7KVI",
@@ -344,10 +344,11 @@
       "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ferrari-portofino.glb",
       "sourceSha256": "1d773081b9be973c79b1ba7154d8f026399dacd9bbb1f8399c694b9395847d91",
-      "sha256": "b32850865e5ac0818d7bdeed10eed5abd59e4dab11ecca4aa33ebf195e9ccb38",
-      "bytes": 3276508,
-      "changes": "Removed tyre remnants and ground fragments from the fixed scan. Cleaned scanned paint and trim, fitted a curved transparent windshield, modelled the open cabin, alloy spokes and brake rotors, and fitted rounded tyre treads at the four original axle locations.",
-      "visualLengthMetres": 4.5941,
+      "sha256": "84681546a9823ab66a7b43deecefd9c125320971294f806d8503f9d5ba6f2c11",
+      "bytes": 2022940,
+      "changes": "Retained the artist's scan silhouette and fitted rolling tires at its four hubs. Rebuilt the shell as opaque single-layer clearcoated paint, removing photographed shadows and duplicate material layers. Recut the four fender openings with circular lips and wheelhouse returns. Modelled the grille, inlet blades, LED lights, flank trim, rear diffuser, exhausts, windshield cowl, supports and wipers against the source surfaces. The open cabin, transparent windshield, alloy spokes and brake rotors are modeled fittings.",
+      "detailReference": "https://cdn.ferrari.com/cms/network/media/pdf/cs_ferrari_portofino_gbr.pdf",
+      "visualLengthMetres": 4.5968,
       "orientationEvidence": "Open-top artist scan faces +X. The four fitted tyre treads roll around the preserved wheel centres.",
       "modelFit": {
         "wheelEnvelopes": [
@@ -373,9 +374,9 @@
           ]
         ],
         "dimensions": [
-          4.8214,
+          4.8268,
           2.1246,
-          1.3045
+          1.3065
         ]
       }
     },

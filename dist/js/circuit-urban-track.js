@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 import {sampleCourse} from './station-race-course.js?v=20261119-ai158';
 
 export const CIRCUIT_BASIN={minX:165,maxX:505,minZ:-58,maxZ:82,waterY:-4.6};
@@ -213,18 +214,20 @@ function* tideBridge(root,obstacles,metal,lights){
   // within the surface envelope and do not add a step to the wheel solver.
   for(const x of [166,249,335,421,504]){
     for(const dx of [-.13,.13]){
-      const f=rect(x+dx-.045,-7.92,x+dx+.045,7.92).map(([a,b])=>[a,.012,b]);
-      frame.face(f.reverse(),fascia);
+      const f=rect(x+dx-.045,-7.92,x+dx+.045,7.92).map(([a,b])=>[a,surfaceY.lane,b]);
+      trim.face(f.reverse(),fascia);
     }
   }
   for(const side of [-1,1]){
     const z=side*7.55;
     for(let x=169;x<503;x+=4.8){
-      const f=rect(x,z-.15,x+1.5,z+.15).map(([a,b])=>[a,.016,b]);
-      frame.face(f.reverse(),side>0?0x92735f:0x798e9b);
+      const f=rect(x,z-.15,x+1.5,z+.15).map(([a,b])=>[a,surfaceY.centreLine,b]);
+      trim.face(f.reverse(),side>0?0x92735f:0x798e9b);
     }
   }
   frame.finish(root,'Tide bridge steel arches, deck and quay',metal);
+  // The deck markings share the hanger-inlay draw and its decal depth bias.
+  lights.polygonOffset=true;lights.polygonOffsetFactor=-1;lights.polygonOffsetUnits=-2;
   trim.finish(root,'Tide bridge hanger inlays',lights);
   yield;
   tidalWater(root);

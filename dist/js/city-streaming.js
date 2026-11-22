@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {createTileScheduler} from './city-tile-scheduler.js?v=20261118-circuit155';
-import {createCityTileHydrator} from './city-tile-mesh.js?v=20261118-circuit155';
+import {createCityTileHydrator} from './city-tile-mesh.js?v=20261122-roadhandling';
 import {indexRegionalTiles} from './city-regional-packs.js?v=20261119-wide157';
 export const CITY_CHUNK_SIZE=512;
 export const CITY_CHUNK_RADIUS=2;

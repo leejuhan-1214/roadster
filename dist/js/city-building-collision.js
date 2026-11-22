@@ -38,6 +38,9 @@ export function prismContact(sim,obstacle){
     const overlap=Math.min(positive,negative);
     if(overlap<depth){depth=overlap;normal=axis.multiplyScalar(positive<negative?1:-1);}
   }
+  // A low run-over kerb is a supporting top. Crossing a shared strip edge
+  // must not create an impulse from the vertical sides of its index prism.
+  if(obstacle.topContactOnly&&normal.y<.999999)return null;
   const point=center.clone();
   axes.forEach((a,i)=>{const projection=normal.dot(a);if(Math.abs(projection)>1e-7)point.addScaledVector(a,-Math.sign(projection)*half[i]);});
   point.y=Math.max(obstacle.min.y,Math.min(obstacle.max.y,point.y));

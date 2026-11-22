@@ -191,6 +191,7 @@ export const GT_SPORTS_VEHICLES = [
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.065, 0.075],
+      "roadRideHeights": [0.080, 0.080],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.065,
@@ -226,6 +227,7 @@ export const GT_SPORTS_VEHICLES = [
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.065, 0.075],
+      "roadRideHeights": [0.080, 0.080],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.08,
@@ -296,6 +298,7 @@ export const GT_SPORTS_VEHICLES = [
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.085, 0.085],
+      "roadRideHeights": [0.130, 0.130],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.095,
@@ -331,6 +334,7 @@ export const GT_SPORTS_VEHICLES = [
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.075, 0.075],
+      "roadRideHeights": [0.085, 0.085],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.05,
@@ -401,6 +405,7 @@ export const GT_SPORTS_VEHICLES = [
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.065, 0.075],
+      "roadRideHeights": [0.080, 0.080],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.085,

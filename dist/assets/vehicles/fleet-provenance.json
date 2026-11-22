@@ -102,8 +102,8 @@
       "licenseApi": "https://api.sketchfab.com/v3/models/0eaa7a16796540f29461ddae05ecdeb3",
       "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ford-mustang.glb",
       "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
-      "sha256": "0a0632a2da8429c416d0500a96a790a6efdced04da48713e5489c9305640ac28",
-      "bytes": 2004500,
+      "sha256": "b72ebb86e23058ca05140eba19f780bf692f02e1ce106b3eda804ea71f1c8a7d",
+      "bytes": 2304128,
       "sourceTitle": "Ford Mustang Shelby GT500",
       "paint": {
         "materials": [
@@ -113,7 +113,7 @@
         "confidence": "alta"
       },
       "physicsStatus": "representative manufacturer reference; variant caveats recorded",
-      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "physicsEvidence": {
         "id": "ford-mustang",
         "referenceVariant": "2020 Ford Mustang Shelby GT500, base US reference",
@@ -142,7 +142,8 @@
           }
         ]
       },
-      "assumptionKo": "2020 기본형 치수. 질량은 초기 딜러 자료의 근삿값이며 트랙 패키지·개별 차량 측정값이 아님."
+      "assumptionKo": "2020 기본형 치수. 질량은 초기 딜러 자료의 근삿값이며 트랙 패키지·개별 차량 측정값이 아님.",
+      "sourceSha256": "0a0632a2da8429c416d0500a96a790a6efdced04da48713e5489c9305640ac28"
     },
     {
       "id": "lamborghini-aventador-lp700-4",
@@ -177,8 +178,8 @@
       "licenseApi": "https://api.sketchfab.com/v3/models/dbd3e2ccdc2748af957c34310163d848",
       "downloadUrl": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-aventador-lp700-4.glb",
       "sourceRepositoryCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
-      "sha256": "34e4781ed143bfb2c3b349f8be66252f6a949de4f93262d75d94cc1c4986698b",
-      "bytes": 1713884,
+      "sha256": "9ac1aab3eac9b98d8dad10cd27c974d5c1926cebd84062bd9ceaadf694673096",
+      "bytes": 1729848,
       "sourceTitle": "2013 Lamborghini Aventador lp700-4 Roadster",
       "paint": {
         "materials": [
@@ -188,7 +189,7 @@
         "confidence": "média"
       },
       "physicsStatus": "representative manufacturer reference; variant caveats recorded",
-      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained.",
+      "adaptations": "Meshopt GLB mirror; runtime separates wheel triangles and applies uniform wheelbase scale; artist naming retained. Rejoined paint shading normals across shallow, shared body-panel edges, preserving positions, triangle indices, UVs and hard body lines.",
       "physicsEvidence": {
         "id": "lamborghini-aventador-lp700-4",
         "referenceVariant": "2013 Lamborghini Aventador LP700-4 Roadster",
@@ -212,7 +213,8 @@
           }
         ]
       },
-      "assumptionKo": "공식 건조 질량 기준. 다른 차의 공차 질량과 측정 조건이 달라 순수 차체 성능 순위로 해석하지 않음."
+      "assumptionKo": "공식 건조 질량 기준. 다른 차의 공차 질량과 측정 조건이 달라 순수 차체 성능 순위로 해석하지 않음.",
+      "sourceSha256": "34e4781ed143bfb2c3b349f8be66252f6a949de4f93262d75d94cc1c4986698b"
     },
     {
       "id": "mercedes-benz-amg-gt",

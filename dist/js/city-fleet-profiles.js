@@ -262,7 +262,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/44cb958908b94aa5aad0d856994f35a3",
-    "url": "../assets/vehicles/toyota-yaris.glb",
+    "url": "../assets/vehicles/toyota-yaris.glb?v=2dad1074ae2f",
     "yaw": -1.5707963267948966,
     "adapter": {
       "wheelNames": [
@@ -348,7 +348,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/0ce56f01b1ff40b3a4e36bc56873dbc7",
-    "url": "../assets/vehicles/aston-martin-db11.glb",
+    "url": "../assets/vehicles/aston-martin-db11.glb?v=b1544880d1a3",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelPattern": "^(amdb11_(wheel_03|brakedisc|caliper|hub)|Object_400[1-4]_Scene)",
@@ -602,7 +602,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/ffe1a3a1bcb34e0bb80f1aa41c9edb46",
-    "url": "../assets/vehicles/bmw-e34.glb",
+    "url": "../assets/vehicles/bmw-e34.glb?v=762031b815dd",
     "yaw": -1.5707963267948966,
     "adapter": {
       "wheelPattern": "^(wheel|brake)_(FL|FR|RL|RR)",
@@ -877,7 +877,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/none-52a66c41cfcd4f999fb1b1c49bf24d70",
-    "url": "../assets/vehicles/ferrari-f40.glb",
+    "url": "../assets/vehicles/ferrari-f40.glb?v=97fc925069e4",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [
@@ -957,7 +957,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/69eb711566834234b5dfbde3c6d4ee0a",
-    "url": "../assets/vehicles/ford-escort.glb",
+    "url": "../assets/vehicles/ford-escort.glb?v=205aaff05e02",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [
@@ -1208,7 +1208,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/711b67ea05f9441a863dce4badaca660",
-    "url": "../assets/vehicles/hyundai-azera.glb",
+    "url": "../assets/vehicles/hyundai-azera.glb?v=b2611ff05a30",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [
@@ -1269,7 +1269,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/036a13aefc3f48c5ba996aa2361b429e",
-    "url": "../assets/vehicles/hyundai-i30.glb",
+    "url": "../assets/vehicles/hyundai-i30.glb?v=59d43631351a",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelTriangles": {
@@ -1488,7 +1488,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/none-86691e28bae34cffa896b148c895e58d",
-    "url": "../assets/vehicles/lamborghini-gallardo-lp560.glb",
+    "url": "../assets/vehicles/lamborghini-gallardo-lp560.glb?v=fb4e950b12bd",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [
@@ -1974,7 +1974,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/30bc2e09de66426bb67be72c95fa2476",
-    "url": "../assets/vehicles/renault-duster.glb",
+    "url": "../assets/vehicles/renault-duster.glb?v=07b70df3d212",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelPattern": "^duster-11_(FR|BR|BL|FL)_wheel",
@@ -2258,7 +2258,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/527949cddab34ea4b3b334b9a137d1be",
-    "url": "../assets/vehicles/peugeot-205.glb",
+    "url": "../assets/vehicles/peugeot-205.glb?v=253971782616",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelPattern": "^(FLW|FRW|RLW|RRW)_",
@@ -2368,7 +2368,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/0ee4c65face949efa4500deb17c79150",
-    "url": "../assets/vehicles/bugatti-veyron.glb",
+    "url": "../assets/vehicles/bugatti-veyron.glb?v=541f427d4c00",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelNames": [

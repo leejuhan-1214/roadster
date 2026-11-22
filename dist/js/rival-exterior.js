@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261122-wheel-repair';
-import {vehicleProfile} from './vehicle-profiles.js?v=20261122-wheel-repair';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261122-roadhandling';
+import {vehicleProfile} from './vehicle-profiles.js?v=20261122-roadhandling';
 import {copyVehiclePaint} from './vehicle-paint.js?v=20261111-paint1';
 import {RIVAL_LENGTH} from './race-contact.js?v=20261118-model154';
 

@@ -2,12 +2,12 @@ import {STANDARD_AIR_DENSITY,RIG_VERTICAL_DRAG_AREA} from './landing-aerodynamic
 import { Vector3, Quaternion, Euler } from '../vendor/three.core.js';
 import {R,GAMMA,CV,nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
 export {nozzle,ATMOSPHERE} from './air-nozzle.js?v=20261118-audit148';
-import {evaluateElectricDrive,accountDriveWork} from './electric-drive.js?v=20261107-drive2';
+import {evaluateElectricDrive,accountDriveWork,motorSpeedHeadroom} from './electric-drive.js?v=20261122-roadhandling';
 import {sampleRoadSurface,tireForceAtSlip,rideHeightAboveSurface} from './road-surface.js?v=20261118-review149';
 import {LIFT_LAYOUT,BOOST_LAYOUT,BODY_ENVELOPE} from './vehicle-layout.js?v=20261107-drive2';
 import {createObstacleIndex,queryObstacles} from './obstacle-index.js?v=20261118-circuit155';
-import {prepareObstacle,prepareObstacleChunk} from './obstacle-chunk.js?v=20261118-circuit155';
-import {containsFootprint,prismContact} from './city-building-collision.js?v=20261118-study150';
+import {prepareObstacle,prepareObstacleChunk} from './obstacle-chunk.js?v=20261122-roadhandling';
+import {containsFootprint,prismContact} from './city-building-collision.js?v=20261122-roadhandling';
 import {AIR_SYSTEM_DEFAULTS,rechargeAirTank,poweredGroundFan} from './air-systems.js?v=20261115-fleet1';
 import {ROCKET_PARAMS,rocketThrusterLayout,isRocketProfile} from './rocket-layout.js?v=20261115-capacity375';
 
@@ -260,6 +260,21 @@ export class PhysicsSim {
     this.initialEnergy = gas * CV * p.initialTemperature;
     this.restHeight=corners?corners.reduce((sum,w)=>sum+w.radius-w.y,0)/4+this.cg.y:
       .31+extension+p.wheelRadius+this.cg.y-staticSag;
+    // A low splitter consumes more suspension travel than its nearest hub
+    // when the car pitches or rolls. Size the progressive city bump stops
+    // from the lowest fitted underside points and their overhang.
+    let roadTravel=Infinity;
+    if(p.parkedWheelMounts){
+      for(const group of this.groundSupportGroups)for(const point of group){
+        const overhang=Math.max(1,2*Math.abs(point.x)/p.wheelbase,2*Math.abs(point.z)/p.trackWidth);
+        roadTravel=Math.min(roadTravel,(this.restHeight+point.y)/overhang);
+      }
+    }
+    const usableTravel=clamp(roadTravel,.012,.24);
+    this.cityBumpStart=staticSag+.35*usableTravel;
+    // At 90% of the available travel, the stop carries an additional two
+    // static corner loads. Its force and elastic energy are zero at engagement.
+    this.cityBumpRate=p.parkedWheelMounts?2*p.springK*staticSag/(.55*usableTravel)**2:0;
     this.state = { pos: new Vector3(this.cg.x, this.restHeight, this.cg.z), vel: new Vector3(),
       q: new Quaternion(), omega: new Vector3(), gas, temp: p.initialTemperature,
       pressure: p.tankPressureMPa * 1e6, time: 0, batteryJ: p.batteryKWh * 3.6e6,
@@ -466,6 +481,11 @@ export class PhysicsSim {
     tz+=lead*(this.gimbalDirection.x/this.gimbalDirection.y-oldGx);
     const groundBoost=this.rocketProfile&&input.boost&&p.parkedWheelMounts&&this.contactCount>0&&
       !(input.lift>0||input.altHold||Number.isFinite(input.verticalAcceleration));
+    // A smaller front tire and a larger rear tire turn at different speeds.
+    // All connected motors must stay within range even when a different
+    // axle or the pneumatic jets supply the forward force.
+    const roadDriveLimit=p.parkedWheelMounts&&this.contactCount>0?
+      motorSpeedHeadroom(Math.max(...this.motorState.motors.map(motor=>motor.rpm)),p.maxMotorRPM):1;
     if(this.rocketProfile&&input.boost&&!groundBoost){
       // Off-centre rear jets create a real pitch moment. Counter it with the
       // belly jets, not a hidden torque or an orientation assignment.
@@ -500,7 +520,9 @@ export class PhysicsSim {
         const loadedAxle=arm<0?this.wheels[2]:this.wheels[0];
         const momentLimit=.5*mass*gravity*Math.abs(loadedAxle.pos.x);
         const fullMoment=Math.abs(arm)*rearJets.reduce((sum,jet)=>sum+jet.force,0);
-        boostFraction=Math.min(1,momentLimit/Math.max(1,fullMoment));
+        // Even under pneumatic power the road wheels back-drive their motors
+        // through the fixed reduction. Taper the valves near motor redline.
+        boostFraction=Math.min(roadDriveLimit,momentLimit/Math.max(1,fullMoment));
       }
       desiredForces=[...allocation.thrust,...rearJets.map(n=>n.force*boostFraction),...sides];
     }
@@ -622,7 +644,8 @@ export class PhysicsSim {
     const oldWheelOmega=this.wheels.map(w=>w.omega);
     const wheelOmegaBound=this.wheels.map(w=>Math.max(Math.abs(w.omega),s.vel.clone().add(new Vector3().crossVectors(omegaWorld,w.pos.clone().applyQuaternion(s.q))).length()/w.radius));
     const driveParameters=electricPower>0?{...p,batteryMaxDischargeKW:Math.max(0,dischargeLimitW-electricPower)/1000}:p;
-    const drive=evaluateElectricDrive({wheelOmega:oldWheelOmega,wheelOmegaBound,throttle:throttle*this.tractionCut,brake:Math.max(brakeAmount,coastBrake)*absScale,batteryEnergyJ:Math.max(0,s.batteryJ-electricPower*dt),dt},driveParameters);
+    const driveDemand=throttle*this.tractionCut*(throttle*bodyVelocity.x>0?roadDriveLimit:1);
+    const drive=evaluateElectricDrive({wheelOmega:oldWheelOmega,wheelOmegaBound,throttle:driveDemand,brake:Math.max(brakeAmount,coastBrake)*absScale,batteryEnergyJ:Math.max(0,s.batteryJ-electricPower*dt),dt},driveParameters);
     for(let index=0;index<this.wheels.length;index++){
       const wheel=this.wheels[index],rCenter=wheel.pos.clone().applyQuaternion(s.q),worldCenter=s.pos.clone().add(rCenter);
       const cornerVel=s.vel.clone().add(new Vector3().crossVectors(omegaWorld,rCenter));
@@ -635,7 +658,9 @@ export class PhysicsSim {
       const centreRadius=Math.abs(steering)>1e-7?p.wheelbase/Math.tan(Math.abs(steering)):Infinity;
       const mountZ=wheel.pos.z+this.cg.z,wheelRadiusToTurn=centreRadius+Math.sign(steering)*mountZ;
       wheel.steer=wheel.isFront?Math.sign(steering)*Math.atan(p.wheelbase/wheelRadiusToTurn):0;
-      const normal=wheel.grounded?Math.max(0,p.springK*compression-p.damperC*cornerVel.dot(n)+900000*Math.max(0,compression-.22)**1.35):0;
+      const stopDeflection=Math.max(0,compression-this.cityBumpStart);
+      const cityStop=this.cityBumpRate*stopDeflection**2;
+      const normal=wheel.grounded?Math.max(0,p.springK*compression-p.damperC*cornerVel.dot(n)+900000*Math.max(0,compression-.22)**1.35+cityStop):0;
       wheel.load=normal;if(normal>0)this.contactCount++;
       this.groundForceN+=normal*n.y;
       const fwd=new Vector3(Math.cos(wheel.steer),0,-Math.sin(wheel.steer)).applyQuaternion(s.q);fwd.addScaledVector(n,-fwd.dot(n)).normalize();
@@ -877,7 +902,8 @@ export class PhysicsSim {
     const contact = this.contactCount;
     const kinetic = .5 * m * s.vel.lengthSq();
     const rotation = .5 * s.omega.clone().multiply(this.inertia).dot(s.omega);
-    const spring = this.wheels.reduce((sum, w) => sum + .5 * p.springK * w.compression ** 2, 0);
+    const spring = this.wheels.reduce((sum,w)=>sum+.5*p.springK*w.compression**2+
+      this.cityBumpRate*Math.max(0,w.compression-this.cityBumpStart)**3/3,0);
     const gLoad = this.resolvedAcceleration.clone().addScaledVector(UP, p.gravity).length() / Math.max(.001, p.gravity);
     let status = contact >= 3 ? 'GROUND' : contact > 0 ? 'CONTACT' : s.vel.y > .12 ? 'ASCENDING' : s.vel.y < -.12 ? 'DESCENDING' : 'AIRBORNE';
     if (s.pressure <= ATMOSPHERE * 1.01) status = 'GAS DEPLETED';
