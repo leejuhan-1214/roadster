@@ -1,0 +1,445 @@
+{
+  "models": [
+    {
+      "id": "alfa-romeo-giulia",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "dagtholander",
+        "authorUrl": "https://sketchfab.com/dagtholander",
+        "license": "CC Attribution",
+        "sourceName": "1965 Alfa Romeo Giulia Sprint",
+        "sourceUrl": "https://sketchfab.com/3d-models/3b30a0277a7b45a58496c843e6588212"
+      },
+      "apiAuthor": "dagtholander",
+      "actualBytes": 2400612,
+      "title": "Alfa Romeo Giulia Sprint (1965)",
+      "author": "dagtholander",
+      "authorUrl": "https://sketchfab.com/dagtholander",
+      "source": "https://sketchfab.com/3d-models/3b30a0277a7b45a58496c843e6588212",
+      "sourceTitle": "1965 Alfa Romeo Giulia Sprint",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/alfa-romeo-giulia.glb",
+      "sourceSha256": "0233714f8b4fc15dbaafd3a9684287b13e327335f2514ebe6df79c3852170bed",
+      "sha256": "0233714f8b4fc15dbaafd3a9684287b13e327335f2514ebe6df79c3852170bed",
+      "bytes": 2400612,
+      "changes": "Original GLB, runtime alignment, separation of four rolling assemblies, material binding and common simulation rig.",
+      "orientationEvidence": "Greenhouse and seats aft of the bonnet; +Z forward. Second exhibition car at +X omitted.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.6313918828964233,
+            0.6313918828964233,
+            0.23911070823669434
+          ],
+          [
+            0.6313918828964233,
+            0.6313918828964233,
+            0.23911070823669434
+          ],
+          [
+            0.6313918828964233,
+            0.6313918828964233,
+            0.26161709427833557
+          ],
+          [
+            0.6313917636871338,
+            0.6313917636871338,
+            0.26161709427833557
+          ]
+        ],
+        "dimensions": [
+          4.2153,
+          1.6412,
+          1.2645
+        ]
+      }
+    },
+    {
+      "id": "lamborghini-centenario-roadster",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "SDC PERFORMANCE™️",
+        "authorUrl": "https://sketchfab.com/Lambo_SC04",
+        "license": "CC Attribution",
+        "sourceName": "Lamborghini Centenario Roadster SDC",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-938d3e3642cf4ea895c62c2a4bf6fc08"
+      },
+      "apiAuthor": "SDC PERFORMANCE™️",
+      "actualBytes": 3156164,
+      "title": "Lamborghini Centenario Roadster",
+      "author": "SDC PERFORMANCE™️",
+      "authorUrl": "https://sketchfab.com/Lambo_SC04",
+      "source": "https://sketchfab.com/3d-models/none-938d3e3642cf4ea895c62c2a4bf6fc08",
+      "sourceTitle": "Lamborghini Centenario Roadster SDC",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/lamborghini-centenario-roadster.glb",
+      "sourceSha256": "52fa96acb69a401ffc915bb23cda7fc47658d8af149d127d2ba61a3f7a16fca1",
+      "sha256": "52fa96acb69a401ffc915bb23cda7fc47658d8af149d127d2ba61a3f7a16fca1",
+      "bytes": 3156164,
+      "changes": "Original GLB, runtime alignment, separation of four rolling assemblies, material binding and common simulation rig.",
+      "orientationEvidence": "The steered front wheel assemblies are on +Z; stationary body and moving wheels are separated.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.6892279386520386,
+            0.6883019804954529,
+            0.35324132442474365
+          ],
+          [
+            0.6921990513801575,
+            0.6954643726348877,
+            0.3817715048789978
+          ],
+          [
+            0.7672392129898071,
+            0.7656918466091156,
+            0.3959835171699524
+          ],
+          [
+            0.7691028118133545,
+            0.7733965516090393,
+            0.4228246808052063
+          ]
+        ],
+        "dimensions": [
+          5.2337,
+          2.2776,
+          1.1683
+        ]
+      }
+    },
+    {
+      "id": "nissan-200sx-silvia",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "Lexyc16",
+        "authorUrl": "https://sketchfab.com/Lexyc16",
+        "license": "CC Attribution",
+        "sourceName": "Nissan 200SX Silvia S14",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-f2a917a924734a89a020e7f970e55e7c"
+      },
+      "apiAuthor": "Lexyc16",
+      "actualBytes": 478964,
+      "title": "Nissan 200SX Silvia S14",
+      "author": "Lexyc16",
+      "authorUrl": "https://sketchfab.com/Lexyc16",
+      "source": "https://sketchfab.com/3d-models/none-f2a917a924734a89a020e7f970e55e7c",
+      "sourceTitle": "Nissan 200SX Silvia S14",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/nissan-200sx-silvia.glb",
+      "sourceSha256": "d3e86b4af5fe2bd4a8e8b9055c0f2890018a28a4172e2135b6b1a6ec2e03478e",
+      "sha256": "d3e86b4af5fe2bd4a8e8b9055c0f2890018a28a4172e2135b6b1a6ec2e03478e",
+      "bytes": 478964,
+      "changes": "Original GLB, runtime alignment, separation of four rolling assemblies, material binding and common simulation rig.",
+      "orientationEvidence": "Mirror assemblies sit forward of the greenhouse toward +Z; four complete tyre and rim assemblies.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.6536373496055603,
+            0.6555580496788025,
+            0.21381407976150513
+          ],
+          [
+            0.6536373496055603,
+            0.6555580794811249,
+            0.2138139009475708
+          ],
+          [
+            0.6536372900009155,
+            0.6555580496788025,
+            0.21381407976150513
+          ],
+          [
+            0.6536373496055603,
+            0.6555581390857697,
+            0.21381372213363647
+          ]
+        ],
+        "dimensions": [
+          4.5765,
+          1.9123,
+          1.2899
+        ]
+      }
+    },
+    {
+      "id": "toyota-mr2-w20",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "_shobh19",
+        "authorUrl": "https://sketchfab.com/s0h1o9b",
+        "license": "CC Attribution",
+        "sourceName": "1996 Toyota MR2 W20",
+        "sourceUrl": "https://sketchfab.com/3d-models/none-f66020ee62d741ebb0adc1ba351300db"
+      },
+      "apiAuthor": "_shobh19",
+      "actualBytes": 679676,
+      "title": "Toyota MR2 W20 (1996)",
+      "author": "_shobh19",
+      "authorUrl": "https://sketchfab.com/s0h1o9b",
+      "source": "https://sketchfab.com/3d-models/none-f66020ee62d741ebb0adc1ba351300db",
+      "sourceTitle": "1996 Toyota MR2 W20",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/toyota-mr2-w20.glb",
+      "sourceSha256": "12387f4d8c2a67c40d1f6c34f7941673f9e6f864d5947f153e82b102845246fa",
+      "sha256": "12387f4d8c2a67c40d1f6c34f7941673f9e6f864d5947f153e82b102845246fa",
+      "bytes": 679676,
+      "changes": "Original GLB, runtime alignment, separation of four rolling assemblies, material binding and common simulation rig.",
+      "orientationEvidence": "Popup-headlamp nose toward -X, centre fascia and rear lamps at +X, source studio floor removed.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.5817766785621643,
+            0.5849902331829071,
+            0.2778617739677429
+          ],
+          [
+            0.5817766785621643,
+            0.5849902331829071,
+            0.2778617739677429
+          ],
+          [
+            0.5817766785621643,
+            0.5849902331829071,
+            0.2778617739677429
+          ],
+          [
+            0.5817766785621643,
+            0.5849902331829071,
+            0.2778618335723877
+          ]
+        ],
+        "dimensions": [
+          4.1155,
+          1.8725,
+          1.1983
+        ]
+      }
+    },
+    {
+      "id": "byd-seal",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "Nazh Design ✔",
+        "authorUrl": "https://sketchfab.com/NazhDesign",
+        "license": "CC Attribution",
+        "sourceName": "2024 BYD Seal Performance AWD",
+        "sourceUrl": "https://sketchfab.com/3d-models/96ec5c34852f4c3090a755d4445f5e98"
+      },
+      "apiAuthor": "Nazh Design ✔",
+      "actualBytes": 4813376,
+      "title": "BYD Seal Performance AWD",
+      "author": "Nazh Design ✔",
+      "authorUrl": "https://sketchfab.com/NazhDesign",
+      "source": "https://sketchfab.com/3d-models/96ec5c34852f4c3090a755d4445f5e98",
+      "sourceTitle": "2024 BYD Seal Performance AWD",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/byd-seal.glb",
+      "sourceSha256": "25b2377e901f35645c484a9f921b4a5ea93406849c4f6c4b5d0918280d7ecb87",
+      "sha256": "60ed2ace36db55da989cfffc4639e87750e3c0b8c8d27fd595ba04187685c4b1",
+      "bytes": 4813376,
+      "changes": "Existing artist triangles reindexed into static shell, paintwork, tyres and rims. Original vertex channels retained. Common driving rig.",
+      "orientationEvidence": "Mesh side render shows rear lamps toward -Z and grille toward +Z.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.6796534061431885,
+            0.6798182129859924,
+            0.23224538564682007
+          ],
+          [
+            0.6800838708877563,
+            0.6799679100513458,
+            0.23774224519729614
+          ],
+          [
+            0.6810668706893921,
+            0.679816871881485,
+            0.24320662021636963
+          ],
+          [
+            0.6811349391937256,
+            0.6798822581768036,
+            0.24286538362503052
+          ]
+        ],
+        "dimensions": [
+          4.7302,
+          2.0694,
+          1.4347
+        ]
+      }
+    },
+    {
+      "id": "ferrari-portofino",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "WA7KVI",
+        "authorUrl": "https://sketchfab.com/WA7KVI",
+        "license": "CC Attribution",
+        "sourceName": "Ferrari Portofino - Red",
+        "sourceUrl": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e"
+      },
+      "apiAuthor": "WA7KVI",
+      "actualBytes": 1576792,
+      "title": "Ferrari Portofino",
+      "author": "WA7KVI",
+      "authorUrl": "https://sketchfab.com/WA7KVI",
+      "source": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e",
+      "sourceTitle": "Ferrari Portofino - Red",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ferrari-portofino.glb",
+      "sourceSha256": "1d773081b9be973c79b1ba7154d8f026399dacd9bbb1f8399c694b9395847d91",
+      "sha256": "f017f06f3d0a80ff0edd32447d3c84e3e4045117e115e1a735671a02acd025f0",
+      "bytes": 1576792,
+      "changes": "Existing artist triangles reindexed into static shell, paintwork, tyres and rims. Original vertex channels retained. Common driving rig.",
+      "orientationEvidence": "Open-top artist scan faces +X. Rolling wheel patches follow the four front/rear tyre contacts in the original scan.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.6728116273880005,
+            0.6456463038921356,
+            0.40935927629470825
+          ],
+          [
+            0.6802728772163391,
+            0.6235226988792419,
+            0.4312903881072998
+          ],
+          [
+            0.6699328422546387,
+            0.6518188416957855,
+            0.44542551040649414
+          ],
+          [
+            0.6690500974655151,
+            0.6391011476516724,
+            0.4337559938430786
+          ]
+        ],
+        "dimensions": [
+          4.837,
+          2.1422,
+          1.2657
+        ]
+      }
+    },
+    {
+      "id": "subaru-brz",
+      "apiStatus": 200,
+      "apiLicense": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "credit": {
+        "author": "Socksthecat",
+        "authorUrl": "https://sketchfab.com/Socksthecat",
+        "license": "CC Attribution",
+        "sourceName": "Subaru BRZ Varis",
+        "sourceUrl": "https://sketchfab.com/3d-models/8fecd93279644ada9111c5bfa2226327"
+      },
+      "apiAuthor": "Socksthecat",
+      "actualBytes": 1347008,
+      "title": "Subaru BRZ Varis",
+      "author": "Socksthecat",
+      "authorUrl": "https://sketchfab.com/Socksthecat",
+      "source": "https://sketchfab.com/3d-models/8fecd93279644ada9111c5bfa2226327",
+      "sourceTitle": "Subaru BRZ Varis",
+      "license": "Creative Commons Attribution",
+      "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+      "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/subaru-brz.glb",
+      "sourceSha256": "e855fed9a979c664d0c477ddefe91323b37570f3703863ede5ed1106ddb8e2d1",
+      "sha256": "1a644167a221c799d12c16d733d48d490de6ba65a97e3d041dfbac955ed04f4e",
+      "bytes": 1347008,
+      "changes": "Original wide-body mesh with four added fitted wheels and common driving rig.",
+      "orientationEvidence": "Rear wing -Z and nose +Z. The original wide-body exhibition mesh lacks tyre and rim surfaces. Alloy wheels fitted to the four original arches.",
+      "modelFit": {
+        "wheelEnvelopes": [
+          [
+            0.654181718826294,
+            0.6541818380355835,
+            0.2234782576560974
+          ],
+          [
+            0.654181718826294,
+            0.6541818380355835,
+            0.2234782576560974
+          ],
+          [
+            0.654181718826294,
+            0.6541818380355835,
+            0.2234782576560974
+          ],
+          [
+            0.654181718826294,
+            0.6541818380355835,
+            0.2234782576560974
+          ]
+        ],
+        "dimensions": [
+          4.7269,
+          1.9874,
+          1.3556
+        ]
+      }
+    }
+  ]
+}

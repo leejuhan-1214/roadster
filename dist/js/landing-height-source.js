@@ -1,5 +1,5 @@
 import {DEFAULTS} from './physics.js?v=20261120-basemass';
-import {vehiclePhysics,vehicleProfile} from './vehicle-profiles.js?v=20261118-city151';
+import {vehiclePhysics,vehicleProfile} from './vehicle-profiles.js?v=20261122-garage';
 
 // Both the report and the interactive study use the fitted Roadster rig. A
 // different displayed vehicle, current tank contents or city mode cannot

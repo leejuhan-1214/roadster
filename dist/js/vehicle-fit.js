@@ -143,7 +143,9 @@ function fitNozzles(vehicle){
     if(clearance>bestClearance){bestClearance=clearance;yawX=candidateX;sidePoints=points;}
     if(clearance>=halfWidth*.65)break;
   }
-  const yawZ=Math.max(.25,Math.min(...sidePoints.map(p=>Math.abs(p.z)))-.07);
+  // Open-wheel chassis can taper to well under 25 cm per side ahead of the
+  // rear axle. Set the common lever arm from the narrowest sampled side wall.
+  const yawZ=Math.max(0,Math.min(...sidePoints.map(p=>Math.abs(p.z)))-.07);
   sidePoints.forEach((surface,i)=>{
     const side=Math.sign(surface.z),position=new THREE.Vector3(rocket?yawX:(i%2?-yawX:yawX),yawY,side*yawZ);
     const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.040,.045,12,1,true),new THREE.MeshStandardMaterial({color:0x4c5863,metalness:.8,roughness:.35}));

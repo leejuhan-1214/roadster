@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-/** One low-resolution optical rear view. eye is in body-local coordinates. */
+/** One low-resolution optical rear view. The calibrated eye is body-local. */
 export class CockpitMirror {
   constructor({width=256,height=128,rate=10,fov=55,far=350}={}){
     this.target=new THREE.WebGLRenderTarget(width,height,{depthBuffer:true,stencilBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false});
@@ -9,15 +9,20 @@ export class CockpitMirror {
     // An optical mirror reverses the rear-facing camera image horizontally.
     this.texture.repeat.x=-1;this.texture.offset.x=1;
     this.camera=new THREE.PerspectiveCamera(fov,width/height,.1,far);
+    this.width=width;this.defaultFov=fov;this.defaultAspect=width/height;
     this.interval=1/Math.max(1,rate);this.elapsed=this.interval;this.ready=false;this.busy=false;this.disposed=false;
     this.eye=new THREE.Vector3(.1,.75,0);this.direction=new THREE.Vector3();this.lookTarget=new THREE.Vector3();
     this.viewport=new THREE.Vector4();this.scissor=new THREE.Vector4();this.hiddenState=[];this.hiddenSet=new Set();
   }
-  update(renderer,scene,{bodyPosition,quaternion,eye=this.eye},dt=0,hiddenObjects=[]){
+  update(renderer,scene,{bodyPosition,quaternion,eye=this.eye,aspect=this.defaultAspect,fov=this.defaultFov},dt=0,hiddenObjects=[]){
     if(this.disposed||this.busy)return false;
     this.elapsed+=Math.max(0,Number.isFinite(dt)?dt:0);
     if(this.elapsed+1e-9<this.interval)return false;
     this.elapsed%=this.interval;this.busy=true;
+    if(this.camera.aspect!==aspect||this.camera.fov!==fov){
+      this.camera.aspect=aspect;this.camera.fov=fov;this.camera.updateProjectionMatrix();
+      this.target.setSize(this.width,Math.max(1,Math.round(this.width/aspect)));
+    }
     this.camera.position.copy(eye).applyQuaternion(quaternion).add(bodyPosition);
     this.camera.up.set(0,1,0).applyQuaternion(quaternion);
     this.direction.set(-1,0,0).applyQuaternion(quaternion);

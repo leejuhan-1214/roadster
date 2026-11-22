@@ -1,0 +1,352 @@
+[
+  {
+    "id": "sd-sc-kanagawa-z35gts",
+    "title": "Nissan 350Z 기반 · Kanagawa Z35 GT-S",
+    "author": "William Brun, W-E-C, Eckhard M. Jäger",
+    "originalName": "Kanagawa Z35 GT-S",
+    "license": "CC BY · Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-kanagawa-z35gts/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-kanagawa-z35gts/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-kanagawa-z35gts/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model Kanagawa Z35 (Nissan 350z)\n--\nMade by William Brun, License: CC-BY\nRebuild in lowpoly and adaption to Speed-Dreams: W-E-C.\nCopyright 2012 Eckhard M. Jäger (texture and mesh improvements)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "driver2000.png": "9ce2a2f21ea8ce0641ae7852e5b62b479e160e43b320aef96386bc978e95a3eb",
+      "readme.txt": "7026757fec828f19c57cb1a8f15525405519de82cd3a9ad02173d70e7863a496",
+      "sc-kanagawa-z35gts-int.png": "6e6e297b4562818996af77d50a40d816fc3cff41f6fb3ff35326a0013865de6e",
+      "sc-kanagawa-z35gts.acc": "45b1f7b00ea80cc46f3a593d33510da79cf6257f240eed7d2b7310c0c0685b4e",
+      "sc-kanagawa-z35gts.png": "80700d2f9dc5d066eb3425c9eaa0f8f71e9a128ecc810e875d811255cfd75070",
+      "sc-kanagawa-z35gts.xml": "792773225a3f1b4bfdc277ea4847429b74b4ccdde5f17fa40a76f6b40a0ee22c",
+      "steerhr.acc": "4c4c082a66954bf1d253730855628650279dd5e3cf65cf9214a3b48b5c37339e",
+      "steerlr.acc": "9535c8405e498a2be16fcd49df8f1c393354d541e0f342ef32bd3249bb93a7d6",
+      "wheel3d.png": "615a58f65780249a485e00b87cd6dad865ef90694b83160b3b166da6f4b850e6"
+    }
+  },
+  {
+    "id": "sd-sc-boxer-96",
+    "title": "Porsche 911 Carrera (996) 기반 · Boxer 96",
+    "author": "Eric Espié, Jean-Christophe Durieu, Olaf Sassnick, Bernhard Wymann, W.E.C, Eckhard M. Jäger",
+    "originalName": "Boxer 96",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-boxer-96/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-boxer-96/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-boxer-96/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model SC Boxer 96 (Porsche 911/ 996)\n--\nCopyright 2002 Eric Espie, Jean-Christophe Durieu\nCopyright 2005 Olaf Sassnick, Bernhard Wymann\nCopyright 2007 Bernhard Wymann (totally reworked, renamed, based on old model)\nCopyright 2009 Jean-Philippe Meuret (Fully reworked sound)\nCopyright 2011 W.E.C (Fully reworked 3D model)\nCopyright 2011 Eckhard M. Jäger (mapping and textures)\nCopyright 2012 Eckhard M. Jäger (texture and mesh improvements)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "driver.png": "303995db67f44c59ba840268748a7e258a74a4abbf3e9bf5262c9feccacc31e7",
+      "readme.txt": "ecd0a1a3a2a47dab49efd76a193970d51a79338cbaf86431213bdf9419de758e",
+      "sc-boxer-96-int.png": "bd9b86525ebca449a8dbf79355c521bb8dde009bee3f5dbb5efd99bcd65a4205",
+      "sc-boxer-96.acc": "7b19c2f2ba88f0cd2903cdb3b54bea6e51e7ae7fd33f3d0583627e335794775a",
+      "sc-boxer-96.png": "4aa91e7c62969ac19ac62cbfc491705b6ffd27cbeff7ad56cf63d1111f3735a6",
+      "sc-boxer-96.xml": "6eaa3a455b3e7d7dd6f554cceb1ceaa44205bc1d31c635afcc439a92a4263deb",
+      "steerhr.acc": "40d43af29b3ab5774f3e0ba5a6e7f209b3b842a98d42fb47c82be4d7d8a6dbb7",
+      "steerlr.acc": "8cbecd44bd935462a5c94516ffb4060752ba15cf3bf5edb156744823249b91ac",
+      "wheel3d.png": "9df2ed3325376c1ff98850935315bf64d3768785fdd436650c82c2d522f0fc92"
+    }
+  },
+  {
+    "id": "sd-sc-fmc-gt4",
+    "title": "Ford GT (2005) 기반 · FMC GT4",
+    "author": "Xentek Car Design, Andrew Sumner, W.E.C, Eckhard M. Jäger, Chad Phillips",
+    "originalName": "FMC GT4",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-fmc-gt4/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-fmc-gt4/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-fmc-gt4/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model FMC GT4 (Ford GT)\n--\nDerived from a model Copyright 2006 Xentek Car Design, used with permission.\nModel modifications and texture Copyright 2006 Andrew Sumner\nReworked texture and various optimizations Eckhard M. Jaeger 2008\nReworked sound by Jean-Philippe Meuret, 2009\nCopyright 2011 W.E.C (Fully reworked 3D model)\nCopyright 2012 Eckhard M. Jäger (texture and mesh improvements)\nCopyright 2022 Chad Phillips (interior mesh and textures)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "driver2000.png": "1bbe546506bb60cf8e0c22134b308d31ae4ed3a2881e785e7e52810bd37d0bca",
+      "readme.txt": "784395e225d0026f618cc7d45cfaf853c530844c8ca3016d9b77359a6aa71a69",
+      "sc-fmc-engine.png": "62b24724905e6bec0f6ada6030d5d1d67021f375c4b1cd2b9bf0cc2efdf3c5c7",
+      "sc-fmc-gt4-int.png": "74fecba76bdcafb93091a691e033fd75a5f46468557b1d35a7478e8875e406dc",
+      "sc-fmc-gt4.acc": "06625a08bb1228a3ad7e397e0352a1cda2555f8ca82af66c9dda43cf659e0bda",
+      "sc-fmc-gt4.png": "3515b07fec9b6723fb049e8094055803bcb9a0b16044e177903f821f58d62191",
+      "sc-fmc-gt4.xml": "9fe5951197c4e588aeb9f000e4980a67f574658d07cbd060d67d8a92d92dc453",
+      "steerhr.acc": "e04451409c2b4df7191a49d4b3048344f031a1437bfc05112c4f61b9a9ea1cdb",
+      "steerlr.acc": "90da7b9303d203124dad1ca3be3a5a4f404cea8e425c62d2daefa057b3061408",
+      "wheel3d.png": "3047ff05a08963edcd450fb12ba199e4eaadf0e65f5f57c5fe162e2ef4fa91ab"
+    }
+  },
+  {
+    "id": "sd-sc-cavallo-360",
+    "title": "Ferrari 360 Modena 기반 · Cavallo 360",
+    "author": "Eric Espié, Jean-Christophe Durieu, Bernhard Wymann, Olaf Saßnick, W.E.C, Eckhard M. Jäger",
+    "originalName": "Cavallo 360",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-cavallo-360/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-cavallo-360/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/sc-cavallo-360/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Supercar Cavallo 360 model\n--\nCopyright © 2002 Eric Espie, Jean-Christophe Durieu\nCopyright © 2006 Bernhard Wymann\nReused parts from porsche-gt3-rs Copyright © 2005 Olaf Saßnick, Bernhard Wymann\nNew driver & setup altered for production class, Andrew Sumner 2007.\nReworked texture and various optimizations Eckhard M. Jäger 2008/ 2010\nCopyright 2011 W.E.C (Reworked 3D model)\nCopyright 2012 Eckhard M. Jäger (texture and mesh improvements)\ncopyright 2021 Chad Phillips (interior updates)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "driver-sc-cavallo-360.png": "c11b0016d1a7df2816e13f482f6110668b913c2ab6416da3f9a3a6cd99783511",
+      "readme.txt": "0c45fd34374caba82ce7d8c1b6a6e94f64664e1e02208dac09e3a2be2af2a12d",
+      "sc-cavallo-360-int.png": "4afe783772e66d914a8e7ba992de1eed37e9f65db6c13506d48c80504ddd3a9f",
+      "sc-cavallo-360.acc": "a393774987fce3f740910307e882bdcb8a427ad21c85c7eb4fa32dc72b834b9d",
+      "sc-cavallo-360.png": "7c053a1941dc6cce1a66b166cfbe295dd29540c74155c858c2bc8d34425c8050",
+      "sc-cavallo-360.xml": "7417f1d5c0de84a2a62bb013ef18076e5827cbe421ffc371dd9ee56d5ec12c22",
+      "steerhr.acc": "a2fa64b87ee0b89ef6e73a4cc89f198ee5025d44583eee797034cee9fa3f3a79",
+      "steerlr.acc": "d526301b153fb2fb99d955cfacf1c6235f585294d22a5a68edd9f9a464a90247",
+      "wheel3d.png": "b86b87f139e7c2ea8d0e5414d0889b2dc04f5f1c39bf05c8da456970c644955d"
+    }
+  },
+  {
+    "id": "sd-ls1-cavallo-570s1",
+    "title": "Ferrari 575 GTC 기반 · Cavallo 570 S1",
+    "author": "RSDG, Andrew Sumner, June Ravenmoon, Eckhard M. Jäger",
+    "originalName": "Cavallo 570 S1",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-cavallo-570s1/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-cavallo-570s1/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-cavallo-570s1/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model LS1 Cavallo 575 (Ferrari 575 GTC)\n--\nsd2-accc +es 0 ls1-cavallo-570s1.ac ls1-cavallo-570s1.acc\n\nBased on a model by RSDG.\nCopyright 2007 Andrew Sumner (Converted to Torcs and reworked/enhanced)\nCopyright 2009 Andrew Sumner (Converted to Torcs and reworked/enhanced)\nCopyright 2011 June Ravenmoon (Reworked texture)\nCopyright 2011 Eckhard M. Jaeger (Improved texture and mapping)\nCopyright 2011 W-E-C (Improved 3D modell)\nCopyright 2019 Xavier BERTAUX (add cockpit)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls1-cavallo-570s1.acc": "c5b1e29aea8b5a04f16293912fd0dd83ffbdb39ec2a49e313e80184b04a6b1ea",
+      "ls1-cavallo-570s1.png": "7a5f1322fbc621bf92338a17aab07da474f449baa1918bd68e70b6adc9a23583",
+      "ls1-cavallo-570s1.xml": "29cf21c2a39790f1029cb31d68d65ce429ca6b0cbb9c060bfd5710049f619c3c",
+      "readme.txt": "330fcf900813452b0fadf6846e94be40e4a8c1b313c7a18d2380b4a67e914bbb",
+      "tex-wheel.rgb": "59e6e09c95521d9ef992e023edf134b16c1d7db832bc73deaaea6aeafbbe06a0",
+      "wheel3d.png": "b9d97e93afbd00ef5d9fdac0cf42461aae7ce01a9f2c3e35ef9538e75a74348e"
+    }
+  },
+  {
+    "id": "sd-ls1-toro-rgt",
+    "title": "Lamborghini Murciélago R-GT 기반 · Toro R-GT",
+    "author": "Martin Leps, Andrew Sumner",
+    "originalName": "Toro R-GT",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-toro-rgt/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-toro-rgt/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-toro-rgt/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "ls1-ciclon-rgt\n--------------\n\nBased on a Lamborghini model by Martin Leps\nPorted to Torcs, driver/interior and numerous other enhancements\nadded by Andrew Sumner, 2007.\nReworked texture and light optimizations Eckhard M. Jäger (Bart) 2009.\n\nUsage of the ASF logos with permission from Jukka Zitting, Apache Foundation\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls1-toro-rgt.acc": "b3ecf440657bb509e809774305cb581df8200c65472b2528a13c7fb6c27a713d",
+      "ls1-toro-rgt.png": "5ee002902b66f1d50b25f1e026462d8b81fc2516090a60c51b8285f6eb9df89a",
+      "ls1-toro-rgt.xml": "0ba55743e1e93149481b33b2b4a7cd5884f9607dd931c396500a9166624491f6",
+      "readme.txt": "ae4cfb898286715e184d29d3a05dd2a238ae64a1eeb30eba21cfeeb6f72d54c9",
+      "tex-wheel.rgb": "c590f3169064ef365aafc27d5ffd1246f86e00de41428b9a4d870af832f70f45",
+      "wheel3d.png": "fd5e6fa68eb3c57dad3e6eb3a63fbbd7e303864056a7e1e8a95a711624787769"
+    }
+  },
+  {
+    "id": "sd-ls1-zentek-z7r",
+    "title": "Saleen S7-R 기반 · Zentek Z7-R",
+    "author": "Snake, Andrew Sumner",
+    "originalName": "Zentek Z7-R",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-zentek-z7r/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-zentek-z7r/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-zentek-z7r/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "ls1-s7\n----------\n\nBased on a Saleen S7 model by Snake (used with his kind permission).\nPorted to Torcs, driver/interior and other enhancements added by\nAndrew Sumner, 2007.\nReworked texture and light optimizations Eckhard M. Jäger (Bart) 2009.\n\nUsage of the Wilber artwork with permission of Jakub Steiner (Jimmac).\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls1-zentek-z7r.acc": "1e3dc8be757663d306cf730b5625d79db89afd65b32b43dea3ec8aa1f0bbfbba",
+      "ls1-zentek-z7r.png": "1ae1516556e1517e118b62a8eb5081d2399d6f4b93e01702ff2df3d1f06f4223",
+      "ls1-zentek-z7r.xml": "54baf6895819b3a02f413638954d749e40db4cf119fc5d1421c267e5d0db6cd2",
+      "readme.txt": "ad7a591fac55d0ef4077ea5378220c71cc909287ad931b812615f0e9db26ebdc",
+      "tex-wheel.png": "75feec387c2560a6eb72d5e1f423fa8174e62c3ec4cf660ef151c0118f6c6599",
+      "tex-wheel.rgb": "4e21936e13ff1dbf1291c402e2a23fa1c017cc357d6f20e83a201dd36739a6f0",
+      "wheel3d.png": "3befd40d513e2b3461f6090a46e9cfa361ef42e71cd552d681a5c2156d5e2585"
+    }
+  },
+  {
+    "id": "sd-ls2-bavaria-g3gtr",
+    "title": "BMW M3 GTR 기반 · Bavaria G3 GTR",
+    "author": "Xentek Car Design, Andrew Sumner",
+    "originalName": "Bavaria G3 GTR",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-bavaria-g3gtr/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-bavaria-g3gtr/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-bavaria-g3gtr/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "M3 GTR Model\n--\nDerived from a model by Xentek Car Design.\nConverted to Speed Dreams by Andrew Sumner.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls2-bavaria-g3gtr.acc": "df1e6901b1fad5a487142e0a364d870208aa71d5d203253eec1e17cc82e86312",
+      "ls2-bavaria-g3gtr.png": "1f2b7ee7afa01f94cd1dc05aa0547be73a8373a2573fbb1c433a5115bb132a9d",
+      "ls2-bavaria-g3gtr.xml": "97491af6e07ab83a029ccfead67e2beea9f87ece2abc421310114cf54144bce7",
+      "readme.txt": "d80d3f8d69556b77d458ad8d3596486d75a01a21735ec913c94a35760e20de8e",
+      "tex-wheel.rgb": "3ea94a9c08bea480991c1f3c130c69c434d826eab5f49dfb51149ad8f290af19"
+    }
+  },
+  {
+    "id": "sd-ls2-condor-c400r",
+    "title": "TVR T400R 기반 · Condor C400R",
+    "author": "Masten D, Andrew Sumner, Haruna Say",
+    "originalName": "Condor C400R",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-condor-c400r/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-condor-c400r/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-condor-c400r/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "gt3-tuscan\n----------\n\nBased on a TVR Tuscan 400R model by Masten D.  Ported to Speed Dreams\nand reworked/enhanced by Andrew Sumner, 2007.\n\nMinor remapping and retexturing by Haruna Say, 2010.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nacclint --splitSURF  ls2-condor-c400r-src.ac --merge ls2-condor-c400r-dull-src.ac  -o ls2-condor-c400r-merged.ac\nsd2-accc +es 80 ls2-condor-c400r-merged.ac ls2-condor-c400r.acc\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls2-condor-c400r.acc": "7e78aeb777dd7691c86e12f1dcb03f610bc6f2cdc4325756d135190d832f8da6",
+      "ls2-condor-c400r.png": "793c2c46239814cddca5fce362ab9e9e127f9fcf49e19d5bfc4671927f36a9df",
+      "ls2-condor-c400r.xml": "7d26861a1e60ef5d21bbfc81553bdb1d724a370076c3e4787b12dbbca429c647",
+      "readme.txt": "5a2ff8919b2eabcb63a9787d0a966247665d4bcd39b1041d8da6cf2094ce1168",
+      "steerwheel.acc": "cc9e56954f7188a9079446e275d314e574f862761c96bbeeb32563e02dfb6fa5",
+      "steerwheelhr.acc": "f53dc890a95ed5b671c687e8e7e5d5e2583378ed7ac81fec1a42b655b88d15c4",
+      "tex-wheel.rgb": "38b476d44a970c6e302524f7ef54f2dc8188187af1b90780619819c0b1103418",
+      "wheel3d.png": "f68ce78cc01290688f7cef3bd56a921bf7a5d569b59e622e7766ac49e8203450"
+    }
+  },
+  {
+    "id": "sd-ls2-lynx-xkr",
+    "title": "Jaguar XKR GT 기반 · Lynx XKR",
+    "author": "PWF, Andrew Sumner",
+    "originalName": "Lynx XKR",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-lynx-xkr/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-lynx-xkr/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-lynx-xkr/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "gt3-xkr\n-------\n\nBased on a model by PWF, converted to Speed Dreams and\nreworked/enhanced by Andrew Sumner, 2007.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nacclint ls2-lynx-xkr-src.ac --splitSURF --merge ls2-xkr-dull-src.ac -o ls2-xkr-merged.ac\nsd2-accc +es 80 ls2-xkr-merged.ac  ls2-lynx-xkr.acc\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls2-lynx-xkr.acc": "3c1fc59cb245886fe7ac0e3f2f042b41a2d58de773e9e5154941c388ac68bc16",
+      "ls2-lynx-xkr.png": "4deb317e9b365d74286ca90494d977e426dec7e82fcc7b71ed2f0a9c2db10bd1",
+      "ls2-lynx-xkr.xml": "3ced4ad84f5e520abbf36748fa7eb41e6ab380f7cf75d1535b3ee7b3a4f16084",
+      "readme.txt": "35a840c812a3e3999e84dd938f5921f4c4a0eefc85dc8df5ab735601759093e6",
+      "tex-wheel.rgb": "da68aff54dfe938cf02886666b55fcf8c5996019d8f7339e814153b75f4ce04e"
+    }
+  },
+  {
+    "id": "sd-ls2-sprite-gts",
+    "title": "Panoz Esperante GTLM 기반 · Sprite GTS",
+    "author": "Andrew Sumner",
+    "originalName": "Sprite GTS",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-sprite-gts/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-sprite-gts/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls2-sprite-gts/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "gt3-sprite\n\nModel designed and textured by Andrew Sumner, 2007.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nacclint --splitSURF ls2-sprite-gts-src.ac --merge ls2-sprite-dull-src.ac -o ls2-sprite-merged.ac\nsd2-accc +es 80 ls2-morley-r900-merged.ac ls2-morley-r900.acc\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls2-sprite-gts.acc": "cf1d9818b6eb6a523be68fe1c3b6c6c1b2a2451834f84ecc026beff1c3b89cc7",
+      "ls2-sprite-gts.png": "d6bab413a84ffaa07ab70251bc1e987adf3acabec22c441d2d23289c3cb77d2a",
+      "ls2-sprite-gts.xml": "b46ad6d80964e3fd38d4d47b7f67532f9694f81b8b875a519840e9c8c1c533c1",
+      "readme.txt": "159311ee4518a86e6da21b4b5a2a26698d0ac1e8405a34cec0d7925b3c36f4a6",
+      "tex-wheel.rgb": "6eeefcb74ac3f0097fdfcf1e95cce7e601ca548c1855d1b576ac10052b7442b7"
+    }
+  },
+  {
+    "id": "sd-ls1-vulture-v6r",
+    "title": "Chevrolet Corvette C6.R 기반 · Vulture V6.R",
+    "author": "Xentek Car Design, Andrew Sumner, June Ravenmoon",
+    "originalName": "Vulture V6.R",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-vulture-v6r/",
+    "upstreamPackage": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-vulture-v6r/",
+    "identitySource": "https://svn.code.sf.net/p/speed-dreams/code/!svn/bc/9651/trunk/data/cars/models/ls1-vulture-v6r/readme.txt",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "LS1 Vulture V6/R\n--\nBased from a model by Xentek Car Design.\nModel modifications and texture by Andrew Sumner, 2007.\nNew Setup by June Ravenmoon, 2009.\nReworked texture and light optimizations Eckhard M. Jäger (Bart) 2009.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "upstreamRevision": 9651,
+    "sourceFilesSHA256": {
+      "ls1-vulture-v6r.acc": "46e416fc0196b7816ccf207cfea853f2143d149389f40437f807df3290fc5a79",
+      "ls1-vulture-v6r.png": "0ecc7b76c20e8071ff45fb549a187484a30bbee2f5683d597feed50d546e0506",
+      "ls1-vulture-v6r.xml": "f466f1fd59b852792108ac05279ce71afa75eedee7eb8cbef811610d9f726c95",
+      "readme.txt": "334ac6e77b7f6334f4757d7b1ce64cfb1b85d4ed77a76243ae021e54a3121183",
+      "tex-wheel.png": "cfe29ed29bca1fb15d8ef7f2de729c0bf74f9c7aceb522c1b1e986e2b7925b45",
+      "tex-wheel.rgb": "7d37f5554d5be1f4b046400c2ee5653e7c80ccb276e3f74ec307a3cf82049946",
+      "wheel3d.png": "3d32db63a35118fbac3ca0e77c28a948e49ae3b3a6af1b68526dd04055d1b78d"
+    }
+  }
+]

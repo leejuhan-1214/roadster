@@ -11,7 +11,9 @@ test('reference cabins retain generation-specific display placement instead of a
     assert.equal(referenceCockpitFamily({profileId:id}),family);
     const cabin=createReferenceCockpit({profileId:id},seat);
     assert.equal(cabin.root.userData.layout,family);assert.equal(cabin.steeringAxis,'x');
-    assert.deepEqual(cabin.steering.position.toArray(),[.58,-.30,0]);
+    const hub=cabin.steering.getWorldPosition(new THREE.Vector3());
+    assert.ok(hub.x>.50&&hub.x<.62&&hub.y<-.25&&hub.y>-.35);
+    assert.equal(hub.z,0);
     if(['cybertruck','model3'].includes(family)){
       assert.equal(named(cabin.root,'cluster live screen').length,0);assert.equal(named(cabin.root,'instrument binnacle').length,0);
       assert.ok(named(cabin.root,'tablet live screen')[0].position.z>.3);
@@ -22,6 +24,38 @@ test('reference cabins retain generation-specific display placement instead of a
       assert.ok(upper.position.y>lower.position.y);assert.ok(upper.position.z>.3&&lower.position.z>.3);
     }
     cabin.dispose();
+  }
+});
+
+test('generation-specific instruments stay readable from the fitted driver eye',()=>{
+  for(const [id,family,kind] of [['volkswagen-beetle','beetle','speed'],['toyota-prius','prius','hybrid-meter'],
+    ['porsche-911','911','power'],['ferrari','458','power'],['roadster','roadster','tablet'],
+    ['bmw-x6','utility','navigation'],['nissan-versa','touring','speed'],['mclaren-p1','sports','cluster'],
+    ['tesla-model','model3','tablet'],['lamborghini-urus','urus','navigation']]){
+    const cabin=createReferenceCockpit({profileId:id},seat);
+    try{
+      assert.equal(cabin.root.userData.layout,family,id);
+      const screen=cabin.root.getObjectByName(kind+' live screen');
+      assert.ok(screen,id+' instrument');
+      cabin.root.updateMatrixWorld(true);
+      const ray=new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(),.03,20);
+      const point=new THREE.Vector3();
+      const params=screen.geometry.parameters;
+      const width=params.width||params.radius*2,height=params.height||params.radius*2;
+      let visible=0;
+      for(const u of [-.30,-.15,0,.15,.30])for(const v of [-.25,0,.25]){
+        screen.localToWorld(point.set(width*u,height*v,0));ray.ray.direction.copy(point).normalize();
+        if(ray.intersectObject(cabin.root,true)[0]?.object===screen)visible++;
+      }
+      assert.ok(visible>=6,id+' eye rays reaching face '+visible+'/15');
+      if(family==='prius')assert.ok(screen.position.z>.25);
+      if(family==='beetle'){
+        assert.equal(cabin.root.getObjectByName('glove compartment door').material,cabin.paintMaterials[0]);
+        assert.equal(screen.geometry.type,'CircleGeometry');
+        assert.equal(named(cabin.root,'window switch').length,0);
+      }
+      if(family==='roadster')assert.ok(params.height>params.width);
+    }finally{cabin.dispose();}
   }
 });
 

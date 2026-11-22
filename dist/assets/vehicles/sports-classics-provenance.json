@@ -1,0 +1,302 @@
+[
+  {
+    "id": "sd-trb1-cavallo-360rb",
+    "title": "Ferrari 360 GTC 기반 · Cavallo 360RB",
+    "author": "Eric Espie, Jean-Christophe Durieu, Bernhard Wymann, Anri Dellal",
+    "originalName": "Cavallo 360RB",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-cavallo-360rb",
+    "upstreamPackage": "https://files.speed-dreams.net/public/86539f9fa38fd75cf9bfb33471bfbedf",
+    "upstreamSHA256": "9c24f6ee23723841287f30611bc4b3260bfa40cde583ac08723c5781b0e0113d",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model\n--\nCopyright 2002 Eric Espie, Jean-Christophe Durieu (360-modena)\nCopyright 2006 Bernhard Wymann\nReused parts from porsche-gt3-rs Copyright 2005 Olaf Sassnick, Bernhard Wymann\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-sgtp-boxer-gt98",
+    "title": "Porsche 911 GT1-98 기반 · Boxer GT1-98",
+    "author": "W-E-C",
+    "originalName": "Boxer GT1-98",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/sgtp-boxer-gt98",
+    "upstreamPackage": "https://files.speed-dreams.net/public/4db899c48c7df1c1b1cba871555eb2dd",
+    "upstreamSHA256": "9cd800d96598d752616020aeb10503b178ac64f189fd8cbe6ee97bfcd70fcecf",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "author: scratchmade by W-E-C, driver and wheel-tex from SD-cars\ncategory: LS1\ndescription: based on '98 Porsche GT1\nlicense: Free Art License\n\nSpecs:\nWeight: 940 kg\nMax Torque: 483 Nm@8000 rpm\nDrivetrain: RWD"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-36gp-milano-12c36",
+    "title": "Alfa Romeo 12C-36 기반 · Milano 12c/36",
+    "author": "Andrew Sumner",
+    "originalName": "Milano 12c/36",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/36gp-milano-12c36",
+    "upstreamPackage": "https://files.speed-dreams.net/public/75840fef0ee5fa9f7b127b5515fed4e6",
+    "upstreamSHA256": "c0075416b1de7252bd78521d6730cbad944c3eda3515fc38961bfeca8b24fbae",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.md",
+        "text": "# Milano 12c/36\n\n36gp car model.\n\n![Car model preview](/36gp-milano-12c36-preview.jpg)\n\n## Notice\n\n> **This repository is only relevant for developers.**\n> **End users are expected to download this asset from the in-game downloader.**\n\n## Note about the xxx-dull.ac file\n\nBy way of background, when you run accc to create a .acc file from a .ac, it\nsets all objects in the model to use just one material.  This is fine for most\ncars, but once I'd made the track/car changes to make cars \"shiny\" I started\nnoticing surfaces that shouldn't shine, such as the black air vents, ends of\nexhaust pipes and so on.\n\nIn order to get around this, I seperated the non-shiny objects into a different\nmodel - xxx-dull.ac - and then ran accc on this to create its own .acc file,\nwhich I then manually merged into the main .acc file.  Voila : a car that's\nshiny where it should be and not where it shouldn't be :)\n\nSo, these .ac files are not needed at runtime, which is why\nthe Makefile doesn't install them.  They should be kept in the repository\nthough as they're an essential part of the original car model.\n\n## License\n\n```\nCopyright 2008 Andrew Sumner\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n```\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-preview-milano-155",
+    "title": "Alfa Romeo 155 Touring 기반 · Milano 155 Touring",
+    "author": "Philipp Körber, Bernhard Wymann, Andrea Alfieri, Olaf Saßnick, Bernhard Wymann",
+    "originalName": "Milano 155 Touring",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/preview-milano-155",
+    "upstreamPackage": "https://files.speed-dreams.net/public/b765a6ccdf679b8e704da8c82f449f3f",
+    "upstreamSHA256": "9e2cdbce63a2e828e69dfd270216ef19fa75e2e2f2157d230f2fd5bb49e26b70",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model\n\nMaster file (model was done in Blender, not triangulated): 155-DTM.blend\nExport to ac3d with https://github.com/NikolaiVChr/Blender-AC3D fro Blender 4.3, still quads: 155-DTM-orig.ac\nReorganized and triangulated model: 155-DTM-src.ac\n\nGenerated acc with: accc +es 0 155-DTM-src.ac 155-DTM.acc\n\n--\nCopyright 2025 Philipp Körber, Bernhard Wymann, rework inspired by model from  Andrea Alfieri\nReused parts Copyright © 2005 Olaf Saßnick, Bernhard Wymann\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-rs1-fmc-centre04",
+    "title": "Ford Focus WRC (2004) 기반 · FMC Centre 04",
+    "author": "W-E-C",
+    "originalName": "FMC Centre 04",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/rs1-fmc-centre04",
+    "upstreamPackage": "https://files.speed-dreams.net/public/53d2ee3709ace99446a8ecdfaa927ebf",
+    "upstreamSHA256": "a352478139a6e9afb07c7e227d000e66cd4fd9233ec9b5337be9c7da0a61b855",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Rally car model RS1 FMC Centre 04 (Ford Focus WRC ca. 2004)\n--\n2009, 2025 W.E.C (scratch made+reworked 3D model)\n(using Driver from Chad Phillips interior updates)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites."
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-36gp-ettore-t59",
+    "title": "Bugatti Type 59 기반 · 36GP Ettore T59",
+    "author": "Andrew Sumner",
+    "originalName": "36GP Ettore T59",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/36gp-ettore-t59",
+    "upstreamPackage": "https://files.speed-dreams.net/public/bab6c482084c80e1b12fc6b1de6e085a",
+    "upstreamSHA256": "d816eff940ca62e29cff8bde2dfce4c58ff09674f90c17c4dcd869b4aa0dd45d",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.md",
+        "text": "# Ettore T59\n\n36GP car model.\n\n![Car model preview](/36gp-ettore-t59-preview.jpg)\n\n## Notice\n\n> **This repository is only relevant for developers.**\n> **End users are expected to download this asset from the in-game downloader.**\n\n## Note about the xxx-dull.ac file\n\nBy way of background, when you run accc to create a .acc file from a .ac, it\nsets all objects in the model to use just one material.  This is fine for most\ncars, but once I'd made the track/car changes to make cars \"shiny\" I started\nnoticing surfaces that shouldn't shine, such as the black air vents, ends of\nexhaust pipes and so on.\n\nIn order to get around this, I seperated the non-shiny objects into a different\nmodel - xxx-dull.ac - and then ran accc on this to create its own .acc file,\nwhich I then manually merged into the main .acc file.  Voila : a car that's\nshiny where it should be and not where it shouldn't be :)\n\nSo, these .ac files are not needed at runtime, which is why\nthe Makefile doesn't install them.  They should be kept in the repository\nthough as they're an essential part of the original car model.\n\n## License\n\n```\nCopyright 2008 Andrew Sumner\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n```\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-36gp-motorunion-typec",
+    "title": "Auto Union Type C 기반 · Motor Union Type C",
+    "author": "Andrew Sumner",
+    "originalName": "Motor Union Type C",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/36gp-motorunion-typec",
+    "upstreamPackage": "https://files.speed-dreams.net/public/46cb79b68bab45b45a365cc1e71165ae",
+    "upstreamSHA256": "855b15b3c0e1786423289200a2850ef0dbe6d3b17102c7dcef3c5b554ef86d30",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2008 Andrew Sumner\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nNote about the xxx-dull.ac file :\n---------------------------------\n\nBy way of background, when you run accc to create a .acc file from a .ac, it\nsets all objects in the model to use just one material.  This is fine for most\ncars, but once I'd made the track/car changes to make cars \"shiny\" I started\nnoticing surfaces that shouldn't shine, such as the black air vents, ends of\nexhaust pipes and so on.\n\nIn order to get around this, I seperated the non-shiny objects into a different\nmodel - xxx-dull.ac - and then ran accc on this to create its own .acc file,\nwhich I then manually merged into the main .acc file.  Voila : a car that's\nshiny where it should be and not where it shouldn't be :)\n\nSo, these .ac files are not needed at runtime, which is why\nthe Makefile doesn't install them.  They should be kept in the repository\nthough as they're an essential part of the original car model.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-36gp-silber-w25b",
+    "title": "Mercedes-Benz W25 B 기반 · Silber W25B",
+    "author": "Andrew Sumner",
+    "originalName": "Silber W25B",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/36gp-silber-w25b",
+    "upstreamPackage": "https://files.speed-dreams.net/public/22646cd0acf3890410e1cf77f7ac2809",
+    "upstreamSHA256": "6e22c294b48bddf820bd7e6406a2cc16275a316ffc81ba3290b0fa830c6813a2",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2008 Andrew Sumner\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nNote about the xxx-dull.ac file :\n---------------------------------\n\nBy way of background, when you run accc to create a .acc file from a .ac, it\nsets all objects in the model to use just one material.  This is fine for most\ncars, but once I'd made the track/car changes to make cars \"shiny\" I started\nnoticing surfaces that shouldn't shine, such as the black air vents, ends of\nexhaust pipes and so on.\n\nIn order to get around this, I seperated the non-shiny objects into a different\nmodel - xxx-dull.ac - and then ran accc on this to create its own .acc file,\nwhich I then manually merged into the main .acc file.  Voila : a car that's\nshiny where it should be and not where it shouldn't be :)\n\nSo, these .ac files are not needed at runtime, which is why\nthe Makefile doesn't install them.  They should be kept in the repository\nthough as they're an essential part of the original car model.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-36gp-tridenti-v8ri",
+    "title": "Maserati V8RI 기반 · Tridenti V8RI",
+    "author": "Andew Sumner",
+    "originalName": "Tridenti V8RI",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/36gp-tridenti-v8ri",
+    "upstreamPackage": "https://files.speed-dreams.net/public/a2e8798b8e2ca64956a012691966f63d",
+    "upstreamSHA256": "c82db0466cbe3312fdc07d569d90edec533f22a9ad9d620935039641c5e253d1",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2008 Andrew Sumner\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nNote about the xxx-dull.ac file :\n---------------------------------\n\nBy way of background, when you run accc to create a .acc file from a .ac, it\nsets all objects in the model to use just one material.  This is fine for most\ncars, but once I'd made the track/car changes to make cars \"shiny\" I started\nnoticing surfaces that shouldn't shine, such as the black air vents, ends of\nexhaust pipes and so on.\n\nIn order to get around this, I seperated the non-shiny objects into a different\nmodel - xxx-dull.ac - and then ran accc on this to create its own .acc file,\nwhich I then manually merged into the main .acc file.  Voila : a car that's\nshiny where it should be and not where it shouldn't be :)\n\nSo, these .ac files are not needed at runtime, which is why\nthe Makefile doesn't install them.  They should be kept in the repository\nthough as they're an essential part of the original car model.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-67gp-cavallo-123",
+    "title": "Ferrari 312 (1967) 기반 · Cavallo 123",
+    "author": "W-E-C, txChange, Xavier Bertaux",
+    "originalName": "Cavallo 123",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/67gp-cavallo-123",
+    "upstreamPackage": "https://files.speed-dreams.net/public/bf90f3cb26c37029d88fd96586e626e5",
+    "upstreamSHA256": "43082a15120c91d55ecb9764e85d4dc8e96e2f0d405cb57b5d69e5e93c5eeee2",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "67GP Cavallo 123\n--\nModel created by W-E-C (unknown), from txChange.\nNew setup and physics by Xavier BERTAUX (2018).\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-67gp-guthrie-eagle",
+    "title": "Eagle T1G Weslake 기반 · Guthrie Eagle",
+    "author": "CHAD",
+    "originalName": "Guthrie Eagle",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/67gp-guthrie-eagle",
+    "upstreamPackage": "https://files.speed-dreams.net/public/c2bc185d99d154f92134256880716758",
+    "upstreamSHA256": "78a46a22776d1506b4884714e852c143bdce3a28facf5f3df0c2af9ce1bf2424",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2018 CHAD\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-67gp-kuiper-t81",
+    "title": "Cooper T81 기반 · Kuiper T81",
+    "author": "CHAD",
+    "originalName": "Kuiper T81",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/67gp-kuiper-t81",
+    "upstreamPackage": "https://files.speed-dreams.net/public/c5d6b27e90507e0ad9d41f1709fc9051",
+    "upstreamSHA256": "ce3bd0fb1b8bb5be4c7122af2af403bac3c9dfefead4132248dc711380e83bc5",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2017 CHAD\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-67gp-mango-ms7",
+    "title": "Matra MS7 기반 · Mango MS7",
+    "author": "CHAD",
+    "originalName": "Mango MS7",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/67gp-mango-ms7",
+    "upstreamPackage": "https://files.speed-dreams.net/public/da6428c393269b2133caa207db16da65",
+    "upstreamSHA256": "c5936c49112521b41a984b4e2969fbf0bce4ee60afc49aa0afb6806feb42e6ff",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2019 CHAD\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-67gp-murasama-37a",
+    "title": "Honda RA273 기반 · Murasama 37a",
+    "author": "W-E-C",
+    "originalName": "Murasama 37a",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/67gp-murasama-37a",
+    "upstreamPackage": "https://files.speed-dreams.net/public/69e6bb238a62a66ebe4879cda217d4ac",
+    "upstreamSHA256": "4a4493bb10c832be55be6fe69ca6f71ac567848a3d8928e6e0e3642ef2eda6cb",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2022 WEC\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-67gp-upping-ut19",
+    "title": "Brabham BT19 기반 · Uppington UT19",
+    "author": "CHAD",
+    "originalName": "Uppington UT19",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/67gp-upping-ut19",
+    "upstreamPackage": "https://files.speed-dreams.net/public/29035b6427fd96bf43d64a992db8a358",
+    "upstreamSHA256": "c2b19bc3d06cf59a236030e39634a1654c07c456fad6500e507be43888ede240",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Copyright 2015 CHAD\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  }
+]

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {VEHICLES} from '../dist/js/vehicle-profiles.js';
 import {cockpitSeat} from '../dist/js/cockpit-view.js';
+import {createGrandPrixCockpit,isOpenGrandPrix} from '../dist/js/grand-prix-cockpit.js';
 import {adaptRealVehicle} from '../dist/js/real-vehicle-model.js';
 import {adaptRoadsterScene} from '../dist/js/roadster-model.js';
 import {createVehicle} from '../dist/js/vehicle.js';
@@ -23,7 +24,23 @@ for(const profile of VEHICLES)test(`${profile.id}: actual asset, fitted ports an
   assert.equal(new Set(vehicle.catalog.map(p=>p.id)).size,vehicle.catalog.length);
   assert.ok(Object.values(params).every(Number.isFinite),'geometry supplies finite physical parameters');
   const skin=vehicle.nozzleFit.skinBounds;
-  assert.ok(skin.containsPoint(cockpitSeat(vehicle).eye),'driver eye remains inside this actual model body envelope');
+  const seat=cockpitSeat(vehicle);
+  if(isOpenGrandPrix(vehicle)){
+    assert.deepEqual(seat.eye.toArray(),vehicle.cockpitEye,'use the eye mounted on the original open-cockpit body');
+    assert.ok(seat.eye.x>skin.min.x&&seat.eye.x<skin.max.x&&seat.eye.z>skin.min.z&&seat.eye.z<skin.max.z,
+      'single-seat driving position stays inside the body footprint');
+    assert.ok(seat.eye.y>skin.min.y,'driver eye is above the body floor');
+    const cockpit=createGrandPrixCockpit(vehicle,seat);cockpit.root.updateMatrixWorld(true);
+    try{
+      for(const direction of [[0,1,0],[1,0,0],[1,.2,0]]){
+        const hits=new THREE.Raycaster(seat.eye,new THREE.Vector3(...direction).normalize(),.03,8).intersectObject(cockpit.root,true);
+        assert.ok(hits.every(hit=>{const m=Array.isArray(hit.object.material)?hit.object.material[hit.face.materialIndex]:hit.object.material;
+          return m.transparent&&m.opacity<.1;}),'driver can see clear sky and the road');
+      }
+    }finally{cockpit.dispose();}
+  }else{
+    assert.ok(skin.containsPoint(seat.eye),'driver eye remains inside this actual model body envelope');
+  }
   assert.ok(params.liftY<skin.max.y&&params.liftY>skin.min.y,'swivels are inside the hull vertical envelope');
   assert.ok(params.boostX<skin.max.x&&params.boostX>skin.min.x,'rear mounts are inside the hull length');
   assert.ok(params.yawZ<Math.max(Math.abs(skin.min.z),Math.abs(skin.max.z)),'attitude mounts are inset');

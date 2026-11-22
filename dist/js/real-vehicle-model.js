@@ -144,6 +144,14 @@ export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
   if(!Number.isFinite(scale)||scale<=0)throw new Error('차체 축척 오류');
   const center=new THREE.Vector3((axleFront+axleRear)/2,centers.reduce((s,c)=>s+c.y,0)/4,centers.reduce((s,c)=>s+c.z,0)/4);
   const alignment=new THREE.Matrix4().makeTranslation(0,-.24,0).multiply(new THREE.Matrix4().makeScale(scale,scale,scale)).multiply(new THREE.Matrix4().makeTranslation(-center.x,-center.y,-center.z));
+  // On these source ACCs the sprung body is exported before the XML's
+  // static front/rear ride heights are applied. Tires stay on their own hubs.
+  const heights=profile.adapter?.axleRideHeights;
+  const ride=heights?new THREE.Matrix4().makeTranslation(0,(heights[0]+heights[1])/2-.24,0)
+    .multiply(new THREE.Matrix4().makeRotationZ(Math.atan2(heights[0]-heights[1],profile.wheelbase)))
+    .multiply(new THREE.Matrix4().makeTranslation(0,.24,0)):null;
+  const bodyAlignment=ride?ride.clone().multiply(alignment):alignment;
+  const cockpitPoint=point=>ride&&point?new THREE.Vector3(...point).applyMatrix4(ride).toArray():point;
   const anchors=centers.map(c=>c.clone().applyMatrix4(alignment));
   const root=new THREE.Group(),parts=new Map(),detailParts=new Map(),catalog=[],paintMaterials=[],materials=new Map(),tireMaterials=new Map();
   root.name=profile.title;root.userData.visualOnly=true;
@@ -176,7 +184,7 @@ export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
   }
   const hullBounds=new THREE.Box3();
   records.forEach((r,index)=>{
-    r.geometry.applyMatrix4(alignment);r.geometry.computeBoundingBox();
+    r.geometry.applyMatrix4(r.wheel<0?bodyAlignment:alignment);r.geometry.computeBoundingBox();
     const center=r.geometry.boundingBox.getCenter(new THREE.Vector3());
     const interior=r.materialNames.some(n=>/leather|interior|carpet/i.test(n));
     const glazing=r.materialNames.some(n=>/glass|lens/i.test(n));
@@ -214,6 +222,7 @@ export function adaptRealVehicle(source,profile,{exteriorOnly=false}={}){
   const geometryParams={wheelbase:profile.wheelbase,trackWidth:width,wheelRadius:radius,bodyLength:2*Math.max(Math.abs(hullBounds.min.x),Math.abs(hullBounds.max.x)),bodyWidth:size.z,bodyHeight:size.y,bodyCenterY:(hullBounds.min.y+hullBounds.max.y)/2};
   return {root,parts,detailParts,catalog,wheels,paintMaterials,geometryParams,cityWheelGeometry,cityGroundSupports:undersideSamples(records,hullBounds),profileId:profile.id,sourceMeshCount:records.length,
     wing:parts.get('wing'),tank:parts.get('tank'),compressor:fallback.compressor,battery:parts.get('battery'),fans:fallback.fans,jetMounts:fallback.jetMounts,gimbalNozzles:fallback.gimbalNozzles,driveRotors:fallback.driveRotors,engineSection:fallback.engineSection,valveIndicators:fallback.valveIndicators,
+    cockpitEye:cockpitPoint(profile.cockpitEye),cockpitWheel:cockpitPoint(profile.cockpitWheel),cockpitStyle:profile.cockpitStyle,
     assetInfo:{title:profile.title,author:profile.author,license:profile.license,neutralWheelAxes}};
 }
 

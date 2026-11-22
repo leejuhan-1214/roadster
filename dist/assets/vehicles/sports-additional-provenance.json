@@ -1,0 +1,331 @@
+[
+  {
+    "id": "sd-sc-lynx-220",
+    "title": "Jaguar XJ220 기반 · Lynx 220",
+    "author": "Olaf Sassnick, Andrew Sumner, Eckhard M. Jaeger, Jean-Philippe Meuret, W-E-C, Anri Dellal",
+    "originalName": "Lynx 220",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/sc-lynx-220",
+    "upstreamPackage": "https://files.speed-dreams.net/public/da0c5c297f1b4674ba0bf9eb3a956b47",
+    "upstreamSHA256": "becac38f5a7590d0deb1269321aeddcc68fc80a92caea63e8d79cb74537c8f3e",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model SC Lynx 220 (Jaguar XJ220)\n--\nsd2-accc +es 0 sc-lynx-220-src.ac sc-lynx-220.acc\n\nCopyright 2006 Olaf Sassnick\nCopyright 2007 Andrew Sumner (Polycount reduction, driver model & other enhancements)\nCopyright 2008 Eckhard M. Jaeger (Reworked texture and various optimizations)\nCopyright 2009 Jean-Philippe Meuret (Fully reworked sound)\nCopyright 2011 Eckhard M. Jaeger (improved texture and 3d model)\nCopyright 2012 W-E-C & Eckhard M. Jaeger (improved texture and 3d model)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nThe XJ220's design and trade dress is the exclusive property by copyright of Jaguar Cars Limited.\nJaguar Cars Limited is permitting you to use and download the artwork\nI have created from the inspiration I have received from the XJ220's design.\n\nThanks to all developers of Torcs.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-sc-kongei-kk8s",
+    "title": "Koenigsegg CC8S 기반 · Kongei KK8S",
+    "author": "Alex P. (ANP), rick_82, Eckhard M. Jaeger",
+    "originalName": "Kongei KK8S",
+    "license": "CC-BY, Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/sc-kongei-kk8s",
+    "upstreamPackage": "https://files.speed-dreams.net/public/967ec448259d498398a5712aecdd826c",
+    "upstreamSHA256": "47a2c8e7e32273e3f2a8c623374c1428b355a5d9cb064e125ce21cbaf9fc0699",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model Kongei KK8S (Koenigsegg CC8S)\n--\nOriginal Model Author: Alex P (ANP), License: CC-BY\nRebuild in lowpoly and adaption to TORCS: rick_82\nCopyright 2012 Eckhard M. Jäger (texture and mesh improvements, Speed Dreams adaption)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "licenseUrls": [
+      "https://artlibre.org/licence/lal/en/",
+      "https://creativecommons.org/licenses/by/"
+    ]
+  },
+  {
+    "id": "sd-sc-spirit-300",
+    "title": "Lotus M250 기반 · Spirit 300",
+    "author": "Olaf Sassnick, Andrew Sumner, Eckhard M. Jaeger",
+    "originalName": "Spirit 300",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/sc-spirit-300",
+    "upstreamPackage": "https://files.speed-dreams.net/public/421abbd3474413b4596a4827ef9866a6",
+    "upstreamSHA256": "6cf40dbe05d4e7df4585d866a1e286dff98fe5716dc52181290705914024a745",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model SC Lynx 220 (Lotus M250 Prototype)\n--\nsd2-accc +es 0 sc-spirit-300-src.ac sc-spirit-300.acc\n\nCopyright 2007 Olaf Sassnick\nCopyright 2007 Andrew Sumner (Driver model, polycount reduction, setup changes)\nCopyright 2008 Eckhard M. Jaeger (Reworked texture and various optimizations)\nCopyright 2011 Eckhard M. Jaeger (Reworked texture and improved mapping)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nThanks to all developers of Torcs.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-srw-sector-p4",
+    "title": "McLaren MP4-12C 기반 · Sector P4",
+    "author": "Wolf-Dieter Beelitz",
+    "originalName": "Sector P4",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/srw-sector-p4",
+    "upstreamPackage": "https://files.speed-dreams.net/public/00ae9df7c3b8ff7fa7a25fa26eab3648",
+    "upstreamSHA256": "2f8f3aac94a125e131cb7c4868325fce21428606bd2836df918c32ce6b9ba5ef",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-trb1-sector-rb1",
+    "title": "McLaren F1 기반 · Sector RB-1",
+    "author": "Eric Espie, Jean-Christophe Durieu, Olaf Sassnick, Bernhard Wymann, Andrew Sumner, Wolf-Dieter Beelitz, Anri Dellal",
+    "originalName": "Sector RB-1",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-sector-rb1",
+    "upstreamPackage": "https://files.speed-dreams.net/public/2a1b3a8251351c32fffc44144d17ae85",
+    "upstreamSHA256": "20a53a0f8973b575cddc1c4d0a30d07502945476c4bccc32d6bae19c0449ec74",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Racing car model\n\nCopyright 2007 Wolf-Dieter Beelitz\nCopyright 2007 Bernhard Wymann (reworked model, textures)\n\nUses parts from other TORCS models:\n--\nCopyright 2002 Eric Espie, Jean-Christophe Durieu\nCopyright 2005 Olaf Sassnick, Bernhard Wymann\nCopyright 2005 Andrew Sumner\nCopyright 2007 Bernhard Wymann\nCopyright 2007 Wolf-Dieter Beelitz\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-trb1-vieringe-5rb",
+    "title": "Audi S5 DTM 기반 · Vieringe 5 RB",
+    "author": "Bernhard Wymann, Olaf Sassnick, Andrew Sumner, Eckhard M. Jaeger, Anri Dellal",
+    "originalName": "Vieringe 5 RB",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-vieringe-5rb",
+    "upstreamPackage": "https://files.speed-dreams.net/public/f62b927a05ccb5f2a5a9017b36f64072",
+    "upstreamSHA256": "d1ad5a1be8894598652470e043888a318fc32c2452e8f8804451d129ea34d0bd",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model Vieringe 5 RB (Audi S5 DTM)\n--\nCopyright 2009 Bernhard Wymann\nUses parts from other TORCS models:\nCopyright 2005 Olaf Sassnick, Bernhard Wymann (wiper, antenna, driver)\nCopyright 2005 Andrew Sumner (mirrors)\nCopyright 2010/11 Eckhard M. J�ger Reworked texture and light optimizations\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-trb1-silber-rblk",
+    "title": "Mercedes-Benz CLK DTM 기반 · Silber RBLK",
+    "author": "Christophe Guionneau, Eliam Speedychonchon, Bernhard Wymann, Eckhard M. Jaeger, Anri Dellal",
+    "originalName": "Silber RBLK",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-silber-rblk",
+    "upstreamPackage": "https://files.speed-dreams.net/public/1f4d8576934122f19ec0c66a85a04ddc",
+    "upstreamSHA256": "2b94f900d105a4f94bf7784a4b80e86ed71c5be31e0197514378d4be8bdf98b2",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model TRB1 Silber RBLK (Mercedes CLK DTM)\n--\nsd-accc +es 0 trb1-silber-rblk-src.ac trb1-silber-rblk.acc\n\nCopyright 2002 Christophe Guionneau\nCopyright 2005 Eliam Speedychonchon, Bernhard Wymann\nCopyright 2007 Bernhard Wymann (totally reworked everything)\nCopyright 2011 Eckhard M. Jäger (model and textures)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-trb1-spirit-rb1lt",
+    "title": "Lotus Elise GT1 기반 · Spirit RB1 LT",
+    "author": "ViPeR, Jean-Christophe Durieu, Olaf Sassnick, Andrew Sumner, Bernhard Wymann, Eckhard M. Jaeger",
+    "originalName": "Spirit RB1 LT",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-spirit-rb1lt",
+    "upstreamPackage": "https://files.speed-dreams.net/public/a3b2ade1a4eaf5ab525e635a55386998",
+    "upstreamSHA256": "ade53f7b42ddd3a36bc7feed1e13312a4841c2f34135c7328792e2bf6c285ee9",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model TRB1 Spirit RB1LT (Lotus Elise GT1 1997)\n--\nsd2-accc +es 0 trb1-spirit-rb1lt-src.ac trb1-spirit-rb1lt.acc\n\nCopyright 2000 ViPeR (viper@mttestdriver.com) (model)\nCopyright 2002 Jean-Christophe Durieu (texture)\nCopyright 2006 Olaf Sassnick, Andrew Sumner (cockpit parts, mirrors)\nCopyright 2006 Bernhard Wymann (model and textures)\nCopyright 2010/11 Eckhard M. Jäger (model and textures)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-ls2-vortex-gt",
+    "title": "Venturi 600LM 기반 · Vortex GT",
+    "author": "Andrew Sumner",
+    "originalName": "Vortex GT",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/ls2-vortex-gt",
+    "upstreamPackage": "https://files.speed-dreams.net/public/4561c17df76f386d12e60ce0ab350c51",
+    "upstreamSHA256": "e1668a6b766c0364f8c620e615f7c41958fd01c9b4a2d593df33bc1f05d0fda7",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "ls2-vector\n-----------\n\nModel designed and textured by Andrew Sumner, 2007.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\nacclint --splitSURF ls2-vortex-gt-src.ac --merge ls2-vortex-dull-src.ac -o ls2-vortex-merged.ac\nsd2-accc +es 80 ls2-vortex-merged.ac ls2-vortex-gt.acc\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-ls2-morley-r900",
+    "title": "Mosler MT900 기반 · Morley R900",
+    "author": "Andrew Sumner",
+    "originalName": "Morley R900",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/ls2-morley-r900",
+    "upstreamPackage": "https://files.speed-dreams.net/public/9959e377913f0cdec9e2c1e3dbd47850",
+    "upstreamSHA256": "dff050cdc1374c0ddccbc812a1ab2418b7465a0a36a2a8cd59f635bfd1dc7122",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "GT2 Morley R900\n--\nModel designed and textured by Andrew Sumner, 2007.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites\n\nacclint --splitSURF ls2-morley-r900-src.ac --merge ls2-morley-r900-dull-src.ac -o ls2-morley-r900-merged.ac\nsd2-accc +es 80 ls2-morley-r900-merged.ac ls2-morley-r900.acc\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-trb1-taipan-rb1",
+    "title": "Dodge Viper GTS-R 기반 · Taipan RB1",
+    "author": "ViPer, Eric Espie, Bernhard Wymann, Andrew Sumner",
+    "originalName": "Taipan RB1",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-taipan-rb1",
+    "upstreamPackage": "https://files.speed-dreams.net/public/fd31c3b9fd1a8f06922ed785ee765e25",
+    "upstreamSHA256": "1e429f968f69fbe5f0d3891bdd176b3e35b2ba9ffd5493c1bc8a3464fb3e0ccc",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model\n--\n\nCopyright 2000 ViPeR (model) (viper@mttestdriver.com)\nCopyright 2002 Eric Espie (texture)\nCopyright 2004, 2005 Bernhard Wymann (totally reworked everything)\nCopyright 2005 Andrew Sumner (totally reworked everything)\nCopyright 2006 Bernhard Wymann (totally reworked everything)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-trb1-boxer-trbrs",
+    "title": "Porsche 911 (996) RSR 기반 · Boxer TRB-RS",
+    "author": "Eric Espie, Jean-Christophe Durieu, Olaf Sassnick, Bernhard Wymann, Anri Dellal",
+    "originalName": "Boxer TRB-RS",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/trb1-boxer-trbrs",
+    "upstreamPackage": "https://files.speed-dreams.net/public/640022da2f91a5691ae185ba35267d76",
+    "upstreamSHA256": "3998cad3905725cf48c2201115515f6fa8ee20115187d8052e02c7f7dfdc1734",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model\n\n--\nCopyright  2002 Eric Espie, Jean-Christophe Durieu\nCopyright  2005 Olaf Sassnick, Bernhard Wymann\nCopyright  2007 Bernhard Wymann (totally reworked, renamed, based on old model)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-ls1-archer-r9",
+    "title": "Aston Martin DBR9 기반 · Archer R-9",
+    "author": "Czech SCGT (Lukas, Lubos), Andrew Sumner, Eckhard M. Jaeger (Bar), W-E-C, June Ravenmoon",
+    "originalName": "Archer R-9",
+    "license": "CC-BY, Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/ls1-archer-r9",
+    "upstreamPackage": "https://files.speed-dreams.net/public/d8d19bf23ed986c6acd6dcc577456cf8",
+    "upstreamSHA256": "5e7568e08e38fe51a6331d98ad7a6a357ddf133722e742c2fb9a1999af2677ef",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model LS1 Archer R9 (Aston Martin DBR9 2005)\n--\n\nLoosely based on an Aston Martin DBR9 model by Lukas and Lubos of Czech SCGT.\nThe original model, even if the source was lost, was licensed under the\nCC-BY 4.0 with permission of its authors.\nPorted to Torcs, driver/interior and numerous other enhancements added by\nAndrew Sumner, 2007.\nReworked texture and light optimizations Eckhard M. Jäger (Bart) 2009.\n\nUsage of the Eclipse logo with permission from Barb Cochrane, Eclipse Foundation, Inc.\n\nModified and enhanced 3D model by W-E-C, painting templates and liveries by June Ravenmoon.\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "licenseUrls": [
+      "https://artlibre.org/licence/lal/en/",
+      "https://creativecommons.org/licenses/by/4.0/"
+    ]
+  },
+  {
+    "id": "sd-ls1-vulture-v5r",
+    "title": "Chevrolet Corvette C5-R 기반 · Vulture V5.R",
+    "author": "Julien Schaffo (JJSCA)",
+    "originalName": "Vulture V5.R",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/ls1-vulture-v5r",
+    "upstreamPackage": "https://files.speed-dreams.net/public/309aea3fa5bba8fde803e1eeec06f0c3",
+    "upstreamSHA256": "387d07cac72bdaf8ccbb64bff0af0029c69b31046896cf71c9defdebd001ed9f",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "LS1 Vulture V5/R\n--\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": []
+  },
+  {
+    "id": "sd-ls1-newcastle-fury",
+    "title": "Lister Storm 기반 · Newcastle Fury LS1",
+    "author": "Czech SCGT (Lukas, Lubos), Andrew Sumner, Eckhard M. Jaeger (Bar), Dario Badagnani",
+    "originalName": "Newcastle Fury LS1",
+    "license": "CC-BY, Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/ls1-newcastle-fury",
+    "upstreamPackage": "https://files.speed-dreams.net/public/a6f9023f627dd5bc47d9fa56d342e3f5",
+    "upstreamSHA256": "98f37f571013d9a6ae39af93b95a3494151d6a741fcdc1eca01ed285710b4e96",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model LS1 Newcastle Fury (Lister Storm)\n--\n\nBased on a Lister Storm model by Lukas and Lubos of Czech SCGT.\nThe original model, even if the source was lost, was licensed under the\nCC-BY 4.0 with permission of its authors.\nCopyright 2007 Andrew Sumner, Ported to Torcs, driver/interior and numerous other enhancements\nCopyright 2010 Dario Badagnani, Texture rework\nCopyright 2011 Eckhard M. Jäger, Texture improvements\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [],
+    "licenseUrls": [
+      "https://artlibre.org/licence/lal/en/",
+      "https://creativecommons.org/licenses/by/4.0/"
+    ]
+  },
+  {
+    "id": "sd-sc-boxer-96-2",
+    "title": "Porsche 911 (996) Turbo 기반 · Boxer 96-2 Turbo",
+    "author": "Eric Espie, Jean-Christophe Durieu, Olaf Assnick, Bernhard Wymann, W.E.C, Eckhard M. Jaeger, Jean-Philippe Meuret, Chad Phillips",
+    "originalName": "Boxer 96-2 Turbo",
+    "license": "Free Art License",
+    "licenseUrl": "https://artlibre.org/licence/lal/en/",
+    "source": "https://forge.a-lec.org/speed-dreams/sc-boxer-96-2",
+    "upstreamPackage": "https://files.speed-dreams.net/public/9ff8e47150740901f777e65d88177b16",
+    "upstreamSHA256": "d0d20e802f7240c61f3c6887e1872d2fd1d619abee81fd7e064ecb60dde7c524",
+    "identitySource": "https://sourceforge.net/p/speed-dreams/wiki/ListofCars/",
+    "originalNotices": [
+      {
+        "file": "readme.txt",
+        "text": "Sports car model SC Boxer 96-2 Turbo (Porsche 911/ 996 Mk2 Turbo)\n--\nCopyright 2002 Eric Espie, Jean-Christophe Durieu\nCopyright 2005 Olaf Sassnick, Bernhard Wymann\nCopyright 2007 Bernhard Wymann (totally reworked, renamed, based on old model)\nCopyright 2009 Jean-Philippe Meuret (Fully reworked sound)\nCopyright 2011,2024 W.E.C (reworked 3D model)\nCopyright 2011 Eckhard M. Jäger (mapping and textures)\nCopyright 2012 Eckhard M. Jäger (texture and mesh improvements)\nCopyright 2021 Chad Phillips (interior updates)\n\nCopyleft: this work of art is free, you can redistribute\nit and/or modify it according to terms of the Free Art license.\nYou will find a specimen of this license on the site\nCopyleft Attitude http://artlibre.org as well as on other sites.\n\n"
+      }
+    ],
+    "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
+    "missingSourceTextures": [
+      "sc-boxer-96.png"
+    ]
+  }
+]

@@ -377,7 +377,7 @@ export function createStationRaceWorld(...args){
 // City driving prepares one batch per idle slice. A portal reached early can
 // finish the same iterator synchronously, preserving the single world and its assets.
 export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
-  ()=>import('./rival-exterior.js?v=20261118-circuit155').then(m=>m.loadRivalExterior())}={}){
+  ()=>import('./rival-exterior.js?v=20261122-garage').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
   root.name='Station Circuit';root.visible=false;
   addCityPaving(root);

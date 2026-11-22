@@ -1,5 +1,9 @@
 import {CITY_VEHICLES} from './city-fleet-profiles.js?v=20261118-city151';
 import {EXTRA_VEHICLES} from './fleet-profiles.js?v=20261118-city151';
+import {RESERVE_VEHICLES} from './sports-reserve-profiles.js?v=20261122-garage';
+import {ADDITIONAL_SPORTS_VEHICLES} from './sports-additional-profiles.js?v=20261122-garage';
+import {CLASSIC_SPORTS_VEHICLES} from './sports-classics-profiles.js?v=20261122-garage';
+import {GT_SPORTS_VEHICLES} from './sports-gt-profiles.js?v=20261122-garage';
 import {ROCKET_PARAMS} from './rocket-layout.js?v=20261115-capacity375';
 // Visual replicas, not OEM CAD. Published reference dimensions and masses are
 // separate from the shared experimental electric/cold-gas conversion assumptions.
@@ -22,6 +26,8 @@ export const VEHICLES = Object.freeze([
     dryMass:1350, referenceMass:1200, rigMass:150},
   ...EXTRA_VEHICLES,
   ...CITY_VEHICLES,
+  ...[...RESERVE_VEHICLES,...ADDITIONAL_SPORTS_VEHICLES,...GT_SPORTS_VEHICLES,...CLASSIC_SPORTS_VEHICLES]
+    .map(profile=>({...profile,newCityRelease:true})),
 ]);
 export function vehicleProfile(id){const profile=VEHICLES.find(v=>v.id===id);if(!profile)throw new Error('알 수 없는 차종');return profile;}
 

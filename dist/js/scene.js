@@ -1,14 +1,14 @@
 import {createRoadDrawRanges} from './city-road-detail.js?v=20261118-circuit155';
 import {updateDrivetrainSection,setEngineStrokeDisplay} from './drivetrain-section.js?v=20261118-model154';
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
-import {CockpitView} from './cockpit-view.js?v=20261121-driver';
+import {CockpitView} from './cockpit-view.js?v=20261122-garage';
 import {LandingVisual} from './landing-visual.js?v=20261119-air161';
-import {CockpitMirror} from './cockpit-mirror.js?v=20261111-interior1';
+import {CockpitMirror} from './cockpit-mirror.js?v=20261122-garage';
 import {TireEffects} from './tire-effects.js?v=20261109-smoke1';
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261118-flight153';
-import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261118-circuit155';
+import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261122-garage';
 import {loadCityWorld} from './city-world.js?v=20261118-circuit155';
-import {stationRaceWorldStages} from './station-race-world.js?v=20261119-metropolis159';
+import {stationRaceWorldStages} from './station-race-world.js?v=20261122-garage';
 import {StationRace} from './station-race.js?v=20261119-ai158';
 import {attachStreamingCity} from './city-streaming.js?v=20261119-wide157';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261119-wide157';
@@ -22,8 +22,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createVehicle } from './vehicle.js?v=20261118-model154';
-import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261121-edges';
-import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261118-model154';
+import {loadRealVehicle,disposeVehicle} from './real-vehicle-model.js?v=20261122-garage';
+import {configureVehicleFit,updateVehicleExplosion,updateNozzleCovers} from './vehicle-fit.js?v=20261122-garage';
 import {loadRoadsterVehicle} from './roadster-model.js?v=20261118-circuit155';
 import {prepareRocketRetrofit} from './rocket-retrofit.js?v=20261115-fleet1';
 import { createStageVisual, updateStageVisual, disposeStageVisual } from './stage-visual.js?v=20261107-drive2';
@@ -998,7 +998,7 @@ export class FlightScene {
       this.vehicle.setExteriorDisplayLod(this.useExteriorLod);
     }
     this.landingVisual?.update(sim,view,this.camera,mode);
-    if(insideCockpit&&this.cockpit.mirrorSurface)this.cockpitMirror.update(this.renderer,this.scene,{bodyPosition,quaternion:q,eye:this.cockpit.seat.eye},dt,[this.vehicle.root,this.customModel,this.cockpit.root]);
+    if(insideCockpit&&this.cockpit.mirrorOptics)this.cockpitMirror.update(this.renderer,this.scene,{bodyPosition,quaternion:q,...this.cockpit.mirrorOptics},dt,[this.vehicle.root,this.customModel,this.cockpit.root]);
     this.updateShadowMap(dt,bodyPosition,q,wheels,explode);
     this.renderer.render(this.scene,this.camera);
   }

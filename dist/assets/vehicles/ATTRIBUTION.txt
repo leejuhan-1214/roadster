@@ -1,4 +1,15 @@
 Vehicle model attribution - Roadster Flight Lab
+
+City garage additions, 2026-11-22
+The following files in this directory list the original creators, the original
+works and licenses, and changes to the models distributed with the simulator.
+  sports-reserve-provenance.json        7 community vehicle models
+  sports-additional-provenance.json   16 Speed Dreams sports and GT cars
+  sports-gt-provenance.json           12 Speed Dreams sports and GT cars
+  sports-classics-provenance.json     15 Speed Dreams racing cars
+Free Art License: https://artlibre.org/licence/lal/en/
+Creative Commons Attribution: https://creativecommons.org/licenses/by/4.0/
+
 Retrieved 2026-11-07. Models are community visual replicas, not manufacturer CAD.
 
 Ferrari model

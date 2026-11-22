@@ -11,6 +11,15 @@ function rendererStub(){
  setRenderTarget(target,face=0,mip=0){this.target=target;this.face=face;this.mip=mip},clear(){this.clears++},render(){this.renders++}};
 }
 const pose={bodyPosition:new THREE.Vector3(20,2,30),quaternion:new THREE.Quaternion(),eye:new THREE.Vector3(.2,.7,-.4)};
+test('optics follow the glass aspect and angular size when the driver changes cars',()=>{
+ const m=new CockpitMirror(),r=rendererStub(),virtualEye=new THREE.Vector3(1.45,.84,0);
+ m.update(r,{}, {...pose,eye:virtualEye,aspect:3.5,fov:4.2},0);
+ assert.equal(m.camera.aspect,3.5);assert.equal(m.camera.fov,4.2);assert.equal(m.target.height,Math.round(256/3.5));
+ assert.ok(m.camera.position.distanceTo(virtualEye.clone().add(pose.bodyPosition))<1e-9);
+ m.update(r,{}, {...pose,aspect:3,fov:5.1},.1);
+ assert.equal(m.camera.aspect,3);assert.equal(m.camera.fov,5.1);assert.equal(m.target.height,Math.round(256/3));
+ m.dispose();r.target.dispose();
+});
 test('mirror renders the actual rear direction, flips optics and limits updates to ten per second',()=>{
  const m=new CockpitMirror(),r=rendererStub();
  assert.equal(m.target.width,256);assert.equal(m.target.height,128);assert.equal(m.camera.far,350);assert.equal(m.camera.near,.1);

@@ -12,3 +12,12 @@ test('landing exposes only the five mass representatives while driving and struc
  assert.equal(vehicleOptionsForMode('city',VEHICLES,cohort),VEHICLES);assert.equal(vehicleOptionsForMode('inspect',VEHICLES,cohort),VEHICLES);
  for(const car of VEHICLES.filter(v=>!cohort.includes(v)))assert.ok(!vehicleOptionsForMode('lab',VEHICLES,cohort).includes(car));
 });
+
+test('new city models are individually selectable using the Korean garage search',()=>{
+ const release=searchCityVehicles(VEHICLES,'신규');
+ assert.equal(release.length,50);
+ assert.equal(new Set(release.map(p=>p.url)).size,50);
+ assert.ok(release.every(p=>p.cityOnly));
+ assert.deepEqual(searchCityVehicles(VEHICLES,'신규 포드').map(p=>p.id).sort(),
+   ['sd-rs1-fmc-centre04','sd-sc-fmc-gt4']);
+});

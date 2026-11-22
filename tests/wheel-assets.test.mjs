@@ -80,7 +80,9 @@ for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotat
   // while its visible tire stays behind in the body assembly; the transformed
   // tire axle check catches that class of asset/parenting regression.
   prepareAssessmentVehicle(vehicle);configureVehicleFit(vehicle,profile);
-  const sim=new PhysicsSim({...vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS,roadRoughness:0,aeroEnabled:false});
+  const sim=new PhysicsSim({...vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS,
+    parkedWheelMounts:true,cityWheelGeometry:vehicle.cityWheelGeometry,cityGroundSupports:vehicle.cityGroundSupports,
+    roadRoughness:0,aeroEnabled:false});
   const buffer=new RenderStateBuffer(sim),control=new DrivingController(),renderer={vehicle,mode:'city'};
   // Starting from the actual parked pose must use the tires, not silently switch
   // to gas-powered flight because a bad body envelope lifts all four wheels.
