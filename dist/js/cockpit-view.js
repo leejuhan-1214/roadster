@@ -14,7 +14,13 @@ export function cockpitSeat(vehicle){
   const top=skin?.max?.y??((g.bodyCenterY||.2)+(g.bodyHeight||1.25)/2);
   // Heights are in chassis coordinates. A fixed floor puts the eye above the
   // roof on low coupes; leave headroom relative to this car's measured roof.
-  const eyeHeight=Math.min(top-.20,2.3);
+  let eyeHeight=Math.min(top-.20,2.3);
+  // The BRZ exhibition shell carries a long roof antenna. Fit the driver's
+  // sightline to its curved windshield, whose vertices are in chassis space.
+  if(vehicle.profileId==='subaru-brz'){
+    const pane=vehicle.root.getObjectByName('BRZ_windshield')?.geometry?.boundingBox;
+    if(pane)eyeHeight=THREE.MathUtils.lerp(pane.min.y,pane.max.y,.64);
+  }
   return {width,length,pitch:-.12,eye:new THREE.Vector3(clamp((g.wheelbase||2.8)*.025,-.2,.24),eyeHeight,-width*.23)};
 }
 

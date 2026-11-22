@@ -14,6 +14,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-kanagawa-z35gts.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.110, 0.110],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.03,
@@ -49,6 +50,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-boxer-96.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.105, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.005,
@@ -83,6 +85,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-fmc-gt4.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.110, 0.110],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.125,
@@ -117,6 +120,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-cavallo-360.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.09,
@@ -151,6 +155,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-cavallo-570s1.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.105,
@@ -185,6 +190,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-toro-rgt.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.065,
@@ -219,6 +225,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-zentek-z7r.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.08,
@@ -253,6 +260,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls2-bavaria-g3gtr.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.085, 0.085],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.08,
@@ -322,6 +330,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls2-lynx-xkr.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.075, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.05,
@@ -356,6 +365,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls2-sprite-gts.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.075, 0.085],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.05,
@@ -390,6 +400,7 @@ export const GT_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-vulture-v6r.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.085,

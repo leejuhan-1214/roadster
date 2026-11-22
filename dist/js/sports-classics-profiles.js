@@ -14,6 +14,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-cavallo-360rb.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.1,
@@ -45,9 +46,10 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "license": "Free Art License",
     "licenseUrl": "https://artlibre.org/licence/lal/en/",
     "source": "https://forge.a-lec.org/speed-dreams/sgtp-boxer-gt98",
-    "url": "../assets/vehicles/sd-sgtp-boxer-gt98.glb",
+    "url": "../assets/vehicles/sd-sgtp-boxer-gt98.glb?v=160d151c0079",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.055,
@@ -79,9 +81,10 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "license": "Free Art License",
     "licenseUrl": "https://artlibre.org/licence/lal/en/",
     "source": "https://forge.a-lec.org/speed-dreams/36gp-milano-12c36",
-    "url": "../assets/vehicles/sd-36gp-milano-12c36.glb",
+    "url": "../assets/vehicles/sd-36gp-milano-12c36.glb?v=1ec63e015214",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.120, 0.120],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.26,
@@ -127,6 +130,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-preview-milano-155.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.025,
@@ -161,6 +165,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-rs1-fmc-centre04.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.120, 0.120],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.105,
@@ -193,9 +198,10 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "license": "Free Art License",
     "licenseUrl": "https://artlibre.org/licence/lal/en/",
     "source": "https://forge.a-lec.org/speed-dreams/36gp-ettore-t59",
-    "url": "../assets/vehicles/sd-36gp-ettore-t59.glb",
+    "url": "../assets/vehicles/sd-36gp-ettore-t59.glb?v=232f9913d1bf",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.125, 0.125],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.29,
@@ -238,7 +244,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "license": "Free Art License",
     "licenseUrl": "https://artlibre.org/licence/lal/en/",
     "source": "https://forge.a-lec.org/speed-dreams/36gp-motorunion-typec",
-    "url": "../assets/vehicles/sd-36gp-motorunion-typec.glb",
+    "url": "../assets/vehicles/sd-36gp-motorunion-typec.glb?v=3119e3419573",
     "yaw": 0,
     "adapter": {
       "axleRideHeights": [0.130, 0.120],
@@ -284,9 +290,10 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "license": "Free Art License",
     "licenseUrl": "https://artlibre.org/licence/lal/en/",
     "source": "https://forge.a-lec.org/speed-dreams/36gp-silber-w25b",
-    "url": "../assets/vehicles/sd-36gp-silber-w25b.glb",
+    "url": "../assets/vehicles/sd-36gp-silber-w25b.glb?v=495494415ead",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.130, 0.130],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.37,
@@ -329,9 +336,10 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "license": "Free Art License",
     "licenseUrl": "https://artlibre.org/licence/lal/en/",
     "source": "https://forge.a-lec.org/speed-dreams/36gp-tridenti-v8ri",
-    "url": "../assets/vehicles/sd-36gp-tridenti-v8ri.glb",
+    "url": "../assets/vehicles/sd-36gp-tridenti-v8ri.glb?v=fba4c97af432",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.120, 0.120],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.17,
@@ -377,6 +385,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-67gp-cavallo-123.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.080, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.07,
@@ -422,6 +431,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-67gp-guthrie-eagle.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.090, 0.120],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.27,
@@ -467,6 +477,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-67gp-kuiper-t81.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.080, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.1325,
@@ -512,6 +523,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-67gp-mango-ms7.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.080, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.1,
@@ -557,6 +569,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-67gp-murasama-37a.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.080, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.18,
@@ -602,6 +615,7 @@ export const CLASSIC_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-67gp-upping-ut19.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.080, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.22,

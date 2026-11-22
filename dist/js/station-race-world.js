@@ -6,7 +6,7 @@ import {circuitUrbanTrackStages,CIRCUIT_BASIN} from './circuit-urban-track.js?v=
 import {circuitCityscapeStages} from './circuit-cityscape.js?v=20261119-metropolis159';
 import {addCircuitLighting} from './circuit-lighting.js?v=20261119-ai158';
 
-import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js';
+import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-wheel-repair';
 
 const halfWidth=RACE_COURSE.width/2;
 const white=0xf1eee1,red=0xc63e37,dark=0x212c32,steel=0x829499,mint=0x5cf2cb;
@@ -377,7 +377,7 @@ export function createStationRaceWorld(...args){
 // City driving prepares one batch per idle slice. A portal reached early can
 // finish the same iterator synchronously, preserving the single world and its assets.
 export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
-  ()=>import('./rival-exterior.js?v=20261122-garage').then(m=>m.loadRivalExterior())}={}){
+  ()=>import('./rival-exterior.js?v=20261122-wheel-repair').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
   root.name='Station Circuit';root.visible=false;
   addCityPaving(root);

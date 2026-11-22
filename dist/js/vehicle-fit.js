@@ -156,12 +156,23 @@ function fitNozzles(vehicle){
   // Compact four-duct diagram follows each source vehicle's lower rear shell.
   // Source meshes remain untouched; housing/rotor are not exterior OEM claims.
   const fans=vehicle.fans||[],fanScale=Math.min(1,halfWidth*1.5/Math.max(.34,fans.length*.34),size.y*.70/.34,size.x*.15/.50);
+  const ductBounds=fans.length?rootBounds(fans[0],fans[0]):null;
   for(let i=0;i<fans.length;i++){
     const fan=fans[i],z=(i-(fans.length-1)/2)*.34*fanScale;
     const y=bounds.min.y+.18*fanScale;
     const hit=surfaceHit(meshes,new THREE.Vector3(bounds.min.x-2,y,z),new THREE.Vector3(1,0,0),new THREE.Vector3(bounds.min.x,y,z));
     const rearX=clamp(hit.x,bounds.min.x,bounds.min.x+size.x*.25);
-    fan.position.set(rearX+.12*fanScale,y,z);fan.scale.setScalar(fanScale);
+    const mountX=rearX+.12*fanScale;
+    // The lowest splitter may be at the opposite end of the car. Recess the
+    // duct above the local rear underfloor so it cannot become the first skid.
+    const intakeX=mountX+fan.userData.intake.position.x*fanScale;
+    const floor=surfaceHit(meshes,new THREE.Vector3(intakeX,bounds.min.y-2,z),UP,
+      new THREE.Vector3(intakeX,bounds.min.y,z));
+    // An open underside can expose the boot lid to an upward ray.
+    const underfloor=Math.min(floor.y,bounds.min.y+.30*size.y);
+    const mountY=Math.max(y,underfloor+(.012-ductBounds.min.y)*fanScale);
+    fan.position.set(mountX,Math.min(mountY,bounds.max.y-ductBounds.max.y*fanScale),z);
+    fan.scale.setScalar(fanScale);
   }
   // This internal cutaway is intentionally diagrammatic, so shrink rather
   // than protrude through a short/narrow model. It does not set tank capacity.

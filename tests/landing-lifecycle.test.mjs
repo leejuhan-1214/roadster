@@ -34,13 +34,13 @@ test('initial loading keeps the bootstrap chassis off screen until the real vehi
     assert.equal(elements['boot-retry'].hidden,success);
   }
 });
-test('a city driver link loads the requested car before switching to its driving seat',async()=>{
+for(const driverView of [false,true])test('a city link loads the requested car in '+(driverView?'driver':'exterior')+' view',async()=>{
   const startup=section("  $('boot-message').textContent='로드스터 차체를 불러오는 중", '  // ?debug');
   const order=[];
   const elements={'boot-message':{},boot:{classList:{add(){}}},'camera-label':{}};
   const context={
     $:id=>elements[id],animate(){},requestAnimationFrame(){},setTimeout:fn=>fn(),URLSearchParams,
-    location:{search:'?mode=city&camera=driver&vehicle=aston-martin-db11'},
+    location:{search:'?mode=city&vehicle=aston-martin-db11'+(driverView?'&camera=driver':'')},
     mode:'lab',modeEpoch:0,cityPoseReady:false,camera:'chase',cameraLabel:()=>'운전석',
     activeVehicle:{id:'roadster'},VEHICLES:[{id:'roadster'},{id:'aston-martin-db11'}],
     async selectVehicle(id){order.push(id);return true;},
@@ -49,8 +49,8 @@ test('a city driver link loads the requested car before switching to its driving
   };
   await vm.runInNewContext(startup,context);
   await new Promise(resolve=>setImmediate(resolve));
-  assert.deepEqual(order,['roadster','aston-martin-db11','hood']);
-  assert.equal(elements['camera-label'].textContent,'운전석');
+  assert.deepEqual(order,driverView?['roadster','aston-martin-db11','hood']:['roadster','aston-martin-db11']);
+  assert.equal(context.camera,driverView?'hood':'chase');
 });
 const clickBinding=id=>{
   const line=main.split('\n').find(line=>line.includes("$('"+id+"').addEventListener('click',"));

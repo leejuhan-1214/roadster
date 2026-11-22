@@ -6,11 +6,11 @@ import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
 import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261120-basemass';
-import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261122-garage';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261122-wheel-repair';
+import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261122-wheel-repair';
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261120-basemass';
-import {LandingUI} from './landing-ui.js?v=20261120-basemass';
-import {roadsterHeightStudySource} from './landing-height-source.js?v=20261122-garage';
+import {LandingUI} from './landing-ui.js?v=20261122-wheel-repair';
+import {roadsterHeightStudySource} from './landing-height-source.js?v=20261122-wheel-repair';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261119-air161';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
@@ -19,8 +19,8 @@ import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261119-wide157';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261120-basemass';
-import {FlightScene} from './scene.js?v=20261122-garage';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261122-wheel-repair';
+import {FlightScene} from './scene.js?v=20261122-wheel-repair';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261122-garage';
@@ -862,10 +862,10 @@ try{
     if(!modeEpoch&&['inspect','city','race'].includes(requestedMode)){
       setMode(requestedMode==='race'?'city':requestedMode).then(async()=>{
         if(requestedMode==='race'&&mode==='city'&&modeEpoch===1&&cityPoseReady){startRace(null);return;}
-        if(requestedMode==='city'&&query.get('camera')==='driver'&&mode==='city'&&modeEpoch===1&&cityPoseReady){
+        if(requestedMode==='city'&&mode==='city'&&modeEpoch===1&&cityPoseReady){
           const id=query.get('vehicle');
           if(id&&id!==activeVehicle.id&&VEHICLES.some(v=>v.id===id))await selectVehicle(id);
-          if(mode==='city'&&modeEpoch===1){
+          if(query.get('camera')==='driver'&&mode==='city'&&modeEpoch===1){
             camera='hood';scene.setCamera(camera);$('camera-label').textContent=cameraLabel();
           }
           return;

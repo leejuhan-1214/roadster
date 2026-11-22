@@ -271,7 +271,7 @@
         "sourceUrl": "https://sketchfab.com/3d-models/96ec5c34852f4c3090a755d4445f5e98"
       },
       "apiAuthor": "Nazh Design ✔",
-      "actualBytes": 4813376,
+      "actualBytes": 5254544,
       "title": "BYD Seal Performance AWD",
       "author": "Nazh Design ✔",
       "authorUrl": "https://sketchfab.com/NazhDesign",
@@ -281,9 +281,9 @@
       "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/byd-seal.glb",
       "sourceSha256": "25b2377e901f35645c484a9f921b4a5ea93406849c4f6c4b5d0918280d7ecb87",
-      "sha256": "60ed2ace36db55da989cfffc4639e87750e3c0b8c8d27fd595ba04187685c4b1",
-      "bytes": 4813376,
-      "changes": "Existing artist triangles reindexed into static shell, paintwork, tyres and rims. Original vertex channels retained. Common driving rig.",
+      "sha256": "2466ed3607ddda0d534b1244c252932d08c00acef2e28a13acf602a937bfaa46",
+      "bytes": 5254544,
+      "changes": "Existing artist triangles reindexed into static shell, paintwork, tyres and rims. Original vertex channels retained. Common driving rig. Aligned quantized vertex rows to four bytes without changing attribute values.",
       "orientationEvidence": "Mesh side render shows rear lamps toward -Z and grille toward +Z.",
       "modelFit": {
         "wheelEnvelopes": [
@@ -334,7 +334,7 @@
         "sourceUrl": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e"
       },
       "apiAuthor": "WA7KVI",
-      "actualBytes": 1576792,
+      "actualBytes": 3276508,
       "title": "Ferrari Portofino",
       "author": "WA7KVI",
       "authorUrl": "https://sketchfab.com/WA7KVI",
@@ -344,37 +344,38 @@
       "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/ferrari-portofino.glb",
       "sourceSha256": "1d773081b9be973c79b1ba7154d8f026399dacd9bbb1f8399c694b9395847d91",
-      "sha256": "f017f06f3d0a80ff0edd32447d3c84e3e4045117e115e1a735671a02acd025f0",
-      "bytes": 1576792,
-      "changes": "Existing artist triangles reindexed into static shell, paintwork, tyres and rims. Original vertex channels retained. Common driving rig.",
-      "orientationEvidence": "Open-top artist scan faces +X. Rolling wheel patches follow the four front/rear tyre contacts in the original scan.",
+      "sha256": "b32850865e5ac0818d7bdeed10eed5abd59e4dab11ecca4aa33ebf195e9ccb38",
+      "bytes": 3276508,
+      "changes": "Removed tyre remnants and ground fragments from the fixed scan. Cleaned scanned paint and trim, fitted a curved transparent windshield, modelled the open cabin, alloy spokes and brake rotors, and fitted rounded tyre treads at the four original axle locations.",
+      "visualLengthMetres": 4.5941,
+      "orientationEvidence": "Open-top artist scan faces +X. The four fitted tyre treads roll around the preserved wheel centres.",
       "modelFit": {
         "wheelEnvelopes": [
           [
-            0.6728116273880005,
-            0.6456463038921356,
-            0.40935927629470825
+            0.6139620542526245,
+            0.6139621138572693,
+            0.2481582760810852
           ],
           [
-            0.6802728772163391,
-            0.6235226988792419,
-            0.4312903881072998
+            0.6139620542526245,
+            0.6139621138572693,
+            0.24815838783979416
           ],
           [
-            0.6699328422546387,
-            0.6518188416957855,
-            0.44542551040649414
+            0.6268296241760254,
+            0.6268296241760254,
+            0.28308433294296265
           ],
           [
-            0.6690500974655151,
-            0.6391011476516724,
-            0.4337559938430786
+            0.6268296241760254,
+            0.6268296241760254,
+            0.28308433294296265
           ]
         ],
         "dimensions": [
-          4.837,
-          2.1422,
-          1.2657
+          4.8214,
+          2.1246,
+          1.3045
         ]
       }
     },
@@ -397,7 +398,7 @@
         "sourceUrl": "https://sketchfab.com/3d-models/8fecd93279644ada9111c5bfa2226327"
       },
       "apiAuthor": "Socksthecat",
-      "actualBytes": 1347008,
+      "actualBytes": 1574780,
       "title": "Subaru BRZ Varis",
       "author": "Socksthecat",
       "authorUrl": "https://sketchfab.com/Socksthecat",
@@ -407,9 +408,9 @@
       "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/subaru-brz.glb",
       "sourceSha256": "e855fed9a979c664d0c477ddefe91323b37570f3703863ede5ed1106ddb8e2d1",
-      "sha256": "1a644167a221c799d12c16d733d48d490de6ba65a97e3d041dfbac955ed04f4e",
-      "bytes": 1347008,
-      "changes": "Original wide-body mesh with four added fitted wheels and common driving rig.",
+      "sha256": "55a1a4fa3b6ab245f426dd3f3f7f414de663180af5a1464f5f7ec8e0a51885f2",
+      "bytes": 1574780,
+      "changes": "Restored a single painted shell, graphite cabin, lamps and six single-layer windows derived from the source glazing. Preserved the roof antenna. Raised the sprung components 107.7 mm relative to the four fitted wheels to clear the inner fenders.",
       "orientationEvidence": "Rear wing -Z and nose +Z. The original wide-body exhibition mesh lacks tyre and rim surfaces. Alloy wheels fitted to the four original arches.",
       "modelFit": {
         "wheelEnvelopes": [
@@ -437,7 +438,7 @@
         "dimensions": [
           4.7269,
           1.9874,
-          1.3556
+          1.4633
         ]
       }
     }

@@ -1594,8 +1594,8 @@
       "extensions": [
         "KHR_materials_clearcoat"
       ],
-      "actualBytes": 1390584,
-      "sha256": "156805e5d8a69c3048bd76f7408937a4260bee2aeb30d30c27327d728a3f79ef",
+      "actualBytes": 1390144,
+      "sha256": "a49436925d8f3d28026a91f853f112896d29ed5090f94632001645029c86d393",
       "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/mclaren-720s.glb",
       "adapter": {
         "wheelPattern": "^(tyres|brake_dics)",
@@ -1614,8 +1614,9 @@
         "bodyHeight": 1.1126580238342285,
         "bodyCenterY": 0.0722615122795105
       },
-      "changes": "Original pinned GLB unchanged. Runtime proportional scaling, neutral wheel axes, 4-wheel separation and steering/rolling pivots, shared fictional cold-gas conversion, paint changes. City-only mass/dimension approximations; not experimental reference vehicles.",
-      "contributors": []
+      "changes": "Removed redundant stride metadata from the source model's tightly packed animation rotations. Original mesh and animation samples retained. Runtime proportional scaling, neutral wheel axes, four-wheel steering/rolling pivots, fictional cold-gas conversion and paint changes. City driving uses approximate mass and dimensions.",
+      "contributors": [],
+      "sourceSha256": "156805e5d8a69c3048bd76f7408937a4260bee2aeb30d30c27327d728a3f79ef"
     },
     {
       "id": "nissan-sentra",

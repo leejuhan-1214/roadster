@@ -30,9 +30,18 @@ test('ambient contact sits at each actual rotated hub, follows uneven supports a
     const hub=w.pos.clone().applyQuaternion(q).add(p);
     assert.ok(Math.abs((vertices.getX(i*4)+vertices.getX(i*4+2))/2-hub.x)<1e-6);
     assert.ok(Math.abs((vertices.getZ(i*4)+vertices.getZ(i*4+2))/2-hub.z)<1e-6);
-    assert.ok(Math.abs(vertices.getY(i*4)-w.surfaceY-.032)<1e-6);assert.ok(colors.getW(i*4)>.9);
+    assert.ok(Math.abs(vertices.getY(i*4)-w.surfaceY-.004)<1e-6);assert.ok(colors.getW(i*4)>.9);
   }
-  wheels[0].load=0;draw();assert.equal(colors.getW(0),0);assert.ok(colors.getW(4)>.9);
+  wheels[0].normalX=.06;wheels[0].normalZ=-.12;draw();
+  const hub=wheels[0].pos.clone().applyQuaternion(q).add(p);
+  for(let i=0;i<4;i++){
+    const dx=vertices.getX(i)-hub.x,dz=vertices.getZ(i)-hub.z;
+    const support=wheels[0].surfaceY-wheels[0].normalX*dx-wheels[0].normalZ*dz;
+    assert.ok(Math.abs(vertices.getY(i)-Math.max(0,support)-.004)<1e-6,'shadow stays on the tilted support');
+  }
+  wheels[1].surfaceY=-.003;draw();
+  assert.ok(Math.abs(vertices.getY(4)-.004)<1e-6,'roughness beneath the flat mesh does not hide its contact shadow');
+  wheels[1].surfaceY=0;wheels[0].load=0;draw();assert.equal(colors.getW(0),0);assert.ok(colors.getW(4)>.9);
   p.y+=1;draw();assert.equal(mesh.visible,false);
   mesh.material.map.dispose();mesh.material.dispose();mesh.geometry.dispose();
 });

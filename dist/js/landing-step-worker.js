@@ -1,4 +1,4 @@
-import {PhysicsSim} from './physics.js?v=20261120-basemass';
+import {PhysicsSim} from './physics.js?v=20261122-wheel-repair';
 import {LANDING_STEP,LANDING_AUDIT_STEPS,releaseLandingVehicle,recordLandingRelease,landingRunInput,updateLandingRun} from './landing-experiment.js?v=20261120-basemass';
 
 // Use the frozen release and the planner's original trigger in each replay.

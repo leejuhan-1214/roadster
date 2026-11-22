@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 export function tireSlipIntensity(w,lateral,speed){return w.load>100&&speed>2?Math.min(1,Math.max(0,(Math.abs(w.slip||0)-.12)*2,(Math.abs(lateral)-.7)/4)):0;}
 export class TireEffects {
  constructor(scene){
@@ -9,12 +10,12 @@ export class TireEffects {
   this.smoke=new THREE.Points(this.geometry,new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{scale:{value:500}},vertexShader:'attribute float opacity;attribute float size;varying float a;uniform float scale;void main(){a=opacity;vec4 p=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*p;gl_PointSize=clamp(size*scale/max(1.,-p.z),1.,110.);}',fragmentShader:'varying float a;void main(){float d=length(gl_PointCoord-.5)*2.;float soft=exp(-d*d*4.)*(1.-smoothstep(.65,1.,d));gl_FragColor=vec4(.72,.74,.75,a*soft);}' }));this.smoke.frustumCulled=false;scene.add(this.smoke);this.dummy=new THREE.Object3D();
  }
  reset(){this.emission=[];this.previous=[];this.next=0;this.marks.count=0;for(const p of this.particles)p.life=0;this.geometry.attributes.opacity.array.fill(0);this.geometry.attributes.opacity.needsUpdate=true;}
- update(sim,view,enabled){
+ update(sim,view,enabled,onCircuit=false){
   const time=sim.state.time;if(this.lastTime===null||time<this.lastTime||enabled!==this.enabled)this.reset();const dt=Math.min(.1,Math.max(0,time-(this.lastTime??time)));this.lastTime=time;this.enabled=enabled;this.marks.visible=this.smoke.visible=enabled;if(!enabled||!dt)return;
   const speed=Math.hypot(sim.state.vel.x,sim.state.vel.z),worldOmega=sim.state.omega.clone().applyQuaternion(sim.state.q);
   for(let i=0;i<sim.wheels.length;i++){
    const w=sim.wheels[i],rw=view.wheels[i],lever=w.pos.clone().applyQuaternion(sim.state.q),v=sim.state.vel.clone().add(new THREE.Vector3().crossVectors(worldOmega,lever));const side=new THREE.Vector3(Math.sin(w.steer),0,Math.cos(w.steer)).applyQuaternion(sim.state.q);const intensity=tireSlipIntensity(w,v.dot(side),speed);
-   const pos=rw.pos.clone();pos.y+=rw.compression||0;pos.applyQuaternion(view.state.q).add(view.state.pos);pos.y=Math.max(.045,(w.surfaceY||0)+.018);
+   const pos=rw.pos.clone();pos.y+=rw.compression||0;pos.applyQuaternion(view.state.q).add(view.state.pos);pos.y=onCircuit?(w.surfaceY||0)+.032:Math.max(0,w.surfaceY||0)+surfaceY.tireMark;
    const old=this.previous[i];if(intensity>0&&old){const distance=Math.hypot(pos.x-old.x,pos.z-old.z);if(distance>.035&&distance<3){this.dummy.position.copy(old).lerp(pos,.5);this.dummy.rotation.set(0,Math.atan2(-(pos.z-old.z),pos.x-old.x),0);this.dummy.scale.set(distance+.003,1,.8+.2*intensity);this.dummy.updateMatrix();this.marks.setMatrixAt(this.next++%1600,this.dummy.matrix);this.marks.count=Math.min(1600,this.next);this.marks.instanceMatrix.needsUpdate=true;}}
    this.previous[i]=intensity>0?pos:null;
    this.emission??=[];this.emission[i]=(this.emission[i]||0)+intensity*dt*28;if(!intensity)this.emission[i]=0;

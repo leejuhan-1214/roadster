@@ -15,6 +15,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-lynx-220.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.02,
@@ -49,6 +50,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-kongei-kk8s.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.08,
@@ -83,6 +85,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-spirit-300.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.110, 0.110],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.1325,
@@ -117,6 +120,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-srw-sector-p4.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.075, 0.080],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.137,
@@ -151,6 +155,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-sector-rb1.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.18,
@@ -185,6 +190,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-vieringe-5rb.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.01,
@@ -219,6 +225,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-silber-rblk.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.06,
@@ -253,6 +260,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-spirit-rb1lt.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.05,
@@ -288,6 +296,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls2-vortex-gt.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.085, 0.085],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.085,
@@ -322,6 +331,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls2-morley-r900.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.04,
@@ -356,6 +366,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-taipan-rb1.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.100],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.06,
@@ -390,6 +401,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-trb1-boxer-trbrs.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.100, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.04,
@@ -424,6 +436,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-archer-r9.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.03,
@@ -458,6 +471,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-vulture-v5r.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.076],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": -0.0955,
@@ -493,6 +507,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-ls1-newcastle-fury.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.065, 0.075],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.08,
@@ -527,6 +542,7 @@ export const ADDITIONAL_SPORTS_VEHICLES = [
     "url": "../assets/vehicles/sd-sc-boxer-96-2.glb",
     "yaw": 0,
     "adapter": {
+      "axleRideHeights": [0.105, 0.105],
       "wheelPattern": "^(Tire_|Rim_)",
       "tirePattern": "^Tire_",
       "splitX": 0.005,

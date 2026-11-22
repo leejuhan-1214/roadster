@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {pointOn,roadSegments,indexRoadSegments,planMedianPavement} from './city-median.js?v=20261118-frameperf1';
 import {planStationPortal,portalFurniture,createStationPortals,blocksStationApproach} from './station-portals.js?v=20261119-wide157';
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 export {roadSegments};
 
 // Street detail laid over the mapped roads, built in 256 m cells around the
@@ -137,16 +138,16 @@ export function buildStreetCell(plan,{road,paint,furniture,boxGeometry,warningPa
     geometry.setAttribute('position',new THREE.Float32BufferAttribute(position,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normal,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setAttribute('color',new THREE.Float32BufferAttribute(color,3));geometry.computeBoundingSphere();
     const mesh=new THREE.Mesh(geometry,material);mesh.name=name;mesh.receiveShadow=true;group.add(mesh);
   };
-  // Just above the carriageway (0.014) so the join does not flicker, below the junction patches (0.018).
-  surface(plan.fills,plan.patches,.0165,road,'divided avenue centre pavement');
-  surface(plan.lines,[],.0275,paint,'centre and bus-lane lines');
+  // Junctions cover the join where divided carriageways meet.
+  surface(plan.fills,plan.patches,surfaceY.median,road,'divided avenue centre pavement');
+  surface(plan.lines,[],surfaceY.busLine,paint,'centre and bus-lane lines');
   if(warningPavers&&plan.entrances.length){
     // The open end of the shelter is at u=3.1. A row of nine standard
     // 300 mm tiles begins 300 mm ahead of it and spans the 2.7 m clear width.
     const strip=new THREE.InstancedMesh(warningPavers.geometry,warningPavers.material,plan.entrances.length);
     const dummy=new THREE.Object3D();
     plan.entrances.forEach(({x,z,dx,dz},i)=>{
-      dummy.position.set(x+dx*3.55,.006,z+dz*3.55);dummy.rotation.y=Math.atan2(-dz,dx);
+      dummy.position.set(x+dx*3.55,surfaceY.sidewalk+.001,z+dz*3.55);dummy.rotation.y=Math.atan2(-dz,dx);
       dummy.updateMatrix();strip.setMatrixAt(i,dummy.matrix);
     });
     strip.receiveShadow=true;strip.computeBoundingSphere();strip.name='stair entrance tactile warning tiles';group.add(strip);

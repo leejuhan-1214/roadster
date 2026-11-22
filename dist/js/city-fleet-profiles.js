@@ -1684,7 +1684,7 @@ export const CITY_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/f7bece69400f4640a4a3be746b44998b",
-    "url": "../assets/vehicles/mclaren-720s.glb",
+    "url": "../assets/vehicles/mclaren-720s.glb?v=a49436925d8f",
     "yaw": 3.141592653589793,
     "adapter": {
       "wheelPattern": "^(tyres|brake_dics)",

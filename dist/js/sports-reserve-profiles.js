@@ -251,7 +251,7 @@ export const RESERVE_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/96ec5c34852f4c3090a755d4445f5e98",
-    "url": "../assets/vehicles/byd-seal.glb",
+    "url": "../assets/vehicles/byd-seal.glb?v=2466ed3607dd",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelPattern": "^Reserve(Tire|Rim)",
@@ -284,7 +284,7 @@ export const RESERVE_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/46631a0db29a437e95f36b45969d572e",
-    "url": "../assets/vehicles/ferrari-portofino.glb",
+    "url": "../assets/vehicles/ferrari-portofino.glb?v=b32850865e5a",
     "yaw": 0,
     "adapter": {
       "wheelPattern": "^Reserve(Tire|Rim)",
@@ -302,9 +302,9 @@ export const RESERVE_VEHICLES = [
     "dryMass": 1810,
     "massBasis": "City simulation class assumption, not a published or measured manufacturer mass; shared conversion rig +150 kg",
     "dimensionBasis": "Body envelopes measured on the mesh with a rounded simulation wheelbase, not OEM CAD",
-    "length": 4.837,
-    "width": 2.1422,
-    "height": 1.2657
+    "length": 4.8214,
+    "width": 2.1246,
+    "height": 1.3045
   },
   {
     "id": "subaru-brz",
@@ -317,7 +317,7 @@ export const RESERVE_VEHICLES = [
     "license": "CC BY 4.0",
     "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
     "source": "https://sketchfab.com/3d-models/8fecd93279644ada9111c5bfa2226327",
-    "url": "../assets/vehicles/subaru-brz.glb",
+    "url": "../assets/vehicles/subaru-brz.glb?v=55a1a4fa3b6a",
     "yaw": 1.5707963267948966,
     "adapter": {
       "wheelPattern": "^Reserve(Tire|Rim)",
@@ -337,6 +337,6 @@ export const RESERVE_VEHICLES = [
     "dimensionBasis": "Body envelopes measured on the mesh with a rounded simulation wheelbase, not OEM CAD",
     "length": 4.7269,
     "width": 1.9874,
-    "height": 1.3556
+    "height": 1.4633
   }
 ];

@@ -100,7 +100,7 @@ test('the centre district gets its avenues, signals and numbered exits from real
     for(const e of plan.entrances)if(e.station==='강남')refs.add(e.ref);
     const group=buildStreetCell(plan,{road:new THREE.MeshStandardMaterial(),paint:new THREE.MeshStandardMaterial(),furniture:new THREE.MeshStandardMaterial(),boxGeometry:new THREE.BoxGeometry(1,1,1)});
     group.traverse(o=>{if(o.isMesh)assert.ok(Array.from(o.geometry.attributes.position.array).every(Number.isFinite));});
-    for(const mesh of group.children)if(mesh.name==='divided avenue centre pavement'){const p=mesh.geometry.attributes.position,uv=mesh.geometry.attributes.uv;for(let i=0;i<p.count;i+=5){assert.ok(Math.abs(uv.getX(i)-p.getX(i)/4)<1e-4&&Math.abs(uv.getY(i)-p.getZ(i)/4)<1e-4,'same world-aligned asphalt as the carriageway');assert.ok(p.getY(i)>.014&&p.getY(i)<.018);}}
+    for(const mesh of group.children)if(mesh.name==='divided avenue centre pavement'){const p=mesh.geometry.attributes.position,uv=mesh.geometry.attributes.uv;for(let i=0;i<p.count;i+=5){assert.ok(Math.abs(uv.getX(i)-p.getX(i)/4)<1e-4&&Math.abs(uv.getY(i)-p.getZ(i)/4)<1e-4,'same world-aligned asphalt as the carriageway');assert.ok(p.getY(i)>0&&p.getY(i)<.001);}}
     group.userData.dispose();
   }
   assert.ok(total.fills>60&&total.masts>10&&total.entrances>=10,JSON.stringify(total));

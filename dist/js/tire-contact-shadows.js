@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 
 // One transparent draw for the ambient occlusion where rubber meets the road.
 // The body and airborne wheels separately cast real directional silhouettes.
@@ -50,9 +51,10 @@ export function updateTireContactShadows(mesh,position,rotation,wheels,physicsWh
       const ox=along*dx-side*dz,oz=along*dz+side*dx;
       const ny=Math.max(.25,physical.normalY||1);
       const slope=((physical.normalX||0)*ox+(physical.normalZ||0)*oz)/ny;
-      // OSM junction patches and painted road markings sit up to 3 cm above
-      // the zero-height collision surface. Place the contact over that surface.
-      const y=wheel.surfaceY+(mode==='city'?.032:.018)-slope;
+      const support=wheel.surfaceY-slope;
+      // Urban roughness is solved below the mesh resolution. Keep contact
+      // visible where a depression passes beneath a flat painted lane.
+      const y=mode==='city'?Math.max(0,support)+surfaceY.contactShadow:support+(mode==='circuit'?.032:.018);
       points.setXYZ(i*4+k,hub.x+ox,y,hub.z+oz);colors.setW(i*4+k,alpha);
     }
   }

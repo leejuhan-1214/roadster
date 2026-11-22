@@ -14,6 +14,38 @@ import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
 import {DrivingController,CITY_DRIVE_PARAMS} from '../dist/js/driving-input.js';
 import {RenderStateBuffer} from '../dist/js/render-state.js';
 import {FlightScene} from '../dist/js/scene.js';
+import {assertChassisClearance} from './chassis-clearance-helper.mjs';
+import {prepareRocketRetrofit} from '../dist/js/rocket-retrofit.js';
+
+// A tire with an off-centre hub can pass the axle-direction check while its
+// tread alternately floats and disappears through the road as it turns.
+const treadDirections=Array.from({length:16},(_,i)=>[Math.cos(i*Math.PI/8),Math.sin(i*Math.PI/8)]);
+function wheelSupportRadii(spin){
+  const radii=treadDirections.map(()=>-Infinity),point=new THREE.Vector3();
+  spin.updateWorldMatrix(true,true);
+  const inverse=spin.matrixWorld.clone().invert();
+  spin.traverse(mesh=>{
+    if(!mesh.isMesh)return;
+    const transform=new THREE.Matrix4().multiplyMatrices(inverse,mesh.matrixWorld);
+    const positions=mesh.geometry.getAttribute('position');
+    for(let i=0;i<positions.count;i++){
+      point.fromBufferAttribute(positions,i).applyMatrix4(transform);
+      for(let d=0;d<treadDirections.length;d++){
+        const [x,y]=treadDirections[d];
+        radii[d]=Math.max(radii[d],point.x*x+point.y*y);
+      }
+    }
+  });
+  return radii;
+}
+
+test('source car XML ride heights retain front and rear suspension settings in metres',()=>{
+  // <car>/<car>.xml: Front Left/Right Wheel and Rear Left/Right Wheel, ride height.
+  for(const [id,metres] of [
+    ['sd-36gp-milano-12c36',[.120,.120]],['sd-36gp-tridenti-v8ri',[.120,.120]],
+    ['sd-67gp-guthrie-eagle',[.090,.120]],['sd-ls1-vulture-v5r',[.065,.076]]
+  ])assert.deepEqual(VEHICLES.find(car=>car.id===id).adapter.axleRideHeights,metres,id);
+});
 
 for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotating hubs',async()=>{
   const gltf=await loadModelGeometry(profile);
@@ -61,6 +93,9 @@ for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotat
     }
   }
   for(const wheel of vehicle.wheels){
+    const support=wheelSupportRadii(wheel.userData.spinGroup);
+    assert.ok(Math.min(...support)>0.90*Math.max(...support),
+      profile.id+' '+wheel.name+' rotating geometry must remain centred on the hub');
     const tires=wheel.userData.spinGroup.children.filter(object=>profile.adapter?matchesSource(object,profile.adapter,'tire'):
       /tire|tyre|Thread|Sidewall/i.test((Array.isArray(object.material)?object.material:[object.material]).map(m=>m.name).join(' ')+object.name));
     assert.ok(tires.length>0,'the actual tire mesh must be identified, not rim geometry');
@@ -79,7 +114,7 @@ for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotat
   // renderer and inspector-return paths. A wheel group can rotate numerically
   // while its visible tire stays behind in the body assembly; the transformed
   // tire axle check catches that class of asset/parenting regression.
-  prepareAssessmentVehicle(vehicle);configureVehicleFit(vehicle,profile);
+  prepareAssessmentVehicle(vehicle);prepareRocketRetrofit(vehicle);configureVehicleFit(vehicle,profile);
   const sim=new PhysicsSim({...vehiclePhysics(profile,vehicle.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS,
     parkedWheelMounts:true,cityWheelGeometry:vehicle.cityWheelGeometry,cityGroundSupports:vehicle.cityGroundSupports,
     roadRoughness:0,aeroEnabled:false});
@@ -92,12 +127,14 @@ for(const profile of VEHICLES)test(profile.id+': real tire axes agree with rotat
   assert.equal(sim.state.gasUsed,0,'an untouched parked car must not consume cold gas');
   assert.ok(sim.contactCount>0,'a parked car must be supported by its tires');
   assert.equal(control.airborne,false,'parked support must not select flight controls');
+  assertChassisClearance(vehicle,profile,sim,true);
   const startX=sim.state.pos.x;
   for(let i=0;i<1000;i++){
     buffer.beforeStep();sim.step(.002,control.update(new Set(['KeyW']),sim,.002));buffer.afterStep(sim);
   }
   assert.equal(sim.state.gasUsed,0,'ordinary W driving must not spend gas on automatic flight');
   assert.ok(sim.state.pos.x>startX+1&&sim.state.vel.x>2,'W must drive forward from rest');
+  assertChassisClearance(vehicle,profile,sim,false);
   const rollingPose=buffer.sample(1);
   FlightScene.prototype.updateWheels.call(renderer,rollingPose.wheels,sim.cg);
   updateVehicleExplosion(vehicle,0,{inspect:false});vehicle.root.updateMatrixWorld(true);

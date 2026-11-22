@@ -14,7 +14,9 @@ test('road polygons and world UVs agree on neighbouring tile boundaries',()=>{
   const a=buildCityTile(input({roads:[road]}),{bounds}),b=buildCityTile(input({roads:[road]}),{bounds:{...bounds,minX:512,maxX:1024}});
   for(const tile of [a,b])for(const kind of ['road','walk','paint']){
     const points=worldVertices(tile,kind);assert.ok(points.length);
-    for(const [x,,z,u,v]of points){
+    for(const [x,y,z,u,v]of points){
+      if(kind==='road')assert.ok(y>=0&&y<.00101,'tile asphalt follows the tyre contact plane');
+      if(kind==='paint')assert.ok(y>.0014&&y<.00251,'tile markings clear asphalt by millimetres');
       assert.ok(x>=tile.bounds.minX-.0001&&x<=tile.bounds.maxX+.0001);
       assert.ok(z>=tile.bounds.minZ-.0001&&z<=tile.bounds.maxZ+.0001);
       assert.ok(Math.abs(u-x/4)<.0001&&Math.abs(v-z/4)<.0001);

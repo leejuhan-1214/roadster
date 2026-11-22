@@ -42,6 +42,10 @@ test('building convex collision pieces retain the original OSM boundary and volu
 test('complete city batches finite geometry and spatial lookup retains local collision shapes',()=>{
   const city=createCityWorld(data);
   try{
+    for(const [name,low,high] of [['OSM road network',0,.00101],['lane markings and crossings',.0014,.00251]]){
+      const position=city.root.getObjectByName(name).geometry.attributes.position;
+      for(let i=0;i<position.count;i++)assert.ok(position.getY(i)>=low&&position.getY(i)<=high,name+' must follow the tyre contact plane');
+    }
     let meshes=0,vertices=0;
     city.root.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;vertices+=p.count;for(const n of p.array)assert.ok(Number.isFinite(n));});
     assert.ok(meshes<40,'static city should not need thousands of draw calls');assert.ok(vertices<500000);

@@ -5,6 +5,8 @@ import {pavedMedianMask} from './city-median.js?v=20261118-frameperf1';
 import {treeColliders} from './city-tree-collision.js?v=20261111-trees2';
 import {speciesForRoad} from './city-tree-mix.js?v=20261111-trees2';
 
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
+
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const hash=id=>{let seed=Number(id);if(!Number.isFinite(seed)){seed=2166136261;for(const c of String(id))seed=Math.imul(seed^c.charCodeAt(0),16777619);}return ((Math.imul(seed|0,1664525)+1013904223)>>>0)/4294967296;};
 const palette=[0x9aa6ac,0xaeb9bd,0x81939d,0xc3beb3,0x8598a5,0xb8c0c3];
@@ -98,9 +100,9 @@ export function buildCityTile(data,options={}){
     const points=[...ring,...holes.flat()],faces=ShapeUtils.triangulateShape(ring.map(p=>new Vector2(...p)),holes.map(r=>r.map(p=>new Vector2(...p))));
     for(const f of faces)surface(kind,f.map(i=>points[i]),y,tint);
   }
-  surface('ground',[[bounds.minX,bounds.minZ],[bounds.maxX,bounds.minZ],[bounds.maxX,bounds.maxZ],[bounds.minX,bounds.maxZ]],-.052,0x92968a);
-  for(const feature of data.landuse||[])mappedSurface(feature,'green',-.035,/forest|wood|grass|park|recreation|meadow|garden/.test(feature.type||'')?0x75845c:0x9b9d8e);
-  for(const feature of data.water||[])mappedSurface(feature,'water',-.018,0x668c91);
+  surface('ground',[[bounds.minX,bounds.minZ],[bounds.maxX,bounds.minZ],[bounds.maxX,bounds.maxZ],[bounds.minX,bounds.maxZ]],surfaceY.tileGround,0x92968a);
+  for(const feature of data.landuse||[])mappedSurface(feature,'green',surfaceY.landuse,/forest|wood|grass|park|recreation|meadow|garden/.test(feature.type||'')?0x75845c:0x9b9d8e);
+  for(const feature of data.water||[])mappedSurface(feature,'water',surfaceY.water,0x668c91);
 
   const roads=[],segments=[],junctions=new Map();
   for(const source of data.roads||[]){
@@ -137,19 +139,19 @@ export function buildCityTile(data,options={}){
   const onMedianPavement=pavedMedianMask(data.roads||[]);
   for(const s of segments){
     const width=s.road.width,point=(t,offset=0)=>[s.a[0]+s.dx*t-s.dz*offset,s.a[1]+s.dz*t+s.dx*offset];
-    pavement('walk',s.a,s.b,width+4.6,.005,0xb6b4aa);pavement('road',s.a,s.b,width,.014,0xabb3b5);
+    pavement('walk',s.a,s.b,width+4.6,surfaceY.sidewalk,0xb6b4aa);pavement('road',s.a,s.b,width,surfaceY.asphalt,0xabb3b5);
     const j0=junctions.get(s.a.map(n=>n.toFixed(2)).join(',')),j1=junctions.get(s.b.map(n=>n.toFixed(2)).join(','));
     const start=j0?.count>2?Math.max(j0.width/2+3,8):1,end=s.length-(j1?.count>2?Math.max(j1.width/2+3,8):1);
     if(end>start&&width>=6){
-      if(!s.road.oneway)pavement('paint',point(start),point(end),.16,.027,0xe5b950);
+      if(!s.road.oneway)pavement('paint',point(start),point(end),.16,surfaceY.centreLine,0xe5b950);
       const lanes=Math.max(1,s.road.lanes||Math.round(width/3.2)),lo=Math.max(start,s.range[0]*s.length-5),hi=Math.min(end,s.range[1]*s.length+5);
       for(let lane=1;lane<lanes;lane++){
         const offset=-width/2+width*lane/lanes;if(!s.road.oneway&&Math.abs(offset)<.3)continue;
         const first=Math.floor((s.distance+lo)/10)*10-s.distance;
-        for(let t=first;t<hi;t+=10)if(t+4>start)pavement('paint',point(Math.max(t,start),offset),point(Math.min(t+4,end),offset),.13,.026,0xd9ddda);
+        for(let t=first;t<hi;t+=10)if(t+4>start)pavement('paint',point(Math.max(t,start),offset),point(Math.min(t+4,end),offset),.13,surfaceY.lane,0xd9ddda);
       }
-      for(const side of [-1,1])pavement('paint',point(start,side*(width/2-.3)),point(end,side*(width/2-.3)),.12,.026,0xd9ddda);
-      if(width>=8&&s.length>28)for(const [j,t]of [[j0,start],[j1,end]])if(j?.count>2)for(let o=-width/2+1;o<width/2-1;o+=1.4)pavement('paint',point(t-1.8,o),point(t+1.8,o),.65,.029,0xd9ddda);
+      for(const side of [-1,1])pavement('paint',point(start,side*(width/2-.3)),point(end,side*(width/2-.3)),.12,surfaceY.lane,0xd9ddda);
+      if(width>=8&&s.length>28)for(const [j,t]of [[j0,start],[j1,end]])if(j?.count>2)for(let o=-width/2+1;o<width/2-1;o+=1.4)pavement('paint',point(t-1.8,o),point(t+1.8,o),.65,surfaceY.crossing,0xd9ddda);
     }
     if(width>=8&&trees.length<192){
       const lo=Math.max(0,s.range[0]*s.length-3),hi=Math.min(s.length,s.range[1]*s.length+3);
@@ -163,7 +165,7 @@ export function buildCityTile(data,options={}){
   }
   for(const j of junctions.values()){
     if(j.point[0]<bounds.minX-j.width||j.point[0]>bounds.maxX+j.width||j.point[1]<bounds.minZ-j.width||j.point[1]>bounds.maxZ+j.width)continue;
-    disk('walk',j.point,j.width/2+2.3,.004,0xb6b4aa);disk('road',j.point,j.width/2,.018,0xabb3b5);
+    disk('walk',j.point,j.width/2+2.3,surfaceY.sidewalkJunction,0xb6b4aa);disk('road',j.point,j.width/2,surfaceY.junction,0xabb3b5);
   }
   const obstacles=trees.flatMap((tree,i)=>treeColliders(tree,{origin,id:`tree-${options.id||data.key||origin.join(',')}-${i}`}));
   for(const b of buildings){

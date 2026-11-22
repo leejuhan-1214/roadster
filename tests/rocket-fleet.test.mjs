@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VEHICLES,vehiclePhysics} from '../dist/js/vehicle-profiles.js';
 import {PhysicsSim,DEFAULTS} from '../dist/js/physics.js';
-import {DrivingController} from '../dist/js/driving-input.js';
+import {CITY_DRIVE_PARAMS,DrivingController} from '../dist/js/driving-input.js';
 import {rocketRollAuthority} from '../dist/js/rocket-flight.js';
 import {adaptRealVehicle,disposeVehicle} from '../dist/js/real-vehicle-model.js';
 import {adaptRoadsterScene} from '../dist/js/roadster-model.js';
@@ -13,6 +13,33 @@ import {configureVehicleFit} from '../dist/js/vehicle-fit.js';
 import {loadModelGeometry} from './model-loader-helper.mjs';
 const dt=.002, up=s=>1-2*(s.state.q.x**2+s.state.q.z**2);
 const selected=['mazda-miata-mx-5','bmw','ferrari','roadster','tesla-cybertruck'];
+for(const id of ['sd-67gp-kuiper-t81','sd-67gp-guthrie-eagle'])test(id+': level-road acceleration and rear boost keep tire contact',async()=>{
+ const profile=VEHICLES.find(p=>p.id===id),gltf=await loadModelGeometry(profile);
+ const car=adaptRealVehicle(gltf.scene,profile);
+ try{
+  prepareAssessmentVehicle(car);configureVehicleFit(car,profile);
+  const params={...vehiclePhysics(profile,car.geometryParams,DEFAULTS),...CITY_DRIVE_PARAMS,
+    parkedWheelMounts:true,cityWheelGeometry:car.cityWheelGeometry,cityGroundSupports:car.cityGroundSupports};
+  for(const boost of [false,true]){
+   const sim=new PhysicsSim(params),driver=new DrivingController(),idle=new Set(),pedals=new Set(['KeyW']);
+   if(boost)pedals.add('KeyF');
+   sim.reset('ground');
+   for(let i=0;i<350;i++)sim.step(dt,driver.update(idle,sim,dt));
+   const initial=sim.state.pos.clone();
+   for(let i=0;i<2500;i++){
+    sim.step(dt,driver.update(pedals,sim,dt));
+    assert.ok(sim.contactCount>0,'ordinary forward acceleration must stay on the road');
+   }
+   assert.ok(sim.state.pos.x-initial.x>50);
+   assert.ok(Math.abs(sim.state.pos.z-initial.z)<1,'neutral steering must hold a straight line');
+   assert.ok(Math.abs(sim.telemetry().attitude.yaw)<Math.PI/180);
+   assert.equal(sim.state.gasUsed>0,boost);
+   const lift=new Set(['Space','KeyF']);
+   for(let i=0;i<700;i++)sim.step(dt,driver.update(lift,sim,dt));
+   assert.equal(sim.contactCount,0,'commanded lift still works with the booster held');
+  }
+ }finally{disposeVehicle(car);}
+});
 for(const id of selected)test(id+': fitted real chassis uses shared jets and completes a physical roll within its authority envelope',async()=>{
  const profile=VEHICLES.find(p=>p.id===id),gltf=await loadModelGeometry(profile);
  const vehicle=id==='roadster'?adaptRoadsterScene(gltf.scene,createVehicle(),gltf.parser):adaptRealVehicle(gltf.scene,profile);

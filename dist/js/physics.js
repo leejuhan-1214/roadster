@@ -464,7 +464,9 @@ export class PhysicsSim {
     const lead=Math.max(.001,Number(p.valveTau)||.03)*(this.liftLayout.y-this.cg.y)*vertical/dt;
     tx-=lead*(this.gimbalDirection.z/this.gimbalDirection.y-oldGz);
     tz+=lead*(this.gimbalDirection.x/this.gimbalDirection.y-oldGx);
-    if(this.rocketProfile&&input.boost){
+    const groundBoost=this.rocketProfile&&input.boost&&p.parkedWheelMounts&&this.contactCount>0&&
+      !(input.lift>0||input.altHold||Number.isFinite(input.verticalAcceleration));
+    if(this.rocketProfile&&input.boost&&!groundBoost){
       // Off-centre rear jets create a real pitch moment. Counter it with the
       // belly jets, not a hidden torque or an orientation assignment.
       for(let i=4;i<8;i++){
@@ -488,7 +490,19 @@ export class PhysicsSim {
         allocation=allocateLift(vertical,tx-arm.x*sides[i-8],tz-arm.z*sides[i-8],this.gimbalDirection,this.cg,layoutMaximum.slice(0,4).map(n=>n.force),this.liftLayout);
         yawRequest=ty-allocation.yawTorque;
       }
-      desiredForces=[...allocation.thrust,...layoutMaximum.slice(4,8).map(n=>input.boost?n.force:0),...sides];
+      const rearJets=layoutMaximum.slice(4,8);
+      // On the road the suspension carries the rear jets' pitching moment.
+      // Reserve half the static axle support for drive torque and road relief.
+      // Opening belly valves to cancel this moment would launch a light car.
+      let boostFraction=input.boost?1:0;
+      if(groundBoost){
+        const arm=this.thrusters[4].pos.y;
+        const loadedAxle=arm<0?this.wheels[2]:this.wheels[0];
+        const momentLimit=.5*mass*gravity*Math.abs(loadedAxle.pos.x);
+        const fullMoment=Math.abs(arm)*rearJets.reduce((sum,jet)=>sum+jet.force,0);
+        boostFraction=Math.min(1,momentLimit/Math.max(1,fullMoment));
+      }
+      desiredForces=[...allocation.thrust,...rearJets.map(n=>n.force*boostFraction),...sides];
     }
     // Educational per-nozzle override, still constrained by valve lag and tank state.
     if (Array.isArray(input.thrusterCommands)) for (let i = 0; i < desiredForces.length; ++i)

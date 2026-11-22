@@ -8,6 +8,8 @@ import {loadExtraGangnamBuildings} from './gangnam-extra-buildings.js?v=20261118
 import {createStreetDetails} from './city-facades.js?v=20261118-circuit155';
 import {buildingColliders} from './city-building-collision.js?v=20261118-study150';
 
+import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
+
 const UP=new THREE.Vector3(0,1,0),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const palette=[0x9aa6ac,0xaeb9bd,0x81939d,0xc3beb3,0x8598a5,0xb8c0c3];
 const hash=id=>((Math.imul(Number(id)|0,1664525)+1013904223)>>>0)/4294967296;
@@ -154,7 +156,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const asphaltTexture=cityTexture('asphalt'),wallTexture=cityTexture('wall'),concreteTexture=cityTexture('concrete');
   const material=(color,extra={})=>new THREE.MeshStandardMaterial({color,vertexColors:true,roughness:.9,...extra});
   const roadMaterial=material(0xffffff,{map:asphaltTexture,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4}),walkMaterial=material(0xffffff,{map:concreteTexture,side:THREE.DoubleSide}),paintMaterial=material(0xffffff,{side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-8}),wallMaterial=material(0xffffff,{map:wallTexture,roughness:.68}),roofMaterial=material(0xffffff);
-  const base=new THREE.Mesh(new THREE.PlaneGeometry(plan.bounds.maxX-plan.bounds.minX+500,plan.bounds.maxZ-plan.bounds.minZ+500),new THREE.MeshStandardMaterial({color:0x92968a,roughness:1}));base.rotation.x=-Math.PI/2;base.position.y=-.04;base.receiveShadow=true;root.add(base);
+  const base=new THREE.Mesh(new THREE.PlaneGeometry(plan.bounds.maxX-plan.bounds.minX+500,plan.bounds.maxZ-plan.bounds.minZ+500),new THREE.MeshStandardMaterial({color:0x92968a,roughness:1}));base.rotation.x=-Math.PI/2;base.position.y=surfaceY.coreGround;base.receiveShadow=true;root.add(base);
   const glassMaterial=material(0xffffff,{map:cityTexture('glass'),roughness:.24,metalness:.28,envMapIntensity:.9});
   const streets=accumulator(),walks=accumulator(),paint=accumulator(),walls=accumulator(),glassWalls=accumulator(),roofs=accumulator();
   const junctionByKey=new Map(plan.junctions.map(j=>[j.point.map(n=>n.toFixed(1)).join(','),j]));
@@ -169,22 +171,22 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
   const onRoad=(x,z)=>roadSegmentsNear(x,z).some(s=>roadDistanceSquared(x,z,s)<(s.road.width/2+.5)**2);
   let signs=0;
   for(const s of plan.segments){
-    const width=s.road.width;pavement(walks,s.a,s.b,width+4.6,.005,sidewalkColor);pavement(streets,s.a,s.b,width,.014,asphaltColor);
+    const width=s.road.width;pavement(walks,s.a,s.b,width+4.6,surfaceY.sidewalk,sidewalkColor);pavement(streets,s.a,s.b,width,surfaceY.asphalt,asphaltColor);
     const point=(t,offset=0)=>[s.a[0]+s.dx*t-s.dz*offset,s.a[1]+s.dz*t+s.dx*offset];
     const startJ=junctionByKey.get(s.a.map(n=>n.toFixed(1)).join(',')),endJ=junctionByKey.get(s.b.map(n=>n.toFixed(1)).join(','));
     const start=startJ?.count>2?Math.max(startJ.width/2+3,8):1,end=s.length-(endJ?.count>2?Math.max(endJ.width/2+3,8):1);
     if(end>start&&width>=6){
-      if(!s.road.oneway)pavement(paint,point(start),point(end),.16,.027,yellow);
+      if(!s.road.oneway)pavement(paint,point(start),point(end),.16,surfaceY.centreLine,yellow);
       const lanes=Math.max(1,s.road.lanes||Math.round(width/3.2));
       for(let lane=1;lane<lanes;lane++){
         const offset=-width/2+width*lane/lanes;if(!s.road.oneway&&Math.abs(offset)<.3)continue;
-        for(let t=start+2;t<end-2;t+=10)pavement(paint,point(t,offset),point(Math.min(t+4,end),offset),.13,.026,white);
+        for(let t=start+2;t<end-2;t+=10)pavement(paint,point(t,offset),point(Math.min(t+4,end),offset),.13,surfaceY.lane,white);
       }
-      for(const side of [-1,1])pavement(paint,point(start,side*(width/2-.3)),point(end,side*(width/2-.3)),.12,.026,white);
+      for(const side of [-1,1])pavement(paint,point(start,side*(width/2-.3)),point(end,side*(width/2-.3)),.12,surfaceY.lane,white);
     }
     // Zebra crossings are attached to actual branching road nodes.
     if(width>=8&&s.length>28)for(const [j,t]of [[startJ,start],[endJ,end]])if(j?.count>2){
-      for(let offset=-width/2+1;offset<width/2-1;offset+=1.4)pavement(paint,point(t-1.8,offset),point(t+1.8,offset),.65,.029,white);
+      for(let offset=-width/2+1;offset<width/2-1;offset+=1.4)pavement(paint,point(t-1.8,offset),point(t+1.8,offset),.65,surfaceY.crossing,white);
     }
     if(s.length>35&&width>=8)for(let t=15;t<s.length-10;t+=48)for(const side of [-1,1]){
       const p=point(t,side*(width/2+1.65));if(occupied(...p)||onRoad(...p)||onMedianPavement(...p))continue;
@@ -201,7 +203,7 @@ export function createCityWorld(data,{treeAsset=null,landmarkAssets=[]}={}){
       const texture=labelTexture(s.road.name);if(texture){const sign=new THREE.Mesh(new THREE.PlaneGeometry(5.6,1.4),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));const p=point(19,width/2+1.9);sign.position.set(p[0],5.4,p[1]);sign.rotation.y=Math.atan2(s.dx,s.dz);root.add(sign);signs++;}
     }
   }
-  for(const j of plan.junctions){disk(walks,j.point,j.width/2+2.3,.004,sidewalkColor);disk(streets,j.point,j.width/2,.018,asphaltColor);}
+  for(const j of plan.junctions){disk(walks,j.point,j.width/2+2.3,surfaceY.sidewalkJunction,sidewalkColor);disk(streets,j.point,j.width/2,surfaceY.junction,asphaltColor);}
   for(const b of plan.buildings){
     if(landmarkIds.has(String(b.id)))continue;
     const color=new THREE.Color(palette[Math.floor(hash(b.id)*palette.length)]),roofColor=color.clone().multiplyScalar(.63),points=b.points;

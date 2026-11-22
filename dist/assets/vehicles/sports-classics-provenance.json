@@ -37,7 +37,8 @@
       }
     ],
     "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
-    "missingSourceTextures": []
+    "missingSourceTextures": [],
+    "wheelConversion": "Authored unblurred wheel mesh for each XML axle, including tire, rim and original atlas UV coordinates. Tire diameter and width are fitted to the source configuration."
   },
   {
     "id": "sd-36gp-milano-12c36",
@@ -57,7 +58,8 @@
       }
     ],
     "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
-    "missingSourceTextures": []
+    "missingSourceTextures": [],
+    "wheelConversion": "Authored unblurred wheel mesh for each XML axle, including tire, rim and original atlas UV coordinates. Tire diameter and width are fitted to the source configuration."
   },
   {
     "id": "sd-preview-milano-155",
@@ -117,7 +119,8 @@
       }
     ],
     "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
-    "missingSourceTextures": []
+    "missingSourceTextures": [],
+    "wheelConversion": "Authored unblurred wheel mesh for each XML axle, including tire, rim and original atlas UV coordinates. Tire diameter and width are fitted to the source configuration."
   },
   {
     "id": "sd-36gp-motorunion-typec",
@@ -137,7 +140,8 @@
       }
     ],
     "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
-    "missingSourceTextures": []
+    "missingSourceTextures": [],
+    "wheelConversion": "Authored unblurred wheel mesh for each XML axle, including tire, rim and original atlas UV coordinates. Tire diameter and width are fitted to the source configuration."
   },
   {
     "id": "sd-36gp-silber-w25b",
@@ -157,7 +161,8 @@
       }
     ],
     "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
-    "missingSourceTextures": []
+    "missingSourceTextures": [],
+    "wheelConversion": "Authored unblurred wheel mesh for each XML axle, including tire, rim and original atlas UV coordinates. Tire diameter and width are fitted to the source configuration."
   },
   {
     "id": "sd-36gp-tridenti-v8ri",
@@ -177,7 +182,8 @@
       }
     ],
     "conversion": "High-detail ACC triangle strips and source UV/materials to GLB. Source wheel artwork fitted to rounded tires with source XML axle spacing, rim diameter, tire width and aspect ratio. Exterior paint bindings and interior glazing separated. Driver figure omitted. Textures resized and embedded. Same artwork license applies to this adaptation.",
-    "missingSourceTextures": []
+    "missingSourceTextures": [],
+    "wheelConversion": "Authored unblurred wheel mesh for each XML axle, including tire, rim and original atlas UV coordinates. Tire diameter and width are fitted to the source configuration."
   },
   {
     "id": "sd-67gp-cavallo-123",
