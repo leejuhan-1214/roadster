@@ -13,7 +13,7 @@ export const CITY_EXPERIMENT_DEFAULTS=Object.freeze({
 export const BRAKE_STOP_SPEED=.1; // m/s; the displayed integer km/h is not a stop detector.
 export const BRAKE_DECEL_WINDOW=.05; // Peak horizontal speed loss averaged over 50 ms.
 export const BRAKE_REASONS=Object.freeze({
-  collision:'장애물 충돌',airborne:'접지 상실',released:'정지 전 B 해제',
+  collision:'장애물 충돌',airborne:'접지 상실',released:'정지 전 B 해제',warp:'지도에서 순간이동',
   'settings-changed':'실험 조건 변경','vehicle-changed':'차체 변경',
   reset:'주행 초기화',paused:'일시정지',timeout:'60초 안에 정지하지 않음',thrust:'추진기 작동',
   invalid:'유효하지 않은 측정 상태',drift:'드리프트 입력','map-boundary':'지도 경계에서 주행 중단',

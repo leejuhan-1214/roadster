@@ -268,6 +268,17 @@ export function createStreetOverlay(city,points){
     root.add(group);cells.set(key,cell);return cell;
   };
   return {root,cells,portals,
+    // A warp may select a distant road while normal view streaming is paused.
+    // Register the same street furniture that approaching this cell would build.
+    prepareCellAt(x,z){
+      if(disposed)return false;
+      const cx=Math.floor(x/STREET_CELL),cz=Math.floor(z/STREET_CELL),bounds=boundsOf(cx,cz);
+      if(!ready(bounds))return false;
+      const cell=cells.get(cx+','+cz),sources=nearbySources(bounds);
+      if(!cell||sources.length!==cell.sources.length||sources.some((roads,i)=>roads!==cell.sources[i]))
+        build(cx,cz,bounds,sources);
+      return true;
+    },
     /** Build at most one cell per call; cells behind the vehicle are released. */
     update(x,z){
       if(disposed)return;

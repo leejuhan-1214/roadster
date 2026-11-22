@@ -1,7 +1,7 @@
 import {experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
-import {LandingStepAuditPanel,STEP_AUDIT_MARKUP} from './landing-step-audit.js?v=20261122-roadhandling';
+import {LandingStepAuditPanel,STEP_AUDIT_MARKUP} from './landing-step-audit.js?v=20261123-seoul-warp';
 import {brakeTimelinePlot} from './landing-brake-timeline.js?v=20261118-study150';
-import {LandingHeightStudyPanel} from './landing-height-study-ui.js?v=20261122-roadhandling';
+import {LandingHeightStudyPanel} from './landing-height-study-ui.js?v=20261123-seoul-warp';
 import {copyLandingConditions} from './landing-report.js?v=20261120-basemass';
 import {landingTheory,landingImpulseAudit,landingTradeoff,landingTargetMet,landingReactionTrace,sameLandingModel} from './landing-analysis.js?v=20261120-basemass';
 const METHODS = {free:'자유 낙하',brake:'지면 전 추력 제동',gentle:'완만한 하강 제어',eco:'절약 착지'};

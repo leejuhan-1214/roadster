@@ -203,7 +203,7 @@ export class LandingHeightStudyPanel{
       const key=JSON.stringify(source);
       if(reuse&&this.cacheKey===key&&this.study){this.present(this.study);return;}
       if(typeof Worker==='undefined')throw new Error('이 브라우저에서 백그라운드 계산을 시작할 수 없습니다.');
-      const worker=new Worker(new URL('./landing-height-worker.js?v=20261122-roadhandling',import.meta.url),{type:'module'});
+      const worker=new Worker(new URL('./landing-height-worker.js?v=20261123-seoul-warp',import.meta.url),{type:'module'});
       this.worker=worker;
       worker.onerror=event=>{
         if(this.serial!==serial)return;

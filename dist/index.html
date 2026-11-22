@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./landing-research.css?v=20261118-study150">
 <link rel="stylesheet" href="./landing-height-study.css?v=20261119-study160">
 <link rel="stylesheet" href="./station-race.css?v=20261119-ai158">
-<link rel="stylesheet" href="./seoul-map.css?v=20261118-atlas156">
+<link rel="stylesheet" href="./seoul-map.css?v=20261123-seoul-warp">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head><body class="quality-smooth">
 <canvas id="world" aria-label="착지 충격과 차체 구조를 관찰하는 3D 공간" tabindex="0"></canvas>
@@ -57,7 +57,7 @@
 <div class="city-experiment-actions"><button id="city-brake-csv" disabled>기록 CSV</button><button id="city-brake-clear" disabled>기록 지우기</button><button id="city-drive-focus">운전으로 돌아가기</button></div><p class="micro city-experiment-note">같은 출발 속도·차체·경로에서 비교 · 정지 기준 0.36 km/h 미만<br>최대 감속은 50 ms 평균 · 반응거리 제외<br>충돌·이륙·드리프트·B 해제 시 무효 · 착지 실험 조건은 별도</p>
 </aside>
 <div class="city-location"><b id="city-road">강남역 · 서울</b><span>W/S 전후진 · A/D 지상 조향 / 공중 옆이동 · B 제동<br>Space 상승 · F 추진 가속 · Shift 드리프트 · Q/E 공중 회전 · H 높이 유지<br>마우스 드래그 시점 · 휠 확대 · C 카메라 · R 복귀</span></div>
-<div class="city-map-wrap"><div id="race-entrance-hint" hidden><span aria-hidden="true">⚑</span> <span id="race-entrance-text"></span></div><button type="button" id="seoul-map-open" aria-label="서울 주행 지도 크게 보기" aria-haspopup="dialog" aria-controls="seoul-map-dialog" title="서울 주행 지도 크게 보기 (M)"><canvas id="city-map" width="210" height="170" aria-label="주변 도로와 내 차 위치"></canvas><span class="mini-map-caption">서울 지도 <span aria-hidden="true">⤢</span></span></button><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></div>
+<div class="city-map-wrap"><div id="race-entrance-hint" hidden><span aria-hidden="true">⚑</span> <span id="race-entrance-text"></span></div><button type="button" id="seoul-map-open" aria-label="서울 지도 및 워프 지점 열기" aria-haspopup="dialog" aria-controls="seoul-map-dialog" title="서울 지도 및 워프 지점 열기 (M)"><canvas id="city-map" width="210" height="170" aria-label="주변 도로와 내 차 위치"></canvas><span class="mini-map-caption">서울 지도 · 워프 <span aria-hidden="true">⤢</span></span></button><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></div>
 <div class="city-speedometer glass"><div><b id="city-speed">0</b><span>km/h</span><strong id="city-gear">N</strong></div><div class="city-drive-state"><span id="city-drive-state">지상 · 건조 μ 1.15</span><span id="city-steering">조향 0°</span></div><div class="city-heading-reading"><span id="city-heading">방향 0°</span><span id="city-key-hint">W/S와 함께 A/D 조향</span></div><p><span id="city-motion">정지 유지</span><span id="city-acceleration">0.0 m/s²</span></p><div class="pedal-track"><i id="city-throttle"></i></div><div class="pedal-track brake"><i id="city-brake"></i></div><dl class="city-flight-readings"><div><dt title="차체 중심 아래의 노면에서 정차 자세를 0 m로 표시합니다.">노면 기준</dt><dd id="city-altitude">0.0 m</dd></div><div><dt>수직</dt><dd id="city-vertical">0.0 m/s</dd></div><div><dt>기체</dt><dd id="city-gas">375 kg</dd></div></dl><button id="city-hover" aria-pressed="false" title="현재 노면 기준 높이 유지 켜기 / 끄기 (H)">H 고도 유지</button><button id="city-flip" data-drive="KeyX" title="공통 추진 장치 · 충분한 높이와 기체에서 공중제비"><kbd>X</kbd> 공중제비</button><button id="city-land" aria-pressed="false" title="현재 위치에서 수평 감속 후 착지 보조">착지 보조</button><small id="city-distance">0.00 km</small></div>
 <p id="city-boundary" class="city-boundary" hidden>실제 지도 범위 밖 · R로 출발점 복귀</p>
 <div class="city-touch glass" aria-label="주행과 비행 조작"><p id="city-flight-status">Space 상승 · F 추진 가속 · Shift 드리프트</p><div><button data-drive="KeyW" aria-label="전진 가속 또는 전방 분사"><kbd>W</kbd>전진</button><button data-drive="KeyS" aria-label="제동 후 후진 또는 후방 분사"><kbd>S</kbd>후진</button><button data-drive="KeyA" aria-label="왼쪽 조향 또는 공중 왼쪽 수평 분사"><kbd>A</kbd>왼쪽</button><button data-drive="KeyD" aria-label="오른쪽 조향 또는 공중 오른쪽 수평 분사"><kbd>D</kbd>오른쪽</button><button data-drive="KeyB" aria-label="제동"><kbd>B</kbd>제동</button><button data-drive="Space" aria-label="상승 분사"><kbd>Space</kbd>상승</button><button data-drive="KeyF" aria-label="추진 가속 부스트"><kbd>F</kbd>가속</button><button data-drive="ShiftLeft" aria-label="지상 후륜 핸드브레이크 드리프트"><kbd>Shift</kbd>드리프트</button></div><div><button data-drive="KeyQ" aria-label="왼쪽 기수 회전"><kbd>Q</kbd>좌회전</button><button data-drive="KeyE" aria-label="오른쪽 기수 회전"><kbd>E</kbd>우회전</button><button data-drive="ArrowUp" aria-label="지상 전진 또는 공중 기수 내리기"><kbd>↑</kbd>전진/숙임</button><button data-drive="ArrowDown" aria-label="지상 후진 또는 공중 기수 올리기"><kbd>↓</kbd>후진/들기</button><button data-drive="ArrowLeft" aria-label="지상 왼쪽 조향 또는 공중 왼쪽 기울기"><kbd>←</kbd>좌/기울기</button><button data-drive="ArrowRight" aria-label="지상 오른쪽 조향 또는 공중 오른쪽 기울기"><kbd>→</kbd>우/기울기</button><button id="city-vectors" aria-pressed="false" title="힘 벡터 표시 (V)"><kbd>V</kbd>힘 표시</button></div></div>
@@ -93,14 +93,15 @@
     <button type="button" id="seoul-map-locate" aria-pressed="false">내 차</button>
     <select id="seoul-map-place" aria-label="지도에서 볼 다리 또는 랜드마크"><option value="">다리 · 랜드마크 찾기</option></select>
   </nav>
-  <div class="seoul-map-surface"><canvas id="seoul-map-canvas" tabindex="0" aria-label="한강과 서울 일대 지도. 방향키로 이동하고 더하기와 빼기로 확대하거나 축소할 수 있습니다."></canvas></div>
+  <div class="seoul-map-surface"><canvas id="seoul-map-canvas" tabindex="0" aria-label="서울 주행 지도. 워프 지점을 누르거나 지도 아래 목록에서 선택하세요. 숫자 표시는 가까운 워프 지점 수입니다. 방향키로 이동하고 더하기와 빼기로 확대하거나 축소할 수 있습니다."></canvas><div id="seoul-warp-status" role="status"></div></div>
   <div id="seoul-map-loading" role="status" hidden><span></span><button type="button" id="seoul-map-retry" hidden>다시 불러오기</button></div>
-  <footer class="seoul-map-footer"><div class="seoul-map-key"><span><i class="map-car-key" aria-hidden="true"></i>내 차</span><span><i class="map-route-key" aria-hidden="true"></i>주행 경로</span></div>
+  <footer class="seoul-map-footer"><div class="seoul-warp-controls"><select id="seoul-map-warp" aria-label="순간이동할 워프 지점"><option value="">워프 지점 선택</option></select><button type="button" id="seoul-map-travel" disabled>순간이동</button></div>
+    <div class="seoul-map-key"><span><i class="map-car-key" aria-hidden="true"></i>내 차</span><span><i class="map-route-key" aria-hidden="true"></i>주행 경로</span><span><i class="map-warp-key" aria-hidden="true">◆</i>워프</span></div>
     <div class="seoul-map-zoom" aria-label="지도 배율"><button type="button" id="seoul-map-out" aria-label="지도 축소">−</button><button type="button" id="seoul-map-in" aria-label="지도 확대">+</button></div>
   </footer>
   <div class="seoul-map-credit"><span id="seoul-map-source"></span><span><a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a></span></div>
 </dialog>
-<script type="module" id="app-entry" src="./js/main.js?v=20261122-roadhandling"></script>
+<script type="module" id="app-entry" src="./js/main.js?v=20261123-seoul-warp"></script>
 <script>
   const entry = document.getElementById('app-entry');
   const retry = document.getElementById('boot-retry');

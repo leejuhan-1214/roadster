@@ -372,7 +372,7 @@ function mapLabels(ctx,view,map,vehicle,compact,reserved=[]){
     if(compact&&reserved.some(box=>overlaps([x-3,y-3,x+3,y+3],box)))continue;
     const bridge=p.kind==='bridge',selected=view.placeId===p.id;
     const fill=bridge?'#b0dee2':(pointColours[p.kind]||'#e4ebef');
-    if(!bridge){
+    if(!bridge&&(selected||!reserved.some(rect=>overlaps([x-3,y-3,x+3,y+3],rect)))){
       ctx.beginPath();ctx.arc(x,y,selected?5:3.1,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();
       ctx.lineWidth=1.5;ctx.strokeStyle='#172a31';ctx.stroke();
     }
@@ -431,21 +431,52 @@ function portalMarkers(ctx,v,vehicle){
   ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-4,-4);ctx.lineTo(-4,4);ctx.closePath();ctx.fillStyle='#ffe38b';ctx.fill();ctx.restore();
 }
 
-export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{}}){
+// Cluster by screen distance so nearby stops separate naturally as the driver zooms.
+function warpMarkers(ctx,view,points,selectedId){
+  const hits=[];
+  for(const point of points){
+    const [px,py]=project(view,point.x,point.z);
+    if(px<4||py<4||px>view.width-4||py>view.height-4)continue;
+    const selected=point.id===selectedId;
+    const neighbor=selected?null:hits.find(h=>!h.selected&&Math.hypot(px-h.px,py-h.py)<29);
+    if(neighbor){neighbor.count++;continue;}
+    hits.push({warp:point,px,py,selected,count:1});
+  }
+  // A selected pin stays visible above its neighbors, including at overview scale.
+  hits.sort((a,b)=>Number(a.selected)-Number(b.selected));
+  for(const hit of hits){
+    const {px,py,selected,count}=hit,r=selected||count>1?10:7;
+    hit.rect=[px-r-3,py-r-3,px+r+3,py+r+3];
+    ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);
+    ctx.fillStyle=selected?'#f4e8ff':'#49385e';ctx.fill();
+    ctx.lineWidth=selected?2.5:1.6;ctx.strokeStyle=selected?'#b994ef':'#e2c7ff';ctx.stroke();
+    if(count>1){
+      ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle='#ffffff';ctx.fillText(String(count),px,py+.5);
+    }else{
+      ctx.beginPath();ctx.moveTo(px,py-4);ctx.lineTo(px+3.5,py);ctx.lineTo(px,py+4);ctx.lineTo(px-3.5,py);ctx.closePath();
+      ctx.fillStyle=selected?'#55396e':'#eedeff';ctx.fill();
+    }
+  }
+  return hits.reverse();
+}
+
+export function createSeoulDrivingMap({miniCanvas,largeCanvas,warpPoints=[],onViewChange=()=>{}}){
   const view=new SeoulViewport(),miniCache={},largeCache={},locatorCache={},regionCache={};
   const originalMini={width:miniCanvas.width,height:miniCanvas.height};
   let dataset=null,map=null,vehicle=null,large=false,racing=false,frame=null,active=true,hits=[];
-  let lastVehicle=null,lastTap=null,drag=null;
+  let lastVehicle=null,lastTap=null,drag=null,warpId=null;
   const pointers=new Map(),listeners=[];
   const schedule=()=>{
     if(!active||racing||frame!==null)return;
     frame=requestAnimationFrame(()=>{frame=null;render();});
   };
-  function change(){hits=[];lastVehicle=null;onViewChange(view.state());schedule();}
+  function notify(){onViewChange({...view.state(),warpId});}
+  function change(){hits=[];lastVehicle=null;notify();schedule();}
   function viewSize(){
     const size=frameSize(largeCanvas);
     if(size&&(view.width!==size.width||view.height!==size.height)){
-      view.resize(size.width,size.height);onViewChange(view.state());
+      view.resize(size.width,size.height);notify();
     }
     return size;
   }
@@ -463,10 +494,11 @@ export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{
       const locator=miniLocator(ctx,map,vehicle,w,h,locatorCache);
       if(locator)reserved.push(locator);
     }
-    const labels=mapLabels(ctx,v,map,vehicle,compact,reserved);
+    const warps=compact?[]:warpMarkers(ctx,v,warpPoints,warpId);
+    const labels=mapLabels(ctx,v,map,vehicle,compact,reserved.concat(warps.map(hit=>hit.rect)));
     car(ctx,v,vehicle,compact?5.5:8);mapScale(ctx,v);compass(ctx,12,4);
     if(!compact){
-      hits=labels;
+      hits=[...warps,...labels];
       const [px,py]=project(v,vehicle.x,vehicle.z);
       if(px<0||px>w||py<0||py>h){
         const dx=px-w/2,dy=py-h/2;
@@ -494,9 +526,14 @@ export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{
       paint(miniCanvas,local,miniCache,size.ratio,true);
     }
   }
-  function fit(){view.fit();change();}
-  function locate(){if(vehicle){view.focus(vehicle.x,vehicle.z,null,'follow');change();}}
-  function focus(x,z,id=null){view.focus(x,z,id,'place',destinationSpan(map,x,z,id));change();}
+  function fit(){warpId=null;view.fit();change();}
+  function locate(){if(vehicle){warpId=null;view.focus(vehicle.x,vehicle.z,null,'follow');change();}}
+  function focus(x,z,id=null){warpId=null;view.focus(x,z,id,'place',destinationSpan(map,x,z,id));change();}
+  function focusWarp(id){
+    const point=warpPoints.find(point=>point.id===id);
+    if(!point)return;
+    warpId=id;view.focus(point.x,point.z,null,'warp',1150);change();
+  }
   function zoomBy(factor,px,py){
     if(!Number.isFinite(factor)||factor<=0)return;
     view.zoom(factor,px,py);change();
@@ -554,7 +591,13 @@ export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{
       let nearest=e.pointerType==='touch'?15:9;
       for(const h of hits){const d=Math.hypot(h.px-p[0],h.py-p[1]);if(d<nearest){target=h;nearest=d;}}
     }
-    if(target?.locate)locate();else if(target)focus(target.x,target.z,target.id);
+    if(target?.locate)locate();
+    else if(target?.count>1){
+      const anchor=view.at(target.px,target.py);
+      view.zoom(2.8,target.px,target.py);view.moveAnchor(anchor,view.width/2,view.height/2);
+      warpId=null;lastTap=null;change();
+    }else if(target?.warp)focusWarp(target.warp.id);
+    else if(target)focus(target.x,target.z,target.id);
   }
   function keyDown(e){
     if(!large||e.altKey||e.ctrlKey||e.metaKey)return;
@@ -612,7 +655,7 @@ export function createSeoulDrivingMap({miniCanvas,largeCanvas,onViewChange=()=>{
       close();miniCanvas.width=originalMini.width;miniCanvas.height=originalMini.height;
     }else{lastVehicle=null;schedule();}
   }
-  return {view,setData,update,fit,focus,locate,zoomBy,resize:schedule,setRaceActive,
+  return {view,setData,update,fit,focus,focusWarp,locate,zoomBy,resize:schedule,setRaceActive,
     open(){if(racing)return;large=true;viewSize();change();},close,
     dispose(){
       active=false;if(frame!==null)cancelAnimationFrame(frame);

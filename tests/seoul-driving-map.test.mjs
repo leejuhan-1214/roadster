@@ -57,6 +57,38 @@ const data={bounds,water:[[[-5100,-4000],[5100,-4000],[5100,-3000],[-5100,-3000]
   islands:[],blocks:[[[-80,-80],[0,-80],[0,0],[-80,0]]],roads:[{kind:'secondary',points:[[-4000,0],[4000,0]]}],
   landmarks:[{id:'station',name:'강남역',x:1700,z:900,kind:'station'},{id:'temple',name:'봉은사',x:3200,z:-1400,kind:'temple'}],
   bridges:[{id:'han',name:'한남대교',label:[1200,-3500],points:[[1200,-4100],[1200,-2900]]}]};
+
+test('expanded map clusters nearby warp stops, supports touch selection, and keeps the minimap clear',t=>{
+  const {canvas,flush}=environment(t),large=canvas(550,420),mini=canvas(190,145),changes=[];
+  const a={id:'east',x:1300,z:0},b={id:'market',x:1710,z:0};
+  const m=createSeoulDrivingMap({miniCanvas:mini,largeCanvas:large,warpPoints:[a,b],onViewChange:s=>changes.push(s)});
+  const pose={x:-1700,z:500,yaw:.3,route:[]};
+  m.setData(data);m.update(pose);flush();
+  assert.ok(!mini.labels.includes('2'));
+  m.open();flush();
+  assert.ok(large.labels.includes('2'));
+  const tap=(point,time)=>{
+    const event={clientX:(point.x-m.view.x)*m.view.scale+m.view.width/2,
+      clientY:(point.z-m.view.z)*m.view.scale+m.view.height/2,timeStamp:time};
+    large.emit('pointerdown',event);large.emit('pointerup',event);flush();
+  };
+  const scale=m.view.scale;
+  tap(a,1000);
+  assert.ok(m.view.scale>scale);
+  assert.equal(changes.at(-1).warpId,null);
+  tap(b,2000);
+  assert.equal(changes.at(-1).warpId,b.id);
+  assert.deepEqual([m.view.x,m.view.z],[b.x,b.z]);
+  large.emit('keydown',{key:'ArrowRight'});flush();
+  assert.equal(changes.at(-1).warpId,b.id,'panning preserves a chosen warp');
+  m.focusWarp(a.id);flush();
+  assert.equal(changes.at(-1).warpId,a.id,'dropdown selection also focuses individual points');
+  m.locate();flush();
+  assert.equal(changes.at(-1).warpId,null);
+  assert.deepEqual([m.view.x,m.view.z],[pose.x,pose.z]);
+  m.dispose();
+});
+
 test('both maps show river context, route discontinuities and a separate car; opening and landmark jumps preserve pose',t=>{
   const {canvas,flush}=environment(t),mini=canvas(190,145),large=canvas(940,600),changes=[];
   const m=createSeoulDrivingMap({miniCanvas:mini,largeCanvas:large,onViewChange:s=>changes.push(s)});

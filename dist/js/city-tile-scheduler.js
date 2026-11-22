@@ -1,7 +1,8 @@
 // Bounded, asynchronous real-map streaming. No geometry is generated in update().
 export function createTileScheduler({manifest,load,hydrate,onActivate=()=>{},onEvict=()=>{},now=()=>performance.now(),budgetMs=2,radius=2,concurrency=2}){
   const size=manifest.tileSize,entries=manifest.tiles,chunks=new Map(),pending=new Map(),staging=new Map(),failures=new Map();
-  const retiring=new Set();
+  const retiring=new Set(),reservations=new Map();
+  let reservationsChanged=false;
   let wanted=new Set(),keep=new Set(),ordered=[],disposed=false,revision=0,requests=0;
   let anchorX,anchorZ,forwardX,forwardZ,needsPump=true,nextRetry=Infinity;
   const keyAt=(x,z)=>Math.floor(x/size)+'_'+Math.floor(z/size);
@@ -31,7 +32,8 @@ export function createTileScheduler({manifest,load,hydrate,onActivate=()=>{},onE
     const tx=Math.floor(x/size),tz=Math.floor(z/size);
     // One extra forward row is fetched early at driving/flying speeds.
     const dx=Math.abs(vx)>8?Math.sign(vx):0,dz=Math.abs(vz)>8?Math.sign(vz):0;
-    if(tx!==anchorX||tz!==anchorZ||dx!==forwardX||dz!==forwardZ){
+    if(tx!==anchorX||tz!==anchorZ||dx!==forwardX||dz!==forwardZ||reservationsChanged){
+      reservationsChanged=false;
       anchorX=tx;anchorZ=tz;forwardX=dx;forwardZ=dz;needsPump=true;wanted=new Set();keep=new Set();
       for(let a=-radius-1;a<=radius+1;a++)for(let b=-radius-1;b<=radius+1;b++){
         const key=(tx+a)+'_'+(tz+b);if(!entries[key])continue;
@@ -45,6 +47,12 @@ export function createTileScheduler({manifest,load,hydrate,onActivate=()=>{},onE
         const b=entries[key].bounds;
         return {key,distance:((b.minX+b.maxX)/2-aheadX)**2+((b.minZ+b.maxZ)/2-aheadZ)**2};
       }).sort((a,b)=>a.distance-b.distance).map(item=>item.key);
+      // Warp preparation shares the normal worker queue and hydration budget.
+      // The car's current tiles stay resident while the destination is prepared.
+      if(reservations.size){
+        ordered=[...reservations.keys(),...ordered.filter(key=>!reservations.has(key))];
+        for(const key of reservations.keys())wanted.add(key);
+      }
       for(const [key,p]of pending)if(!wanted.has(key))p.controller.abort();
       for(const [key,h]of staging)if(!wanted.has(key)){h.dispose();staging.delete(key);}
       retiring.clear();
@@ -73,6 +81,19 @@ export function createTileScheduler({manifest,load,hydrate,onActivate=()=>{},onE
     if(needsPump||(nextRetry<Infinity&&now()>=nextRetry))pump();
   }
   return {update,chunks,pending,staging,failures,keyAt,
+    reserve(keys){
+      const held=new Set(keys);
+      for(const key of held)reservations.set(key,(reservations.get(key)||0)+1);
+      if(held.size)reservationsChanged=true;
+      return ()=>{
+        for(const key of held){
+          const remaining=reservations.get(key)-1;
+          if(remaining)reservations.set(key,remaining);else reservations.delete(key);
+        }
+        if(held.size)reservationsChanged=true;
+        held.clear();
+      };
+    },
     get revision(){return revision;},get requests(){return requests;},get wanted(){return wanted;},
     hasAt(x,z){return chunks.has(keyAt(x,z));},
     contains(x,z){const b=manifest.bounds;return x>=b.minX&&x<b.maxX&&z>=b.minZ&&z<b.maxZ;},

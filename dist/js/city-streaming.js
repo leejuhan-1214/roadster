@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {createTileScheduler} from './city-tile-scheduler.js?v=20261118-circuit155';
+import {createTileScheduler} from './city-tile-scheduler.js?v=20261123-seoul-warp';
 import {createCityTileHydrator} from './city-tile-mesh.js?v=20261122-roadhandling';
 import {indexRegionalTiles} from './city-regional-packs.js?v=20261119-wide157';
 export const CITY_CHUNK_SIZE=512;
@@ -42,6 +42,40 @@ export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new U
   onEvict:(key,chunk)=>{physics?.removeObstacleChunk('seoul:'+key);root.remove(chunk.root);}
  });
  const readyAt=(x,z)=>within(x,z,city.bounds)||scheduler.hasAt(x,z);
+ const areaReadyAt=(x,z)=>GUARD_CORNERS.every(([dx,dz])=>scheduler.contains(x+dx,z+dz)&&readyAt(x+dx,z+dz));
+ let viewX=city.spawn.position[0],viewZ=city.spawn.position[2],viewVX=0,viewVZ=0,frames=0;
+ function update(x,z,vx=0,vz=0){
+  viewX=x;viewZ=z;viewVX=vx;viewVZ=vz;frames++;
+  scheduler.update(x,z,vx,vz);
+ }
+ async function prepareAt(x,z,signal){
+  const keys=new Set();
+  for(const [dx,dz] of GUARD_CORNERS){
+   const px=x+dx,pz=z+dz,key=scheduler.keyAt(px,pz);
+   if(!scheduler.contains(px,pz)||(!within(px,pz,city.bounds)&&!manifest.tiles[key]))
+    throw new Error('도착 지점의 도로 자료가 없습니다.');
+   if(!within(px,pz,city.bounds))keys.add(key);
+  }
+  const release=scheduler.reserve(keys),deadline=performance.now()+20000;
+  let observed=frames;
+  try{
+   while(true){
+    if(disposed||signal?.aborted)throw new DOMException('Warp cancelled','AbortError');
+    if(areaReadyAt(x,z))return;
+    if(performance.now()>=deadline)throw new Error('도착 지역의 지도를 불러오지 못했습니다. 다시 시도해 주세요.');
+    // The expanded map can pause the render loop. Continue its bounded tile
+    // work while retaining the last real driving position as the view anchor.
+    if(observed===frames)scheduler.update(viewX,viewZ,viewVX,viewVZ);
+    observed=frames;
+    await new Promise(resolve=>setTimeout(resolve,16));
+   }
+  }finally{
+   release();
+   // The modal may stay open after cancellation. Drop unneeded requests now,
+   // while a successful arrival keeps its tiles until the car switches anchor.
+   if(!disposed&&!areaReadyAt(x,z))scheduler.update(viewX,viewZ,viewVX,viewVZ);
+  }
+ }
  let mappedRoads=coreRoads;
  Object.defineProperty(city,'roads',{configurable:true,enumerable:true,get(){
   if(lastRevision!==scheduler.revision){
@@ -51,7 +85,7 @@ export async function attachStreamingCity(city,{treeAsset=null,manifestUrl=new U
   return mappedRoads;
  }});
  const streaming={...scheduler,root,manifest,get requests(){return scheduler.requests;},get wanted(){return scheduler.wanted;},get revision(){return scheduler.revision;},get status(){return blocked;},get maxChunks(){return 49;},
-  update:scheduler.update,
+  update,prepareAt,areaReadyAt,
   bindPhysics(sim){physics=sim;if(sim)for(const [key,c]of scheduler.chunks)sim.setObstacleChunk('seoul:'+key,c.obstacles,c.collision);},
   guard(state,dt){
    blocked='';const x=state.pos.x+state.vel.x*dt,z=state.pos.z+state.vel.z*dt;

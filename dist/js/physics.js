@@ -285,6 +285,23 @@ export class PhysicsSim {
     if (preset === 'flight') { this.state.pos.y += 1.8; this.state.vel.x = 8; }
     if (preset === 'corner') this.state.vel.x = 12;
     if (preset === 'rolling') this.state.vel.x = 20;
+    this.maxAltitude = 0; this.maxG = 1; this.history = []; this.collisionCount=0;
+    this.resetMotionReadings(preset);
+    return this.state;
+  }
+
+  parkOnRoad({x,z,heading,surfaceY}) {
+    const {pos,q,vel,omega,acceleration}=this.state;
+    pos.set(x,this.restHeight+surfaceY,z); q.setFromAxisAngle(UP,heading);
+    vel.set(0,0,0); omega.set(0,0,0); acceleration.set(0,0,0);
+    this.rivalSupport=false;
+    this.gimbalX=0; this.gimbalZ=0; this.gimbalDirection.set(0,1,0);
+    for(const nozzle of this.thrusters)if(nozzle.group==='lift')nozzle.dir.copy(this.gimbalDirection);
+    this.resetMotionReadings('ground',surfaceY);
+  }
+
+  resetMotionReadings(preset,surfaceY=0) {
+    const p=this.params;
     this.contactCount = preset === 'drop' || preset === 'flight' ? 0 : 4;
     this.fanForce = 0; this.totalThrust = 0; this.verticalThrustN = 0; this.maxThrust = 0;
     this.fanPowerW=0;this.fanPressurePa=0;this.fanAirflowM3S=0;this.fanSeal=0;
@@ -292,21 +309,20 @@ export class PhysicsSim {
     this.saturation = false; this.lastImpactSpeed = 0; this.impactImpulse = 0;
     this.groundForceN=0;this.groundCorrectionImpulseNs=0;this.bodyGroundContacts=0;
     this.preStepVelocityY=0;this.resolvedAcceleration=new Vector3();this.stepDuration=0;
-    this.maxAltitude = 0; this.lastContactCount = this.contactCount; this.maxG = 1;
+    this.lastContactCount = this.contactCount;
     this.lastInput = {}; this.lastForce = new Vector3(); this.lastTorque = new Vector3();
     this.frictionForceN = 0; this.brakeForceN = 0; this.airDragN = 0; this.verticalAirDragN = 0; this.rollingResistanceN = 0;
     this.handbrakeAmount=0;this.handbrakeForceN=0;
     this.motorState=evaluateElectricDrive({wheelOmega:[0,0,0,0],throttle:0,brake:0,batteryEnergyJ:this.state.batteryJ,dt:.002},p);
     this.manifoldPressure=this.state.pressure;this.massFlowKgS=0;this.electricPowerW=0;this.regenPowerW=0;this.driveLossW=0;this.tractionCut=1;
-    this.history = [];
-    this.obstacleContacts = []; this.lastObstacleImpact = null; this.collisionCount=0;
+    this.obstacleContacts = []; this.lastObstacleImpact = null;
     for (const w of this.wheels) { w.forceX=0;w.forceY=0;w.forceZ=0;w.normalX=0;w.normalY=1;w.normalZ=0;w.sliding=false;w.absFactor=1;w.tireForceN=0;w.lateralForceN=0;
-      w.compression = this.contactCount ? Math.max(0,w.radius-(this.state.pos.y+w.pos.y)) : 0;
-      w.surfaceY=this.surfaceHeightAt(this.state.pos.x+w.pos.x,this.state.pos.z+w.pos.z,this.state.pos.y+w.pos.y);
-      w.omega = preset === 'corner' ? 12 / w.radius : preset === 'rolling' ? 20 / w.radius : 0; w.load = this.contactCount ? (this.dryMass + gas) * p.gravity / 4 : 0;
+      const centre=w.pos.clone().applyQuaternion(this.state.q).add(this.state.pos);
+      w.compression = this.contactCount ? Math.max(0,w.radius-(centre.y-surfaceY)) : 0;
+      w.surfaceY=this.surfaceHeightAt(centre.x,centre.z,centre.y);
+      w.omega = preset === 'corner' ? 12 / w.radius : preset === 'rolling' ? 20 / w.radius : 0; w.load = this.contactCount ? this.mass * p.gravity / 4 : 0;
       w.spinAngle = 0; w.rollingResistanceN = 0; w.tireForceN = 0; w.driveTorque = 0; w.brakeTorque = 0; w.handbrakeTorque = 0; w.slip = 0; w.steer = 0; w.grounded = this.contactCount > 0; }
     for (const t of this.thrusters) { t.force = 0; t.maxForce = nozzle(this.state.pressure, this.state.temp, t.area).force; t.opening = 0; t.command = 0; t.mdot = 0; }
-    return this.state;
   }
 
   /** Static stage collision boxes. Reset preserves this course; [] restores the empty test pad. */
@@ -359,6 +375,26 @@ export class PhysicsSim {
       if(nearby.length)result=result.concat(nearby);
     }
     return result;
+  }
+
+  parkingFootprint() {
+    return {
+      halfLength:Math.max(this.bodyHalf[0],this.params.wheelbase/2+this.params.wheelRadius)+.12,
+      halfWidth:Math.max(this.bodyHalf[2],this.params.trackWidth/2+.1)+.12,
+    };
+  }
+
+  /** Probe a parked vehicle, including the space down to its tires, without moving it. */
+  parkingClearAt(x,z,heading,surfaceY) {
+    const bottom=.015,roof=this.restHeight+this.bodyBoxCenter.y-this.cg.y+this.bodyHalf[1];
+    const halfHeight=Math.max(.01,(roof-bottom)/2);
+    const {halfLength,halfWidth}=this.parkingFootprint();
+    const bodyBoxCenter=this.bodyBoxCenter.clone();
+    bodyBoxCenter.y=this.cg.y-this.restHeight+bottom+halfHeight;
+    const probe={bodyHalf:[halfLength,halfHeight,halfWidth],bodyBoxCenter,cg:this.cg,
+      state:{pos:new Vector3(x,surfaceY+this.restHeight,z),q:new Quaternion().setFromAxisAngle(UP,heading)}};
+    const radius=Math.hypot(halfLength,halfWidth)+Math.hypot(this.cg.x,this.cg.z);
+    return !this._obstaclesNear(x,z,radius).some(obstacle=>boxContact(probe,obstacle));
   }
 
   /** Highest horizontal supporting surface below this wheel/fan reference point. */

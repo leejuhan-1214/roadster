@@ -1,4 +1,4 @@
-import {DEFAULTS} from './physics.js?v=20261122-roadhandling';
+import {DEFAULTS} from './physics.js?v=20261123-seoul-warp';
 import {vehiclePhysics,vehicleProfile} from './vehicle-profiles.js?v=20261122-roadhandling';
 
 // Both the report and the interactive study use the fitted Roadster rig. A

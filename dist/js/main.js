@@ -5,22 +5,24 @@ import {FACILITY_SOLIDS} from './world-obstacles.js?v=20261107-drive2';
 import {RechargeReadout} from './recharge-readout.js?v=20261115-fleet1';
 import {Vector3} from 'three';
 import {bindLandingLiftControls} from './landing-controls.js?v=20261110-seoul1';
-import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261118-audit148';
-import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261122-roadhandling';
+import {CITY_SURFACES,BRAKE_REASONS,normalizeCityExperiment,cityExperimentParams,CityBrakeTrial,brakeResultsCSV} from './city-experiment.js?v=20261123-seoul-warp';
+import {DrivingController,CITY_DRIVE_PARAMS} from './driving-input.js?v=20261123-seoul-warp';
 import {VEHICLES,vehicleProfile,vehiclePhysics} from './vehicle-profiles.js?v=20261122-roadhandling';
 import {createLandingJobs,createLandingRun,landingRunInput,updateLandingRun,landingClearance,LANDING_STEP} from './landing-experiment.js?v=20261120-basemass';
-import {LandingUI} from './landing-ui.js?v=20261122-roadhandling';
-import {roadsterHeightStudySource} from './landing-height-source.js?v=20261122-roadhandling';
+import {LandingUI} from './landing-ui.js?v=20261123-seoul-warp';
+import {roadsterHeightStudySource} from './landing-height-source.js?v=20261123-seoul-warp';
 import {LandingLiveUI,landingPhaseLabel} from './landing-live.js?v=20261119-air161';
 import {RenderStateBuffer} from './render-state.js?v=20261118-frameperf1';
 import {advanceFrame} from './frame-steps.js?v=20261118-frameperf2';
 import {LandingPlanner} from './landing-preparation.js?v=20261120-basemass';
-import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261119-wide157';
+import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261123-seoul-warp';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
+import {SEOUL_WARP_POINTS} from './seoul-warp-points.js?v=20261123-seoul-warp';
+import {prepareWarpArrival} from './city-warp-arrival.js?v=20261123-seoul-warp';
 import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
 import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
-import {PhysicsSim,DEFAULTS} from './physics.js?v=20261122-roadhandling';
-import {FlightScene} from './scene.js?v=20261122-roadhandling';
+import {PhysicsSim,DEFAULTS} from './physics.js?v=20261123-seoul-warp';
+import {FlightScene} from './scene.js?v=20261123-seoul-warp';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261122-garage';
@@ -78,8 +80,45 @@ function parkAt(pose){
   renderStates.reset(sim);scene.frameCityStart(sim);
 }
 let pendingRaceEpoch=null;
+let warpRequest=null;
+function cancelCityWarp(){
+  warpRequest?.abort();
+  warpRequest=null;
+}
+function canWarp(){
+  return mode==='city'&&cityPoseReady&&!cityLoading&&!vehicleLoading&&!race&&pendingRaceEpoch===null;
+}
+async function warpToCityPoint(id){
+  const point=SEOUL_WARP_POINTS.find(p=>p.id===id);
+  if(!point||!canWarp()||!mapPanel.isOpen)return {ok:false,message:'서울 자유 주행 지도에서 목적지를 선택해 주세요.'};
+  cancelCityWarp();
+  const request=new AbortController(),state=sim.state;
+  warpRequest=request;
+  try{
+    const arrival=await prepareWarpArrival(scene.city,sim,point,{signal:request.signal});
+    if(request.signal.aborted||!canWarp()||state!==sim.state||!mapPanel.isOpen)return {ok:false};
+    brakeTrial.cancel('warp');
+    mapSession.sample(state.pos.x,state.pos.z);
+    sim.parkOnRoad(arrival);
+    driver.reset();clearDriveInputs();driveInput={};driveGear='D';
+    mapSession.breakPath();
+    mapSession.remember(sim,cityDistance);
+    accumulator=0;renderStates.reset(sim);
+    scene.resetPhysicalEffects();scene.tireEffects.reset();scene.frameCityStart(sim);
+    drawCityMap(sim.telemetry());
+    toast(point.name+' 도착');
+    return {ok:true};
+  }catch(error){
+    if(request.signal.aborted||error.name==='AbortError')return {ok:false};
+    console.warn('Could not load warp destination',id,error);
+    return {ok:false,message:'도착할 도로를 준비하지 못했어요. 다시 시도하거나 다른 지점을 선택해 주세요.'};
+  }finally{
+    if(warpRequest===request)warpRequest=null;
+  }
+}
 async function startRace(gate){
   if(mode!=='city'||cityLoading||vehicleLoading||pendingRaceEpoch===modeEpoch)return;
+  cancelCityWarp();
   if(!scene.raceEntryReady){
     const epoch=modeEpoch,loading=$('city-loading');
     pendingRaceEpoch=epoch;setPaused(true);
@@ -146,6 +185,7 @@ function cancelLanding(message='실험 준비'){
 }
 function reset({cancel=true,clearMeasurement=true,restoreCityPlace=false}={}){
   if(race){recoverRace();return;}
+  if(mode==='city')cancelCityWarp();
   if(cancel)cancelLanding();
   clearDriveInputs();driver.reset();driveInput={};cityDistance=0;brakeTrial.reset({keepResults:true});
   const parameters=vehiclePhysics(activeVehicle,scene?.vehicle?.geometryParams,DEFAULTS);
@@ -287,6 +327,7 @@ function vehicleCredit(p){return '<a href="'+escape(p.source)+'" target="_blank"
 async function selectVehicle(id,{forLanding=false}={}){
   if(vehicleLoading)return false;
   if(race)return false;
+  if(mode==='city')cancelCityWarp();
   if(mode==='city'&&cityPoseReady)mapSession.remember(sim,cityDistance);
   if(!forLanding)cancelLanding();
   const profile=vehicleProfile(id);vehicleLoading=true;setPaused(true);$('vehicle-select').disabled=true;$('city-vehicle-select').disabled=true;
@@ -702,8 +743,10 @@ function setupRaceDifficulty(){
 function setupUI(){
   setupRaceDifficulty();
   mapPanel=createSeoulMapPanel({
+    onWarp:warpToCityPoint,
+    onClose:cancelCityWarp,
     beforeOpen(){
-      if(mode!=='city'||!cityPoseReady||vehicleLoading||race)return false;
+      if(!canWarp())return false;
       clearDriveInputs();accumulator=0;renderStates.reset(sim);drawCityMap(sim.telemetry());
       return true;
     },
