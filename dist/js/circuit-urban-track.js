@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
-import {sampleCourse} from './station-race-course.js?v=20261119-ai158';
+import {sampleCourse} from './station-race-course.js?v=20261127-race20';
 
 export const CIRCUIT_BASIN={minX:165,maxX:505,minZ:-58,maxZ:82,waterY:-4.6};
 

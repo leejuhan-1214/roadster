@@ -10,12 +10,17 @@ export const AIR_GATE_LAYOUT=[
 ].map(({offset,lateral,height})=>({offset,aperture:{lateral,halfWidth:3.45,minY:height-2.35,maxY:height+2.35}}));
 
 export const RIVAL_COM_HEIGHT=.63;
-const first=AIR_GATE_LAYOUT[0].offset,last=AIR_GATE_LAYOUT.at(-1).offset;
-const approach={offset:first-AIR_APPROACH,height:0,lateral:0,blend:0};
-const touchdown={offset:last+95,height:0,lateral:0,blend:0};
-const path=[approach,...AIR_GATE_LAYOUT.map(({offset,aperture:a})=>({
-  offset,height:(a.minY+a.maxY)/2-RIVAL_COM_HEIGHT,lateral:a.lateral,blend:1
-})),touchdown];
+const paths=new WeakMap();
+function flightPath(layout){
+  let path=paths.get(layout);
+  if(!path){
+    path=[{offset:layout[0].offset-AIR_APPROACH,height:0,lateral:0,blend:0},
+      ...layout.map(({offset,aperture:a})=>({offset,height:(a.minY+a.maxY)/2-RIVAL_COM_HEIGHT,lateral:a.lateral,blend:1})),
+      {offset:layout.at(-1).offset+95,height:0,lateral:0,blend:0}];
+    paths.set(layout,path);
+  }
+  return path;
+}
 const ground=Object.freeze({height:0,slope:0,lateral:0,lateralSlope:0,blend:0,blendSlope:0});
 
 // A zero slope through each timing plane gives the driver time to change
@@ -23,7 +28,8 @@ const ground=Object.freeze({height:0,slope:0,lateral:0,lateralSlope:0,blend:0,bl
 export function rivalAirPath(distance, course) {
   const d=distance-course.airSectionDistance;
   const local=d-Math.round(d/course.length)*course.length;
-  if(local<=approach.offset||local>=touchdown.offset)return ground;
+  const path=flightPath(course.airLayout||AIR_GATE_LAYOUT);
+  if(local<=path[0].offset||local>=path.at(-1).offset)return ground;
   let i=1;
   while(local>path[i].offset)i++;
   const a=path[i-1],b=path[i],span=b.offset-a.offset,t=(local-a.offset)/span;

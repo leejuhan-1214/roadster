@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RACE_COURSE, projectToCourse, runoffWidth, sampleCourse } from './station-race-course.js?v=20261119-ai158';
+import { RACE_COURSE } from './station-race-course.js?v=20261127-race20';
 
 // Each district gets its own glazed and metal mesh. Kilometres of windows
 // share one repeating atlas, so another floor costs no additional draw call.
@@ -264,7 +264,8 @@ function buildBlock(block, glass, metal, obstacles) {
 const districtNames = ['Quayside', 'Terminus', 'Gallery', 'Market', 'Observatory', 'Aerodrome',
   'Foundry', 'Exchange', 'Terraces', 'Gardens', 'West End', 'Grandstand'];
 
-function cityPlan() {
+function cityPlan(course) {
+  const {sample:sampleCourse,project:projectToCourse,runoffWidth}=course;
   const blocks = [];
   const inWater = (x, z, radius) => x + radius >= 165 && x - radius <= 505 && z + radius >= -58 && z - radius <= 82;
   function place(s, side, offset, w, d, h, style, far) {
@@ -272,11 +273,11 @@ function cityPlan() {
     const minOffset = offset, radius = Math.hypot(w, d) / 2 + 1.6;
     for (offset = minOffset; offset <= minOffset + 120; offset += 11) {
       const p = sampleCourse(s, side * offset), nearest = projectToCourse(p);
-      const wall = RACE_COURSE.width / 2 + runoffWidth(nearest.distance, Math.sign(nearest.lateral));
+      const wall = course.width / 2 + runoffWidth(nearest.distance, Math.sign(nearest.lateral));
       if (nearest.error < radius + wall + 9 || inWater(p.x, p.z, radius)) continue;
       if (blocks.some(b => Math.hypot(b.x - p.x, b.z - p.z) < radius + b.radius + 4)) continue;
       const yaw = p.heading + (far ? .16 * (hash(serial, 10) - .5) : 0);
-      blocks.push({ x: p.x, z: p.z, cos: Math.cos(yaw), sin: Math.sin(yaw), district: Math.min(11, Math.floor(s * 12 / RACE_COURSE.length)),
+      blocks.push({ x: p.x, z: p.z, cos: Math.cos(yaw), sin: Math.sin(yaw), district: Math.min(11, Math.floor(s * 12 / course.length)),
         s, side, w, d, h, style, far, serial, radius });
       return;
     }
@@ -290,14 +291,14 @@ function cityPlan() {
     [425, 1, 115, 49, 31, 55, 2], [520, -1, 96, 35, 26, 91, 3],
     [566, 1, 50, 55, 31, 103, 4], [622, -1, 66, 44, 28, 64, 2],
   ]) place(...item, false);
-  for (let i = 0, s = 680; s < RACE_COURSE.length; i++, s += 83) {
-    const side = i % 2 ? 1 : -1, district = Math.floor(s * 12 / RACE_COURSE.length);
+  for (let i = 0, s = 680; s < course.length; i++, s += 83) {
+    const side = i % 2 ? 1 : -1, district = Math.floor(s * 12 / course.length);
     const type = (district + [0, 1, 3, 1, 2][i % 5]) % 4;
     const height = (district === 4 || district === 8 ? 27 : 37) + hash(i, 4) * 44;
     place(s, side, 43 + 18 * hash(i, 7), 29 + 22 * hash(i, 8), 22 + 13 * hash(i, 9), height, type, false);
     if (i % 3 !== 1) place(s + 17, -side, 65, 32 + 12 * hash(i, 2), 23, height * .85, (type + 2) % 4, false);
   }
-  for (let i = 0, s = 20; s < RACE_COURSE.length; i++, s += 73) {
+  for (let i = 0, s = 20; s < course.length; i++, s += 73) {
     const side = i % 2 ? -1 : 1;
     place(s, side, 115 + hash(i, 3) * 71, 32 + hash(i, 9) * 18, 26 + hash(i, 7) * 14,
       64 + hash(i, 5) * 68, (i + Math.floor(i / 5)) % 4, true);
@@ -305,12 +306,12 @@ function cityPlan() {
   return blocks;
 }
 
-export function* circuitCityscapeStages(root, obstacles) {
+export function* circuitCityscapeStages(root, obstacles, course=RACE_COURSE) {
   const group = new THREE.Group();
   group.name = 'Circuit metropolitan districts';
   root.add(group);
   const { glazing, cladding } = yield* facadeMaterials();
-  const blocks = cityPlan();
+  const blocks = cityPlan(course);
   group.userData.buildingCount = blocks.length;
   yield;
   for (let district = 0; district < districtNames.length; district++) {

@@ -1,3 +1,4 @@
+import {RACE_COURSE} from './station-race-course.js?v=20261127-race20';
 import {createRoadDrawRanges} from './city-road-detail.js?v=20261118-circuit155';
 import {updateDrivetrainSection,setEngineStrokeDisplay} from './drivetrain-section.js?v=20261118-model154';
 import {SimulationVisualClock} from './simulation-visual-clock.js?v=20261111-calibration1';
@@ -8,8 +9,8 @@ import {TireEffects} from './tire-effects.js?v=20261122-roadhandling';
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-roadhandling';
 import {prepareAssessmentVehicle} from './assessment-vehicle.js?v=20261122-roadhandling';
 import {loadCityWorld} from './city-world.js?v=20261122-roadhandling';
-import {stationRaceWorldStages} from './station-race-world.js?v=20261122-roadhandling';
-import {StationRace} from './station-race.js?v=20261119-ai158';
+import {stationRaceWorldStages} from './station-race-world.js?v=20261127-race20';
+import {StationRace} from './station-race.js?v=20261127-race20';
 import {attachStreamingCity} from './city-streaming.js?v=20261123-seoul-warp';
 import {loadStreetOverlay} from './city-street-overlay.js?v=20261123-seoul-warp';
 import {updateTreeWind} from './city-trees.js?v=20261118-frameperf1';
@@ -453,7 +454,25 @@ export class FlightScene {
     const sky=this.sky.material.uniforms;
     sky.top.value.setHex(dusk?0x1e344b:0x5683a6);sky.bottom.value.setHex(dusk?0x82949e:0xc3cdcf);
   }
-  prepareRaceStage(){
+  chooseRaceCourse(course){
+    const previous=this.raceBuildCourse||this.raceWorld?.course||RACE_COURSE;
+    if(previous.id!==course.id){
+      this.raceBuildRevision=(this.raceBuildRevision||0)+1;
+      const obsolete=this.raceWorld,compiling=this.raceShaders;
+      this.raceWorld=null;
+      if(obsolete){
+        obsolete.root.removeFromParent();
+        // Three.js continues polling each material's GPU program until
+        // compileAsync settles. Disposing it sooner removes the program record.
+        if(compiling)compiling.then(()=>obsolete.dispose(),()=>obsolete.dispose());
+        else obsolete.dispose();
+      }
+      this.raceBuild?.return();this.raceBuild=null;
+      this.raceEntryReady=false;this.raceShaders=null;
+    }
+    this.raceBuildCourse=course;
+  }
+  prepareRaceStage(course=this.raceBuildCourse||RACE_COURSE){
     if(this.raceWorld)return true;
     if(!this.raceBuild){
       if(!this.circuitSky&&typeof document!=='undefined'){
@@ -464,7 +483,7 @@ export class FlightScene {
         },undefined,()=>{ /* The photographed or procedural sky stays available. */ });
       }
       const asphalt=this.city?.root.getObjectByName('OSM road network')?.material;
-      this.raceBuild=stationRaceWorldStages(asphalt);
+      this.raceBuild=stationRaceWorldStages(asphalt,null,{course});
     }
     const {done,value}=this.raceBuild.next();
     if(done){this.raceBuild=null;this.raceWorld=value;skipHiddenBranch(value.root);this.scene.add(value.root);}
@@ -474,31 +493,38 @@ export class FlightScene {
     if(!this.raceShaders){
       const compile=this.renderer.compileAsync||this.renderer.compile;
       this.raceShaders=Promise.resolve(compile.call(this.renderer,world.root,this.camera,this.scene)).catch(error=>{
-        this.raceShaders=null;throw error;
+          if(this.raceWorld===world)this.raceShaders=null;throw error;
       });
     }
     return this.raceShaders;
   }
-  async prepareStationRaceEntry(){
+  async prepareStationRaceEntry(course=RACE_COURSE){
+    this.chooseRaceCourse(course);
     if(this.raceEntryReady)return;
+    const revision=this.raceBuildRevision;
+    const stillSelected=()=>this.raceBuildRevision===revision&&this.raceBuildCourse.id===course.id;
     const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
     await nextFrame();
     let start=performance.now();
-    while(!this.prepareRaceStage()){
+    while(stillSelected()&&!this.prepareRaceStage(course)){
       if(performance.now()-start<5)continue;
       await nextFrame();start=performance.now();
     }
+    if(!stillSelected())throw new DOMException('Circuit selection replaced','AbortError');
     const world=this.raceWorld;
-    world.update(new StationRace());
+    world.update(new StationRace({courseId:course.id}));
     await world.rivalModelsReady;
+    if(world!==this.raceWorld)throw new DOMException('Circuit selection replaced','AbortError');
     await this.compileRaceWorld(world);
+    if(world!==this.raceWorld)throw new DOMException('Circuit selection replaced','AbortError');
     this.raceEntryReady=true;
   }
   warmStationRace(city){
     if(!city||this.raceWorld||this.raceWarmPending)return;
     const idle=cb=>window.requestIdleCallback?window.requestIdleCallback(cb,{timeout:220}):window.setTimeout(cb,40);
     this.raceWarmPending=true;
-    const stillDriving=()=>this.city===city&&this.mode==='city'&&!this.stationRace;
+    const course=this.raceBuildCourse||RACE_COURSE;
+    const stillDriving=()=>this.city===city&&this.mode==='city'&&!this.stationRace&&(!this.raceBuildCourse||this.raceBuildCourse===course);
     const build=deadline=>{
       this.raceWarmPending=false;
       if(!stillDriving()||this.raceWorld)return;
@@ -510,10 +536,10 @@ export class FlightScene {
       }
       const world=this.raceWorld;
       // Stage the actual starting cars while the hidden track waits for entry.
-      const grid=new StationRace();
+      const grid=new StationRace({courseId:course.id});
       world.update(grid);
       world.rivalModelsReady.then(()=>idle(()=>{
-        if(!stillDriving())return;
+        if(!stillDriving()||this.raceWorld!==world)return;
         this.compileRaceWorld(world).catch(error=>console.warn('경주 화면 사전 준비',error));
         // The three detailed cars share texture objects. Upload each starting-grid
         // texture only once, with an opportunity to draw the city between uploads.
@@ -527,7 +553,7 @@ export class FlightScene {
         }
         const queue=[...textures];
         const upload=()=>{
-          if(!stillDriving())return;
+          if(!stillDriving()||this.raceWorld!==world)return;
           if(queue.length){this.renderer.initTexture(queue.shift());if(queue.length)idle(upload);}
         };
         if(queue.length)idle(upload);
@@ -536,7 +562,10 @@ export class FlightScene {
     idle(build);
   }
   setStationRace(race){
-    if(race)while(!this.prepareRaceStage()){/* finish any remaining city preparation */}
+    if(race){
+      this.chooseRaceCourse(race.course||RACE_COURSE);
+      while(!this.prepareRaceStage()){/* finish any remaining city preparation */}
+    }
     this.raceChaseAnchor=null;
     this.stationRace=race;
     this.syncCircuitLighting();

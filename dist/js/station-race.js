@@ -1,22 +1,20 @@
-import {advanceRival, createRivalGrid, normalizeRaceDifficulty, recordRivalAirGate, rivalHasFinishedCourse, setRivalDifficulty} from './race-rivals.js?v=20261119-ai158';
-export {RACE_DIFFICULTIES, normalizeRaceDifficulty} from './race-rivals.js?v=20261119-ai158';
+import {advanceRival, createRivalGrid, normalizeRaceDifficulty, recordRivalAirGate, rivalHasFinishedCourse, setRivalDifficulty} from './race-rivals.js?v=20261127-race20';
+export {RACE_DIFFICULTIES, normalizeRaceDifficulty} from './race-rivals.js?v=20261127-race20';
 import {resolveRivalContact,resolveRivalPair} from './race-contact.js?v=20261118-model154';
-import {AIR_CEILING, AIR_APPROACH, AIR_RESTART_RUNUP, insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261119-ai158';
+import {AIR_CEILING, AIR_APPROACH, AIR_RESTART_RUNUP, insideRaceEnvelope, throughAirGate} from './station-race-air.js?v=20261127-race20';
 
-import {RACE_COURSE,sampleCourse,projectToCourse} from './station-race-course.js?v=20261119-ai158';
-export {RACE_COURSE,sampleCourse} from './station-race-course.js?v=20261119-ai158';
-const {length,width:WIDTH,laps:LAP_COUNT,gates}=RACE_COURSE;
-const GATE_COUNT=gates.length,COUNTDOWN=3;
+import {getRaceCourse} from './station-race-course.js?v=20261127-race20';
+export {RACE_COURSE,sampleCourse} from './station-race-course.js?v=20261127-race20';
+const COUNTDOWN=3;
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(n,hi));
 const wrap=(value,period)=>((value%period)+period)%period;
 
-const airGates=gates.filter(gate=>gate.air);
-const firstAir=airGates[0],lastAir=airGates[airGates.length-1];
-function gateDistance(ordinal) {
-  return Math.floor(ordinal/GATE_COUNT)*length+gates[wrap(ordinal,GATE_COUNT)].distance;
+function gateDistance(course,ordinal) {
+  const count=course.gates.length;
+  return Math.floor(ordinal/count)*course.length+course.gates[wrap(ordinal,count)].distance;
 }
 
-function crossingFraction(a, b, gate) {
+function crossingFraction(a, b, gate, width) {
   const cos = Math.cos(gate.heading), sin = Math.sin(gate.heading);
   const before = (a.x - gate.x) * cos - (a.z - gate.z) * sin;
   const after = (b.x - gate.x) * cos - (b.z - gate.z) * sin;
@@ -26,15 +24,14 @@ function crossingFraction(a, b, gate) {
   const z = a.z + (b.z - a.z) * fraction;
   const lateral=(x-gate.x)*sin+(z-gate.z)*cos;
   const y=(a.y??0)+((b.y??0)-(a.y??0))*fraction;
-  if(gate.air && Math.abs(lateral)<=WIDTH/2+1.5)
+  if(gate.air && Math.abs(lateral)<=width/2+1.5)
     return {fraction,air:throughAirGate(gate,lateral,y)};
-  return !gate.air && y<=AIR_CEILING && Math.abs(lateral)<=WIDTH/2 ? {fraction,air:false} : null;
+  return !gate.air && y<=AIR_CEILING && Math.abs(lateral)<=width/2 ? {fraction,air:false} : null;
 }
 
-const finishDistance = length * LAP_COUNT;
-
 function advanceField(race,dt,start,sim) {
-  const cars=race.rivals;
+  const cars=race.rivals,finishDistance=race.course.length*race.course.laps;
+  if(!cars.length)return;
   for(let t=0;t<dt-1e-9;){
     const h=Math.min(.025,dt-t);
     if(sim)sim.rivalSupport=false;
@@ -73,14 +70,17 @@ function advanceField(race,dt,start,sim) {
 }
 
 export class StationRace {
-  constructor({difficulty='normal'}={}) {
+  constructor({difficulty='normal',courseId,online=false,playerSlot=0}={}) {
+    this.course=getRaceCourse(courseId);
+    this.online=online;
+    this.remoteCars=[];
     this.phase = 'countdown';
     this.countdown = COUNTDOWN;
     this.elapsed = 0;
     this.finishTime = null;
-    this.startPose = sampleCourse(-6, -3.15);
+    this.startPose = this.course.gridPose(online?playerSlot:0);
     this.difficulty = normalizeRaceDifficulty(difficulty);
-    this.rivals = createRivalGrid(this.difficulty);
+    this.rivals = online?[]:createRivalGrid(this.difficulty,this.course);
     this.collisionCount=0;
     this.rivalSupport=false;
     this.lastCollision=null;
@@ -103,16 +103,18 @@ export class StationRace {
     this.difficulty=difficulty;
     for(const car of this.rivals)setRivalDifficulty(car,difficulty);
   }
-  get nextGate() { return this._ordinal % GATE_COUNT; }
+  get nextGate() { return this._ordinal % this.course.gates.length; }
   get completedGates() { return this._ordinal; }
   get progress() { return this._progress; }
-  get lap() { return clamp(Math.floor((this._ordinal - 1) / GATE_COUNT) + 1, 1, LAP_COUNT); }
+  get lap() { return clamp(Math.floor((this._ordinal - 1) / this.course.gates.length) + 1, 1, this.course.laps); }
   get airGateDistance() {
+    const {length,gates,airGates}=this.course,firstAir=airGates[0];
     const gate=gates[this.nextGate];
     if(this.airGatesThisLap===airGates.length)return null;
     return (this.lap-1)*length+(gate.air?gate.distance:firstAir.distance)-this.progress;
   }
   get airSectionStatus() {
+    const {length,gates,airGates}=this.course,lastAir=airGates.at(-1);
     if(this.phase!=='racing')return 'away';
     if(this.elapsed-this._missedAt<3)return 'missed';
     const local=this.progress-(this.lap-1)*length;
@@ -125,7 +127,8 @@ export class StationRace {
     return 1 + this.rivals.filter(car => Math.min(car.distance,car.retryGateDistance??Infinity) > this._progress).length;
   }
   recover(reason=null) {
-    let distance=this._ordinal===0?this.startPose.distance:gateDistance(this._ordinal-1)+1.5;
+    const {length,gates,airGates}=this.course,firstAir=airGates[0];
+    let distance=this._ordinal===0?this.startPose.distance:gateDistance(this.course,this._ordinal-1)+1.5;
     const gate=gates[this.nextGate];
     const runup=(this.lap-1)*length+firstAir.distance-AIR_RESTART_RUNUP;
     // Once committed to the air section, retry all flight gates from a level
@@ -139,7 +142,7 @@ export class StationRace {
     this.recoveryReason=reason;
     if(reason==='air-gate')this._missedAt=this.elapsed;
     this._liftDeltaV=0;
-    const pose=sampleCourse(distance,-3.15);
+    const pose=this.course.sample(distance,-3.15);
     this._previous = pose;
     this._progress = distance;
     this._leftAt = null;
@@ -175,6 +178,7 @@ export class StationRace {
       this.phase = 'racing';
       if (dt <= 1e-9) return null;
     }
+    const {length,width,gates,airGates,laps}=this.course,firstAir=airGates[0],lastAir=airGates.at(-1);
     const start = this.elapsed;
     this.elapsed += dt;
     advanceField(this,dt,start,sim);
@@ -183,14 +187,14 @@ export class StationRace {
     const to = {x: player.x, y: player.y??0, z: player.z};
     const travel = Math.hypot(to.x - from.x, to.z - from.z);
     if (travel > Math.max(5, 125 * dt + .75)) return this.recover();
-    const projection = projectToCourse(to);
-    let onCourse = insideRaceEnvelope(projection,to.y,RACE_COURSE);
+    const projection = this.course.project(to);
+    let onCourse = insideRaceEnvelope(projection,to.y,this.course);
     // Check the swept path too. A single long frame across a hairpin cannot
     // bridge the infield without leaving the course.
     for (let along = 6; onCourse && along < travel; along += 6) {
       const t = along / travel;
-      const sample=projectToCourse({x:from.x+(to.x-from.x)*t,z:from.z+(to.z-from.z)*t});
-      onCourse = insideRaceEnvelope(sample,(from.y??0)+(to.y-(from.y??0))*t,RACE_COURSE);
+      const sample=this.course.project({x:from.x+(to.x-from.x)*t,z:from.z+(to.z-from.z)*t});
+      onCourse = insideRaceEnvelope(sample,(from.y??0)+(to.y-(from.y??0))*t,this.course);
     }
     this._previous = to;
     if (!onCourse) {
@@ -212,28 +216,28 @@ export class StationRace {
     if(!nearAir||!sim||supported)this._liftDeltaV=0;
     else if(sim.massFlowKgS>0&&sim.mass>0)this._liftDeltaV+=Math.max(0,sim.verticalThrustN)/sim.mass*dt;
     let previousFraction = -1;
-    for (let i = 0; i < GATE_COUNT; i++) {
-      const crossing = crossingFraction(from, to, gates[this.nextGate]);
+    for (let i = 0; i < gates.length; i++) {
+      const crossing = crossingFraction(from, to, gates[this.nextGate],width);
       if (!crossing || crossing.fraction <= previousFraction) break;
       const {fraction,air}=crossing;
       if(gates[this.nextGate].air&&(!air||this._liftDeltaV<1||supported))return this.recover('air-gate');
       previousFraction = fraction;
       this._ordinal++;
-      if(this._ordinal===GATE_COUNT+1)this.airGatesThisLap=0;
+      if(this._ordinal>1&&(this._ordinal-1)%gates.length===0)this.airGatesThisLap=0;
       if(air){
         this.airGatesPassed++;
         this.airGatesThisLap++;
         this.bestAirLap=Math.max(this.bestAirLap,this.airGatesThisLap);
       }
-      if (this._ordinal > LAP_COUNT * GATE_COUNT) {
+      if (this._ordinal > laps * gates.length) {
         this.phase = 'finished';
         this.finishTime = start + fraction * dt;
         this.elapsed = this.finishTime;
-        this._progress = finishDistance;
+        this._progress = length*laps;
         return null;
       }
     }
-    const passed=gateDistance(this._ordinal-1),next=gateDistance(this._ordinal);
+    const passed=gateDistance(this.course,this._ordinal-1),next=gateDistance(this.course,this._ordinal);
     const offset=wrap(projection.distance-passed+length/2,length)-length/2;
     this._progress=Math.min(passed+offset,next-.001);
     return null;

@@ -19,10 +19,14 @@ import {createSeoulMapPanel} from './seoul-map-panel.js?v=20261123-seoul-warp';
 import {DriveMapSession} from './drive-map-session.js?v=20261118-atlas156';
 import {SEOUL_WARP_POINTS} from './seoul-warp-points.js?v=20261123-seoul-warp';
 import {prepareWarpArrival} from './city-warp-arrival.js?v=20261123-seoul-warp';
-import {StationRace,normalizeRaceDifficulty,RACE_COURSE} from './station-race.js?v=20261119-ai158';
-import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261119-ai158';
+import {StationRace,normalizeRaceDifficulty} from './station-race.js?v=20261127-race20';
+import {RACE_COURSE,RACE_COURSES,getRaceCourse} from './station-race-course.js?v=20261127-race20';
+import {OnlineRaceRoom} from './online-race-room.js?v=20261127-race20';
+import {RaceGhosts} from './online-race-view.js?v=20261127-race20';
+import {createRaceLobbyPanel} from './race-lobby-panel.js?v=20261127-race20';
+import {showRaceHUD, updateRaceHUD, drawRaceMap} from './station-race-hud.js?v=20261127-race20';
 import {PhysicsSim,DEFAULTS} from './physics.js?v=20261123-seoul-warp';
-import {FlightScene} from './scene.js?v=20261123-seoul-warp';
+import {FlightScene} from './scene.js?v=20261127-race20';
 
 import {experimentVehicles,experimentMass} from './experiment-vehicles.js?v=20261115-capacity375';
 import {searchCityVehicles,vehicleOptionsForMode} from './vehicle-catalog.js?v=20261122-garage';
@@ -53,6 +57,7 @@ let mapPanel,cityPoseReady=false;
 const driveKeys=new Set(),worldUp=new Vector3(0,1,0);
 let driver=new DrivingController(),race=null,cityReturn=null;
 let preferredRaceDifficulty='normal';
+let preferredCourseId=RACE_COURSE.id,raceLobby,room,ghosts=null,onlineStartAt=0;
 const previousCityPosition=new Vector3();
 let clearDriveInputs=()=>driveKeys.clear();
 let landingLiftHeld=false,clearLandingLift=()=>{landingLiftHeld=false;};
@@ -66,7 +71,7 @@ const maneuverLabels={profile:'이 차체의 추진 장치를 확인하세요',t
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2800);}
 function setPaused(value){
   paused=race?.phase==='finished'||value;if(!value&&landingSession)landingSession.singleStepping=false;if(value){clearLandingLift();clearDriveInputs();brakeTrial.cancel('paused');}accumulator=0;renderStates.reset(sim);
-  $('pause').textContent=paused?'▶':'Ⅱ';$('pause').disabled=!landingRun&&!freeDriving();
+  $('pause').textContent=paused?'▶':'Ⅱ';$('pause').disabled=!!race?.online||(!landingRun&&!freeDriving());
   $('pause').setAttribute('aria-label',(mode==='city'?'주행':'실험')+(paused?' 재생':' 일시정지'));
   $('live-label').textContent=mode==='city'?(cityLoading?'도시 불러오는 중':race?.phase==='finished'?'경주 완주':paused?'일시정지':race?'서킷 경주':'서울 자유 주행'):landingRun?(paused?'일시정지':'측정 중'):mode==='inspect'?'구조 탐색':freeDriving()?'자유 조종':'실험 준비';
 }
@@ -116,24 +121,28 @@ async function warpToCityPoint(id){
     if(warpRequest===request)warpRequest=null;
   }
 }
-async function startRace(gate){
-  if(mode!=='city'||cityLoading||vehicleLoading||pendingRaceEpoch===modeEpoch)return;
+async function startRace(gate,courseId=preferredCourseId,onlinePlayer=null){
+  if(mode!=='city'||!cityPoseReady||cityLoading||vehicleLoading||pendingRaceEpoch===modeEpoch)return false;
+  if(!onlinePlayer&&room.state.phase!=='idle'){toast('온라인 방에서 나간 뒤 AI 경주를 시작할 수 있어요.');return false;}
+  const course=getRaceCourse(courseId);
+  if(!course||course.id!==courseId)return false;
   cancelCityWarp();
-  if(!scene.raceEntryReady){
+  if(!scene.raceEntryReady||scene.raceWorld?.course?.id!==course.id){
     const epoch=modeEpoch,loading=$('city-loading');
     pendingRaceEpoch=epoch;setPaused(true);
     loading.textContent='미래도시 서킷을 준비하는 중…';loading.hidden=false;
-    try{await scene.prepareStationRaceEntry();}
+    try{await scene.prepareStationRaceEntry(course);}
     catch(error){
       if(mode==='city'&&modeEpoch===epoch){console.error(error);toast('서킷 준비에 실패했습니다. 다시 진입해 주세요.');setPaused(false);}
-      return;
+      return false;
     }finally{
       if(pendingRaceEpoch===epoch)pendingRaceEpoch=null;
       if(modeEpoch===epoch){loading.textContent='서울 도로를 불러오는 중…';loading.hidden=true;}
     }
-    if(mode!=='city'||modeEpoch!==epoch||cityLoading)return;
-    if(vehicleLoading){setPaused(false);return;}
+    if(mode!=='city'||modeEpoch!==epoch||cityLoading)return false;
+    if(vehicleLoading){setPaused(false);return false;}
   }
+  if(onlinePlayer&&room.state.phase!=='preparing'){setPaused(false);return false;}
   if(!race){
     brakeTrial.cancel('paused');
     mapSession.sample(sim.state.pos.x,sim.state.pos.z);mapSession.breakPath();
@@ -141,15 +150,22 @@ async function startRace(gate){
     scene.city.streaming?.bindPhysics(null);
     showCityExperiments(false);cockpitPanelsOpen=false;
   }
-  race=new StationRace({difficulty:preferredRaceDifficulty});
+  race=new StationRace({difficulty:preferredRaceDifficulty,courseId:course.id,playerSlot:onlinePlayer?.slot??0,online:!!onlinePlayer});
+  onlineStartAt=0;
+  ghosts=onlinePlayer?new RaceGhosts(course):null;
+  if(ghosts){ghosts.setRoster(room.state.players,room.state.selfId);race.remoteCars=ghosts.cars;}
   sim=new PhysicsSim({...cityReturn.sim.params,...CITY_DRIVE_PARAMS,roadRoughness:0,unlimitedRaceGas:true});
   driver=new DrivingController();cityDistance=0;
   scene.setStationRace(race);sim.setObstacles(scene.raceWorld.obstacles);
   mapPanel.setRaceActive(true);
-  parkAt(race.startPose);setPaused(false);
-  showRaceHUD(true);updateRaceHUD(race,sim.telemetry(),driver);
-  $('world').setAttribute('aria-label','AI 차량 3대와 달리는 4.381 km 미래도시 서킷 · 매 랩 공중 링 '+RACE_COURSE.gates.filter(g=>g.air).length+'개 필수 · 기체 무제한');
-  $('world').focus({preventScroll:true});
+  parkAt(race.startPose);setPaused(!!onlinePlayer);
+  showRaceHUD(true);updateRaceHUD(race,sim.telemetry(),driver,onlineStandings());
+  $('world').setAttribute('aria-label',course.name+' · '+(onlinePlayer?'온라인 대결':'AI 경주')+' · 매 랩 공중 링 '+course.gates.filter(g=>g.air).length+'개');
+  if(!onlinePlayer)$('world').focus({preventScroll:true});
+  return true;
+}
+function onlineStandings(){
+  return ghosts?ghosts.standings(room.state,race,onlineStartAt):null;
 }
 function recoverRace(){
   if(race?.phase!=='racing')return;
@@ -159,7 +175,9 @@ function recoverRace(){
 function leaveRace(){
   if(!race)return;
   const {gate,sim:citySim,driver:cityDriver,distance}=cityReturn;
-  race=null;cityReturn=null;sim=citySim;driver=cityDriver;cityDistance=distance;
+  const online=race.online;
+  race=null;cityReturn=null;ghosts=null;onlineStartAt=0;sim=citySim;driver=cityDriver;cityDistance=distance;
+  if(online&&room.state.phase!=='idle')room.leave();
   scene.setStationRace(null);scene.city.streaming?.bindPhysics(sim);
   const exit=gate?.returnPose;
   if(exit)parkAt({x:exit.position[0],z:exit.position[2],heading:exit.heading});
@@ -265,7 +283,7 @@ async function nextLanding(session){
 function stepSimulation(){
   if(freeDriving()){
     if(race&&race.phase!=='racing'){
-      if(race.phase==='countdown')race.update(LANDING_STEP,sim.state.pos);
+      if(race.phase==='countdown'&&!race.online)race.update(LANDING_STEP,sim.state.pos);
       return;
     }
     driveInput=driver.update(driveKeys,sim,LANDING_STEP);if(mode!=='city'){driveInput.fan=false;driveInput.compressor=false;}if(driveInput.throttle)driveGear=driveInput.throttle<0?'R':'D';
@@ -276,7 +294,10 @@ function stepSimulation(){
     if(race){
       const recovery=race.update(LANDING_STEP,sim.state.pos,sim);
       if(recovery){parkAt(recovery);toast(race.recoveryReason==='air-gate'?'필수 링 미통과 · 이륙 전부터 다시 시작':'코스 이탈 · 마지막 통과 지점으로 복귀');}
-      if(race.phase==='finished'){setPaused(true);updateRaceHUD(race);}
+      if(race.phase==='finished'){
+        if(race.online)room.finish();
+        setPaused(true);updateRaceHUD(race,null,null,onlineStandings());
+      }
       return;
     }
     if(mode==='city'&&scene.city?.streaming&&!scene.city.streaming.guard(sim.state,LANDING_STEP)){
@@ -350,6 +371,10 @@ async function selectVehicle(id,{forLanding=false}={}){
 async function setMode(next){
   if(next===mode||!['lab','inspect','city'].includes(next))return;
   if(race)leaveRace();
+  if(mode==='city'){
+    raceLobby.close();
+    if(room.state.phase!=='idle')room.leave();
+  }
   if(mode==='city'&&cityPoseReady)mapSession.remember(sim,cityDistance);
   cityPoseReady=false;mapPanel.close();
   const previousMode=mode,epoch=++modeEpoch;cancelLanding();clearDriveInputs();driver.reset();mode=next;cityLoading=mode==='city'&&!scene.city;
@@ -575,7 +600,7 @@ function setupDriveControls(){
 }
 function drawCityMap(t){
   const city=scene.city;if(!city)return;
-  if(race){drawRaceMap($('city-map').getContext('2d'),race,sim.state.pos,t.attitude.yaw);return;}
+  if(race){drawRaceMap($('city-map').getContext('2d'),race,sim.state.pos,t.attitude.yaw,race.online?race.remoteCars:race.rivals);return;}
   if(!cityPoseReady)return;
   const x=sim.state.pos.x,z=sim.state.pos.z;
   mapSession.sample(x,z);
@@ -585,7 +610,7 @@ function drawCityMap(t){
 function updateCityHUD(t){
   $('city-camera').textContent=camera==='orbit'?'◉ 자유':camera==='hood'?'◉ 운전석':'◉ 추적';
   $('city-speed').textContent=Math.round(t.horizontalSpeed*3.6);$('city-gear').textContent=t.horizontalSpeed<.1&&!driveInput.throttle?'N':driveGear;
-  if(race){updateRaceHUD(race,t,driver);drawCityMap(t);return;}
+  if(race){updateRaceHUD(race,t,driver,onlineStandings());drawCityMap(t);return;}
   const near=scene.city?.streetOverlay?.portals?.nearest(sim.state.pos.x,sim.state.pos.z);
   $('race-entrance-hint').hidden=!near;
   if(near){
@@ -740,8 +765,50 @@ function setupRaceDifficulty(){
     });
   }
 }
+function setupRaceRooms(){
+  try{preferredCourseId=getRaceCourse(localStorage.getItem('roadster.raceCourse'))?.id||RACE_COURSE.id;}catch{}
+  const chooseCourse=id=>{
+    preferredCourseId=id;
+    try{localStorage.setItem('roadster.raceCourse',id);}catch{}
+  };
+  room=new OnlineRaceRoom({
+    onState(state){
+      raceLobby.setState(state);
+      if(state.phase==='idle'){
+        if(race?.online)leaveRace();
+        if(state.message)toast(state.message);
+      }else if(race?.online&&ghosts){
+        ghosts.setRoster(state.players,state.selfId);race.remoteCars=ghosts.cars;
+        updateRaceHUD(race,sim.telemetry(),driver,onlineStandings());
+      }
+    },
+    async onPrepare(context){
+      if(!await startRace(null,context.courseId,context))throw new Error('경기장 준비 실패');
+    },
+    onStart({startAt}){
+      if(!race?.online)return;
+      onlineStartAt=startAt;
+      raceLobby.close();setPaused(false);$('world').focus({preventScroll:true});
+    },
+    onPose(pose){ghosts?.receive(pose);}
+  });
+  raceLobby=createRaceLobbyPanel({
+    courses:RACE_COURSES,selectedCourseId:preferredCourseId,
+    beforeOpen(){
+      if(!canWarp())return false;
+      clearDriveInputs();accumulator=0;renderStates.reset(sim);return true;
+    },
+    afterClose(){if(mode==='city')$('world').focus({preventScroll:true});},
+    onCourse:chooseCourse,
+    onSolo:id=>startRace(null,id),
+    onHost:settings=>room.host(settings),onJoin:settings=>room.join(settings),
+    onStart:()=>room.start(),onLeave:()=>room.leave()
+  });
+  window.addEventListener('pagehide',()=>room.leave());
+}
 function setupUI(){
   setupRaceDifficulty();
+  setupRaceRooms();
   mapPanel=createSeoulMapPanel({
     onWarp:warpToCityPoint,
     onClose:cancelCityWarp,
@@ -778,7 +845,7 @@ function setupUI(){
     clearDriveInputs();driver.toggleLandingAssist(sim);setPaused(false);
     $('world').focus({preventScroll:true});
   });
-  $('race-retry').addEventListener('click',()=>{if(race)startRace(cityReturn.gate);});
+  $('race-retry').addEventListener('click',()=>{if(race&&!race.online)startRace(cityReturn.gate,race.course.id);});
   $('city-controls').addEventListener('click',()=>{clearDriveInputs();showCityExperiments(false);const shown=document.body.classList.toggle('show-drive-controls');$('city-controls').setAttribute('aria-pressed',shown);if(shown&&cockpitPanelsOpen)toggleCockpitPanels(false);});
   $('city-camera').addEventListener('click',()=>$('camera').click());
   $('cockpit-toggle').addEventListener('click',()=>toggleCockpitPanels());
@@ -873,6 +940,10 @@ function animate(stamp){
   const frameMs=lastStamp?stamp-lastStamp:1000/60,elapsed=Math.min(frameMs/1000,.1);lastStamp=stamp;
   if(mapPanel?.isOpen)return;
   const blocked=!!document.querySelector('dialog[open]');
+  if(race?.online&&onlineStartAt&&race.phase==='countdown'){
+    race.countdown=Math.max(0,(onlineStartAt-Date.now())/1000);
+    if(race.countdown===0)race.update(1e-8,sim.state.pos);
+  }
   if(blocked&&landingLiftHeld)clearLandingLift();
   if(mode==='city'&&!race)scene.city?.streaming?.update(sim.state.pos.x,sim.state.pos.z,sim.state.vel.x,sim.state.vel.z);
   if(((landingRun&&mode==='lab')||freeDriving())&&!vehicleLoading&&!cityLoading&&!paused&&!blocked){
@@ -884,6 +955,13 @@ function animate(stamp){
       ()=>{stepSimulation();return !paused;},
       ()=>renderStates.captureStart(sim),()=>renderStates.afterStep(sim));
   }else accumulator=0;
+  if(race?.online){
+    ghosts.update();
+    if(onlineStartAt&&room.state.phase==='racing'){
+      const {pos,q}=sim.state;
+      room.sendPose({x:pos.x,y:pos.y-sim.restHeight,z:pos.z,qx:q.x,qy:q.y,qz:q.z,qw:q.w,progress:race.progress});
+    }
+  }
   scene.observeFrame(frameMs);
   scene.update(sim,elapsed,{mode,camera,modalOpen:blocked,vectors:showVectors,explode:Number($('explode').value),paint:$('city-paint').value,wing:false,cutaway:mode==='lab'&&showLandingSuspension,renderState:renderStates.sample(paused||mode==='inspect'||blocked?1:accumulator/LANDING_STEP)});
   if(stamp-lastUI>80){updateUI();lastUI=stamp;}frames++;frameTimer+=frameMs/1000;
@@ -904,13 +982,14 @@ try{
     const query=new URLSearchParams(location.search),requestedMode=query.get('mode');
     if(!modeEpoch&&['inspect','city','race'].includes(requestedMode)){
       setMode(requestedMode==='race'?'city':requestedMode).then(async()=>{
-        if(requestedMode==='race'&&mode==='city'&&modeEpoch===1&&cityPoseReady){startRace(null);return;}
+        if(requestedMode==='race'&&mode==='city'&&modeEpoch===1&&cityPoseReady){startRace(null,getRaceCourse(query.get('course'))?.id||preferredCourseId);return;}
         if(requestedMode==='city'&&mode==='city'&&modeEpoch===1&&cityPoseReady){
           const id=query.get('vehicle');
           if(id&&id!==activeVehicle.id&&VEHICLES.some(v=>v.id===id))await selectVehicle(id);
           if(query.get('camera')==='driver'&&mode==='city'&&modeEpoch===1){
             camera='hood';scene.setCamera(camera);$('camera-label').textContent=cameraLabel();
           }
+          if((query.has('room')||query.has('races'))&&mode==='city'&&modeEpoch===1)raceLobby.open();
           return;
         }
         if(mode!=='inspect'||requestedMode!=='inspect')return;
@@ -923,5 +1002,5 @@ try{
     else if(mode==='lab')landingPlanner.warm();
   });
   // ?debug exposes the running objects for inspection; it changes no behaviour.
-  if(new URLSearchParams(location.search).has('debug'))window.__roadster={get sim(){return sim;},scene,mapSession,get driver(){return driver;},get race(){return race;},driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
+  if(new URLSearchParams(location.search).has('debug'))window.__roadster={get sim(){return sim;},scene,mapSession,get driver(){return driver;},get race(){return race;},get room(){return room;},get raceLobby(){return raceLobby;},driveKeys,reset,setMode,setPaused,get mode(){return mode;},get paused(){return paused;}};
 }catch(error){console.error(error);$('boot-message').textContent='3D 화면을 시작하지 못했습니다. WebGL을 지원하는 브라우저에서 새로고침해 주세요.';}

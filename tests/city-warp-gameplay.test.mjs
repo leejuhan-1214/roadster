@@ -9,7 +9,7 @@ import {RenderStateBuffer} from '../dist/js/render-state.js';
 import {SEOUL_WARP_POINTS} from '../dist/js/seoul-warp-points.js';
 
 const source=await readFile(new URL('../dist/js/main.js',import.meta.url),'utf8');
-const callbacks=source.slice(source.indexOf('let pendingRaceEpoch=null'),source.indexOf('async function startRace(gate)'));
+const callbacks=source.slice(source.indexOf('let pendingRaceEpoch=null'),source.indexOf('async function startRace('));
 const [first,second]=SEOUL_WARP_POINTS;
 function driving(){
   const loads=[],cancelledTrials=[],camera=[];

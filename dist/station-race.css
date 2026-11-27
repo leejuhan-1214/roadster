@@ -37,6 +37,68 @@
 #race-finish button { border:1px solid #749c9380; margin:2px; }
 #race-finish #race-retry { background:#9bf2c7; color:#12252c; }
 #race-touch { display:none; }
+.city-map-wrap #race-lobby-open { display:block;width:100%;min-height:32px;padding:5px 8px;color:#c2ffdf;background:#19343a;border:0;border-top:1px solid #436968;border-radius:0;font-size:12px;font-weight:600;cursor:pointer; }
+.city.racing #race-lobby-open { display:none; }
+#race-lobby-dialog { box-sizing:border-box;width:min(440px,calc(100vw - 18px));max-height:calc(100dvh - 18px);margin:auto;padding:0;overflow:auto;border:1px solid #54716e;border-radius:13px;color:#edf6f4;background:#13232c;box-shadow:0 18px 70px #07101880; }
+#race-lobby-dialog::backdrop { background:#071017a8; }
+.race-lobby-heading { display:flex;justify-content:space-between;align-items:center;padding:14px 18px 9px; }
+.race-lobby-heading h2 { margin:0;color:inherit;font-size:22px; }
+#race-lobby-dialog :is(button,select,input) { box-sizing:border-box;min-width:0;min-height:38px;border:1px solid #4e6a70;border-radius:6px;padding:7px 10px;color:inherit;background:#20343f;font:inherit; }
+#race-lobby-dialog button { cursor:pointer; }
+#race-lobby-dialog button:disabled { cursor:default;opacity:.52; }
+#race-lobby-dialog :is(button,select,input):focus-visible { outline:2px solid #a7ffe1;outline-offset:2px; }
+#race-lobby-dialog #race-lobby-close { width:38px;padding:0;font-size:23px;background:transparent; }
+.race-lobby-body { display:grid;gap:13px;padding:4px 18px 18px;font-size:13px; }
+#race-lobby-modes { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px; }
+#race-lobby-modes button { padding:6px;border-color:transparent;background:#192d37; }
+#race-lobby-modes button[aria-pressed=true] { color:#c9ffea;border-color:#679c92;background:#284743; }
+#race-lobby-dialog label { display:grid;gap:5px;color:#b8cccd;font-size:12px; }
+#race-lobby-dialog :is(select,input) { width:100%;color:#f3fbf9;background:#102029;font-size:14px; }
+.race-course-field { display:grid;gap:5px; }
+.race-course-preview { margin:3px 0 0;border:1px solid #35545a;border-radius:8px;overflow:hidden;background:#0e1d26; }
+.race-course-preview canvas { display:block;width:100%;height:110px;object-fit:contain; }
+.race-course-preview figcaption { padding:5px 10px;color:#bde5d8;font:12px/1.4 var(--mono,monospace);text-align:center; }
+#race-lobby-form { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0; }
+#race-lobby-form #race-name-label:has(+[hidden]) { grid-column:1/-1; }
+#race-lobby-form label { display:block; }
+#race-lobby-form label input { display:block;margin-top:5px; }
+#race-lobby-form label span { color:#8caaac;font-size:10px; }
+#race-invite-input,#race-room-code { font-family:var(--mono,monospace)!important;letter-spacing:.12em;text-transform:uppercase; }
+#race-lobby-submit,#race-cancel-connect { grid-column:1/-1; }
+#race-lobby-dialog .race-lobby-primary { color:#0e2522;background:#a2ebce;border-color:#a2ebce;font-weight:700; }
+#race-room { display:grid;gap:10px; }
+#race-room h3 { margin:0;font-size:13px; }
+#race-room h3 span { color:#b6dcd3;font-weight:400; }
+.race-room-share { display:flex;gap:7px;align-items:end; }
+.race-room-share label { flex:1; }
+.race-room-share>div { display:flex;gap:4px; }
+.race-room-share button { font-size:12px!important; }
+.race-room-actions { display:flex;gap:6px; }
+.race-room-actions button { flex:1; }
+.race-room-players { display:grid;gap:4px;margin:0;padding:0;list-style:none; }
+.race-room-players li { display:flex;align-items:center;justify-content:space-between;gap:9px;padding:4px 8px;border-left:3px solid var(--driver-color,#80cbbb);background:#20333b;text-align:start; }
+.race-room-players li span { overflow-wrap:anywhere; }
+.race-room-players li small { flex:none;font-size:10px;color:#bbd7ce; }
+#race-lobby-status { margin:0;font-size:12px;color:#b8d8d4;line-height:1.5;overflow-wrap:anywhere; }
+#race-lobby-status:empty { display:none; }
+#race-room-code { user-select:all; }
+#race-lobby-dialog [hidden],#race-online-results[hidden],#race-retry[hidden],.race-actions .race-difficulty-control[hidden] { display:none; }
+#race-online-results { margin-bottom:14px; }
+@media(max-width:450px),(max-height:520px) {
+  .race-lobby-heading { padding:9px 12px 5px; }
+  .race-lobby-heading h2 { font-size:18px; }
+  .race-lobby-body { padding:3px 12px 12px;gap:9px; }
+  .race-course-preview canvas { height:79px; }
+  .race-room-share button { padding-inline:6px!important; }
+  .city-map-wrap #race-lobby-open { min-height:29px;padding:4px;font-size:10px; }
+}
+@media(max-height:440px) and (min-width:530px) {
+  #race-lobby-dialog { width:min(560px,calc(100vw - 18px)); }
+  .race-lobby-body { grid-template-columns:1.15fr 1fr;align-items:start; }
+  #race-lobby-modes,#race-lobby-status,#race-room,#race-lobby-form:has(#race-code-label:not([hidden])) { grid-column:1/-1; }
+  .race-lobby-body:has(#race-room:not([hidden])) .race-course-field { grid-column:1/-1; }
+  .race-lobby-body:has(#race-room:not([hidden])) .race-course-preview { display:none; }
+}
 .city.racing :is(.city-location,#city-garage,#city-experiments,.cockpit-tools,#city-boundary,.city-touch,#race-entrance-hint,.city-map-wrap a) { display:none!important; }
 .city.racing .city-speedometer { width:auto; min-width:80px; bottom:24px; padding:7px 14px; }
 .city.racing .city-speedometer > :not(:first-child) { display:none!important; }

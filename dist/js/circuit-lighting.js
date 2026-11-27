@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
+import {RACE_COURSE} from './station-race-course.js?v=20261127-race20';
 
 // Race decoration is local to the fictional track. The warm and cool guides
 // attach to the inner face of the concrete on both sides and share its vertices.
-export function addCircuitLighting(root,obstacles){
-  const width=RACE_COURSE.width/2,rails=[],railColors=[],spill=[],spillColors=[];
+export function addCircuitLighting(root,obstacles,circuit=RACE_COURSE){
+  const {sample:sampleCourse,stations:circuitStations,runoffWidth}=circuit;
+  const width=circuit.width/2,rails=[],railColors=[],spill=[],spillColors=[];
   const color=new THREE.Color(),count=circuitStations.length-1;
   for(const sign of [-1,1]){
-    color.setHex(sign===1?0xff8156:0x64d9ef);
+    color.setHex(sign===1?0xff8156:(circuit===RACE_COURSE?0x64d9ef:circuit.accent));
     for(let i=0;i<count;i++){
       const start=circuitStations[i],end=circuitStations[i+1];
       const guide=s=>sign*(width+runoffWidth(s,sign)-.011);
@@ -41,7 +42,7 @@ export function addCircuitLighting(root,obstacles){
 
   // A pair of stepped beacons frames the crest of the slalom from a distance.
   // Each vertical fin uses the same triangular footprint for drawing and contact.
-  const crest=RACE_COURSE.gates.filter(g=>g.air).reduce((a,b)=>a.aperture.maxY>b.aperture.maxY?a:b);
+  const crest=circuit.gates.filter(g=>g.air).reduce((a,b)=>a.aperture.maxY>b.aperture.maxY?a:b);
   const fins=[],lights=[],tints=[];
   for(const side of [-1,1]){
     const edgeColor=new THREE.Color(side<0?0x8ee4f7:0xffae6a);

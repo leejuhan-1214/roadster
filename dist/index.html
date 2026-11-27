@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="./landing-live.css?v=20261119-air161">
 <link rel="stylesheet" href="./landing-research.css?v=20261118-study150">
 <link rel="stylesheet" href="./landing-height-study.css?v=20261119-study160">
-<link rel="stylesheet" href="./station-race.css?v=20261119-ai158">
+<link rel="stylesheet" href="./station-race.css?v=20261127-race20">
 <link rel="stylesheet" href="./seoul-map.css?v=20261123-seoul-warp">
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head><body class="quality-smooth">
@@ -57,13 +57,13 @@
 <div class="city-experiment-actions"><button id="city-brake-csv" disabled>기록 CSV</button><button id="city-brake-clear" disabled>기록 지우기</button><button id="city-drive-focus">운전으로 돌아가기</button></div><p class="micro city-experiment-note">같은 출발 속도·차체·경로에서 비교 · 정지 기준 0.36 km/h 미만<br>최대 감속은 50 ms 평균 · 반응거리 제외<br>충돌·이륙·드리프트·B 해제 시 무효 · 착지 실험 조건은 별도</p>
 </aside>
 <div class="city-location"><b id="city-road">강남역 · 서울</b><span>W/S 전후진 · A/D 지상 조향 / 공중 옆이동 · B 제동<br>Space 상승 · F 추진 가속 · Shift 드리프트 · Q/E 공중 회전 · H 높이 유지<br>마우스 드래그 시점 · 휠 확대 · C 카메라 · R 복귀</span></div>
-<div class="city-map-wrap"><div id="race-entrance-hint" hidden><span aria-hidden="true">⚑</span> <span id="race-entrance-text"></span></div><button type="button" id="seoul-map-open" aria-label="서울 지도 및 워프 지점 열기" aria-haspopup="dialog" aria-controls="seoul-map-dialog" title="서울 지도 및 워프 지점 열기 (M)"><canvas id="city-map" width="210" height="170" aria-label="주변 도로와 내 차 위치"></canvas><span class="mini-map-caption">서울 지도 · 워프 <span aria-hidden="true">⤢</span></span></button><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></div>
+<div class="city-map-wrap"><div id="race-entrance-hint" hidden><span aria-hidden="true">⚑</span> <span id="race-entrance-text"></span></div><button type="button" id="seoul-map-open" aria-label="서울 지도 및 워프 지점 열기" aria-haspopup="dialog" aria-controls="seoul-map-dialog" title="서울 지도 및 워프 지점 열기 (M)"><canvas id="city-map" width="210" height="170" aria-label="주변 도로와 내 차 위치"></canvas><span class="mini-map-caption">서울 지도 · 워프 <span aria-hidden="true">⤢</span></span></button><button type="button" id="race-lobby-open" aria-haspopup="dialog" aria-controls="race-lobby-dialog">경기장 · 대결</button><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></div>
 <div class="city-speedometer glass"><div><b id="city-speed">0</b><span>km/h</span><strong id="city-gear">N</strong></div><div class="city-drive-state"><span id="city-drive-state">지상 · 건조 μ 1.15</span><span id="city-steering">조향 0°</span></div><div class="city-heading-reading"><span id="city-heading">방향 0°</span><span id="city-key-hint">W/S와 함께 A/D 조향</span></div><p><span id="city-motion">정지 유지</span><span id="city-acceleration">0.0 m/s²</span></p><div class="pedal-track"><i id="city-throttle"></i></div><div class="pedal-track brake"><i id="city-brake"></i></div><dl class="city-flight-readings"><div><dt title="차체 중심 아래의 노면에서 정차 자세를 0 m로 표시합니다.">노면 기준</dt><dd id="city-altitude">0.0 m</dd></div><div><dt>수직</dt><dd id="city-vertical">0.0 m/s</dd></div><div><dt>기체</dt><dd id="city-gas">375 kg</dd></div></dl><button id="city-hover" aria-pressed="false" title="현재 노면 기준 높이 유지 켜기 / 끄기 (H)">H 고도 유지</button><button id="city-flip" data-drive="KeyX" title="공통 추진 장치 · 충분한 높이와 기체에서 공중제비"><kbd>X</kbd> 공중제비</button><button id="city-land" aria-pressed="false" title="현재 위치에서 수평 감속 후 착지 보조">착지 보조</button><small id="city-distance">0.00 km</small></div>
 <p id="city-boundary" class="city-boundary" hidden>실제 지도 범위 밖 · R로 출발점 복귀</p>
 <div class="city-touch glass" aria-label="주행과 비행 조작"><p id="city-flight-status">Space 상승 · F 추진 가속 · Shift 드리프트</p><div><button data-drive="KeyW" aria-label="전진 가속 또는 전방 분사"><kbd>W</kbd>전진</button><button data-drive="KeyS" aria-label="제동 후 후진 또는 후방 분사"><kbd>S</kbd>후진</button><button data-drive="KeyA" aria-label="왼쪽 조향 또는 공중 왼쪽 수평 분사"><kbd>A</kbd>왼쪽</button><button data-drive="KeyD" aria-label="오른쪽 조향 또는 공중 오른쪽 수평 분사"><kbd>D</kbd>오른쪽</button><button data-drive="KeyB" aria-label="제동"><kbd>B</kbd>제동</button><button data-drive="Space" aria-label="상승 분사"><kbd>Space</kbd>상승</button><button data-drive="KeyF" aria-label="추진 가속 부스트"><kbd>F</kbd>가속</button><button data-drive="ShiftLeft" aria-label="지상 후륜 핸드브레이크 드리프트"><kbd>Shift</kbd>드리프트</button></div><div><button data-drive="KeyQ" aria-label="왼쪽 기수 회전"><kbd>Q</kbd>좌회전</button><button data-drive="KeyE" aria-label="오른쪽 기수 회전"><kbd>E</kbd>우회전</button><button data-drive="ArrowUp" aria-label="지상 전진 또는 공중 기수 내리기"><kbd>↑</kbd>전진/숙임</button><button data-drive="ArrowDown" aria-label="지상 후진 또는 공중 기수 올리기"><kbd>↓</kbd>후진/들기</button><button data-drive="ArrowLeft" aria-label="지상 왼쪽 조향 또는 공중 왼쪽 기울기"><kbd>←</kbd>좌/기울기</button><button data-drive="ArrowRight" aria-label="지상 오른쪽 조향 또는 공중 오른쪽 기울기"><kbd>→</kbd>우/기울기</button><button id="city-vectors" aria-pressed="false" title="힘 벡터 표시 (V)"><kbd>V</kbd>힘 표시</button></div></div>
 <section id="race-hud" aria-label="서킷 경주" hidden>
   <div class="race-strip glass">
-    <div><small>순위</small><strong><span id="race-rank">2</span><i> / 4</i></strong></div>
+    <div><small>순위</small><strong><span id="race-rank">2</span><i id="race-field-size"> / 4</i></strong></div>
     <div><small>랩</small><strong id="race-lap">1 / 2</strong></div>
     <div><small>경과 시간</small><strong id="race-clock">0:00.0</strong></div>
   </div>
@@ -74,7 +74,7 @@
   </div>
   <div id="race-signal" role="status" hidden></div>
   <div id="race-finish" class="glass" role="region" aria-label="경주 결과" hidden>
-    <small>서킷 완주</small><strong id="race-result-place"></strong><p id="race-result-time"></p>
+    <small>서킷 완주</small><strong id="race-result-place"></strong><p id="race-result-time"></p><ol id="race-online-results" class="race-room-players" aria-label="참가자별 완주 순위" hidden></ol>
     <button id="race-retry">다시 경주</button><button id="race-return">역으로 돌아가기</button>
   </div>
   <div id="race-touch" aria-label="경주 운전 조작">
@@ -86,6 +86,36 @@
 <aside id="part-card" class="part-card glass" hidden><div class="panel-heading"><span id="part-subtitle"></span><button id="part-close" class="icon-btn" aria-label="부품 선택 닫기">×</button></div><h2 id="part-title"></h2><div id="part-mechanism" hidden><p id="part-description"></p><a id="part-source" target="_blank" rel="noopener noreferrer" hidden>구조 참고 자료 ↗</a><button id="part-motion" type="button" aria-pressed="false" hidden>작동 재생</button><button id="engine-strokes" type="button" aria-pressed="false" hidden>4행정 색상</button><div id="stroke-legend" aria-label="행정별 표시 색상" hidden></div></div><div class="part-actions"><button id="part-zoom">가까이 보기</button><button id="part-isolate" aria-pressed="false">이것만 보기</button><button id="part-hide">선택 숨기기</button></div></aside>
 <div class="view-tools glass"><button id="camera" title="카메라 전환 (C)">◉ <span id="camera-label">자유 카메라</span></button><button id="vectors" aria-pressed="false" title="힘 벡터 (V)">↗ 힘 벡터</button><button id="reset" title="실험 초기화 (R)">↺ 초기화</button><div class="landing-playback" id="landing-playback"><button id="landing-suspension" aria-pressed="false" title="차체 외장을 열어 바퀴·서스펜션의 움직임 관찰">서스펜션</button><label for="landing-speed">실험 재생</label><select id="landing-speed" aria-label="착지 실험 재생 속도"><option value="1">1×</option><option value="0.25">0.25×</option><option value="0.1">0.1×</option></select><button id="landing-step" disabled title="일시정지한 착지 실험을 2ms 진행">+2 ms</button></div></div><span id="fps" class="frame-note"></span><div id="toast" class="toast" role="status"></div>
 <dialog id="guide-modal"><div class="modal-top"><h2>사용 방법과 출처</h2><button class="icon-btn close-dialog" aria-label="닫기">×</button></div><nav class="guide-tabs"><button data-guide="controls" class="active">사용 방법</button><button data-guide="sources">출처</button></nav><div id="guide-content"></div><div class="modal-bottom">교육용 가정 모델 · v1.61.0</div></dialog>
+<dialog id="race-lobby-dialog" aria-labelledby="race-lobby-title">
+  <header class="race-lobby-heading"><h2 id="race-lobby-title">경기장</h2><button type="button" id="race-lobby-close" aria-label="경기장 메뉴 닫기">×</button></header>
+  <div class="race-lobby-body">
+    <div id="race-lobby-modes" role="group" aria-label="경주 방법">
+      <button type="button" data-race-mode="solo" aria-pressed="true">AI 경주</button>
+      <button type="button" data-race-mode="host" aria-pressed="false">방 만들기</button>
+      <button type="button" data-race-mode="join" aria-pressed="false">방 참가</button>
+    </div>
+    <div class="race-course-field" id="race-lobby-course-field">
+      <label for="race-course-select">경기장 선택</label><select id="race-course-select"></select>
+      <figure class="race-course-preview">
+        <canvas id="race-course-preview" width="660" height="250" aria-label="선택한 경기장 코스"></canvas>
+        <figcaption id="race-course-stats"></figcaption>
+      </figure>
+    </div>
+    <form id="race-lobby-form">
+      <label id="race-name-label" for="race-driver-name" hidden>닉네임 <span>선택</span><input id="race-driver-name" name="nickname" maxlength="18" autocomplete="nickname"></label>
+      <label id="race-code-label" for="race-invite-input" hidden>방 코드<input id="race-invite-input" name="code" maxlength="6" placeholder="6자리" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+      <button type="submit" id="race-lobby-submit" class="race-lobby-primary">AI와 경주 시작</button>
+      <button type="button" id="race-cancel-connect" hidden>연결 취소</button>
+    </form>
+    <section id="race-room" aria-label="온라인 대기실" hidden>
+      <div class="race-room-share"><label for="race-room-code">방 코드<input id="race-room-code" readonly aria-label="공유할 방 코드"></label><div><button type="button" id="race-copy-code">코드 복사</button><button type="button" id="race-copy-link">초대 링크 복사</button></div></div>
+      <h3>참가자 <span id="race-room-count"></span></h3>
+      <ol id="race-room-players" class="race-room-players"></ol>
+      <div class="race-room-actions"><button type="button" id="race-room-start" class="race-lobby-primary">출발</button><button type="button" id="race-room-leave">방 나가기</button></div>
+    </section>
+    <p id="race-lobby-status" role="status" aria-live="polite"></p>
+  </div>
+</dialog>
 <dialog id="seoul-map-dialog" aria-labelledby="seoul-map-title">
   <header class="seoul-map-heading"><h2 id="seoul-map-title">서울 주행 지도</h2><button class="close-dialog seoul-close" type="button" aria-label="지도 닫고 운전으로 돌아가기" autofocus>×</button></header>
   <nav class="seoul-map-nav" aria-label="지도 위치">
@@ -101,7 +131,7 @@
   </footer>
   <div class="seoul-map-credit"><span id="seoul-map-source"></span><span><a href="https://openfreemap.org/" target="_blank" rel="noopener noreferrer">OpenFreeMap</a> · <a href="https://openmaptiles.org/" target="_blank" rel="noopener noreferrer">© OpenMapTiles</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a></span></div>
 </dialog>
-<script type="module" id="app-entry" src="./js/main.js?v=20261123-seoul-warp"></script>
+<script type="module" id="app-entry" src="./js/main.js?v=20261127-race20"></script>
 <script>
   const entry = document.getElementById('app-entry');
   const retry = document.getElementById('boot-retry');

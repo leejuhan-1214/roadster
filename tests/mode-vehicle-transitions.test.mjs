@@ -9,6 +9,7 @@ const startSource=source.slice(source.indexOf('async function startLanding(kind)
 function context(){
   const nodes={},calls={resets:0,toasts:[],selected:[],labFrames:0,wholeFrames:0};
   const ctx={race:null,mode:'city',modeEpoch:0,camera:'hood',cityLoading:false,cityPoseReady:false,mapPanel:{close(){},load(){}},vehicleLoading:false,vehicleLoadTask:null,selectedPartId:null,
+    raceLobby:{close(){}},room:{state:{phase:'idle'}},
     activeVehicle:{id:'city-only'},experimentIds:new Set(['roadster']),lastLabVehicleId:'roadster',driver:{reset(){}},
     scene:{city:{},setMode(){},setCamera(){},focusPart(){},async loadCity(){return this.city},frameWholeVehicle(){calls.wholeFrames++;}},
     document:{body:{classList:{toggle(){}}}},

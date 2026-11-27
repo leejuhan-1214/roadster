@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {CITY_ROAD_LEVELS as surfaceY} from './city-road-levels.js?v=20261122-wheel-repair';
-import {RACE_COURSE,sampleCourse,circuitStations,runoffWidth} from './station-race-course.js?v=20261119-ai158';
-import {AIR_APPROACH,rivalAirPath} from './station-race-air.js?v=20261119-ai158';
-import {circuitUrbanTrackStages,CIRCUIT_BASIN} from './circuit-urban-track.js?v=20261122-roadhandling';
-import {circuitCityscapeStages} from './circuit-cityscape.js?v=20261119-metropolis159';
-import {addCircuitLighting} from './circuit-lighting.js?v=20261122-roadhandling';
+import {addCircuitLandmarks} from './circuit-landmarks.js?v=20261127-race20';
+import {RACE_COURSE} from './station-race-course.js?v=20261127-race20';
+import {AIR_APPROACH,rivalAirPath} from './station-race-air.js?v=20261127-race20';
+import {circuitUrbanTrackStages,CIRCUIT_BASIN} from './circuit-urban-track.js?v=20261127-race20';
+import {circuitCityscapeStages} from './circuit-cityscape.js?v=20261127-race20';
+import {addCircuitLighting} from './circuit-lighting.js?v=20261127-race20';
 
 import {createTireContactShadows,updateTireContactShadows} from './tire-contact-shadows.js?v=20261122-roadhandling';
 
-const halfWidth=RACE_COURSE.width/2;
 const white=0xf1eee1,red=0xc63e37,dark=0x212c32,steel=0x829499,mint=0x5cf2cb;
 const material=(color,extra={})=>new THREE.MeshStandardMaterial({color,roughness:.78,...extra});
 
@@ -20,7 +20,8 @@ function mesh(parent,geometry,mat,name){
 }
 
 // Every strip closes at the same arc length used by the AI and checkpoint model.
-function ribbon(root,name,mat,inner,outer,height,stations=circuitStations,tileSize=3,alongUV=false){
+function ribbon(course,root,name,mat,inner,outer,height,stations=course.stations,tileSize=3,alongUV=false){
+  const sampleCourse=course.sample;
   const positions=[],uv=[],indices=[];
   for(const [i,s] of stations.entries()){
     for(const [j,offset] of [inner,outer].entries()){
@@ -82,7 +83,8 @@ function precastWallMaterial(){
 }
 
 // Follow the same corner vertices in the rendered walls and their collision prisms.
-function boundary(root,obstacles,side,concrete){
+function boundary(course,root,obstacles,side,concrete){
+  const {sample:sampleCourse,stations:circuitStations,runoffWidth}=course,halfWidth=course.width/2;
   const count=circuitStations.length-1,height=.84,positions=[],indices=[],uv=[];
   const edgePoints=d=>{
     const near=halfWidth+runoffWidth(d,side);
@@ -126,9 +128,10 @@ function billBoard(root,text,w,h,x,y,z,heading,background,foreground){
 
 // One atlas and one batched sign mesh per bend. Real-distance boards on the
 // outside of each braking zone are legible on approach without a HUD.
-function addBrakeBoards(root){
+function addBrakeBoards(course,root){
+  const {sample:sampleCourse,runoffWidth}=course,halfWidth=course.width/2;
   if(typeof document==='undefined')return;
-  const signs=['150','100','50','‹‹','››',...RACE_COURSE.bends.map(b=>'T'+b.turn)];
+  const signs=['150','100','50','‹‹','››',...course.bends.map(b=>'T'+b.turn)];
   const columns=4,rows=Math.ceil(signs.length/columns),px=128,py=80;
   const canvas=document.createElement('canvas');
   canvas.width=px*columns;canvas.height=py*rows;
@@ -141,7 +144,7 @@ function addBrakeBoards(root){
   }
   const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=2;
   const mat=new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide});
-  for(const b of RACE_COURSE.bends){
+  for(const b of course.bends){
     const pos=[],uv=[],indices=[],side=Math.sign(b.curvature);
     const board=(d,label,w,h)=>{
       const p=sampleCourse(d,side*(halfWidth+runoffWidth(d,side)+1.6));
@@ -165,7 +168,8 @@ function addBrakeBoards(root){
 }
 
 // Painted grid rectangles are flat decals and do not cast building shadows.
-function facilities(root,obstacles){
+function facilities(course,root,obstacles){
+  const {sample:sampleCourse,runoffWidth}=course,halfWidth=course.width/2;
   const blocks=[],grid=[],tmp=new THREE.Object3D();
   function box(x,y,z,l,h,w,color,yaw=0){
     tmp.position.set(x,y,z);tmp.rotation.set(0,yaw,0);tmp.scale.set(l,h,w);tmp.updateMatrix();
@@ -179,7 +183,8 @@ function facilities(root,obstacles){
   box(0,6.4,0,.55,1.4,2*halfWidth+4,dark);
   for(const side of [-1,1])obstacles.push({id:'starting-gantry-post-'+side,center:[0,3.2,side*(halfWidth+1.4)],size:[.6,6.4,.6]});
   obstacles.push({id:'starting-gantry-header',center:[0,6.4,0],size:[.55,1.4,2*halfWidth+4]});
-  billBoard(root,'STATION GRAND PRIX',16,1.35,-.29,6.4,0,0,'#152b30','#9df5dc');
+  billBoard(root,course.id===RACE_COURSE.id?'STATION GRAND PRIX':course.name,
+    16,1.35,-.29,6.4,0,0,'#152b30','#9df5dc');
   const columns=32,size=2*halfWidth/columns;
   for(let column=0;column<columns;column++)for(let row=0;row<3;row++)
     paint((row-1)*size,-halfWidth+(column+.5)*size,size,size,(row+column)%2===0?white:dark);
@@ -210,7 +215,7 @@ function facilities(root,obstacles){
   box(46,5,pit,7.8,10,8.8,0xb8aaa0);box(46,7.8,pit+4.42,6.6,2.7,.12,0x344e58);
   box(46,10.1,pit,8.9,.38,9.8,white);
   for(let i=0;i<15;i++){
-    const d=i*RACE_COURSE.length/15,p=sampleCourse(d,halfWidth+6.7);
+    const d=i*course.length/15,p=sampleCourse(d,halfWidth+6.7);
     box(p.x,5,p.z,.18,10,.18,steel,p.heading);
     box(p.x,10,p.z,1.8,.22,1.2,0xc1cbca,p.heading);
   }
@@ -224,7 +229,16 @@ function facilities(root,obstacles){
 }
 
 // Continuous world-space UVs keep the paving joints aligned on both embankments.
-function addCityPaving(root){
+function addCityPaving(root,course){
+  if(course.id!==RACE_COURSE.id){
+    const bounds=course.extent;
+    const surfaces={solar:0x566049,harbor:0x556067,ridge:0x555953,metro:0x495360};
+    const pavement=mesh(root,new THREE.PlaneGeometry(bounds.maxX-bounds.minX+750,bounds.maxZ-bounds.minZ+750),
+      material(surfaces[course.theme]),'Quayside paving');
+    pavement.geometry.rotateX(-Math.PI/2);
+    pavement.position.set((bounds.minX+bounds.maxX)/2,-.035,(bounds.minZ+bounds.maxZ)/2);
+    return;
+  }
   const {minX,maxX,minZ,maxZ}=CIRCUIT_BASIN,bounds=RACE_COURSE.extent;
   const west=bounds.minX-750,east=bounds.maxX+750,north=bounds.minZ-750,south=bounds.maxZ+750;
   const positions=[],uv=[],indices=[];
@@ -297,9 +311,10 @@ function ovalBand(radiusZ,radiusY,outer,depth){
   shape.setIndex(indices);shape.computeVertexNormals();return shape;
 }
 
-function airCourse(root){
+function airCourse(course,root){
+  const {sample:sampleCourse,runoffWidth}=course,halfWidth=course.width/2;
   const group=new THREE.Group();group.name='Roadster air route';root.add(group);
-  const frames=[],gates=RACE_COURSE.gates.filter(gate=>gate.air);
+  const frames=[],gates=course.gates.filter(gate=>gate.air);
   const metal=material(0x324047,{metalness:.76,roughness:.31,side:THREE.DoubleSide});
   for(const courseGate of gates){
     const gate=courseGate.aperture;
@@ -326,7 +341,7 @@ function airCourse(root){
   const arrows=[],first=gates[0].distance,last=gates.at(-1).distance;
   for(let d=first-AIR_APPROACH;d<=last+95;d+=8){
     if(gates.some(gate=>Math.abs(gate.distance-d)<3))continue;
-    const guide=rivalAirPath(d,RACE_COURSE);
+    const guide=rivalAirPath(d,course);
     const p=sampleCourse(d,guide.lateral),y=Math.max(.045,guide.height-.36);
     for(const side of [-1,1]){
       const dz=side*.29;
@@ -376,7 +391,7 @@ function rivalCar(color){
   const jets=new THREE.Mesh(jetGeometry,new THREE.MeshBasicMaterial({color:0xb7e4ec,transparent:true,opacity:.23,depthWrite:false,side:THREE.DoubleSide}));
   jets.name='Rival lift exhaust';jets.visible=false;jets.position.y=.24;
   mount.add(root,patches,jets);
-  const car={root:mount,placeholder:root,wheels,fallbackWheels:wheels,patches,jets};fitTirePatches(car);return car;
+  const car={root:mount,placeholder:root,paint,wheels,fallbackWheels:wheels,patches,jets};fitTirePatches(car);return car;
 }
 
 function fitTirePatches(car){
@@ -398,58 +413,61 @@ export function createStationRaceWorld(...args){
 
 // City driving prepares one batch per idle slice. A portal reached early can
 // finish the same iterator synchronously, preserving the single world and its assets.
-export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=typeof document==='undefined'?null:
+export function* stationRaceWorldStages(roadMaterial,treeLibrary,{course=RACE_COURSE,loadExterior=typeof document==='undefined'?null:
   ()=>import('./rival-exterior.js?v=20261122-roadhandling').then(m=>m.loadRivalExterior())}={}){
   const root=new THREE.Group(),obstacles=[],cars=[];
-  root.name='Station Circuit';root.visible=false;
-  addCityPaving(root);
+  const {sample:sampleCourse,stations:circuitStations,runoffWidth}=course,halfWidth=course.width/2;
+  let exterior=null,disposed=false,built=false;
+  root.name=course.id===RACE_COURSE.id?'Station Circuit':course.name;root.visible=false;
+  try{
+  addCityPaving(root,course);
   yield;
   // The city offsets road paint towards the camera to resolve overlapping OSM
   // streets. The circuit is continuous so keep paint and kerbs above asphalt.
   const asphalt=roadMaterial?roadMaterial.clone():material(0x484d52);
   asphalt.polygonOffset=false;asphalt.vertexColors=false;
   if(roadMaterial){asphalt.color.setHex(0x536880);asphalt.roughness=.86;}
-  ribbon(root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,surfaceY.asphalt,circuitStations,roadMaterial?.map?.image?4:2);
+  ribbon(course,root,'Track asphalt',asphalt,-halfWidth-.8,halfWidth+.8,surfaceY.asphalt,circuitStations,roadMaterial?.map?.image?4:2);
   const paintedWhite=material(white,{polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});
   const kerb=kerbMaterial(),apron=material(0x414f60,{polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const precast=precastWallMaterial(),bendDetails=[];
   for(const side of [-1,1]){
     const edge=[side*(halfWidth-.12),side*(halfWidth+.02)].sort((a,b)=>a-b);
     const inner=side*(halfWidth+.12),outer=d=>side*(halfWidth+runoffWidth(d,side)+.5);
-    ribbon(root,'Run-off',apron,side<0?outer:inner,side<0?inner:outer,surfaceY.median);
-    ribbon(root,'White edge line',paintedWhite,...edge,surfaceY.centreLine);boundary(root,obstacles,side,precast);
+    ribbon(course,root,'Run-off',apron,side<0?outer:inner,side<0?inner:outer,surfaceY.median);
+    ribbon(course,root,'White edge line',paintedWhite,...edge,surfaceY.centreLine);boundary(course,root,obstacles,side,precast);
     yield;
   }
-  for(const bend of RACE_COURSE.bends){
+  for(const bend of course.bends){
     const details=new THREE.Group();details.name='Corner '+bend.turn;root.add(details);
     const end=bend.start+bend.length,stations=[bend.start-12,...circuitStations.filter(d=>d>=bend.start&&d<=end),end+12];
     for(const side of [-1,1]){
       const offsets=[side*(halfWidth+.12),side*(halfWidth+1.08)].sort((a,b)=>a-b);
-      const kerbHeight=.028,strip=ribbon(details,'Striped kerb',kerb,...offsets,kerbHeight,stations,5,true);
+      const kerbHeight=.028,strip=ribbon(course,details,'Striped kerb',kerb,...offsets,kerbHeight,stations,5,true);
       addKerbSupports(obstacles,strip,'race-kerb-'+bend.turn+'-'+side,kerbHeight);
     }
     const p=sampleCourse(bend.start+bend.length/2);
     bendDetails.push({details,x:p.x,z:p.z});
   }
-  addBrakeBoards(root);
+  addBrakeBoards(course,root);
   yield;
-  facilities(root,obstacles);
+  facilities(course,root,obstacles);
   yield;
-  addCircuitLighting(root,obstacles);
+  addCircuitLighting(root,obstacles,course);
   yield;
-  const airFrames=airCourse(root);
+  const airFrames=airCourse(course,root);
   yield;
-  yield* circuitUrbanTrackStages(root,obstacles);
-  yield* circuitCityscapeStages(root,obstacles);
+  if(course.id===RACE_COURSE.id)yield* circuitUrbanTrackStages(root,obstacles);
+  else{addCircuitLandmarks(root,obstacles,course);yield;}
+  if(['metropolis','metro','harbor'].includes(course.theme))yield* circuitCityscapeStages(root,obstacles,course);
   const nextGate=new THREE.Group();nextGate.name='Next checkpoint';root.add(nextGate);
-  let exterior=null,disposed=false;
   function dress(car){
     car.skin=exterior.create(car.color);
     car.root.add(car.skin.root);car.placeholder.visible=false;car.wheels=car.skin.wheels;fitTirePatches(car);
   }
   const rivalModelsReady=loadExterior?Promise.resolve().then(loadExterior).then(template=>{
     if(disposed){template.dispose();return false;}
-    exterior=template;for(const car of cars)dress(car);return true;
+    exterior=template;for(const car of cars)if(car)dress(car);return true;
   }).catch(error=>{console.warn('AI 경주차 외형을 불러올 수 없습니다.',error);return false;}):Promise.resolve(false);
   const markerMaterial=new THREE.MeshBasicMaterial({color:mint});
   for(const side of [-1,1]){
@@ -460,10 +478,19 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
   }
   function update(race,viewer=sampleCourse(race.progress)){
     for(const {details,x,z} of bendDetails)details.visible=(viewer.x-x)**2+(viewer.z-z)**2<800**2;
-    for(let i=0;i<race.rivals.length;i++){
-      const rival=race.rivals[i];
-      if(!cars[i]){cars[i]=rivalCar(rival.color);cars[i].color=rival.color;root.add(cars[i].root);if(exterior)dress(cars[i]);}
-      const car=cars[i];car.root.name=rival.name;car.root.position.set(rival.x,rival.heave||0,rival.z);car.root.rotation.y=rival.heading;
+    const field=race.online?race.remoteCars:race.rivals;
+    for(const pooled of cars)if(pooled)pooled.root.visible=false;
+    for(let i=0;i<field.length;i++){
+      const rival=field[i],slot=race.online?rival.slot:i;
+      if(!cars[slot]){
+        cars[slot]=rivalCar(rival.color);cars[slot].color=rival.color;root.add(cars[slot].root);if(exterior)dress(cars[slot]);
+      }else if(cars[slot].color!==rival.color){
+        const car=cars[slot];car.color=rival.color;car.paint.color.set(rival.color);
+        if(car.skin){car.skin.root.removeFromParent();car.skin.dispose();dress(car);}
+      }
+      const car=cars[slot];car.root.name=rival.name;car.root.position.set(rival.x,rival.heave||0,rival.z);
+      if(race.online&&rival.quaternion)car.root.quaternion.copy(rival.quaternion);
+      else car.root.rotation.set(0,rival.heading,0);
       const distanceSq=(rival.x-viewer.x)**2+(rival.z-viewer.z)**2;
       car.root.visible=distanceSq<750**2;
       if(!car.root.visible)continue;
@@ -480,11 +507,11 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
       if(car.jets.visible)car.jets.scale.y=Math.min(.24+heave,.12+rival.liftAcceleration*.085);
       car.patches.position.y=-heave;car.patches.material.opacity=Math.max(0,1-Math.max(0,heave)/.14)**2;
       for(const {spin,pivot,front,radius=.345,baseY} of car.wheels){
-        spin.rotation.z=-(rival.wheelDistance??rival.distance)/radius;pivot.rotation.y=front?steer:0;
+        spin.rotation.z=race.online&&Number.isFinite(rival.spin)?rival.spin:-(rival.wheelDistance??rival.distance)/radius;pivot.rotation.y=front?steer:0;
         pivot.position.y=baseY-Math.min(heave,0)/scale;
       }
     }
-    const gate=RACE_COURSE.gates[race.nextGate];
+    const gate=course.gates[race.nextGate];
     for(let i=0;i<airFrames.length;i++){
       const frame=airFrames[i],active=race.nextGate===frame.userData.gateIndex;
       const state=active?'target':i<race.airGatesThisLap?'passed':'upcoming';
@@ -496,9 +523,12 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
     nextGate.visible=!!gate&&!gate.air&&race.phase==='racing';
     if(gate){nextGate.position.set(gate.x,0,gate.z);nextGate.rotation.y=gate.heading;}
   }
+  built=true;
+  return {course,root,obstacles,update,dispose,rivalModelsReady};
+  }finally{if(!built)dispose();}
   function dispose(){
     if(disposed)return;disposed=true;
-    for(const car of cars)car.skin?.dispose();exterior?.dispose();
+    for(const car of cars)car?.skin?.dispose();exterior?.dispose();
     const meshes=new Set(),materials=new Set(),textures=new Set();
     root.traverse(o=>{
       if(o.geometry)meshes.add(o.geometry);
@@ -514,5 +544,5 @@ export function* stationRaceWorldStages(roadMaterial,treeLibrary,{loadExterior=t
     for(const g of meshes)g.dispose();for(const m of materials)m.dispose();for(const t of textures)t.dispose();
     root.clear();root.removeFromParent();
   }
-  return {root,obstacles,update,dispose,rivalModelsReady};
+
 }
